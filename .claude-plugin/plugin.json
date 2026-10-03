@@ -1,0 +1,10 @@
+{
+  "name": "seo-autopilot",
+  "description": "Daily SEO loop for any website: Search Console reports, URL inspection, IndexNow and an approval-gated agent playbook, with a guided onboarding.",
+  "version": "0.1.0",
+  "author": { "name": "Bishal Paul" },
+  "homepage": "https://github.com/bishal-paul-git/seo-autopilot",
+  "repository": "https://github.com/bishal-paul-git/seo-autopilot",
+  "license": "MIT",
+  "keywords": ["seo", "search-console", "indexnow", "automation"]
+}

@@ -1,9 +1,11 @@
 ---
-name: seo-pack-onboard
+name: seo-autopilot
 description: Sets up the SEO pack on a website repo step by step - reads the site to learn what it is about, registers it, connects Search Console and IndexNow, and enables the daily cloud run. Use when someone says "set up SEO for this site", "install the SEO pack" or "connect this repo to the SEO hub".
 ---
 
 # SEO pack onboarding
+
+The scripts (`daily.mjs`, `indexnow.mjs`, `lib/`, `templates/`) live in the seo-autopilot repo. Before Step 3, make sure the user has their own copy of that repo (a fork or clone, referred to below as the hub repo) because it holds their `sites.json`, secrets and the daily workflow. The website being onboarded can be a different repo; point `repoPath` at it.
 
 Goal: take a website repo from nothing to a daily, cloud-run SEO loop that needs no computer left on.
 Go one step at a time. After each step say what you did and what is next. Never print or commit secrets.

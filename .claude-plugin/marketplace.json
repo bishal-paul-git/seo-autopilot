@@ -1,0 +1,11 @@
+{
+  "name": "seo-autopilot",
+  "owner": { "name": "Bishal Paul" },
+  "plugins": [
+    {
+      "name": "seo-autopilot",
+      "source": "./",
+      "description": "Guided SEO setup and daily loop for any website repo."
+    }
+  ]
+}
