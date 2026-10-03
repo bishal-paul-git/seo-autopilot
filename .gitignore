@@ -1,0 +1,5 @@
+node_modules/
+reports/
+*service-account*.json
+*.key.json
+.env

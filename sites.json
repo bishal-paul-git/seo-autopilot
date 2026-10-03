@@ -1,0 +1,15 @@
+{
+  "defaults": { "inspectPerDay": 60, "indexNowPerDay": 10 },
+  "sites": [
+    {
+      "id": "example",
+      "name": "Example Site",
+      "url": "https://example.com/",
+      "searchConsoleProperty": "https://example.com/",
+      "sitemap": "https://example.com/sitemap.xml",
+      "repoPath": "/path/to/your/website/repo",
+      "indexNowKeyEnv": "INDEXNOW_KEY_EXAMPLE",
+      "ga4PropertyId": null
+    }
+  ]
+}
