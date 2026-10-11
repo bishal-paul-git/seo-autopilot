@@ -13,11 +13,16 @@ const TEMPLATES = fileURLToPath(new URL("../../templates/", import.meta.url));
 const KNOWLEDGE = fileURLToPath(new URL("../../knowledge/", import.meta.url));
 export const DEFAULT_SPEC = "github:bishal-paul-git/seo-autopilot#v2";
 
-/** The only paths the drafting agent may edit, as Claude Code tool rules: Edit(glob),Write(glob). */
-export function editTools(content = {}) {
-  const globs = content.type === "json" ? content.include
+/** The content paths drafts may touch, as globs. */
+export function contentGlobs(content = {}) {
+  return content.type === "json" ? content.include
     : content.type === "markdown" ? [`${String(content.dir).replace(/\/$/, "")}/**`]
       : ["content/**"];
+}
+
+/** The only paths the drafting agent may edit, as Claude Code tool rules: Edit(glob),Write(glob). */
+export function editTools(content = {}) {
+  const globs = contentGlobs(content);
   return globs.flatMap((g) => [`Edit(${g})`, `Write(${g})`]).join(",");
 }
 
@@ -84,7 +89,7 @@ export async function init({ cwd = process.cwd(), flags = {}, interactive = proc
 
   if (!flags["no-workflows"]) {
     const spec = flags.spec || process.env.SEO_AUTOPILOT_SPEC || DEFAULT_SPEC;
-    copyTree(join(TEMPLATES, "workflows"), join(cwd, ".github", "workflows"), { force: flags.force, report, transform: (t) => t.replaceAll("{{SPEC}}", spec).replaceAll("{{EDIT_TOOLS}}", editTools(site.content)) });
+    copyTree(join(TEMPLATES, "workflows"), join(cwd, ".github", "workflows"), { force: flags.force, report, transform: (t) => t.replaceAll("{{SPEC}}", spec).replaceAll("{{EDIT_TOOLS}}", editTools(site.content)).replaceAll("{{CONTENT_GLOBS}}", contentGlobs(site.content).join("|")) });
   }
 
   const ignore = join(cwd, ".gitignore");

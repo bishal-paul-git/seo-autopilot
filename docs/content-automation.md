@@ -20,6 +20,12 @@
 5. **Schedule.** `schedule` (daily, in `seo-release.yml`) gives queued pages a `publishAt` date, up to 3 a day (max 4), after any dates already taken. A page marked `hold: true` is never scheduled.
 6. **Publish.** Your site hides pages whose `publishAt` is in the future when it builds. On the day, `release` sees the page is due but not live and rebuilds the site (deploy hook, or an empty commit). The page goes live and joins the sitemap.
 
+## One-approval mode (optional)
+
+By default you approve the topic and then merge the drafted pull request. To skip the merge step, set the repository variable `SEO_AUTOMERGE` to `true` (Settings > Secrets and variables > Actions > Variables). The `seo-automerge` workflow then merges a draft only after `seo-check` passes, only for `seo/*` branches in your own repository, and only when every changed file is inside your content folders. Merged pages are still marked queued, so nothing goes live until the scheduler releases it. Remove the variable to go back to merging by hand.
+
+Note: pull requests opened with the default `GITHUB_TOKEN` do not trigger other workflows. The drafting action opens its pull requests through the Claude GitHub app, so `seo-check` runs normally.
+
 ## What the automation never does
 
 - Never creates a page on its own, never publishes unreviewed text, never edits your existing pages without an approved issue and a pull request.

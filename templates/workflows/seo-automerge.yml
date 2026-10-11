@@ -1,0 +1,45 @@
+# seo-autopilot: optional one-approval mode. When a drafted page has passed the seo-check build, this merges it for you, so
+# the only thing you do is approve the topic. It is OFF until you create the repository VARIABLE  SEO_AUTOMERGE = true
+# (Settings > Secrets and variables > Actions > Variables). Delete this file, or unset the variable, to go back to merging by hand.
+#
+# Safety: it never runs pull-request code and uses no secrets. It merges only when ALL of these hold: the seo-check run
+# succeeded, the branch is seo/* in THIS repository (not a fork), and every changed file sits inside your content folders.
+# Pages are still marked queued, so merging does not publish anything: the scheduler releases them a few per day.
+name: seo-automerge
+on:
+  workflow_run:
+    workflows: [seo-check]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge:
+    if: >-
+      vars.SEO_AUTOMERGE == 'true' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      startsWith(github.event.workflow_run.head_branch, 'seo/') &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge when every changed file is a content file
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -eu
+          pr=$(gh pr list --head "$BRANCH" --state open --json number,headRefOid --jq ".[] | select(.headRefOid==\"$SHA\") | .number" | head -1)
+          if [ -z "$pr" ]; then echo "No open pull request at the checked commit; nothing to merge."; exit 0; fi
+          ok=1
+          for f in $(gh pr diff "$pr" --name-only); do
+            case "$f" in
+              {{CONTENT_GLOBS}}) ;;
+              *) echo "Outside the content folders, leaving for a human: $f"; ok=0 ;;
+            esac
+          done
+          if [ "$ok" = 1 ]; then gh pr merge "$pr" --squash --delete-branch; fi
