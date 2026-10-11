@@ -16,6 +16,10 @@ export const JOBS = {
   release: () => import("./release.mjs"),
   "indexing-queue": () => import("./indexing-queue.mjs"),
   dashboard: () => import("./dashboard.mjs"),
+  audit: () => import("./audit.mjs"),
+  analyze: () => import("./analyze.mjs"),
+  priorities: () => import("./priorities.mjs"),
+  experiments: () => import("./experiments.mjs"),
 };
 
 export async function describeJobs() {

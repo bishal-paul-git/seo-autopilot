@@ -32,6 +32,15 @@ jobs:
           SEO_INGEST_URL: ${{ secrets.SEO_INGEST_URL }}
           SEO_INGEST_TOKEN: ${{ secrets.SEO_INGEST_TOKEN }}
         run: npx --yes "$SEO" run research
+      - name: Ranked priorities (weekly issue)
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: npx --yes "$SEO" run priorities
+      - name: Evaluate logged experiments
+        continue-on-error: true
+        run: npx --yes "$SEO" run experiments
       - name: Weekly digest
         continue-on-error: true
         env:

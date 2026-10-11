@@ -10,6 +10,7 @@ import { createInterface } from "node:readline/promises";
 import { CONFIG_NAME } from "../core/config.mjs";
 
 const TEMPLATES = fileURLToPath(new URL("../../templates/", import.meta.url));
+const KNOWLEDGE = fileURLToPath(new URL("../../knowledge/", import.meta.url));
 export const DEFAULT_SPEC = "github:bishal-paul-git/seo-autopilot#v2";
 
 /** The only paths the drafting agent may edit, as Claude Code tool rules: Edit(glob),Write(glob). */
@@ -18,6 +19,13 @@ export function editTools(content = {}) {
     : content.type === "markdown" ? [`${String(content.dir).replace(/\/$/, "")}/**`]
       : ["content/**"];
   return globs.flatMap((g) => [`Edit(${g})`, `Write(${g})`]).join(",");
+}
+
+/** Copy the SEO playbooks into <dataDir>/knowledge so the drafting agent (and you) can read them. Existing files are refreshed. */
+export function exportKnowledge({ cwd = process.cwd(), dataDir = "seo-autopilot" } = {}) {
+  const report = [];
+  copyTree(KNOWLEDGE, join(cwd, dataDir, "knowledge"), { force: true, report });
+  return report;
 }
 
 export const slugId = (url) => new URL(url).hostname.replace(/^www\./, "").replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase();
@@ -72,6 +80,7 @@ export async function init({ cwd = process.cwd(), flags = {}, interactive = proc
   else { writeFileSync(cfgPath, JSON.stringify(config, null, 2) + "\n"); report.push(`created  ${cfgPath}`); }
 
   copyTree(join(TEMPLATES, "data"), join(cwd, "seo-autopilot"), { force: flags.force, report });
+  report.push(...exportKnowledge({ cwd }));
 
   if (!flags["no-workflows"]) {
     const spec = flags.spec || process.env.SEO_AUTOPILOT_SPEC || DEFAULT_SPEC;

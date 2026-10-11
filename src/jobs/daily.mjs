@@ -36,6 +36,18 @@ export async function run({ site, flags }) {
   const q = searchAnalytics(site, token);
   const [tot, queries, pages] = await Promise.all([q(dayOf(start), dayOf(end), [], 1), q(dayOf(start), dayOf(end), ["query"], 100), q(dayOf(start), dayOf(end), ["page"], 100)]);
   const T = tot[0] || {};
+
+  // Rows for the analysis jobs: query x page for this window and the one before it, and a per-page daily history that
+  // grows over time (Search Console itself only keeps about 16 months).
+  const slim = (rows) => rows.map((r) => ({ query: r.keys[0], page: r.keys[1], clicks: r.clicks, impressions: r.impressions, position: Number(r.position.toFixed(1)) }));
+  const prevEnd = start - 864e5, prevStart = prevEnd - 27 * 864e5;
+  const [rowsNow, rowsPrev] = await Promise.all([q(dayOf(start), dayOf(end), ["query", "page"], 5000), q(dayOf(prevStart), dayOf(prevEnd), ["query", "page"], 5000)]);
+  writeJson(`${dir}/gsc-rows.json`, { generatedAt: new Date().toISOString(), window: { start: dayOf(start), end: dayOf(end) }, prevWindow: { start: dayOf(prevStart), end: dayOf(prevEnd) }, rows: slim(rowsNow), prevRows: slim(rowsPrev) });
+  const dailyFile = `${dir}/page-daily.json`;
+  const pageDaily = readJson(dailyFile, {});
+  const dailyFrom = Object.keys(pageDaily).length ? end - 5 * 864e5 : start;
+  for (const r of await q(dayOf(dailyFrom), dayOf(end), ["date", "page"], 25000)) { (pageDaily[r.keys[1]] ||= {})[r.keys[0]] = [r.clicks, r.impressions, Number(r.position.toFixed(1))]; }
+  writeJson(dailyFile, pageDaily);
   const p = (u) => u.replace(site.url, "/");
   const notIndexed = Object.entries(state.results).filter(([, v]) => v.coverage !== "Submitted and indexed");
   const nearRows = queries.filter((r) => r.position > 5 && r.position < 20 && r.impressions >= 3).slice(0, 10);

@@ -16,7 +16,7 @@ export const DEFAULTS = {
     ignoreQueries: [],
     brandTerms: [],
     content: { type: "sitemap" },
-    labels: { proposal: "seo-proposal", topic: "seo-topic", approved: "approved", digest: "seo-digest", backlink: "seo-backlink" },
+    labels: { proposal: "seo-proposal", topic: "seo-topic", approved: "approved", digest: "seo-digest", backlink: "seo-backlink", priorities: "seo-priorities" },
     limits: { proposalsPerRun: 3, topicsPerWeek: 2, newsTopicsPerRun: 1 },
     indexNow: { keyEnv: "INDEXNOW_KEY" },
     ingest: null,

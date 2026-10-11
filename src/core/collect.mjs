@@ -3,8 +3,22 @@
 import { readFileSync, existsSync, statSync } from "node:fs";
 import { readJson, today } from "./util.mjs";
 import { loadPages, pipeline } from "../adapters/index.mjs";
+import { RULES } from "../audit/rules.mjs";
 
 const read = (f) => (existsSync(f) ? readFileSync(f, "utf8") : "");
+
+/** Audit findings grouped by rule, each with the reason it matters and how to fix it. */
+function auditView(audit) {
+  if (!audit) return null;
+  const groups = {};
+  for (const i of audit.issues || []) (groups[i.rule] ||= []).push(i);
+  const order = { high: 0, medium: 1, low: 2 };
+  const rules = Object.entries(groups).map(([rule, list]) => ({
+    rule, severity: RULES[rule]?.severity || "low", title: RULES[rule]?.title || rule, why: RULES[rule]?.why || "", fix: RULES[rule]?.fix || "",
+    count: list.length, examples: list.slice(0, 4).map((x) => ({ url: x.url, detail: x.detail })),
+  })).sort((a, b) => order[a.severity] - order[b.severity] || b.count - a.count);
+  return { generatedAt: audit.generatedAt, summary: audit.summary, rules, opportunities: (audit.opportunities || []).slice(0, 20) };
+}
 
 export async function collectSiteData(site) {
   const s = site.paths.state;
@@ -27,5 +41,9 @@ export async function collectSiteData(site) {
     news: read(`${s}/news-digest.md`),
     requestIndexing: read(`${s}/request-indexing.md`),
     pipeline: pipeline(await loadPages(site), today()),
+    priorities: readJson(`${s}/priorities.json`, { items: [] }).items.slice(0, 30),
+    audit: auditView(readJson(`${s}/audit.json`, null)),
+    insights: readJson(`${s}/insights.json`, null),
+    experiments: read(`${s}/experiments.md`),
   };
 }

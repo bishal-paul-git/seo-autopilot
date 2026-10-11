@@ -23,6 +23,9 @@ const APP = fileURLToPath(new URL("./app.html", import.meta.url));
 /** Jobs the app may start, and the flags it forces. Anything else is refused. */
 export const ALLOWED_JOBS = {
   dashboard: [],
+  audit: [],
+  analyze: [],
+  priorities: ["--dry"],
   "indexing-queue": ["--dry"],
   schedule: ["--dry"],
   release: ["--dry"],
@@ -68,7 +71,7 @@ export function createApp({ token, port }) {
   }
 
   function inbox(entry) {
-    const labels = ["seo-topic", "seo-proposal", "seo-indexing", "seo-backlink", "seo-digest"];
+    const labels = ["seo-topic", "seo-proposal", "seo-indexing", "seo-backlink", "seo-digest", "seo-priorities"];
     const r = spawnSync("gh", ["issue", "list", "--state", "open", "--limit", "60", "--json", "number,title,url,labels,createdAt"], { cwd: entry.root, encoding: "utf8", timeout: 30000 });
     if (r.error || r.status !== 0) return { error: "GitHub CLI not available or not signed in here. Install it from cli.github.com and run `gh auth login` to see approvals in this app.", items: [] };
     const all = JSON.parse(r.stdout || "[]");

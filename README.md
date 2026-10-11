@@ -69,6 +69,7 @@ seo-autopilot state restore|save                 load or save memory on the "seo
 - [Content automation and scheduling](docs/content-automation.md)
 - [Dashboard](docs/dashboard.md)
 - [The local app](docs/ui.md)
+- [The expert layer: audit, insights, priorities, experiments](docs/expert.md)
 - [Backlinks](docs/backlinks.md)
 - [Configuration reference](docs/configuration.md)
 - [Jobs and secrets](docs/jobs.md)

@@ -3,7 +3,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { runJob, describeJobs } from "../src/jobs/index.mjs";
-import { init } from "../src/cli/init.mjs";
+import { init, exportKnowledge } from "../src/cli/init.mjs";
 import { doctor } from "../src/cli/doctor.mjs";
 import { restore, save } from "../src/cli/state.mjs";
 import { parseArgs } from "../src/cli/args.mjs";
@@ -19,6 +19,7 @@ Usage
   seo-autopilot init --url https://example.com/    scaffold config, data files and GitHub workflows
   seo-autopilot doctor                              check the setup and say what to fix
   seo-autopilot run <job> [--site id] [--dry]       run one job
+  seo-autopilot knowledge                           copy/refresh the SEO playbooks into your project (the drafting agent reads them)
   seo-autopilot ui [--port 4747] [--open]           local app to manage every project on this computer
   seo-autopilot projects add|list|remove [path]     choose which website folders the app shows
   seo-autopilot state restore|save                  load/save memory on the "seo-data" branch (used by the workflows)
@@ -39,6 +40,11 @@ try {
   else if (cmd === "state") {
     const sub = positional[0];
     if (sub === "restore") restore(); else if (sub === "save") save(); else throw new Error("usage: state restore|save");
+  } else if (cmd === "knowledge") {
+    const { loadConfig } = await import("../src/core/config.mjs");
+    const cfg = loadConfig();
+    const rel = (await import("node:path")).relative(cfg.root, cfg.dataDir) || "seo-autopilot";
+    console.log(exportKnowledge({ cwd: cfg.root, dataDir: rel }).join(String.fromCharCode(10)));
   } else if (cmd === "ui") {
     await startUi({ port: Number(flags.port || 4747), open: Boolean(flags.open) });
   } else if (cmd === "projects") {

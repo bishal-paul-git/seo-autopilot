@@ -55,6 +55,12 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: npx --yes "$SEO" run mentions
+      - name: Technical audit (crawl), search insights and priorities
+        continue-on-error: true
+        run: |
+          npx --yes "$SEO" run audit
+          npx --yes "$SEO" run analyze
+          npx --yes "$SEO" run priorities --dry
       - name: IndexNow
         continue-on-error: true
         env:

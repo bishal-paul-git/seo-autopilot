@@ -9,6 +9,10 @@ Run any job with `npx seo-autopilot run <job> [--site id] [--dry]`.
 | `indexnow` | daily | `INDEXNOW_KEY` (+ key file on the site) | `indexnow-state.json` |
 | `news` | daily | feeds file; AI key optional | `news-digest.md`, issues labelled `seo-topic` |
 | `mentions` | daily | `mentions.json`; AI key optional | issues labelled `seo-backlink` |
+| `audit` | daily | none (crawls your live site) | `audit.json`: findings with why and fix |
+| `analyze` | daily | output of `daily` | `insights.json`: striking distance, CTR gaps, cannibalization, decay, content gaps |
+| `priorities` | daily (dry) and weekly (issue) | `audit`/`analyze` output | `priorities.json`, `priorities.md`, issue `seo-priorities` |
+| `experiments` | weekly | `experiments.json` log | `experiments.md` (14 days before vs after) |
 | `dashboard` | daily | none | `dashboard/index.html` |
 | `research` | weekly (seo-weekly) | `GOOGLE_KEY_JSON` | `keyword-backlog.json`, `keyword-research.md`, topic issues |
 | `digest` | weekly | `GOOGLE_KEY_JSON` (+ GA4 access optional) | `weekly-digest.md`, issue `seo-digest` |
