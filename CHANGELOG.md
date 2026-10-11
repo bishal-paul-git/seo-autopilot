@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.7.0
+
+- **Agent team:** six structured agents (strategist, researcher, drafter, refresher, editor, technical fixer), each with mission, required reading, method, quality bar, never-list and output format. The implementer and reviewer workflows load them.
+- **Four new playbooks:** keyword research and clustering, content briefs and drafting, editorial review checklist, audit fix recipes (every audit rule has a recipe).
+- `knowledge` now refreshes the agents too.
+
 ## 2.6.0
 
 - **Experiments now use a control group:** results are adjusted against the site's untouched pages over the same dates when there are enough of them.

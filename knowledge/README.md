@@ -17,3 +17,7 @@ The drafting agent reads these before it writes or edits a page, and the audit, 
 | [Redirects, canonicals and migrations](redirects-canonicals-migrations.md) | changing URLs, moving content, retiring pages |
 | [AI search visibility](ai-search-visibility.md) | being understood and cited by AI answers |
 | [Measuring and experiments](measuring-and-experiments.md) | judging whether a change worked |
+| [Keyword research and clustering](keyword-research-and-clustering.md) | choosing topics and grouping queries |
+| [Content briefs and drafting](content-briefs-and-drafting.md) | writing the brief and the page |
+| [Editorial review checklist](editorial-review-checklist.md) | reviewing a draft before it merges |
+| [Audit fix recipes](audit-fix-recipes.md) | fixing a specific finding from the technical audit |

@@ -11,6 +11,7 @@ import { CONFIG_NAME } from "../core/config.mjs";
 
 const TEMPLATES = fileURLToPath(new URL("../../templates/", import.meta.url));
 const KNOWLEDGE = fileURLToPath(new URL("../../knowledge/", import.meta.url));
+const AGENTS = fileURLToPath(new URL("../../agents/", import.meta.url));
 export const DEFAULT_SPEC = "github:bishal-paul-git/seo-autopilot#v2";
 
 /** The content paths drafts may touch, as globs. */
@@ -30,6 +31,8 @@ export function editTools(content = {}) {
 export function exportKnowledge({ cwd = process.cwd(), dataDir = "seo-autopilot" } = {}) {
   const report = [];
   copyTree(KNOWLEDGE, join(cwd, dataDir, "knowledge"), { force: true, report });
+  // Agents: refreshed like the playbooks, so edits belong in the "Project rules" section only if you re-apply them after upgrading.
+  copyTree(AGENTS, join(cwd, dataDir, "agents"), { force: true, report });
   return report;
 }
 

@@ -26,6 +26,10 @@ By default you approve the topic and then merge the drafted pull request. To ski
 
 Note: pull requests opened with the default `GITHUB_TOKEN` do not trigger other workflows. The drafting action opens its pull requests through the Claude GitHub app, so `seo-check` runs normally.
 
+## The agent team
+
+Each agent is a Markdown file with a mission, the playbooks it reads first, a method, a quality bar, a "never" list and an output format. They live in `agents/` (copied into your project's data folder by `init` and `seo-autopilot knowledge`). See `agents/README.md` for the full flow, and copy any of them into `.claude/agents/` to use them in Claude Code.
+
 ## Reviewer agent (optional)
 
 `seo-review.yml` runs a second Claude pass on every drafted pull request (`seo/*` branches in your repository). It only reads and comments. It checks for invented facts and unsupported numbers, missing sources, a weak opening and any file outside your content folders, then adds the label `seo-review-passed` or explains what to fix. Turn it on with the repository variable `SEO_REVIEW = true`. To make auto-merge wait for it, also set `SEO_REQUIRE_REVIEW = true`.
