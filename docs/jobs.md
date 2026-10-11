@@ -11,6 +11,7 @@ Run any job with `npx seo-autopilot run <job> [--site id] [--dry]`.
 | `mentions` | daily | `mentions.json`; AI key optional | issues labelled `seo-backlink` |
 | `audit` | daily | none (crawls your live site) | `audit.json`: findings with why and fix |
 | `analyze` | daily | output of `daily` | `insights.json`: striking distance, CTR gaps, cannibalization, decay, content gaps |
+| `geo` | weekly | none | `geo.json`, `geo.md`: AI-crawler access, llms.txt, answer-first and entity signals |
 | `speed` | weekly | none (`PAGESPEED_API_KEY` optional) | `speed.json`, `speed.md`: Core Web Vitals, lab and real-user |
 | `priorities` | daily (dry) and weekly (issue) | `audit`/`analyze` output | `priorities.json`, `priorities.md`, issue `seo-priorities` |
 | `experiments` | weekly | `experiments.json` log | `experiments.md` (14 days before vs after) |

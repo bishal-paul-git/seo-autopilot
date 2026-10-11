@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.4.0
+
+- **`geo` job (GEO/AEO):** AI-crawler access in robots.txt (search vs training bots told apart), llms.txt, answer-first structure, question headings, text in the initial HTML, Organization/sameAs, dates and authors. Medium and high findings feed the priorities list.
+
 ## 2.3.0
 
 - **Optional one-approval mode (`seo-automerge.yml`):** merges a drafted page's pull request once `seo-check` passes, only for `seo/*` branches in your own repository where every changed file is a content file. Off until you set the repository variable `SEO_AUTOMERGE=true`.

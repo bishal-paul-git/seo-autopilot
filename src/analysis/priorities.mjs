@@ -17,7 +17,7 @@ const AUDIT_EFFORT = {
   "duplicate-content": "M", "slow-ttfb": "L", "sitemap-not-in-robots": "S", "robots-blocks-all": "S",
 };
 
-export function buildPriorities({ audit, insights, rules, pipeline, indexing, speed } = {}) {
+export function buildPriorities({ audit, insights, rules, pipeline, indexing, speed, geo } = {}) {
   const items = [];
   const add = (it) => items.push({ confidence: "medium", effort: "M", ...it, score: 0 });
 
@@ -94,6 +94,13 @@ export function buildPriorities({ audit, insights, rules, pipeline, indexing, sp
     impact: Math.min(60, slow.length * 12), impactUnit: "points", confidence: slow.some((r) => r.field.lcp != null) ? "medium" : "low", effort: "M",
     why: "Core Web Vitals are a ranking signal and slow pages lose visitors before they read anything. The effect on rankings is usually modest, so treat this as a tie-breaker, not a first fix.",
     how: "Start with each page's top fix in the speed report (usually image size, render-blocking scripts or unused JavaScript).", evidence: slow.slice(0, 5).map((r) => `${r.url} (score ${r.lab.score})`),
+  });
+
+  // 2c. AI search readiness: medium and high findings only.
+  for (const g of (geo?.findings || []).filter((x) => x.severity !== "low")) add({
+    id: `geo:${g.id}`, type: "ai-search", title: g.title,
+    impact: g.severity === "high" ? 55 : 30, impactUnit: "points", confidence: "low", effort: g.id === "thin-initial-html" ? "L" : "S",
+    why: g.why, how: g.fix, evidence: g.detail ? [g.detail] : [],
   });
 
   // 3. Indexing and pipeline.

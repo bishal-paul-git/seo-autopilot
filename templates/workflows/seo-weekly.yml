@@ -32,6 +32,9 @@ jobs:
           SEO_INGEST_URL: ${{ secrets.SEO_INGEST_URL }}
           SEO_INGEST_TOKEN: ${{ secrets.SEO_INGEST_TOKEN }}
         run: npx --yes "$SEO" run research
+      - name: AI search readiness (GEO/AEO)
+        continue-on-error: true
+        run: npx --yes "$SEO" run geo
       - name: Page speed and Core Web Vitals
         continue-on-error: true
         env:

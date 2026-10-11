@@ -26,6 +26,7 @@ export const ALLOWED_JOBS = {
   audit: [],
   analyze: [],
   speed: [],
+  geo: [],
   priorities: ["--dry"],
   "indexing-queue": ["--dry"],
   schedule: ["--dry"],

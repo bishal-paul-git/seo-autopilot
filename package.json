@@ -1,6 +1,6 @@
 {
   "name": "seo-autopilot",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "An open-source SEO autopilot for any website: Search Console reports, indexing checks, keyword research, news watching, weekly digests, approval-gated content drafting and a careful backlink assistant. Runs on GitHub Actions.",
   "type": "module",
   "bin": {
