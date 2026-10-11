@@ -21,6 +21,9 @@ export function restore({ cwd = process.cwd() } = {}) {
   if (remote.status !== 0) { console.log(`state: no "${branch}" branch yet. Starting fresh.`); return; }
   git(["fetch", "origin", branch], { cwd: cfg.root });
   const r = git(["checkout", `origin/${branch}`, "--", rel], { cwd: cfg.root, allowFail: true });
+  // "git checkout <branch> -- path" also stages the files. Unstage them so a later "git add -A && git commit" can never
+  // put saved reports into your main branch (the files stay on disk and the state folder stays git-ignored).
+  git(["reset", "-q", "HEAD", "--", rel], { cwd: cfg.root, allowFail: true });
   console.log(r.status === 0 ? `state: restored ${rel} from ${branch}` : `state: nothing to restore from ${branch}`);
 }
 
