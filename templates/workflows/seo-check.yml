@@ -1,0 +1,27 @@
+# seo-autopilot: checks every pull request opened from an SEO branch (seo/*). It runs your normal build with NO secrets and
+# READ-ONLY permissions, so project code that runs during the build cannot reach anything valuable, whatever text the
+# pull request's content came from. Make this check "required" in your branch protection to block a bad merge.
+#
+# EDIT the build command if yours is not `npm run build`.
+name: seo-check
+on:
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: startsWith(github.head_ref, 'seo/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Install
+        run: |
+          if [ -f package-lock.json ]; then npm ci; elif [ -f package.json ]; then npm install; fi
+      - name: Build and validate the content
+        run: npm run build

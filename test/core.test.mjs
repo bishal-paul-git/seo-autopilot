@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { globToRegExp, findFiles, clean, addDays } from "../src/core/util.mjs";
 import { validate, loadConfig, CONFIG_NAME } from "../src/core/config.mjs";
 import { parseArgs } from "../src/cli/args.mjs";
-import { slugId, init } from "../src/cli/init.mjs";
+import { slugId, init, editTools } from "../src/cli/init.mjs";
 import { renderDashboard } from "../src/jobs/dashboard.mjs";
 
 const tmp = () => mkdtempSync(join(tmpdir(), "seo-ap-"));
@@ -73,4 +73,17 @@ test("dashboard embeds data safely", () => {
   assert.ok(html.includes("<!doctype html>"));
   assert.ok(!html.includes("</script><b>"), "script-closing text in data must be escaped");
   assert.ok(html.includes("\\u003c/script>"));
+});
+
+test("the drafting agent is scoped to the content paths and cannot run builds", async () => {
+  assert.equal(editTools({ type: "markdown", dir: "content/blog/" }), "Edit(content/blog/**),Write(content/blog/**)");
+  assert.equal(editTools({ type: "json", include: ["a/*.json", "b/**/*.json"] }), "Edit(a/*.json),Write(a/*.json),Edit(b/**/*.json),Write(b/**/*.json)");
+  const d = tmp();
+  await init({ cwd: d, flags: { url: "https://example.com/", content: "markdown", dir: "posts", spec: "x" }, interactive: false });
+  const wf = readFileSync(join(d, ".github/workflows/seo-implement.yml"), "utf8");
+  assert.match(wf, /Edit\(posts\/\*\*\),Write\(posts\/\*\*\)/);
+  assert.ok(!wf.includes("{{SPEC}}") && !wf.includes("{{EDIT_TOOLS}}"), "no placeholders left");
+  assert.ok(!/Bash\(npm/.test(wf), "agent may not run npm");
+  assert.match(wf, /claude-code-action@[0-9a-f]{40}/, "third-party action is pinned to a commit");
+  assert.ok(readFileSync(join(d, ".github/workflows/seo-check.yml"), "utf8").includes("contents: read"));
 });

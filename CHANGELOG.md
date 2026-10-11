@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.1
+
+- Security hardening of the drafting workflow: the agent may only edit your content paths and can no longer run build/test commands; the build now runs in a separate secret-free, read-only `seo-check.yml`; `claude-code-action` pinned to a commit SHA.
+
 ## 2.0.0
 
 A rewrite from a single-site script pack into an installable, config-driven tool.

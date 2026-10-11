@@ -14,7 +14,8 @@
 
 1. **Find topics (no writing).** `research` (weekly) and `news` (daily) open issues titled `Topic: ...` with the evidence: real impressions from Search Console, or the feed item and source. At most 2 a week from research and 1 a day from news. Duplicates are skipped, and topics your site already covers are skipped.
 2. **You decide.** Close an issue to decline. Add the label `approved` to accept. Nothing else happens until you do.
-3. **Draft.** The `seo-implement` workflow (needs the Claude GitHub app and `CLAUDE_CODE_OAUTH_TOKEN`) writes the page on a branch `seo/issue-N` and opens a **pull request**. It runs your build and checks. It is told to cite real sources, never copy them, and never invent numbers, prices, clients or quotes. It cannot push to your main branch.
+3. **Draft.** The `seo-implement` workflow (needs the Claude GitHub app and `CLAUDE_CODE_OAUTH_TOKEN`) writes the page on a branch `seo/issue-N` and opens a **pull request**. It is told to cite real sources, never copy them, and never invent numbers, prices, clients or quotes. It cannot push to your main branch.
+   The agent can only edit your content paths, and cannot run build or test commands (a build runs project code, and the agent reads text from the public internet). Your build runs separately, in `seo-check.yml`, with no secrets and read-only permissions, on the pull request it opened. Make that check *required* in branch protection.
 4. **You review and merge.** The page enters your content as `queued: true` (not live).
 5. **Schedule.** `schedule` (daily, in `seo-release.yml`) gives queued pages a `publishAt` date, up to 3 a day (max 4), after any dates already taken. A page marked `hold: true` is never scheduled.
 6. **Publish.** Your site hides pages whose `publishAt` is in the future when it builds. On the day, `release` sees the page is due but not live and rebuilds the site (deploy hook, or an empty commit). The page goes live and joins the sitemap.

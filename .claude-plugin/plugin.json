@@ -1,7 +1,7 @@
 {
   "name": "seo-autopilot",
   "description": "Open-source SEO autopilot for any website: Search Console reports, indexing checks, keyword research, news watching, weekly digests, approval-gated content drafting, drip scheduling and careful backlink help. Guided setup included.",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "author": {
     "name": "Bishal Paul"
   },
