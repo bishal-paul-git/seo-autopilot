@@ -1,10 +1,19 @@
 {
   "name": "seo-autopilot",
-  "description": "Daily SEO loop for any website: Search Console reports, URL inspection, IndexNow and an approval-gated agent playbook, with a guided onboarding.",
-  "version": "0.1.0",
-  "author": { "name": "Bishal Paul" },
+  "description": "Open-source SEO autopilot for any website: Search Console reports, indexing checks, keyword research, news watching, weekly digests, approval-gated content drafting, drip scheduling and careful backlink help. Guided setup included.",
+  "version": "2.0.0",
+  "author": {
+    "name": "Bishal Paul"
+  },
   "homepage": "https://github.com/bishal-paul-git/seo-autopilot",
   "repository": "https://github.com/bishal-paul-git/seo-autopilot",
   "license": "MIT",
-  "keywords": ["seo", "search-console", "indexnow", "automation"]
+  "keywords": [
+    "seo",
+    "search-console",
+    "indexnow",
+    "automation",
+    "github-actions",
+    "backlinks"
+  ]
 }

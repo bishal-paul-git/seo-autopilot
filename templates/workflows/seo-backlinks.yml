@@ -1,0 +1,67 @@
+# seo-autopilot: backlink submissions. Up to 5 free-listing attempts a day, one retry the next day, then logged as failed.
+# Anything with a CAPTCHA or maths check, an account, a payment or a reciprocal-link rule is left for a person and logged.
+#
+# SAFE BY DEFAULT: scheduled runs are DRY (forms are filled and screenshotted, nothing is submitted) until you set the
+# repository variable BACKLINKS_LIVE to "true" (Settings > Secrets and variables > Actions > Variables).
+#
+# Optional secret BROWSER_WS_ENDPOINT: the wss:// CDP endpoint of a cloud browser (Browserless, Browserbase, Steel...).
+# Without it a headless Chromium on the GitHub runner is used. Do not turn on a vendor's CAPTCHA-solving option.
+#
+# Manual run inputs: live (really submit), only (one target id), mark ("<id> done|skipped|submitted [listing-url]").
+name: seo-backlinks
+on:
+  schedule: [{ cron: "30 9 * * *" }]   # 09:30 UTC daily
+  workflow_dispatch:
+    inputs:
+      live: { description: "Really submit (not a dry run)", type: boolean, default: false }
+      only: { description: "Only this target id", type: string, default: "" }
+      mark: { description: "Record a hand-done listing: <id> done|skipped|submitted [url]", type: string, default: "" }
+permissions:
+  contents: write
+concurrency:
+  group: seo-data
+  cancel-in-progress: false
+env:
+  SEO: "{{SPEC}}"
+  HAS_CLOUD_BROWSER: ${{ secrets.BROWSER_WS_ENDPOINT != '' }}
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Restore state
+        run: npx --yes "$SEO" state restore
+      - name: Record a hand-done listing
+        if: ${{ inputs.mark != '' }}
+        env:
+          MARK: ${{ inputs.mark }}
+        run: npx --yes "$SEO" run mark $MARK
+      - name: Install a local browser (no cloud browser configured)
+        if: ${{ inputs.mark == '' && env.HAS_CLOUD_BROWSER != 'true' }}
+        run: npm i --no-save playwright && npx playwright install --with-deps chromium
+      - name: Install the Playwright client (cloud browser configured)
+        if: ${{ inputs.mark == '' && env.HAS_CLOUD_BROWSER == 'true' }}
+        run: npm i --no-save playwright
+      - name: Submit listings
+        if: ${{ inputs.mark == '' }}
+        env:
+          BACKLINK_LIVE: ${{ (inputs.live == true || vars.BACKLINKS_LIVE == 'true') && '1' || '0' }}
+          BROWSER_WS_ENDPOINT: ${{ secrets.BROWSER_WS_ENDPOINT }}
+          SEO_INGEST_URL: ${{ secrets.SEO_INGEST_URL }}
+          SEO_INGEST_TOKEN: ${{ secrets.SEO_INGEST_TOKEN }}
+          ONLY: ${{ inputs.only }}
+        run: |
+          if [ -n "$ONLY" ]; then npx --yes "$SEO" run backlinks --only "$ONLY"; else npx --yes "$SEO" run backlinks; fi
+      - name: Keep screenshots for review
+        if: ${{ always() && inputs.mark == '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: backlink-screenshots
+          path: .seo-autopilot/*/backlink-shots
+          retention-days: 14
+          if-no-files-found: ignore
+      - name: Save state
+        run: npx --yes "$SEO" state save

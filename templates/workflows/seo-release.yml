@@ -1,0 +1,43 @@
+# seo-autopilot: drip publishing. Pages that YOU approved (merged as "queued") get release dates, a few a day, and the
+# site is rebuilt on the day each one is due. Nothing is written or published here: this job only dates pages that a
+# human already approved, and only pages marked hold: true are skipped.
+#
+# Your site must hide pages whose publishAt is in the future at build time (see docs/content-automation.md).
+# If your host rebuilds on a deploy hook instead of on push, set site.release.deployHookEnv in the config and add the
+# hook URL as the repository secret DEPLOY_HOOK_URL (and "release": {"deployHookEnv": "DEPLOY_HOOK_URL"}); otherwise this job pushes an empty commit to trigger the rebuild.
+name: seo-release
+on:
+  schedule: [{ cron: "40 5 * * *" }]   # 05:40 UTC daily
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: seo-release
+env:
+  SEO: "{{SPEC}}"
+  HAS_HOOK: ${{ secrets.DEPLOY_HOOK_URL != '' }}
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Give approved pages their release dates
+        run: npx --yes "$SEO" run schedule
+      - name: Commit the new dates
+        run: |
+          if ! git diff --quiet; then
+            git config user.name "seo-autopilot"; git config user.email "seo-autopilot@users.noreply.github.com"
+            git add -A && git commit -m "schedule: approved pages get release dates" && git push
+          fi
+      - name: Anything due but not live?
+        id: due
+        env:
+          DEPLOY_HOOK_URL: ${{ secrets.DEPLOY_HOOK_URL }}
+        run: npx --yes "$SEO" run release
+      - name: Trigger a rebuild (empty commit)
+        if: steps.due.outputs.due != '0' && steps.due.outputs.due != '' && env.HAS_HOOK != 'true'
+        run: |
+          git config user.name "seo-autopilot"; git config user.email "seo-autopilot@users.noreply.github.com"
+          git commit --allow-empty -m "release: ${{ steps.due.outputs.due }} page(s) due" && git push

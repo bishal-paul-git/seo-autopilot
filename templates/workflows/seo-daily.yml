@@ -1,0 +1,75 @@
+# seo-autopilot: daily job. GitHub runs it on its own servers, so no computer needs to be on.
+# Start it by hand any time: Actions > seo-daily > Run workflow.
+#
+# Secrets (Settings > Secrets and variables > Actions):
+#   GOOGLE_KEY_JSON        full contents of the Google service-account JSON  (required)
+#   INDEXNOW_KEY           your IndexNow key                                  (optional, Bing/Yandex)
+#   ANTHROPIC_API_KEY      optional: AI judging of news and proposal wording (or OPENAI_API_KEY)
+#   SEO_INGEST_URL / SEO_INGEST_TOKEN   optional: send results to your own dashboard
+# State (inspection results, news seen, backlink log) is kept on the "seo-data" branch of this repository.
+name: seo-daily
+on:
+  schedule: [{ cron: "17 5 * * *" }]   # 05:17 UTC daily
+  workflow_dispatch: {}
+permissions:
+  contents: write
+  issues: write
+concurrency:
+  group: seo-data
+  cancel-in-progress: false
+env:
+  SEO: "{{SPEC}}"
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Restore state
+        run: npx --yes "$SEO" state restore
+      - name: Daily report and URL inspection
+        env:
+          GOOGLE_KEY_JSON: ${{ secrets.GOOGLE_KEY_JSON }}
+          SEO_INGEST_URL: ${{ secrets.SEO_INGEST_URL }}
+          SEO_INGEST_TOKEN: ${{ secrets.SEO_INGEST_TOKEN }}
+        run: npx --yes "$SEO" run daily
+      - name: Proposals (GitHub issues awaiting your approval)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: npx --yes "$SEO" run propose
+      - name: News and trends (RSS)
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: npx --yes "$SEO" run news
+      - name: Brand mentions without a link
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: npx --yes "$SEO" run mentions
+      - name: IndexNow
+        continue-on-error: true
+        env:
+          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+        run: npx --yes "$SEO" run indexnow
+      - name: Build the dashboard
+        continue-on-error: true
+        run: npx --yes "$SEO" run dashboard
+      - name: Attach the dashboard to this run (download it from the run page)
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo-dashboard
+          path: .seo-autopilot/*/dashboard/index.html
+          retention-days: 14
+          if-no-files-found: ignore
+      - name: Save state
+        run: npx --yes "$SEO" state save

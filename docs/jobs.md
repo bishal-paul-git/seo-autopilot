@@ -1,0 +1,39 @@
+# Jobs and secrets
+
+Run any job with `npx seo-autopilot run <job> [--site id] [--dry]`.
+
+| Job | Default schedule | Needs | Output |
+|---|---|---|---|
+| `daily` | daily (seo-daily) | `GOOGLE_KEY_JSON` | `daily-summary.md`, `inspect-state.json`, `history.json`, `proposals.json` |
+| `propose` | daily | `GITHUB_TOKEN` | issues labelled `seo-proposal` |
+| `indexnow` | daily | `INDEXNOW_KEY` (+ key file on the site) | `indexnow-state.json` |
+| `news` | daily | feeds file; AI key optional | `news-digest.md`, issues labelled `seo-topic` |
+| `mentions` | daily | `mentions.json`; AI key optional | issues labelled `seo-backlink` |
+| `dashboard` | daily | none | `dashboard/index.html` |
+| `research` | weekly (seo-weekly) | `GOOGLE_KEY_JSON` | `keyword-backlog.json`, `keyword-research.md`, topic issues |
+| `digest` | weekly | `GOOGLE_KEY_JSON` (+ GA4 access optional) | `weekly-digest.md`, issue `seo-digest` |
+| `backlinks-queue` | weekly | `GITHUB_TOKEN` | issue `seo-backlink` |
+| `indexing-queue` | weekly | `GITHUB_TOKEN` | `request-indexing.md`, issue `seo-indexing` |
+| `backlinks` | daily (seo-backlinks), dry | Playwright; `BROWSER_WS_ENDPOINT` optional | `backlinks-state.json`, `backlinks-log.md`, screenshots |
+| `schedule` | daily (seo-release) | none | edits your content files (`publishAt`) |
+| `release` | daily | `DEPLOY_HOOK_URL` optional | `due=N`, rebuild trigger |
+| `mark` | by hand | none | records a hand-done listing |
+
+Outside GitHub Actions the jobs that open issues print what they would do unless `GITHUB_TOKEN` and `GITHUB_REPOSITORY` are set.
+
+## Secrets and variables
+
+| Name | Where | Needed for |
+|---|---|---|
+| `GOOGLE_KEY_JSON` | secret | everything that reads Google |
+| `INDEXNOW_KEY` | secret | IndexNow |
+| `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` | secret | optional AI judging, ideas, digest wording. `SEO_LLM_PROVIDER`, `SEO_MODEL`, `OPENAI_BASE_URL` pick the provider/model |
+| `CLAUDE_CODE_OAUTH_TOKEN` | secret | the implementer (drafts approved pages as pull requests) |
+| `SEO_INGEST_URL`, `SEO_INGEST_TOKEN` | secrets | optional database dashboard |
+| `BROWSER_WS_ENDPOINT` | secret | optional cloud browser for backlinks |
+| `DEPLOY_HOOK_URL` | secret | optional rebuild hook for scheduled publishing |
+| `BACKLINKS_LIVE` | **variable** | `true` turns on real backlink submissions |
+
+## Memory
+
+Each run restores its memory from the `seo-data` branch and saves it back (`state restore` / `state save`), so the next run picks up where the last stopped (which pages were inspected, which news was seen, which backlinks were tried). The workflows share one concurrency group so two runs never save at once.

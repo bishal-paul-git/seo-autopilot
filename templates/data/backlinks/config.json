@@ -1,0 +1,6 @@
+{
+  "maxPerDay": 5,
+  "maxAttempts": 2,
+  "retryAfterDays": 1,
+  "delaySeconds": [8, 20]
+}

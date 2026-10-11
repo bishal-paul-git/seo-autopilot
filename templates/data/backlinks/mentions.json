@@ -1,0 +1,10 @@
+{
+  "note": "Add Google Alerts RSS URLs here (create an alert for your brand name and deliver it to RSS). The Google News search below needs no account: replace YOUR_BRAND in brandTerms and in the URL.",
+  "brandTerms": ["YOUR_BRAND"],
+  "ownDomains": ["example.com"],
+  "contactName": "",
+  "signoff": "",
+  "feeds": [
+    { "id": "gnews-brand", "name": "Google News: brand", "url": "https://news.google.com/rss/search?q=%22YOUR_BRAND%22&hl=en-GB&gl=GB&ceid=GB:en" }
+  ]
+}

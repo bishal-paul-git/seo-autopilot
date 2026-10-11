@@ -1,0 +1,4 @@
+[
+  { "id": "google-search-central", "name": "Google Search Central Blog", "url": "https://developers.google.com/search/blog/feed.xml", "category": "platform", "region": "global" },
+  { "id": "search-engine-journal", "name": "Search Engine Journal", "url": "https://www.searchenginejournal.com/feed/", "category": "industry", "region": "global" }
+]

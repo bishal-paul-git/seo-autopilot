@@ -1,0 +1,59 @@
+# seo-autopilot: weekly job. Keyword research from your Search Console data, the analytics digest, and the
+# "backlinks to do by hand" checklist. Opens GitHub issues; changes nothing on your site.
+name: seo-weekly
+on:
+  schedule: [{ cron: "10 6 * * 1" }]   # Mondays 06:10 UTC
+  workflow_dispatch: {}
+permissions:
+  contents: write
+  issues: write
+concurrency:
+  group: seo-data
+  cancel-in-progress: false
+env:
+  SEO: "{{SPEC}}"
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Restore state
+        run: npx --yes "$SEO" state restore
+      - name: Keyword research and topic proposals
+        continue-on-error: true
+        env:
+          GOOGLE_KEY_JSON: ${{ secrets.GOOGLE_KEY_JSON }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SEO_INGEST_URL: ${{ secrets.SEO_INGEST_URL }}
+          SEO_INGEST_TOKEN: ${{ secrets.SEO_INGEST_TOKEN }}
+        run: npx --yes "$SEO" run research
+      - name: Weekly digest
+        continue-on-error: true
+        env:
+          GOOGLE_KEY_JSON: ${{ secrets.GOOGLE_KEY_JSON }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SEO_INGEST_URL: ${{ secrets.SEO_INGEST_URL }}
+          SEO_INGEST_TOKEN: ${{ secrets.SEO_INGEST_TOKEN }}
+        run: npx --yes "$SEO" run digest
+      - name: Backlinks to do by hand
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: npx --yes "$SEO" run backlinks-queue
+      - name: Pages to request indexing for by hand
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: npx --yes "$SEO" run indexing-queue
+      - name: Save state
+        run: npx --yes "$SEO" state save

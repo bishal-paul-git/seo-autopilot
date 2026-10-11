@@ -1,0 +1,22 @@
+{
+  "note": "The only business facts the submitter may enter. Every value must already be public on your site. Never put passwords or secrets here.",
+  "name": "YOUR_BUSINESS_NAME",
+  "legalName": "",
+  "url": "https://example.com/",
+  "email": "hello@example.com",
+  "contactName": "",
+  "country": "",
+  "city": "",
+  "postcode": "",
+  "address": "",
+  "tagline": "One line saying what you do",
+  "headline": "A short headline",
+  "shortDescription": "One or two sentences, as written on your site.",
+  "longDescription": "A paragraph, as written on your site.",
+  "category": "",
+  "categories": [],
+  "pricing": "Contact for pricing",
+  "tags": [],
+  "logoUrl": "",
+  "ogImage": ""
+}

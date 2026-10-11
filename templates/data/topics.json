@@ -1,0 +1,19 @@
+{
+  "note": "Keywords that make a news item relevant to YOUR site, weight 1 to 3. Replace the examples with your industry's terms. proposeCategories and proposeFeedIds say which feeds may open a topic proposal when no AI key is set.",
+  "keywords": {
+    "core update": 3,
+    "helpful content": 3,
+    "ai overviews": 3,
+    "structured data": 2,
+    "search console": 2,
+    "indexnow": 2,
+    "sitemap": 1,
+    "page experience": 1
+  },
+  "minScore": 4,
+  "maxItemAgeDays": 14,
+  "minScoreWithoutAi": 8,
+  "proposeCategories": ["regulator"],
+  "proposeFeedIds": ["google-search-central"],
+  "draftRules": "one new page, 700+ words, direct answer in the first 40 to 60 words, cites the source above (https only), no invented numbers or claims, no copying of the source text, one primary keyword that no other page uses."
+}

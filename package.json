@@ -1,0 +1,45 @@
+{
+  "name": "seo-autopilot",
+  "version": "2.0.0",
+  "description": "An open-source SEO autopilot for any website: Search Console reports, indexing checks, keyword research, news watching, weekly digests, approval-gated content drafting and a careful backlink assistant. Runs on GitHub Actions.",
+  "type": "module",
+  "bin": {
+    "seo-autopilot": "bin/seo-autopilot.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "bin",
+    "src",
+    "templates",
+    "docs",
+    "skills",
+    ".claude-plugin",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.mjs"
+  },
+  "keywords": [
+    "seo",
+    "search-console",
+    "indexnow",
+    "github-actions",
+    "automation",
+    "backlinks",
+    "keyword-research",
+    "claude-code"
+  ],
+  "author": "Bishal Paul",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bishal-paul-git/seo-autopilot.git"
+  },
+  "homepage": "https://github.com/bishal-paul-git/seo-autopilot",
+  "bugs": {
+    "url": "https://github.com/bishal-paul-git/seo-autopilot/issues"
+  }
+}
