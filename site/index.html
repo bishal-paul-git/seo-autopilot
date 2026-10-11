@@ -37,6 +37,8 @@
   .dark ul.clean li { border-color:#2b3a31; } ul.no li::before { background:#b54708; }
   details { border-top:1px solid var(--line); padding:14px 0; } details:last-child { border-bottom:1px solid var(--line); } summary { cursor:pointer; font-weight:700; } details p { color:var(--soft); margin:8px 0 0; }
   footer { padding:34px 0 50px; color:var(--soft); font-size:14.5px; border-top:1px solid var(--line); } footer .wrap { display:flex; flex-wrap:wrap; gap:14px 28px; justify-content:space-between; }
+  header .logo{white-space:nowrap} header nav{display:flex;flex-wrap:wrap;justify-content:flex-end}
+  @media (max-width:900px) { header nav a:not(.keep):not([href="agents/"]):not([href="demo/"]) { display:none; } }
   @media (max-width:640px) { header nav a:not(.keep) { display:none; } section { padding:48px 0; } }
 </style>
 </head>
@@ -45,7 +47,7 @@
   <div class="wrap">
     <header>
       <a class="logo" href="#"><i><svg viewBox="0 0 32 32"><path d="M5 22l7-8 5 5 10-12" stroke="#10b981" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></i>seo-autopilot</a>
-      <nav><a href="#how">How it works</a><a href="#install">Install</a><a href="demo/">Demo</a><a class="keep" href="https://github.com/bishal-paul-git/seo-autopilot">GitHub</a></nav>
+      <nav><a href="#how">How it works</a><a href="#expert">Expert layer</a><a href="agents/">Agents</a><a href="playbooks/">Playbooks</a><a href="#install">Install</a><a href="demo/">Demo</a><a class="keep" href="https://github.com/bishal-paul-git/seo-autopilot">GitHub</a></nav>
     </header>
     <span class="pill">Open source · MIT · runs in your own GitHub</span>
     <h1>An SEO agent that works your backlog, and <em>never publishes without you.</em></h1>
@@ -76,7 +78,7 @@
   <div class="wrap">
     <div class="tag">What you get</div>
     <h2>A small team's routine work, done every day.</h2>
-    <p class="sub">Each job is separate. Turn on what you want.</p>
+    <p class="sub">Each job is separate. Turn on what you want. Then see the <a href="#expert">expert layer</a> and the <a href="#agents">agent team</a>.</p>
     <div class="grid">
       <div class="card"><h3>Daily report</h3><p>Clicks, impressions, position, and which pages Google has indexed. Near-miss queries and pages with views but no clicks.</p></div>
       <div class="card"><h3>Keyword research</h3><p>Weekly, from your own search data: near-miss, question, rising and uncovered queries. No fake volume numbers.</p></div>
@@ -88,6 +90,40 @@
       <div class="card"><h3>Careful backlinks</h3><p>At most five free-listing attempts a day, one retry, everything logged. Stops at any bot check. Also finds unlinked brand mentions.</p></div>
       <div class="card"><h3>Dashboard and local app</h3><p>One HTML file per site, plus an app on your computer that manages every project in one place.</p></div>
     </div>
+  </div>
+</section>
+
+<section id="expert">
+  <div class="wrap">
+    <div class="tag">The expert layer</div>
+    <h2>It does not just report numbers. It tells you what to do first.</h2>
+    <p class="sub">Every finding says why it matters and how to fix it, and every estimate says how far to trust it. The demo shows each of these with sample data.</p>
+    <div class="grid">
+      <div class="card"><h3>Technical audit</h3><p>Crawls your live site like a search engine: status codes, redirect chains, canonicals, duplicates, structured data (required properties), hreflang, Open Graph, orphan pages and broken links.</p></div>
+      <div class="card"><h3>Search insights</h3><p>Queries stuck just off page one, pages that under-perform the click-through curve of your own site, pages competing for one query, decaying pages, intent and brand split, and topic gaps.</p></div>
+      <div class="card"><h3>One ranked to-do list</h3><p>Everything scored as impact x confidence / effort, with the evidence next to it. A weekly issue lists the top ten.</p></div>
+      <div class="card"><h3>AI search readiness (GEO / AEO)</h3><p>Which AI search and training crawlers your robots.txt lets in, llms.txt, whether pages open with a direct answer, serve their text in the initial HTML, and carry entity and trust signals.</p></div>
+      <div class="card"><h3>Core Web Vitals</h3><p>Lab and real-user speed for your top pages through Google's PageSpeed Insights, with the biggest fixes listed.</p></div>
+      <div class="card"><h3>Experiments with a control</h3><p>Log a change and get a before and after read, adjusted against your untouched pages. Labelled directional, because it is.</p></div>
+    </div>
+    <p class="sub" style="margin:22px 0 0">Backed by sixteen <a href="playbooks/">written playbooks</a> that say where the guidance comes from and where it is uncertain. <a href="demo/">See it in the demo</a>.</p>
+  </div>
+</section>
+
+<section class="dark" id="agents">
+  <div class="wrap">
+    <div class="tag">The agent team</div>
+    <h2>Six agents. One job each. A human decides.</h2>
+    <p class="sub">Each agent has a fixed set of tools, required reading, a quality bar, a list of things it must never do and a defined output. You can read every word on the <a href="agents/">agents page</a>, and use them in Claude Code too.</p>
+    <div class="grid">
+      <div class="card"><h3>Strategist</h3><p>Turns all the data into at most five actions for the week, each with evidence, owner, effort and a stated confidence, plus what it is deliberately not doing.</p></div>
+      <div class="card"><h3>Researcher</h3><p>Checks the site already covers a topic, reads the live results, decides the intent and writes the brief. Can recommend "improve the existing page" or "skip".</p></div>
+      <div class="card"><h3>Drafter</h3><p>Writes one new page in your exact format, marked queued, with sources cited, and opens a pull request. Content files only.</p></div>
+      <div class="card"><h3>Refresher</h3><p>Diagnoses why a page lost visibility first. Edits only when content is the cause, and makes the smallest change at the same URL.</p></div>
+      <div class="card"><h3>Editor</h3><p>Reviews every draft against a blocking checklist: unsupported claims, bad sources, wrong files, format breakage, duplicate targets. Optional.</p></div>
+      <div class="card"><h3>Technical fixer</h3><p>Fixes audit findings at the cause using written recipes, then re-runs the audit. Runs locally with you watching, never unattended.</p></div>
+    </div>
+    <p style="margin-top:22px"><a class="btn pri" href="agents/">Read the agents</a><a class="btn sec" href="playbooks/">Read the playbooks</a></p>
   </div>
 </section>
 
@@ -111,7 +147,7 @@
       <p class="sub">So you do not find out the hard way.</p>
       <ul class="clean no">
         <li>It cannot press Google's <b>Request indexing</b> button. It prepares the list; you press it (about ten a day).</li>
-        <li>There is <b>no keyword-volume data</b>. Research uses your own impressions, and AI ideas are flagged as unverified.</li>
+        <li>There is <b>no keyword-volume data</b> and no backlink-profile data: Google offers neither for free. Research uses your own impressions, and AI ideas are flagged as unverified.</li>
         <li>Most free <b>backlink</b> directories need an account or show a CAPTCHA. Those are for a person, so it makes the checklist.</li>
         <li>Nothing guarantees rankings or indexing. It makes the routine work consistent and keeps weak content out.</li>
       </ul>
@@ -161,7 +197,8 @@ npx github:bishal-paul-git/seo-autopilot#v2 ui --open</pre>
     <div class="tag">Questions</div>
     <h2>The honest answers.</h2>
     <div style="margin-top:18px">
-      <details><summary>Will it write pages on its own?</summary><p>No. It opens an issue with the evidence. A page is only drafted after you add the label <code>approved</code>, arrives as a pull request, and goes live only after you merge it and its scheduled day arrives.</p></details>
+      <details><summary>Will it write pages on its own?</summary><p>No. It opens an issue with the evidence. A page is only drafted after you add the label <code>approved</code>, arrives as a pull request, and goes live only after it is merged and its scheduled day arrives. If you choose, you can let it merge drafts that pass your build and an optional reviewer agent, so approving the topic is your only step. That is off unless you switch it on.</p></details>
+      <details><summary>Does it need an AI subscription?</summary><p>Only for drafting pages. Everything else (reports, audit, insights, priorities, AI search checks, speed, scheduling) runs without any AI key. For drafting, use your own Claude subscription token or an API key in your own repository. Nothing goes through us.</p></details>
       <details><summary>Does it work with WordPress or a CMS?</summary><p>Reports, research, news, the digest, the indexing list and the dashboard work with any site that has a sitemap. Drafting and scheduling need pages stored as JSON or Markdown files in a repository. A CMS adapter would be a welcome contribution.</p></details>
       <details><summary>What does it cost?</summary><p>The software is free. GitHub Actions has a free tier that covers the daily jobs for a small site. AI keys and a cloud browser are optional and billed by their providers.</p></details>
       <details><summary>Is my data sent to you?</summary><p>No. Search data goes from Google to your own GitHub runner and is saved in your own repository. Optional AI calls send short snippets to the provider you choose.</p></details>
