@@ -1,0 +1,29 @@
+# Creates a GitHub Release when a version tag (v2.7.0 and so on) is pushed. The release notes are the matching section of
+# CHANGELOG.md. Tests must pass first. The moving tags (v2, v2-stable) never trigger this.
+name: release
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.ref_name }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm test
+      - name: Release notes from CHANGELOG.md
+        run: |
+          version="${TAG#v}"
+          awk -v v="$version" '$0 ~ "^## " v "$" {on=1; next} on && /^## / {exit} on {print}' CHANGELOG.md > notes.md
+          if [ ! -s notes.md ]; then echo "See CHANGELOG.md for $version." > notes.md; fi
+          cat notes.md
+      - name: Create the release
+        run: gh release create "$TAG" --title "$TAG" --notes-file notes.md --verify-tag

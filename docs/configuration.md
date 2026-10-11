@@ -1,3 +1,4 @@
+<!-- Editors can validate and autocomplete the config with schema/seo-autopilot.config.schema.json: add "$schema": "https://raw.githubusercontent.com/bishal-paul-git/seo-autopilot/main/schema/seo-autopilot.config.schema.json" to the file. -->
 # Configuration reference
 
 One file, `seo-autopilot.config.json`, in the root of your repository. Paths are relative to it.

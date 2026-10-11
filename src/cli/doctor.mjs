@@ -6,6 +6,18 @@ import { loadPages } from "../adapters/index.mjs";
 import { llmAvailable } from "../lib/llm.mjs";
 import { ingestEnabled } from "../lib/ingest.mjs";
 import { ghAvailable } from "../lib/gh.mjs";
+import { plan } from "./upgrade.mjs";
+import { spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+
+/** Names of repository secrets and the values of variables, through the GitHub CLI when it is installed and signed in. */
+export function githubSetup(cwd) {
+  const run = (args) => { const r = spawnSync("gh", args, { cwd, encoding: "utf8", timeout: 20000 }); return r.error || r.status !== 0 ? null : JSON.parse(r.stdout || "[]"); };
+  const secrets = run(["secret", "list", "--json", "name"]), vars = run(["variable", "list", "--json", "name,value"]);
+  if (!secrets && !vars) return null;
+  return { secrets: new Set((secrets || []).map((s) => s.name)), vars: new Map((vars || []).map((v) => [v.name, v.value])) };
+}
 
 export async function doctor({ cwd = process.cwd() } = {}) {
   let failed = 0;
@@ -56,6 +68,27 @@ export async function doctor({ cwd = process.cwd() } = {}) {
     const profile = readJson(`${site.paths.backlinks}/profile.json`, null);
     !profile || /^YOUR_/i.test(profile.name || "") ? warn("backlinks/profile.json still has placeholders (backlink submitter stays idle)") : ok("backlink profile filled in");
     ingestEnabled(site) ? ok("dashboard ingest configured") : warn("no dashboard ingest (optional)");
+  }
+
+  console.log("\nWorkflows and agents");
+  try {
+    const { items, cfg: c2 } = plan({ cwd });
+    const missing = items.filter((i) => i.status === "missing"), differs = items.filter((i) => i.status === "differs");
+    missing.length ? warn(`${missing.length} workflow(s) missing (${missing.map((i) => i.file).join(", ")}): run \`seo-autopilot upgrade --apply\``) : ok("all workflows present");
+    if (differs.length) warn(`${differs.length} workflow(s) differ from this version's templates (${differs.map((i) => i.file).join(", ")}): run \`seo-autopilot upgrade --diff\` to see what is new`);
+    existsSync(join(c2.dataDir, "agents")) && existsSync(join(c2.dataDir, "knowledge")) ? ok("playbooks and agents are in the project") : warn("playbooks or agents missing: run `seo-autopilot upgrade --apply`");
+  } catch (e) { warn(`could not compare workflows: ${e.message}`); }
+
+  console.log("\nGitHub secrets and variables");
+  const gh = githubSetup(cwd);
+  if (!gh) warn("GitHub CLI not available or not signed in: cannot check secrets. Check Settings > Secrets and variables > Actions yourself.");
+  else {
+    gh.secrets.has("GOOGLE_KEY_JSON") ? ok("GOOGLE_KEY_JSON secret set") : bad("GOOGLE_KEY_JSON secret is missing (the daily job cannot read Search Console)");
+    gh.secrets.has("CLAUDE_CODE_OAUTH_TOKEN") || gh.secrets.has("ANTHROPIC_API_KEY") ? ok("drafting login secret set (pages can be drafted)") : warn("no drafting secret (CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY): everything works except AI drafting, which is optional");
+    gh.secrets.has("PAGESPEED_API_KEY") ? ok("PAGESPEED_API_KEY set") : warn("no PAGESPEED_API_KEY: the speed job may hit Google's shared quota (free key, optional)");
+    for (const [name, what] of [["SEO_AUTOMERGE", "auto-merge of passing drafts"], ["SEO_REVIEW", "reviewer agent"], ["SEO_REQUIRE_REVIEW", "auto-merge waits for the reviewer"], ["BACKLINKS_LIVE", "real backlink submissions"]]) {
+      console.log(`  info  ${name} = ${gh.vars.get(name) ?? "not set"} (${what})`);
+    }
   }
 
   console.log("");

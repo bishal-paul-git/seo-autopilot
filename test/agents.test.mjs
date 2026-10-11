@@ -50,3 +50,27 @@ test("every agent is described in the agents README", () => {
   const readme = readFileSync(join(agentsDir, "README.md"), "utf8");
   for (const f of agentFiles) assert.ok(readme.includes(`(${f})`));
 });
+
+test("upgrading agents keeps the user's own Project rules and refreshes the rest", async () => {
+  const { keepProjectRules } = await import("../src/cli/init.mjs");
+  const fresh = "# A\n\n## Method\nNEW METHOD\n\n## Project rules\n(placeholder)\n";
+  const old = "# A\n\n## Method\nOLD METHOD\n\n## Project rules\nAlways use British spelling.\n";
+  const merged = keepProjectRules(fresh, old);
+  assert.ok(merged.includes("NEW METHOD") && !merged.includes("OLD METHOD"));
+  assert.ok(merged.includes("Always use British spelling."));
+  assert.equal(keepProjectRules(fresh, "# A\n\n## Method\nOLD\n\n## Project rules\n(placeholder)\n"), fresh);
+});
+
+test("the config schema accepts a config written by init", async () => {
+  const schema = JSON.parse(readFileSync(join(root, "schema", "seo-autopilot.config.schema.json"), "utf8"));
+  const { mkdtempSync } = await import("node:fs"); const { tmpdir } = await import("node:os");
+  const { init } = await import("../src/cli/init.mjs");
+  const dir = mkdtempSync(join(tmpdir(), "seo-schema-")); const cwd = process.cwd(), log = console.log; console.log = () => {}; process.chdir(dir);
+  try { await init({ flags: { url: "https://s.test/", name: "S", "no-workflows": true } }); } finally { process.chdir(cwd); console.log = log; }
+  const cfg = JSON.parse(readFileSync(join(dir, "seo-autopilot.config.json"), "utf8"));
+  for (const k of schema.required) assert.ok(k in cfg);
+  const site = cfg.sites[0], props = schema.properties.sites.items.properties;
+  for (const k of schema.properties.sites.items.required) assert.ok(k in site, k);
+  for (const k of Object.keys(site)) assert.ok(k in props, `schema does not know site.${k}`);
+  assert.match(site.url, new RegExp(props.url.pattern));
+});

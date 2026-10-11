@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { runJob, describeJobs } from "../src/jobs/index.mjs";
 import { init, exportKnowledge } from "../src/cli/init.mjs";
 import { doctor } from "../src/cli/doctor.mjs";
+import { upgrade } from "../src/cli/upgrade.mjs";
 import { restore, save } from "../src/cli/state.mjs";
 import { parseArgs } from "../src/cli/args.mjs";
 import { addProject, removeProject, listSites } from "../src/core/projects.mjs";
@@ -18,6 +19,7 @@ async function help() {
 Usage
   seo-autopilot init --url https://example.com/    scaffold config, data files and GitHub workflows
   seo-autopilot doctor                              check the setup and say what to fix
+  seo-autopilot upgrade [--apply] [--diff] [--force]  bring workflows, playbooks and agents up to date (reports only without flags)
   seo-autopilot run <job> [--site id] [--dry]       run one job
   seo-autopilot knowledge                           copy/refresh the SEO playbooks into your project (the drafting agent reads them)
   seo-autopilot ui [--port 4747] [--open]           local app to manage every project on this computer
@@ -36,6 +38,7 @@ try {
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") await help();
   else if (cmd === "version" || cmd === "--version" || cmd === "-v") console.log(pkg.version);
   else if (cmd === "init") await init({ flags });
+  else if (cmd === "upgrade") console.log(upgrade({ flags }));
   else if (cmd === "doctor") process.exitCode = await doctor();
   else if (cmd === "state") {
     const sub = positional[0];

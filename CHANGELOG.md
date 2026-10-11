@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.8.0
+
+- **`upgrade` command:** reports which workflows are missing or differ from this version's templates, with `--apply` to add missing ones and refresh the playbooks and agents, `--diff` to see the differences and `--force` to replace. Your pinned version tag is kept. Agent files keep your own "Project rules" section across upgrades.
+- **`doctor` checks more:** workflows, playbooks and agents present, and (through the GitHub CLI) the Google, drafting and PageSpeed secrets plus the auto-merge, review and backlink variables.
+- **Tests:** the real jobs now run end to end against a fake Google and a fake website (daily, analyze, audit, geo, speed, priorities, digest, dashboard, experiments, refresh), and the workflow templates are checked for structure, pinned actions and untrusted text in shell scripts.
+- **Releases:** a release workflow publishes a GitHub Release from this changelog when an exact version tag is pushed; a manual `promote-stable` workflow moves the `v2-stable` tag to a release you trust.
+- **Repository:** issue and pull request templates, code of conduct, Dependabot for this repository's workflows, `.gitattributes`, a JSON schema for the config file, and new docs (upgrading, troubleshooting, agents).
+
 ## 2.7.0
 
 - **Agent team:** six structured agents (strategist, researcher, drafter, refresher, editor, technical fixer), each with mission, required reading, method, quality bar, never-list and output format. The implementer and reviewer workflows load them.

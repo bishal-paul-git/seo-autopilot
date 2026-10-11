@@ -31,9 +31,29 @@ export function editTools(content = {}) {
 export function exportKnowledge({ cwd = process.cwd(), dataDir = "seo-autopilot" } = {}) {
   const report = [];
   copyTree(KNOWLEDGE, join(cwd, dataDir, "knowledge"), { force: true, report });
-  // Agents: refreshed like the playbooks, so edits belong in the "Project rules" section only if you re-apply them after upgrading.
-  copyTree(AGENTS, join(cwd, dataDir, "agents"), { force: true, report });
+  // Agents are refreshed too, but your own "## Project rules" section is kept.
+  const dstDir = join(cwd, dataDir, "agents");
+  mkdirSync(dstDir, { recursive: true });
+  for (const f of readdirSync(AGENTS).filter((x) => x.endsWith(".md"))) {
+    const dst = join(dstDir, f);
+    const fresh = readFileSync(join(AGENTS, f), "utf8");
+    const text = existsSync(dst) ? keepProjectRules(fresh, readFileSync(dst, "utf8")) : fresh;
+    writeFileSync(dst, text);
+    report.push(`created  ${dst}`);
+  }
   return report;
+}
+
+const RULES_HEADING = /\n## Project rules\n/;
+const norm = (t) => String(t).replace(/\r\n/g, "\n");
+
+/** Take the new agent text but keep the user's "## Project rules" section when they changed it from the placeholder. */
+export function keepProjectRules(fresh, existing) {
+  fresh = norm(fresh); existing = norm(existing);
+  const f = fresh.search(RULES_HEADING), e = existing.search(RULES_HEADING);
+  if (f < 0 || e < 0) return fresh;
+  const freshRules = fresh.slice(f), oldRules = existing.slice(e);
+  return oldRules.trim() === freshRules.trim() ? fresh : fresh.slice(0, f) + oldRules;
 }
 
 export const slugId = (url) => new URL(url).hostname.replace(/^www\./, "").replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase();

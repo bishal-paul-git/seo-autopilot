@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/bishal-paul-git/seo-autopilot/tree/main/docs
+    about: Setup, jobs, configuration, upgrading and troubleshooting.
+  - name: Security problem
+    url: https://github.com/bishal-paul-git/seo-autopilot/security/advisories/new
+    about: Report a vulnerability privately.

@@ -1,0 +1,28 @@
+# Moves the v2-stable tag to a release you have had time to trust (run it a few days after a release, when nothing has been
+# reported). Projects that follow #v2-stable get fixes later but see fewer surprises than those on #v2.
+# Run by hand: Actions > promote-stable > Run workflow, with a version such as v2.7.0.
+name: promote-stable
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release tag to make stable, for example v2.7.0"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Move v2-stable
+        run: |
+          case "$VERSION" in v2.[0-9]*.[0-9]*) ;; *) echo "Version must look like v2.7.0"; exit 1 ;; esac
+          git rev-parse -q --verify "refs/tags/$VERSION" > /dev/null || { echo "No such tag: $VERSION"; exit 1; }
+          git tag -f v2-stable "$VERSION"
+          git push -f origin v2-stable

@@ -1,0 +1,19 @@
+name: Feature request
+description: Suggest something that would make the product more useful
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the situation, not only the feature.
+    validations: { required: true }
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like it to do?
+  - type: textarea
+    id: safety
+    attributes:
+      label: Does it change a site, send anything out, or use a new data source?
+      description: The project keeps every site-changing action behind a human approval and avoids invented data. Say how your idea fits that.

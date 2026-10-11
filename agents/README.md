@@ -43,4 +43,4 @@ seo-autopilot works as a small team. Each agent has one job, a fixed set of tool
 The files have Claude Code subagent front matter. Copy the ones you want into `.claude/agents/` in your project (or your home folder) and ask for them by name. In GitHub Actions the workflows load them from your project's `seo-autopilot/agents/` folder, which `init` and `seo-autopilot knowledge` keep up to date.
 
 ## Changing them
-They are plain Markdown. Edit the "Project rules" section at the bottom of an agent to add your voice, forbidden claims, required disclaimers or page formats. Keep the "Never" lists: they are the safety rails.
+They are plain Markdown. Edit the "Project rules" section at the bottom of an agent to add your voice, forbidden claims, required disclaimers or page formats. Upgrades keep that section and refresh everything above it. Keep the "Never" lists: they are the safety rails.
