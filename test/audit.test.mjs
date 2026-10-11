@@ -8,7 +8,7 @@ import { linkOpportunities } from "../src/audit/links.mjs";
 const page = (over = {}) => ({
   url: "https://s.test/a", finalUrl: "https://s.test/a", status: 200, isHtml: true, chain: [], inSitemap: true, depth: 1, inbound: 2, ttfb: 200,
   title: "A good page title about widgets", description: "x".repeat(120), robots: "", viewport: "width=device-width", canonical: "https://s.test/a",
-  alternates: [], h1s: ["Widgets"], h2s: [], lang: "en", jsonld: { types: [], invalid: 0, articleFields: null }, links: [], images: 0, imagesNoAlt: 0, mixed: [], words: 800, text: "", textHash: "h1", xRobots: "", ...over,
+  alternates: [], og: { title: "t", image: "i" }, h1s: ["Widgets"], h2s: [], lang: "en", jsonld: { types: [], invalid: 0, articleFields: null }, links: [], images: 0, imagesNoAlt: 0, mixed: [], words: 800, text: "", textHash: "h1", xRobots: "", ...over,
 });
 const rules = (issues) => issues.map((i) => i.rule).sort();
 
@@ -120,4 +120,17 @@ test("link opportunities find mentions of another page's topic without a link", 
   assert.equal(out.length, 1);
   assert.equal(out[0].from, "https://s.test/blog");
   assert.equal(out[0].to, "https://s.test/crm");
+});
+
+test("structured data missing required properties, invalid and non-reciprocal hreflang, missing Open Graph", async () => {
+  const { runChecks } = await import("../src/audit/rules.mjs");
+  const base = { status: 200, isHtml: true, chain: [], inSitemap: true, robots: "", title: "A reasonably long page title here", description: "d".repeat(100), h1s: ["H"], words: 400, links: [], images: 0, imagesNoAlt: 0, mixed: [], viewport: "w", lang: "en", inbound: 1, depth: 1, og: { title: "t", image: "i" }, textHash: "" };
+  const a = { ...base, url: "https://x.com/en", finalUrl: "https://x.com/en", canonical: "https://x.com/en", alternates: [{ hreflang: "en", href: "https://x.com/en" }, { hreflang: "fr", href: "https://x.com/fr" }, { hreflang: "english", href: "https://x.com/e" }], jsonld: { types: ["FAQPage"], invalid: 0, nodes: [{ type: "FAQPage", props: ["@type"] }] } };
+  const b = { ...base, url: "https://x.com/fr", finalUrl: "https://x.com/fr", canonical: "https://x.com/fr", alternates: [], og: {}, jsonld: { types: [], invalid: 0, nodes: [] } };
+  const rules = runChecks([a, b], { siteHost: "x.com" }).map((i) => i.rule);
+  assert.ok(rules.includes("schema-required-missing"));
+  assert.ok(rules.includes("hreflang-invalid"));
+  assert.ok(rules.includes("og-missing"));
+  const c = runChecks([{ ...a, alternates: [{ hreflang: "en", href: "https://x.com/en" }, { hreflang: "fr", href: "https://x.com/fr" }] }, { ...b, alternates: [{ hreflang: "fr", href: "https://x.com/fr" }] }], { siteHost: "x.com" }).map((i) => i.rule);
+  assert.ok(c.includes("hreflang-not-reciprocal"));
 });

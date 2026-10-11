@@ -2,13 +2,15 @@
 # the only thing you do is approve the topic. It is OFF until you create the repository VARIABLE  SEO_AUTOMERGE = true
 # (Settings > Secrets and variables > Actions > Variables). Delete this file, or unset the variable, to go back to merging by hand.
 #
+# It runs when seo-check finishes and again when the optional reviewer (seo-review) finishes.
+#
 # Safety: it never runs pull-request code and uses no secrets. It merges only when ALL of these hold: the seo-check run
 # succeeded, the branch is seo/* in THIS repository (not a fork), and every changed file sits inside your content folders.
 # Pages are still marked queued, so merging does not publish anything: the scheduler releases them a few per day.
 name: seo-automerge
 on:
   workflow_run:
-    workflows: [seo-check]
+    workflows: [seo-check, seo-review]
     types: [completed]
 
 permissions:
@@ -31,11 +33,18 @@ jobs:
           GH_REPO: ${{ github.repository }}
           BRANCH: ${{ github.event.workflow_run.head_branch }}
           SHA: ${{ github.event.workflow_run.head_sha }}
+          REQUIRE_REVIEW: ${{ vars.SEO_REQUIRE_REVIEW }}
         run: |
           set -eu
           pr=$(gh pr list --head "$BRANCH" --state open --json number,headRefOid --jq ".[] | select(.headRefOid==\"$SHA\") | .number" | head -1)
           if [ -z "$pr" ]; then echo "No open pull request at the checked commit; nothing to merge."; exit 0; fi
+          # seo-check must have passed on this exact commit (this workflow also fires when the reviewer finishes).
+          build=$(gh api "repos/$GH_REPO/commits/$SHA/check-runs" --jq "[.check_runs[] | select(.name==\"build\") | .conclusion] | first")
+          if [ "$build" != "success" ]; then echo "seo-check has not passed on this commit ($build); not merging."; exit 0; fi
           ok=1
+          if [ "${REQUIRE_REVIEW:-}" = "true" ]; then
+            if ! gh pr view "$pr" --json labels --jq '.labels[].name' | grep -qx 'seo-review-passed'; then echo "Waiting for the reviewer agent (label seo-review-passed); not merging."; exit 0; fi
+          fi
           for f in $(gh pr diff "$pr" --name-only); do
             case "$f" in
               {{CONTENT_GLOBS}}) ;;

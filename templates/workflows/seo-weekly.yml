@@ -40,6 +40,12 @@ jobs:
         env:
           PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
         run: npx --yes "$SEO" run speed
+      - name: Refresh proposals for pages losing visibility
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: npx --yes "$SEO" run refresh
       - name: Ranked priorities (weekly issue)
         continue-on-error: true
         env:

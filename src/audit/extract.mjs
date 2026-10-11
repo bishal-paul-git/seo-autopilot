@@ -53,7 +53,7 @@ export function extractPage(html, pageUrl) {
   const h1s = [...html.matchAll(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi)].map((m) => stripTags(m[1])).filter(Boolean);
   const h2s = [...html.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/gi)].map((m) => stripTags(m[1])).filter(Boolean);
 
-  const jsonld = { types: [], invalid: 0, blocks: 0, articleFields: null };
+  const jsonld = { types: [], invalid: 0, blocks: 0, articleFields: null, nodes: [] };
   for (const m of html.matchAll(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
     jsonld.blocks++;
     try {
@@ -62,6 +62,7 @@ export function extractPage(html, pageUrl) {
       for (const n of nodes) {
         const types = [].concat(n?.["@type"] || []);
         jsonld.types.push(...types);
+        for (const t of types) jsonld.nodes.push({ type: t, props: Object.keys(n || {}).filter((k) => n[k] != null && n[k] !== "" && !(Array.isArray(n[k]) && !n[k].length)) });
         if (types.some((t) => /Article|BlogPosting|NewsArticle/.test(t))) jsonld.articleFields = { headline: !!n.headline, datePublished: !!n.datePublished, author: !!n.author, image: !!n.image };
       }
     } catch { jsonld.invalid++; }

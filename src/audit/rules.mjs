@@ -2,7 +2,21 @@
 // reports. Thresholds are practical guidelines, not search-engine limits: titles and descriptions are truncated by pixel
 // width, not characters, and nothing here promises a ranking effect.
 
+/** Properties Google lists as required (or the minimum that makes the markup meaningful) per structured-data type. */
+export const SCHEMA_REQUIRED = {
+  Organization: ["name"], LocalBusiness: ["name", "address"], ProfessionalService: ["name", "address"], Person: ["name"], WebSite: ["url"],
+  Product: ["name"], FAQPage: ["mainEntity"], BreadcrumbList: ["itemListElement"], VideoObject: ["name", "thumbnailUrl", "uploadDate"],
+  Event: ["name", "startDate", "location"], JobPosting: ["title", "datePosted", "description", "hiringOrganization"], Recipe: ["name", "image"],
+  HowTo: ["name", "step"], SoftwareApplication: ["name"], Course: ["name", "description"],
+};
+const HREFLANG = /^(x-default|[a-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|\d{3}))?)$/;
+
 export const RULES = {
+  "schema-required-missing": { severity: "medium", title: "Structured data is missing required properties", why: "Markup that lacks a required property is ignored for rich results and can be reported as an error in Search Console.", fix: "Add the missing properties, filled with real values that match the visible page." },
+  "hreflang-invalid": { severity: "medium", title: "Invalid hreflang value", why: "Search engines ignore hreflang annotations whose language or region code is not valid, so the wrong version can be shown to people.", fix: "Use ISO 639-1 language codes with an optional ISO 3166-1 region (en, en-GB) or x-default." },
+  "hreflang-no-self": { severity: "medium", title: "hreflang set has no self-reference", why: "Each page in a language set should list itself as well as its alternates, otherwise the set is incomplete.", fix: "Add an hreflang entry that points to the page's own URL." },
+  "hreflang-not-reciprocal": { severity: "medium", title: "hreflang alternate does not link back", why: "Alternates only count when both pages point at each other (return links). Without them Google ignores the annotation.", fix: "Add the matching hreflang entry on the alternate page." },
+  "og-missing": { severity: "low", title: "No Open Graph title or image", why: "Social networks, chat apps and some AI tools use these tags to build the preview of a shared link; without them previews are poor or blank.", fix: "Add og:title, og:description and og:image (at least 1200 pixels wide) to the page head." },
   "status-error": { severity: "high", title: "Sitemap URL does not return 200", why: "A URL in your sitemap that errors tells search engines your sitemap is unreliable and wastes crawl attention.", fix: "Fix the page or remove it from the sitemap." },
   "status-redirect": { severity: "medium", title: "Sitemap URL redirects", why: "Sitemaps should list the final, canonical URL. Redirecting entries add a hop and mix signals.", fix: "Put the destination URL in the sitemap, not the redirecting one." },
   "redirect-chain": { severity: "medium", title: "Redirect chain", why: "Each extra hop slows crawling and can dilute signals. Crawlers may stop after several hops.", fix: "Redirect straight to the final URL in one step." },
@@ -119,6 +133,23 @@ export function runChecks(pages, ctx = {}) {
     if (p.words < 250 && p.inSitemap && !noindex) add("thin-content", p.url, `${p.words} words`);
     if (p.jsonld.invalid) add("jsonld-invalid", p.url, `${p.jsonld.invalid} unparsable block(s)`);
     if (p.jsonld.articleFields) { const miss = Object.entries(p.jsonld.articleFields).filter(([, v]) => !v).map(([k]) => k); if (miss.length) add("jsonld-article-incomplete", p.url, `missing ${miss.join(", ")}`); }
+    for (const n of p.jsonld.nodes || []) {
+      const need = SCHEMA_REQUIRED[n.type]; if (!need) continue;
+      const miss = need.filter((k) => !n.props.includes(k));
+      if (miss.length) add("schema-required-missing", p.url, `${n.type}: missing ${miss.join(", ")}`);
+    }
+    if (!p.og || (!p.og.title && !p.og.image)) add("og-missing", p.url);
+    if (p.alternates && p.alternates.length) {
+      const self = p.canonical || p.finalUrl || p.url;
+      let bad = false;
+      for (const a of p.alternates) if (!HREFLANG.test(a.hreflang)) { add("hreflang-invalid", p.url, a.hreflang); bad = true; }
+      if (!bad && !p.alternates.some((a) => sameUrl(a.href, self))) add("hreflang-no-self", p.url);
+      for (const a of p.alternates) {
+        if (sameUrl(a.href, self)) continue;
+        const t = byFinal.get(a.href) || byUrl.get(a.href);
+        if (t && t.alternates && !t.alternates.some((b) => sameUrl(b.href, self))) add("hreflang-not-reciprocal", p.url, `${a.href} does not link back`);
+      }
+    }
     if (p.imagesNoAlt) add("images-no-alt", p.url, `${p.imagesNoAlt} of ${p.images}`);
     if (!p.viewport) add("viewport-missing", p.url);
     if (!p.lang) add("lang-missing", p.url);

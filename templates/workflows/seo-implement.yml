@@ -71,6 +71,9 @@ jobs:
               claim unless it already appears in the repository's own verified content or you can cite a real, linked
               source for it. When unsure, leave it out.
             - You can only edit content files. Do not try to touch .github/, secrets, build config or seo-autopilot files.
+            - For an issue ALSO labelled "seo-refresh", do not create a page: update the ONE existing page named in the issue,
+              keeping its URL and slug. Re-check each fact against its source, move the direct answer to the top, remove or
+              fix anything out of date, and set the modified date to today if the format has one. Do not add new claims.
             - For an issue labelled "seo-topic", add ONE new page in the same format as the existing pages, marked
               "queued": true (JSON) or "queued: true" (front matter) so it does not publish until the owner merges and the
               scheduler dates it. Cite the source named in the issue with a link; never copy its text.

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.5.0
+
+- **Technical audit:** structured-data required-property checks (Organization, LocalBusiness, Product, FAQPage, BreadcrumbList, VideoObject, Event, JobPosting and more), hreflang validity, self-reference and return links, and missing Open Graph tags.
+- **Reviewer agent (`seo-review.yml`, optional):** reviews each drafted pull request against your content rules and labels it `seo-review-passed`. Auto-merge can require that label (`SEO_REQUIRE_REVIEW`).
+- **`refresh` job:** proposes in-place refreshes for your pages that lost visibility; the implementer updates the existing page instead of creating a new one.
+
 ## 2.4.0
 
 - **`geo` job (GEO/AEO):** AI-crawler access in robots.txt (search vs training bots told apart), llms.txt, answer-first structure, question headings, text in the initial HTML, Organization/sameAs, dates and authors. Medium and high findings feed the priorities list.

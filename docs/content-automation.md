@@ -26,6 +26,14 @@ By default you approve the topic and then merge the drafted pull request. To ski
 
 Note: pull requests opened with the default `GITHUB_TOKEN` do not trigger other workflows. The drafting action opens its pull requests through the Claude GitHub app, so `seo-check` runs normally.
 
+## Reviewer agent (optional)
+
+`seo-review.yml` runs a second Claude pass on every drafted pull request (`seo/*` branches in your repository). It only reads and comments. It checks for invented facts and unsupported numbers, missing sources, a weak opening and any file outside your content folders, then adds the label `seo-review-passed` or explains what to fix. Turn it on with the repository variable `SEO_REVIEW = true`. To make auto-merge wait for it, also set `SEO_REQUIRE_REVIEW = true`.
+
+## Refresh proposals
+
+When a page of yours loses a large share of impressions, the weekly `refresh` job opens a proposal (at most two per run) to update that page in place. You approve it like any other proposal. The issue states what the data shows and what it does not: a drop can be seasonal or a better page can have taken the ranking.
+
 ## What the automation never does
 
 - Never creates a page on its own, never publishes unreviewed text, never edits your existing pages without an approved issue and a pull request.
