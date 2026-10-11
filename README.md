@@ -26,6 +26,7 @@ That creates a config file, a few editable data files and the GitHub workflows. 
 | Publish | `schedule` + `release` | daily | approved pages get release dates, N a day, and the site is rebuilt when each is due |
 | Links | `backlinks`, `backlinks-queue`, `mentions` | daily / weekly | capped, careful submissions; a hand-done checklist; unlinked brand mentions with a drafted request |
 | See | `dashboard` | every day | one HTML file with charts, index status, the schedule, keywords and backlinks |
+| Manage | `ui` (local app) | on demand | one app on your computer for every project: dashboard, approvals from GitHub, sync, dry runs |
 
 ## The one rule: nothing is published without a human step
 
@@ -56,6 +57,8 @@ Read [docs/content-automation.md](docs/content-automation.md) for the full pictu
 seo-autopilot init --url https://example.com/   scaffold config, data files and workflows
 seo-autopilot doctor                             check the setup and say what to fix
 seo-autopilot run <job> [--site id] [--dry]      run one job
+seo-autopilot ui [--open]                        local app to manage every project on this computer
+seo-autopilot projects add|list|remove [folder]  choose which website folders the app shows
 seo-autopilot state restore|save                 load or save memory on the "seo-data" branch
 ```
 
@@ -65,11 +68,16 @@ seo-autopilot state restore|save                 load or save memory on the "seo
 - [Connect Google: Search Console and Analytics](docs/google-setup.md)
 - [Content automation and scheduling](docs/content-automation.md)
 - [Dashboard](docs/dashboard.md)
+- [The local app](docs/ui.md)
 - [Backlinks](docs/backlinks.md)
 - [Configuration reference](docs/configuration.md)
 - [Jobs and secrets](docs/jobs.md)
 - [IndexNow](docs/indexnow.md)
 - [FAQ](docs/faq.md)
+
+## Landing page
+
+The product site lives in [`site/`](site/) (with a sample-data demo of the dashboard) and deploys to GitHub Pages from `.github/workflows/pages.yml` once Pages is switched on for the repository.
 
 ## Status
 

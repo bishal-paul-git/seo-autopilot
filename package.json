@@ -1,6 +1,6 @@
 {
   "name": "seo-autopilot",
-  "version": "2.0.3",
+  "version": "2.1.0",
   "description": "An open-source SEO autopilot for any website: Search Console reports, indexing checks, keyword research, news watching, weekly digests, approval-gated content drafting and a careful backlink assistant. Runs on GitHub Actions.",
   "type": "module",
   "bin": {
@@ -10,14 +10,15 @@
     "node": ">=20"
   },
   "files": [
-    "bin",
-    "src",
-    "templates",
-    "docs",
-    "skills",
     ".claude-plugin",
+    "LICENSE",
     "README.md",
-    "LICENSE"
+    "bin",
+    "docs",
+    "site",
+    "skills",
+    "src",
+    "templates"
   ],
   "scripts": {
     "test": "node --test test/*.test.mjs"

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>seo-autopilot</title>
+<style>
+  :root { --bg:#f6f1e9; --card:#fffdf9; --ink:#14120e; --soft:#5b574d; --line:#e3dccf; --green:#0a6e3e; --bad:#b42318; --warn:#b54708; --side:#14120e; --sideink:#f3efe7; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0e1511; --card:#161e19; --ink:#f3efe7; --soft:#a9b3ab; --line:#27332c; --green:#3ddc97; --bad:#ff8a80; --warn:#ffb86b; --side:#0a100d; } }
+  * { box-sizing:border-box; } body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif; display:grid; grid-template-columns:250px 1fr; min-height:100vh; }
+  aside { background:var(--side); color:var(--sideink); padding:18px 14px; position:sticky; top:0; height:100vh; overflow:auto; }
+  aside h1 { font-size:17px; margin:0 0 4px; } aside .tag { font-size:12px; opacity:.65; margin-bottom:18px; }
+  aside button.proj { display:block; width:100%; text-align:left; background:transparent; color:inherit; border:1px solid transparent; padding:9px 10px; border-radius:10px; cursor:pointer; font:inherit; margin-bottom:4px; }
+  aside button.proj:hover, aside button.proj.on { background:rgba(255,255,255,.09); border-color:rgba(255,255,255,.12); } aside small { display:block; opacity:.6; font-size:12px; }
+  aside .add { margin-top:16px; border-top:1px solid rgba(255,255,255,.15); padding-top:14px; font-size:13px; } aside input { width:100%; padding:7px 9px; border-radius:8px; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.07); color:inherit; margin:6px 0; font:inherit; font-size:13px; }
+  main { padding:22px 26px 60px; min-width:0; max-width:1150px; } h2 { font-size:22px; margin:0 0 2px; } h3 { font-size:16px; margin:26px 0 8px; } .sub { color:var(--soft); margin:0 0 14px; font-size:13.5px; }
+  nav.tabs { display:flex; flex-wrap:wrap; gap:6px; margin:14px 0 18px; } nav.tabs button, .btn { border:1px solid var(--line); background:var(--card); color:var(--ink); padding:7px 13px; border-radius:99px; cursor:pointer; font:inherit; font-size:13.5px; }
+  nav.tabs button.on { background:var(--green); color:#fff; border-color:var(--green); } .btn.pri { background:var(--green); color:#fff; border-color:var(--green); } .btn:disabled { opacity:.5; cursor:wait; }
+  .grid { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); } .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; }
+  .num { font-size:28px; font-weight:800; line-height:1.1; } .lbl { color:var(--soft); font-size:12px; text-transform:uppercase; letter-spacing:.06em; }
+  .tbl { overflow-x:auto; border:1px solid var(--line); border-radius:14px; background:var(--card); } table { width:100%; border-collapse:collapse; font-size:14px; } th { text-align:left; font-size:12px; text-transform:uppercase; color:var(--green); padding:9px 12px; } td { padding:9px 12px; border-top:1px solid var(--line); vertical-align:top; }
+  a { color:var(--green); } .pill { display:inline-block; padding:1px 9px; border-radius:99px; border:1px solid var(--line); font-size:12.5px; } .ok { color:var(--green); } .bad { color:var(--bad); } .warn { color:var(--warn); } .muted { color:var(--soft); }
+  pre { white-space:pre-wrap; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; font:13px/1.55 ui-monospace,Consolas,monospace; margin:0; max-height:420px; overflow:auto; }
+  svg { width:100%; height:150px; display:block; } .bar { display:flex; height:14px; border-radius:99px; overflow:hidden; background:var(--line); margin:8px 0; } .bar i { display:block; } .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:8px 0; }
+  .msg { padding:10px 14px; border-radius:12px; border:1px solid var(--line); background:var(--card); margin:10px 0; font-size:14px; }
+  @media (max-width:800px) { body { grid-template-columns:1fr; } aside { position:static; height:auto; } }
+</style>
+</head>
+<body>
+<aside>
+  <h1>seo-autopilot</h1><div class="tag">local app, this computer only</div>
+  <div id="projects"></div>
+  <div class="add">
+    <div>Add a project (folder that contains <code>seo-autopilot.config.json</code>)</div>
+    <input id="newpath" placeholder="C:\sites\my-website  or  /home/me/my-website">
+    <button class="btn" id="addbtn">Add</button>
+    <div id="addmsg" class="muted" style="margin-top:6px"></div>
+  </div>
+</aside>
+<main id="main"><p class="muted">Loading…</p></main>
+<script>
+const TOKEN = "__TOKEN__";
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const api = async (path, opts = {}) => {
+  const r = await fetch(path, { ...opts, headers: { "x-ui-token": TOKEN, "Content-Type": "application/json", ...(opts.headers || {}) }, body: opts.body ? JSON.stringify(opts.body) : undefined });
+  const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || r.statusText); return j;
+};
+let state = { sites: [], problems: [], settings: {}, current: null, tab: "overview", data: null, inbox: null, busy: false, log: "" };
+
+const table = (head, rows, empty) => rows.length ? `<div class="tbl"><table><thead><tr>${head.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<p class="muted">${esc(empty)}</p>`;
+const short = (u) => esc(String(u).replace(state.data.site.url, "/"));
+const link = (u) => `https://search.google.com/search-console/inspect?resource_id=${encodeURIComponent(state.data.site.property)}&id=${encodeURIComponent(u)}`;
+function chart(rows, key, color) {
+  if (rows.length < 2) return `<p class="muted">The chart appears after two days of data.</p>`;
+  const w = 600, h = 130, max = Math.max(...rows.map((r) => r[key]), 1);
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline fill="none" stroke="${color}" stroke-width="2.5" points="${rows.map((r, i) => `${(i / (rows.length - 1)) * w},${h - (r[key] / max) * (h - 8) - 4}`).join(" ")}"/></svg><div class="muted">${esc(rows[0].day)} to ${esc(rows.at(-1).day)}, peak ${max}</div>`;
+}
+
+const TABS = [["overview", "Overview"], ["index", "Index status"], ["content", "Content"], ["keywords", "Keywords"], ["backlinks", "Backlinks"], ["inbox", "Approvals (GitHub)"], ["reports", "Digest and news"], ["run", "Run and sync"], ["settings", "Settings"]];
+
+function view() {
+  const d = state.data;
+  if (!state.current) return `<h2>Welcome</h2><p class="sub">Add a project on the left to begin. Use <code>seo-autopilot init</code> in a website repository first if it has no config yet.</p>${state.problems.map((p) => `<div class="msg bad">${esc(p.root)}: ${esc(p.error)}</div>`).join("")}`;
+  const head = `<h2>${esc(d?.site.name || "Loading")}</h2><p class="sub">${esc(d?.site.url || "")} ${d?.lastSynced ? "· data from " + esc(d.lastSynced.slice(0, 16).replace("T", " ")) : "· no data yet, press Sync"}</p><nav class="tabs">${TABS.map(([k, n]) => `<button data-tab="${k}" class="${state.tab === k ? "on" : ""}">${n}</button>`).join("")}</nav>`;
+  if (!d) return head + `<p class="muted">Loading…</p>`;
+  const insp = Object.entries(d.inspect), by = {}; insp.forEach(([, v]) => { by[v.coverage || "unknown"] = (by[v.coverage || "unknown"] || 0) + 1; });
+  const indexed = by["Submitted and indexed"] || 0, last = d.history.at(-1), P = d.pipeline;
+  const palette = ["#0a6e3e", "#b54708", "#b42318", "#6b7280", "#7c3aed", "#2563eb"];
+  let body = "";
+  if (state.tab === "overview") body = `<div class="grid">
+    <div class="card"><div class="num">${last ? last.clicks : "–"}</div><div class="lbl">Clicks (28 days)</div></div>
+    <div class="card"><div class="num">${last ? last.impressions : "–"}</div><div class="lbl">Impressions (28 days)</div></div>
+    <div class="card"><div class="num">${last ? last.position : "–"}</div><div class="lbl">Average position</div></div>
+    <div class="card"><div class="num">${indexed} / ${insp.length}</div><div class="lbl">Inspected pages indexed</div></div>
+    ${P.tracked ? `<div class="card"><div class="num">${P.upcoming}</div><div class="lbl">Scheduled to publish</div></div><div class="card"><div class="num">${P.queued}</div><div class="lbl">Approved, not dated</div></div>` : ""}</div>
+    <h3>Over time</h3><div class="grid"><div class="card"><div class="lbl">Clicks</div>${chart(d.history, "clicks", "#0a6e3e")}</div><div class="card"><div class="lbl">Impressions</div>${chart(d.history, "impressions", "#2563eb")}</div></div>`;
+  if (state.tab === "index") body = `<div class="card"><div class="bar">${Object.entries(by).map(([k, n], i) => `<i style="width:${(n / Math.max(insp.length, 1)) * 100}%;background:${k === "Submitted and indexed" ? palette[0] : palette[(i % 5) + 1]}" title="${esc(k)}: ${n}"></i>`).join("")}</div>${Object.entries(by).map(([k, n]) => `<span class="pill">${esc(k)}: ${n}</span> `).join("")}</div>
+    <h3>Pages to request indexing for (do these by hand, about 10 a day)</h3>${table(["Page", "Status", "Action"], insp.filter(([, v]) => v.coverage && v.coverage !== "Submitted and indexed" && !/redirect|alternate|duplicate/i.test(v.coverage)).sort((a, b) => (/unknown/i.test(b[1].coverage) ? 1 : 0) - (/unknown/i.test(a[1].coverage) ? 1 : 0)).slice(0, 40).map(([u, v]) => [short(u), esc(v.coverage), `<a target="_blank" rel="noopener" href="${esc(link(u))}">Open in Search Console</a>`]), "Every inspected page is indexed or needs a fix, not a request.")}`;
+  if (state.tab === "content") body = P.tracked ? `<div class="grid"><div class="card"><div class="num">${P.liveThisWeek}</div><div class="lbl">Went live this week</div></div><div class="card"><div class="num">${P.upcoming}</div><div class="lbl">Scheduled</div></div><div class="card"><div class="num">${P.queued}</div><div class="lbl">Approved, not dated</div></div><div class="card"><div class="num">${P.held}</div><div class="lbl">On hold</div></div></div><h3>Schedule</h3>${table(["Date", "Page"], P.schedule.slice(0, 80).map((s) => [esc(s.date), s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title || s.url)}</a>` : esc(s.title)]), "Nothing is scheduled.")}` : `<p class="muted">This project's pages do not use publishAt / queued fields, so there is no schedule to show. See docs/content-automation.md.</p>`;
+  if (state.tab === "keywords") body = table(["Query", "Type", "Impr.", "Position", "Status"], Object.values(d.backlog).sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 80).map((b) => [esc(b.query) + (b.unverified ? ' <span class="pill">idea, no data</span>' : ""), esc((b.kinds || []).join(", ")), b.impressions ?? "", b.position ?? "", esc(b.status)]), "Run the weekly research job to fill this.");
+  if (state.tab === "backlinks") body = `<p class="sub">Free listings only. Anything with a bot check, an account or a payment is done by you. Record finished ones with <code>seo-autopilot run mark &lt;id&gt; done</code>.</p>` + table(["Target", "Mode", "Status", "Tries", "Note"], d.backlinks.map((r) => [`<a href="${esc(r.submit_url)}" target="_blank" rel="noopener">${esc(r.name)}</a>`, esc(r.mode), `<span class="${r.status === "failed" ? "bad" : r.status === "submitted" || r.status === "done" ? "ok" : "warn"}">${esc(r.status)}</span>`, r.attempts, esc(r.note)]), "No backlink targets configured.");
+  if (state.tab === "inbox") body = !state.inbox ? `<p class="muted">Loading from GitHub…</p>` : state.inbox.error ? `<div class="msg">${esc(state.inbox.error)}</div>` : `<p class="sub">Open issues waiting for you. Add the label <b>approved</b> on GitHub to accept a topic or proposal; close to decline.</p>` + table(["#", "Type", "Title", "Opened"], state.inbox.items.map((i) => [i.number, `<span class="pill">${esc(i.kind)}</span>`, `<a target="_blank" rel="noopener" href="${esc(i.url)}">${esc(i.title)}</a>`, esc(i.createdAt.slice(0, 10))]), "Nothing is waiting.");
+  if (state.tab === "reports") body = `<h3>Latest weekly digest</h3><pre>${esc(d.digest || "The weekly job has not run yet.")}</pre><h3>News and trends</h3><pre>${esc(d.news || "The daily job has not run yet.")}</pre>`;
+  if (state.tab === "run") body = `<p class="sub">Sync pulls the latest saved data from your <b>seo-data</b> branch on GitHub. Jobs run on this computer, in this project's folder, as dry runs where they would change anything. Real submissions and publishing only happen in GitHub Actions.</p>
+    <div class="row"><button class="btn pri" data-sync ${state.busy ? "disabled" : ""}>Sync from GitHub</button>${["dashboard", "indexing-queue", "schedule", "release", "indexnow", "daily", "research", "digest", "news", "backlinks-queue"].map((j) => `<button class="btn" data-job="${j}" ${state.busy ? "disabled" : ""}>${j}${["indexing-queue", "schedule", "release", "indexnow"].includes(j) ? " (dry)" : ""}</button>`).join("")}</div>
+    <h3>Output</h3><pre>${esc(state.log || "Nothing run yet.")}</pre>`;
+  if (state.tab === "settings") body = `<h3>Google key file</h3><p class="sub">Only needed to run daily, research and digest on this computer. Store the <b>path</b> to your service-account JSON (kept outside any repository). The key itself is never copied or stored by this app.</p><div class="row"><input id="keyfile" style="flex:1;min-width:260px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)" value="${esc(state.settings.googleKeyFile || "")}" placeholder="/path/outside/repo/key.json"><button class="btn pri" data-savekey>Save</button></div>
+    <h3>Project</h3><div class="msg">Folder: <code>${esc(state.currentEntry?.root || "")}</code><br>Config: <code>seo-autopilot.config.json</code> in that folder. <button class="btn" data-remove style="margin-left:8px">Remove from this app</button></div>`;
+  return head + body;
+}
+
+function render() {
+  $("#projects").innerHTML = state.sites.map((s) => `<button class="proj ${state.current === s.id ? "on" : ""}" data-proj="${esc(s.id)}">${esc(s.name)}<small>${esc(s.repo)}</small></button>`).join("") || `<div class="muted" style="font-size:13px">No projects yet.</div>`;
+  $("#main").innerHTML = view();
+}
+
+async function loadSite(id) {
+  state.current = id; state.data = null; state.inbox = null; state.currentEntry = state.sites.find((s) => s.id === id); render();
+  try { state.data = await api(`/api/site/${id}/data`); } catch (e) { state.log = e.message; }
+  render();
+}
+async function loadInbox() { if (!state.current) return; try { state.inbox = await api(`/api/site/${state.current}/inbox`); } catch (e) { state.inbox = { error: e.message, items: [] }; } render(); }
+async function refreshProjects() { const r = await api("/api/projects"); state.sites = r.sites; state.problems = r.problems; state.settings = r.settings; if (!state.current && r.sites[0]) await loadSite(r.sites[0].id); else render(); }
+
+document.addEventListener("click", async (e) => {
+  const t = e.target.closest("button"); if (!t) return;
+  if (t.dataset.proj) return loadSite(t.dataset.proj);
+  if (t.dataset.tab) { state.tab = t.dataset.tab; render(); if (state.tab === "inbox" && !state.inbox) loadInbox(); return; }
+  if (t.id === "addbtn") { try { await api("/api/projects", { method: "POST", body: { path: $("#newpath").value.trim() } }); $("#addmsg").textContent = "Added."; $("#newpath").value = ""; await refreshProjects(); } catch (err) { $("#addmsg").textContent = err.message; } return; }
+  if (t.dataset.sync !== undefined || t.dataset.job) {
+    state.busy = true; state.log = t.dataset.job ? `Running ${t.dataset.job}…` : "Syncing…"; render();
+    try { const r = t.dataset.job ? await api(`/api/site/${state.current}/run`, { method: "POST", body: { job: t.dataset.job } }) : await api(`/api/site/${state.current}/sync`, { method: "POST", body: {} }); state.log = (r.ok ? "" : "FAILED\n") + (r.output || "(no output)"); }
+    catch (err) { state.log = err.message; }
+    state.busy = false; state.data = await api(`/api/site/${state.current}/data`).catch(() => state.data); render(); return;
+  }
+  if (t.dataset.savekey !== undefined) { state.settings = await api("/api/settings", { method: "POST", body: { googleKeyFile: $("#keyfile").value.trim() } }); render(); return; }
+  if (t.dataset.remove !== undefined && state.currentEntry && confirm("Remove this project from the app? Your files are not touched.")) { await api("/api/projects", { method: "DELETE", body: { path: state.currentEntry.root } }); state.current = null; state.data = null; await refreshProjects(); }
+});
+refreshProjects().catch((e) => { $("#main").innerHTML = `<div class="msg bad">${esc(e.message)}</div>`; });
+</script>
+</body>
+</html>

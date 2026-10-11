@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>seo-autopilot: an open-source SEO agent that never publishes without you</title>
+<meta name="description" content="Open-source SEO autopilot for any website. Reads your Search Console, researches keywords, watches the news, drafts pages for your approval and drips them out on a schedule. Runs in your own GitHub.">
+<meta property="og:title" content="seo-autopilot: an SEO agent that never publishes without you">
+<meta property="og:description" content="Evidence from your own Search Console. Drafts as pull requests. Scheduled release. Open source.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2314120e'/%3E%3Cpath d='M7 21l6-7 4 4 8-10' stroke='%2310b981' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  :root { --paper:#f6f1e9; --ink:#14120e; --soft:#5b574d; --line:#e3dccf; --green:#10b981; --deep:#0a6e3e; --card:#fffdf9; }
+  * { box-sizing:border-box; } html { scroll-behavior:smooth; }
+  body { margin:0; background:var(--paper); color:var(--ink); font:17px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  a { color:var(--deep); } .wrap { max-width:1080px; margin:0 auto; padding:0 20px; }
+  header { display:flex; align-items:center; justify-content:space-between; padding:18px 0; } .logo { font-weight:800; font-size:19px; text-decoration:none; color:inherit; display:flex; align-items:center; gap:9px; }
+  .logo i { width:26px; height:26px; border-radius:7px; background:var(--ink); display:inline-grid; place-items:center; } .logo svg { width:16px; height:16px; }
+  header nav a { margin-left:20px; text-decoration:none; font-size:15px; color:var(--soft); } header nav a:hover { color:var(--ink); }
+  .hero { background:var(--ink); color:#f3efe7; } .hero .wrap { padding-top:8px; padding-bottom:72px; } .hero header nav a { color:#cfd8d1; } .hero .logo { color:#f3efe7; }
+  .hero .logo i { background:#223028; }
+  h1 { font-size:clamp(34px,5.4vw,58px); line-height:1.07; margin:44px 0 18px; max-width:15em; letter-spacing:-.02em; font-weight:800; } h1 em { font-style:normal; color:var(--green); }
+  .lead { font-size:clamp(18px,2.2vw,21px); color:#cfd8d1; max-width:34em; margin:0 0 28px; }
+  .btn { display:inline-block; padding:13px 22px; border-radius:99px; font-weight:700; text-decoration:none; font-size:16px; border:1.5px solid transparent; margin:0 10px 10px 0; }
+  .btn.pri { background:var(--green); color:#04140d; } .btn.sec { border-color:#4a5a50; color:#f3efe7; } .btn.ink { background:var(--ink); color:#f3efe7; } .btn.line { border-color:var(--ink); color:var(--ink); }
+  .pill { display:inline-block; font-size:13px; padding:4px 12px; border:1px solid #3a4a41; border-radius:99px; color:#a9b9ae; margin-bottom:4px; }
+  section { padding:64px 0; } section h2 { font-size:clamp(26px,3.6vw,38px); line-height:1.15; margin:0 0 10px; letter-spacing:-.01em; } .sub { color:var(--soft); max-width:42em; margin:0 0 30px; }
+  .steps { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); counter-reset:s; } .step { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px; counter-increment:s; }
+  .step::before { content:counter(s); display:block; font-weight:800; font-size:13px; color:var(--deep); margin-bottom:8px; } .step b { display:block; margin-bottom:4px; } .step p { margin:0; font-size:15px; color:var(--soft); }
+  .step.you { border-color:var(--deep); background:#f0faf4; } .step.you::before { content:"you"; }
+  .grid { display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); } .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; } .card h3 { margin:0 0 6px; font-size:18px; } .card p { margin:0; color:var(--soft); font-size:15.5px; }
+  .dark { background:var(--ink); color:#f3efe7; } .dark .sub { color:#b8c6bb; } .dark .card { background:#1b231e; border-color:#2b3a31; } .dark .card p { color:#b8c6bb; } .dark a { color:var(--green); }
+  pre { background:#0e1511; color:#d7efe0; border-radius:14px; padding:18px 20px; overflow-x:auto; font:14.5px/1.65 ui-monospace,Consolas,monospace; margin:0 0 14px; } pre .c { color:#7f9a89; }
+  .two { display:grid; gap:24px; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); align-items:start; }
+  .tag { font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--deep); font-weight:700; } .dark .tag { color:var(--green); }
+  ul.clean { list-style:none; padding:0; margin:0; } ul.clean li { padding:9px 0 9px 26px; position:relative; border-top:1px solid var(--line); } ul.clean li::before { content:""; position:absolute; left:0; top:17px; width:12px; height:12px; border-radius:50%; background:var(--green); }
+  .dark ul.clean li { border-color:#2b3a31; } ul.no li::before { background:#b54708; }
+  details { border-top:1px solid var(--line); padding:14px 0; } details:last-child { border-bottom:1px solid var(--line); } summary { cursor:pointer; font-weight:700; } details p { color:var(--soft); margin:8px 0 0; }
+  footer { padding:34px 0 50px; color:var(--soft); font-size:14.5px; border-top:1px solid var(--line); } footer .wrap { display:flex; flex-wrap:wrap; gap:14px 28px; justify-content:space-between; }
+  @media (max-width:640px) { header nav a:not(.keep) { display:none; } section { padding:48px 0; } }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="wrap">
+    <header>
+      <a class="logo" href="#"><i><svg viewBox="0 0 32 32"><path d="M5 22l7-8 5 5 10-12" stroke="#10b981" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></i>seo-autopilot</a>
+      <nav><a href="#how">How it works</a><a href="#install">Install</a><a href="demo/">Demo</a><a class="keep" href="https://github.com/bishal-paul-git/seo-autopilot">GitHub</a></nav>
+    </header>
+    <span class="pill">Open source · MIT · runs in your own GitHub</span>
+    <h1>An SEO agent that works your backlog, and <em>never publishes without you.</em></h1>
+    <p class="lead">It reads your own Search Console, finds what to fix and what to write, drafts pages as pull requests for you to approve, and drips them out on a schedule. No invented data. No surprises.</p>
+    <a class="btn pri" href="https://github.com/bishal-paul-git/seo-autopilot/blob/main/docs/getting-started.md">Get started in 15 minutes</a>
+    <a class="btn sec" href="demo/">See the dashboard (sample data)</a>
+    <a class="btn sec" href="https://github.com/bishal-paul-git/seo-autopilot">View on GitHub</a>
+  </div>
+</div>
+
+<section id="how">
+  <div class="wrap">
+    <div class="tag">How it works</div>
+    <h2>Evidence in, human decision, careful release.</h2>
+    <p class="sub">Every step that changes your site waits for you. The rest runs on its own, every day, on GitHub's servers.</p>
+    <div class="steps">
+      <div class="step"><b>Measure</b><p>Daily Search Console report and an index check of your pages.</p></div>
+      <div class="step"><b>Find</b><p>Keyword gaps from your real queries, plus news from the feeds you trust.</p></div>
+      <div class="step you"><b>Approve</b><p>A "Topic" issue arrives with the evidence. Add the label <code>approved</code>, or close it.</p></div>
+      <div class="step"><b>Draft</b><p>Claude writes the page on a branch and opens a pull request. Your build checks it.</p></div>
+      <div class="step you"><b>Merge</b><p>You read it and merge. Only then is the page queued.</p></div>
+      <div class="step"><b>Release</b><p>Queued pages get dates, three a day, and the site rebuilds the day each is due.</p></div>
+    </div>
+  </div>
+</section>
+
+<section style="background:#efe8dc">
+  <div class="wrap">
+    <div class="tag">What you get</div>
+    <h2>A small team's routine work, done every day.</h2>
+    <p class="sub">Each job is separate. Turn on what you want.</p>
+    <div class="grid">
+      <div class="card"><h3>Daily report</h3><p>Clicks, impressions, position, and which pages Google has indexed. Near-miss queries and pages with views but no clicks.</p></div>
+      <div class="card"><h3>Keyword research</h3><p>Weekly, from your own search data: near-miss, question, rising and uncovered queries. No fake volume numbers.</p></div>
+      <div class="card"><h3>News and trends</h3><p>Reads RSS and Atom feeds you choose (regulators, platforms, your industry) and proposes at most one topic a day.</p></div>
+      <div class="card"><h3>Weekly digest</h3><p>What changed, what it probably means, what to do next. Includes Google Analytics sessions when connected.</p></div>
+      <div class="card"><h3>Drafts you approve</h3><p>Pages arrive as pull requests with sources cited. The agent can only edit your content folders and cannot run code.</p></div>
+      <div class="card"><h3>Drip scheduling</h3><p>Approved pages are dated a few a day and released on schedule, so the site grows steadily.</p></div>
+      <div class="card"><h3>Request-indexing list</h3><p>Google cannot be automated, so you get the ten pages that need it, each with a direct Search Console link.</p></div>
+      <div class="card"><h3>Careful backlinks</h3><p>At most five free-listing attempts a day, one retry, everything logged. Stops at any bot check. Also finds unlinked brand mentions.</p></div>
+      <div class="card"><h3>Dashboard and local app</h3><p>One HTML file per site, plus an app on your computer that manages every project in one place.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="dark">
+  <div class="wrap two">
+    <div>
+      <div class="tag">The rules it keeps</div>
+      <h2>Built to be trusted with your site.</h2>
+      <p class="sub">The tools that mass-produce pages put your rankings at risk. This one is designed the other way round.</p>
+      <ul class="clean">
+        <li><b>Nothing is published without two human steps:</b> an issue label, then a merged pull request.</li>
+        <li><b>No invented data.</b> Prompts forbid made-up numbers, prices, clients and quotes. Sources must be real and linked.</li>
+        <li><b>Read-only Google access.</b> A service account you control, kept in GitHub secrets.</li>
+        <li><b>Backlinks stay honest.</b> It never solves CAPTCHAs, creates accounts, pays, or swaps links.</li>
+        <li><b>Your data stays yours.</b> Everything is saved in your own repository. Nothing is sent to us.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="tag">Honest limits</div>
+      <h2>What it cannot do.</h2>
+      <p class="sub">So you do not find out the hard way.</p>
+      <ul class="clean no">
+        <li>It cannot press Google's <b>Request indexing</b> button. It prepares the list; you press it (about ten a day).</li>
+        <li>There is <b>no keyword-volume data</b>. Research uses your own impressions, and AI ideas are flagged as unverified.</li>
+        <li>Most free <b>backlink</b> directories need an account or show a CAPTCHA. Those are for a person, so it makes the checklist.</li>
+        <li>Nothing guarantees rankings or indexing. It makes the routine work consistent and keeps weak content out.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap two">
+    <div>
+      <div class="tag">Install</div>
+      <h2>Three commands in your website's repository.</h2>
+      <p class="sub">Needs Node 20 and a GitHub repository. No account with us, no card, no signup.</p>
+      <pre><span class="c"># 1. scaffold config, data files and GitHub workflows</span>
+npx github:bishal-paul-git/seo-autopilot#v2 init --url https://your-site.com/
+
+<span class="c"># 2. connect Google, then check the setup</span>
+npx github:bishal-paul-git/seo-autopilot#v2 doctor
+
+<span class="c"># 3. commit, push, and run Actions &gt; seo-daily</span></pre>
+      <p><a href="https://github.com/bishal-paul-git/seo-autopilot/blob/main/docs/getting-started.md">Full guide</a> · <a href="https://github.com/bishal-paul-git/seo-autopilot/blob/main/docs/google-setup.md">Connect Search Console and Analytics</a></p>
+    </div>
+    <div>
+      <div class="tag">Manage everything locally</div>
+      <h2>The local app.</h2>
+      <p class="sub">One page on your computer for every website you run: charts, index status, schedule, keywords, backlinks, and the approvals waiting on GitHub.</p>
+      <pre>npx github:bishal-paul-git/seo-autopilot#v2 projects add ~/sites/my-website
+npx github:bishal-paul-git/seo-autopilot#v2 ui --open</pre>
+      <p class="sub" style="margin-bottom:0">It listens only on your computer, needs a private link, and can only run dry runs and reports. <a href="demo/">See what the dashboard looks like</a>.</p>
+    </div>
+  </div>
+</section>
+
+<section style="background:#efe8dc">
+  <div class="wrap">
+    <div class="tag">Ways to use it</div>
+    <h2>Free and open source. Help if you want it.</h2>
+    <div class="grid" style="margin-top:22px">
+      <div class="card"><h3>Self-serve (today)</h3><p>MIT licensed. Install it in any repository and run it on GitHub's free tier. Documentation and a setup guide included.</p><p style="margin-top:12px"><a class="btn ink" href="https://github.com/bishal-paul-git/seo-autopilot">Get the code</a></p></div>
+      <div class="card"><h3>Done for you</h3><p>Erudience, the company behind this, can set it up, connect Google and run it for your site.</p><p style="margin-top:12px"><a class="btn line" href="https://erudience.com/book">Talk to Erudience</a></p></div>
+      <div class="card"><h3>Hosted version (planned)</h3><p>A hosted app with sign-in and an in-browser approvals inbox is being considered, not built. Tell us if you would use it.</p><p style="margin-top:12px"><a class="btn line" href="https://github.com/bishal-paul-git/seo-autopilot/issues/new?title=I%27d%20use%20a%20hosted%20version&body=What%20would%20you%20want%20it%20to%20do%3F">Say you'd use it</a></p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="tag">Questions</div>
+    <h2>The honest answers.</h2>
+    <div style="margin-top:18px">
+      <details><summary>Will it write pages on its own?</summary><p>No. It opens an issue with the evidence. A page is only drafted after you add the label <code>approved</code>, arrives as a pull request, and goes live only after you merge it and its scheduled day arrives.</p></details>
+      <details><summary>Does it work with WordPress or a CMS?</summary><p>Reports, research, news, the digest, the indexing list and the dashboard work with any site that has a sitemap. Drafting and scheduling need pages stored as JSON or Markdown files in a repository. A CMS adapter would be a welcome contribution.</p></details>
+      <details><summary>What does it cost?</summary><p>The software is free. GitHub Actions has a free tier that covers the daily jobs for a small site. AI keys and a cloud browser are optional and billed by their providers.</p></details>
+      <details><summary>Is my data sent to you?</summary><p>No. Search data goes from Google to your own GitHub runner and is saved in your own repository. Optional AI calls send short snippets to the provider you choose.</p></details>
+      <details><summary>Is it safe to let an agent near my site?</summary><p>The drafting agent can only edit the content folders you list, cannot run build or test commands, treats issue text as data, and cannot push to your main branch. Your build runs separately with no secrets. See the security notes.</p></details>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>seo-autopilot · MIT licence · made by <a href="https://erudience.com">Erudience</a></div>
+    <div><a href="https://github.com/bishal-paul-git/seo-autopilot/tree/main/docs">Docs</a> · <a href="https://github.com/bishal-paul-git/seo-autopilot/blob/main/SECURITY.md">Security</a> · <a href="https://github.com/bishal-paul-git/seo-autopilot/blob/main/CHANGELOG.md">Changelog</a> · <a href="https://github.com/bishal-paul-git/seo-autopilot/issues">Issues</a></div>
+  </div>
+</footer>
+</body>
+</html>

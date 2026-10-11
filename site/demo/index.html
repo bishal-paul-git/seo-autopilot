@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>seo-autopilot dashboard (sample data)</title>
+<style>
+  :root { --bg:#f6f1e9; --card:#fffdf9; --ink:#14120e; --soft:#5b574d; --line:#e3dccf; --green:#0a6e3e; --bad:#b42318; --warn:#b54708; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0e1511; --card:#161e19; --ink:#f3efe7; --soft:#a9b3ab; --line:#27332c; --green:#3ddc97; --bad:#ff8a80; --warn:#ffb86b; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui, -apple-system, Segoe UI, sans-serif; }
+  main { max-width:1100px; margin:0 auto; padding:24px 16px 64px; }
+  h1 { font-size:26px; margin:0 0 4px; } h2 { font-size:17px; margin:32px 0 10px; } .sub { color:var(--soft); margin:0 0 20px; }
+  .grid { display:grid; gap:12px; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; }
+  .num { font-size:28px; font-weight:800; line-height:1.1; } .lbl { color:var(--soft); font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; }
+  .tbl { overflow-x:auto; border:1px solid var(--line); border-radius:14px; background:var(--card); }
+  table { width:100%; border-collapse:collapse; font-size:14px; } th { text-align:left; font-size:12px; text-transform:uppercase; color:var(--green); padding:9px 12px; }
+  td { padding:9px 12px; border-top:1px solid var(--line); vertical-align:top; } a { color:var(--green); }
+  .pill { display:inline-block; padding:1px 9px; border-radius:99px; border:1px solid var(--line); font-size:12.5px; }
+  .ok { color:var(--green); } .bad { color:var(--bad); } .warn { color:var(--warn); }
+  pre { white-space:pre-wrap; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; font:13.5px/1.55 inherit; margin:0; }
+  svg { width:100%; height:160px; display:block; } .muted { color:var(--soft); }
+  .bar { display:flex; height:14px; border-radius:99px; overflow:hidden; background:var(--line); margin:8px 0; } .bar i { display:block; }
+</style>
+</head>
+<body>
+<div style="background:#14120e;color:#f3efe7;padding:10px 16px;font:14px system-ui">This is a <b>demo with sample data</b>, not a real website. <a style="color:#10b981" href="../">Back to seo-autopilot</a></div><main id="app"><p>Loading…</p></main>
+<script>
+const D = {"site":{"id":"sample","name":"SAMPLE DATA: Example Co (not a real site)","url":"https://example.com/","property":"https://example.com/"},"generated":"sample","history":[{"day":"2026-10-01","clicks":4,"impressions":180,"position":34,"inspected":60,"indexed":20,"notIndexed":40},{"day":"2026-10-02","clicks":6,"impressions":220,"position":33.6,"inspected":60,"indexed":21,"notIndexed":39},{"day":"2026-10-03","clicks":8,"impressions":260,"position":33.3,"inspected":60,"indexed":22,"notIndexed":38},{"day":"2026-10-04","clicks":10,"impressions":300,"position":33,"inspected":60,"indexed":23,"notIndexed":37},{"day":"2026-10-05","clicks":12,"impressions":340,"position":32.6,"inspected":60,"indexed":24,"notIndexed":36},{"day":"2026-10-06","clicks":9,"impressions":380,"position":32.3,"inspected":60,"indexed":26,"notIndexed":34},{"day":"2026-10-07","clicks":10,"impressions":420,"position":31.9,"inspected":60,"indexed":27,"notIndexed":33},{"day":"2026-10-08","clicks":12,"impressions":397,"position":31.6,"inspected":60,"indexed":28,"notIndexed":32},{"day":"2026-10-09","clicks":14,"impressions":437,"position":31.2,"inspected":60,"indexed":29,"notIndexed":31},{"day":"2026-10-10","clicks":16,"impressions":477,"position":30.9,"inspected":60,"indexed":30,"notIndexed":30},{"day":"2026-10-11","clicks":13,"impressions":517,"position":30.5,"inspected":60,"indexed":32,"notIndexed":28},{"day":"2026-10-12","clicks":15,"impressions":557,"position":30.1,"inspected":60,"indexed":33,"notIndexed":27},{"day":"2026-10-13","clicks":17,"impressions":597,"position":29.8,"inspected":60,"indexed":34,"notIndexed":26},{"day":"2026-10-14","clicks":19,"impressions":637,"position":29.4,"inspected":60,"indexed":35,"notIndexed":25},{"day":"2026-10-15","clicks":21,"impressions":614,"position":29.1,"inspected":60,"indexed":36,"notIndexed":24},{"day":"2026-10-16","clicks":18,"impressions":654,"position":28.8,"inspected":60,"indexed":38,"notIndexed":22},{"day":"2026-10-17","clicks":19,"impressions":694,"position":28.4,"inspected":60,"indexed":39,"notIndexed":21},{"day":"2026-10-18","clicks":21,"impressions":734,"position":28.1,"inspected":60,"indexed":40,"notIndexed":20},{"day":"2026-10-19","clicks":23,"impressions":774,"position":27.7,"inspected":60,"indexed":41,"notIndexed":19},{"day":"2026-10-20","clicks":25,"impressions":814,"position":27.4,"inspected":60,"indexed":42,"notIndexed":18},{"day":"2026-10-21","clicks":22,"impressions":854,"position":27,"inspected":60,"indexed":44,"notIndexed":16},{"day":"2026-10-22","clicks":24,"impressions":831,"position":26.6,"inspected":60,"indexed":45,"notIndexed":15},{"day":"2026-10-23","clicks":26,"impressions":871,"position":26.3,"inspected":60,"indexed":46,"notIndexed":14},{"day":"2026-10-24","clicks":28,"impressions":911,"position":26,"inspected":60,"indexed":47,"notIndexed":13},{"day":"2026-10-25","clicks":30,"impressions":951,"position":25.6,"inspected":60,"indexed":48,"notIndexed":12},{"day":"2026-10-26","clicks":27,"impressions":991,"position":25.3,"inspected":60,"indexed":50,"notIndexed":10},{"day":"2026-10-27","clicks":28,"impressions":1031,"position":24.9,"inspected":60,"indexed":51,"notIndexed":9},{"day":"2026-10-28","clicks":30,"impressions":1071,"position":24.6,"inspected":60,"indexed":52,"notIndexed":8}],"inspect":{"https://example.com/guides/sample-page-1":{"coverage":"Submitted and indexed","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/services/sample-page-2":{"coverage":"Submitted and indexed","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/blog/sample-page-3":{"coverage":"Submitted and indexed","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/use-cases/sample-page-4":{"coverage":"Discovered - currently not indexed","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/guides/sample-page-5":{"coverage":"URL is unknown to Google","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/services/sample-page-6":{"coverage":"Crawled - currently not indexed","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/blog/sample-page-7":{"coverage":"Submitted and indexed","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/use-cases/sample-page-8":{"coverage":"Submitted and indexed","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/guides/sample-page-9":{"coverage":"Submitted and indexed","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/services/sample-page-10":{"coverage":"Discovered - currently not indexed","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/blog/sample-page-11":{"coverage":"URL is unknown to Google","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/use-cases/sample-page-12":{"coverage":"Crawled - currently not indexed","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/guides/sample-page-13":{"coverage":"Submitted and indexed","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/services/sample-page-14":{"coverage":"Submitted and indexed","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/blog/sample-page-15":{"coverage":"Submitted and indexed","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/use-cases/sample-page-16":{"coverage":"Discovered - currently not indexed","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/guides/sample-page-17":{"coverage":"URL is unknown to Google","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/services/sample-page-18":{"coverage":"Crawled - currently not indexed","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/blog/sample-page-19":{"coverage":"Submitted and indexed","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/use-cases/sample-page-20":{"coverage":"Submitted and indexed","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/guides/sample-page-21":{"coverage":"Submitted and indexed","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/services/sample-page-22":{"coverage":"Discovered - currently not indexed","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/blog/sample-page-23":{"coverage":"URL is unknown to Google","checkedAt":"2026-10-28T05:17:00Z"},"https://example.com/use-cases/sample-page-24":{"coverage":"Crawled - currently not indexed","checkedAt":"2026-10-28T05:17:00Z"}},"backlog":{"how to choose a crm":{"query":"how to choose a crm","kinds":["question","uncovered"],"impressions":41,"position":18.2,"status":"proposed","score":41},"crm for small teams":{"query":"crm for small teams","kinds":["near-miss"],"impressions":33,"position":11.4,"status":"new","score":49},"crm data migration checklist":{"query":"crm data migration checklist","kinds":["rising","uncovered"],"impressions":18,"position":24,"status":"new","score":27}},"backlinks":[{"name":"Example Directory A","submit_url":"https://example.com/a","mode":"manual","status":"done","attempts":0,"note":"Listed by hand."},{"name":"Example Directory B","submit_url":"https://example.com/b","mode":"manual","status":"manual","attempts":0,"note":"Needs an account. Do by hand."},{"name":"Example Directory C","submit_url":"https://example.com/c","mode":"auto","status":"needs_human","attempts":1,"note":"Bot check on page. Left for a person."}],"digest":"# Example Co SEO weekly digest (sample)\n\n- Clicks: 63 (+24%)\n- Impressions: 1,204 (+31%)\n- Average position: 24.1 (was 27.6)\n\n## What to do next\n- Request indexing by hand for the 10 pages in the list above.\n- 2 topic proposals are waiting for your approval.\n","news":"# News and trends (sample)\n\n- A platform changed how it reports a metric (score 8)\n  https://example.com/news/1\n","pipeline":{"tracked":true,"liveThisWeek":3,"upcoming":6,"queued":1,"held":0,"schedule":[{"date":"2026-11-02","title":"How to choose a CRM","url":"https://example.com/blog/how-to-choose-a-crm"},{"date":"2026-11-02","title":"CRM data migration checklist","url":"https://example.com/blog/crm-data-migration-checklist"},{"date":"2026-11-03","title":"CRM for small teams","url":"https://example.com/blog/crm-for-small-teams"}]}};
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const short = (u) => esc(String(u).replace(D.site.url, "/"));
+const table = (head, rows, empty) => rows.length ? `<div class="tbl"><table><thead><tr>${head.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<p class="muted">${esc(empty)}</p>`;
+const link = (u) => `https://search.google.com/search-console/inspect?resource_id=${encodeURIComponent(D.site.property)}&id=${encodeURIComponent(u)}`;
+
+function chart(rows, key, color) {
+  if (rows.length < 2) return `<p class="muted">The chart appears after two days of data.</p>`;
+  const w = 600, h = 140, max = Math.max(...rows.map((r) => r[key]), 1);
+  const pts = rows.map((r, i) => `${(i / (rows.length - 1)) * w},${h - (r[key] / max) * (h - 8) - 4}`).join(" ");
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline fill="none" stroke="${color}" stroke-width="2.5" points="${pts}"/></svg><div class="muted">${esc(rows[0].day)} to ${esc(rows.at(-1).day)}, peak ${max}</div>`;
+}
+
+function render() {
+  const H = D.history, last = H.at(-1), insp = Object.entries(D.inspect);
+  const by = {}; insp.forEach(([, v]) => { by[v.coverage || "unknown"] = (by[v.coverage || "unknown"] || 0) + 1; });
+  const indexed = by["Submitted and indexed"] || 0;
+  const colors = { "Submitted and indexed": "#0a6e3e" };
+  const palette = ["#0a6e3e", "#b54708", "#b42318", "#6b7280", "#7c3aed", "#2563eb"];
+  const bar = Object.entries(by).map(([k, n], i) => `<i style="width:${(n / Math.max(insp.length, 1)) * 100}%;background:${colors[k] || palette[(i % 5) + 1]}" title="${esc(k)}: ${n}"></i>`).join("");
+  const P = D.pipeline;
+
+  $("#app").innerHTML = `
+  <h1>${esc(D.site.name)} SEO dashboard</h1>
+  <p class="sub">${esc(D.site.url)} · generated ${esc(D.generated)} · data from Search Console, kept in your own repository</p>
+  <div class="grid">
+    <div class="card"><div class="num">${last ? last.clicks : "–"}</div><div class="lbl">Clicks (28 days)</div></div>
+    <div class="card"><div class="num">${last ? last.impressions : "–"}</div><div class="lbl">Impressions (28 days)</div></div>
+    <div class="card"><div class="num">${last ? last.position : "–"}</div><div class="lbl">Average position</div></div>
+    <div class="card"><div class="num">${indexed} / ${insp.length}</div><div class="lbl">Inspected pages indexed</div></div>
+    ${P.tracked ? `<div class="card"><div class="num">${P.upcoming}</div><div class="lbl">Scheduled to publish</div></div><div class="card"><div class="num">${P.queued}</div><div class="lbl">Approved, not yet scheduled</div></div>` : ""}
+  </div>
+
+  <h2>Clicks and impressions over time</h2>
+  <div class="grid"><div class="card"><div class="lbl">Clicks</div>${chart(H, "clicks", "#0a6e3e")}</div><div class="card"><div class="lbl">Impressions</div>${chart(H, "impressions", "#2563eb")}</div></div>
+
+  <h2>Index status</h2>
+  <div class="card"><div class="bar">${bar}</div>${Object.entries(by).map(([k, n]) => `<span class="pill">${esc(k)}: ${n}</span> `).join("")}</div>
+
+  <h2>Pages to request indexing for (do these by hand)</h2>
+  ${table(["Page", "Status", "Action"], insp.filter(([, v]) => v.coverage && v.coverage !== "Submitted and indexed" && !/redirect|alternate|duplicate/i.test(v.coverage)).sort((a, b) => (/unknown/i.test(b[1].coverage) ? 1 : 0) - (/unknown/i.test(a[1].coverage) ? 1 : 0)).slice(0, 25).map(([u, v]) => [short(u), esc(v.coverage), `<a target="_blank" rel="noopener" href="${esc(link(u))}">Open in Search Console</a>`]), "Every inspected page is indexed or needs a fix, not a request.")}
+
+  ${P.tracked ? `<h2>Content schedule</h2>${table(["Date", "Page"], P.schedule.slice(0, 40).map((s) => [esc(s.date), s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title || s.url)}</a>` : esc(s.title)]), "Nothing is scheduled. Approve topic proposals to fill the schedule.")}` : ""}
+
+  <h2>Keyword and topic backlog</h2>
+  ${table(["Query", "Type", "Impr.", "Position", "Status"], Object.values(D.backlog).sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 40).map((b) => [esc(b.query) + (b.unverified ? ' <span class="pill">idea, no data</span>' : ""), esc((b.kinds || []).join(", ")), b.impressions ?? "", b.position ?? "", esc(b.status)]), "Run the weekly research job to fill this.")}
+
+  <h2>Backlink listings</h2>
+  ${table(["Target", "Mode", "Status", "Tries", "Note"], D.backlinks.map((r) => [`<a href="${esc(r.submit_url)}" target="_blank" rel="noopener">${esc(r.name)}</a>`, esc(r.mode), `<span class="${r.status === "failed" ? "bad" : r.status === "submitted" || r.status === "done" ? "ok" : "warn"}">${esc(r.status)}</span>`, r.attempts, esc(r.note)]), "No backlink targets configured.")}
+
+  <h2>Latest weekly digest</h2><pre>${esc(D.digest || "The weekly job has not run yet.")}</pre>
+  <h2>News and trends</h2><pre>${esc(D.news || "The daily job has not run yet.")}</pre>
+  `;
+}
+render();
+</script>
+</body>
+</html>

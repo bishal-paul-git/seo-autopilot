@@ -7,6 +7,8 @@ import { init } from "../src/cli/init.mjs";
 import { doctor } from "../src/cli/doctor.mjs";
 import { restore, save } from "../src/cli/state.mjs";
 import { parseArgs } from "../src/cli/args.mjs";
+import { addProject, removeProject, listSites } from "../src/core/projects.mjs";
+import { startUi } from "../src/ui/server.mjs";
 
 const pkg = JSON.parse(readFileSync(fileURLToPath(new URL("../package.json", import.meta.url)), "utf8"));
 
@@ -17,6 +19,8 @@ Usage
   seo-autopilot init --url https://example.com/    scaffold config, data files and GitHub workflows
   seo-autopilot doctor                              check the setup and say what to fix
   seo-autopilot run <job> [--site id] [--dry]       run one job
+  seo-autopilot ui [--port 4747] [--open]           local app to manage every project on this computer
+  seo-autopilot projects add|list|remove [path]     choose which website folders the app shows
   seo-autopilot state restore|save                  load/save memory on the "seo-data" branch (used by the workflows)
   seo-autopilot version
 
@@ -35,6 +39,18 @@ try {
   else if (cmd === "state") {
     const sub = positional[0];
     if (sub === "restore") restore(); else if (sub === "save") save(); else throw new Error("usage: state restore|save");
+  } else if (cmd === "ui") {
+    await startUi({ port: Number(flags.port || 4747), open: Boolean(flags.open) });
+  } else if (cmd === "projects") {
+    const [sub, path] = positional;
+    if (sub === "add") console.log(`added ${addProject(path || ".")}`);
+    else if (sub === "remove") { removeProject(path || "."); console.log("removed"); }
+    else if (sub === "list") {
+      const { sites, problems } = listSites();
+      for (const x of sites) console.log(`${x.id}  ${x.site.name}  ${x.root}`);
+      for (const p of problems) console.log(`PROBLEM ${p.root}: ${p.error}`);
+      if (!sites.length && !problems.length) console.log("No projects yet. Run: seo-autopilot projects add <folder>");
+    } else throw new Error("usage: projects add|list|remove [path]");
   } else if (cmd === "run") {
     const [job, ...args] = positional;
     if (!job) throw new Error("usage: run <job>. See: seo-autopilot help");
