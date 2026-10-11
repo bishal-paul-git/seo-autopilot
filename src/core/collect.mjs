@@ -45,5 +45,7 @@ export async function collectSiteData(site) {
     audit: auditView(readJson(`${s}/audit.json`, null)),
     insights: readJson(`${s}/insights.json`, null),
     experiments: read(`${s}/experiments.md`),
+    geo: readJson(`${s}/geo.json`, null),
+    speed: readJson(`${s}/speed.json`, null),
   };
 }

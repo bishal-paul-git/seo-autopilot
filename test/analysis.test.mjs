@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { buildCtrCurve, expectedCtr, cannibalization, strikingDistance, ctrUnderperformers, decay, classifyIntent, intentMix, brandSplit, topicClusters, analyze } from "../src/analysis/search.mjs";
 import { buildPriorities } from "../src/analysis/priorities.mjs";
-import { evaluate } from "../src/analysis/experiments.mjs";
+import { evaluate, controlGroup } from "../src/analysis/experiments.mjs";
 import { RULES } from "../src/audit/rules.mjs";
 
 const row = (query, page, clicks, impressions, position) => ({ query, page, clicks, impressions, position });
@@ -104,4 +104,20 @@ test("experiments wait for the after-window, then compare 14 days before and aft
   assert.equal(done.verdict, "click-through improved");
   assert.match(done.note, /Directional/);
   assert.equal(evaluate({ ...exp, url: "https://s/none" }, series, "2026-10-20").status, "no data");
+});
+
+test("experiments adjust for the rest of the site when enough untouched pages exist", () => {
+  const series = {};
+  const fill = (url, from, n, v) => { series[url] ||= {}; for (let i = 0; i < n; i++) series[url][new Date(Date.parse(from) + i * 864e5).toISOString().slice(0, 10)] = v; };
+  // The tested page doubles its impressions; the whole site also doubles (season), so the adjusted change is about zero.
+  fill("https://s/p", "2026-09-01", 14, [2, 100, 8]); fill("https://s/p", "2026-09-18", 14, [4, 200, 8]);
+  for (const u of ["a", "b", "c"]) { fill(`https://s/${u}`, "2026-09-01", 14, [2, 100, 8]); fill(`https://s/${u}`, "2026-09-18", 14, [4, 200, 8]); }
+  const exp = { url: "https://s/p", change: "rewrote title", date: "2026-09-15" };
+  const controls = controlGroup(exp, series, new Set([exp.url]));
+  assert.equal(controls.pages, 3);
+  const r = evaluate(exp, series, "2026-10-20", { controls });
+  assert.equal(r.verdict, "in line with the rest of the site");
+  assert.ok(Math.abs(r.control.adjustedImpressionsChange) < 0.01);
+  // Too few pages: no control group, plain before/after.
+  assert.equal(controlGroup(exp, { "https://s/p": series["https://s/p"], "https://s/a": series["https://s/a"] }, new Set([exp.url])), null);
 });

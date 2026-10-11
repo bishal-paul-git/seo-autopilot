@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.6.0
+
+- **Experiments now use a control group:** results are adjusted against the site's untouched pages over the same dates when there are enough of them.
+- Dashboard and local app: new AI search (GEO) and Speed views.
+
 ## 2.5.0
 
 - **Technical audit:** structured-data required-property checks (Organization, LocalBusiness, Product, FAQPage, BreadcrumbList, VideoObject, Event, JobPosting and more), hreflang validity, self-reference and return links, and missing Open Graph tags.
