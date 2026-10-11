@@ -36,6 +36,6 @@ The Approvals tab uses the GitHub CLI (`gh`) that you already have signed in. Wi
 - It stores two small files in `~/.seo-autopilot` (override with `SEO_AUTOPILOT_HOME`): the list of project folders and the *path* of your Google key file. It never stores or copies the key.
 - Jobs that read Google (`daily`, `research`, `digest`) need the key file path under Settings. Jobs that would open GitHub issues only print what they would do here, because the app does not hold a GitHub token.
 
-## Hosting it for a team
+## Teams
 
-It is a local tool by design. A hosted version with sign-in, an in-browser approvals inbox and shared projects would be a separate product; see the landing page for status.
+It is a local tool by design: each person runs it on their own computer against the same repositories. The cloud workflows keep everyone's data in sync through the `seo-data` branch.
