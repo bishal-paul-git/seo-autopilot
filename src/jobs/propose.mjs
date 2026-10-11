@@ -43,6 +43,9 @@ export async function run({ site }) {
   let made = 0;
   for (const c of candidates) {
     if (made >= site.limits.proposalsPerRun) break;
+    // "Undiscovered" pages are usually just waiting for Google to crawl them, so by default they go to the weekly
+    // request-indexing list instead of becoming issues. Turn issues on with  "proposals": { "undiscovered": true }.
+    if (c.kind === "undiscovered" && !site.proposals?.undiscovered) continue;
     const t = kinds[c.kind]?.(c);
     if (!t || seen.has(t.title)) continue;
     if (c.kind === "near-miss" && (ignore.some((x) => c.key.toLowerCase().includes(x)) || covered(c.key))) { console.log(`skip (covered or ignored): ${c.key}`); continue; }

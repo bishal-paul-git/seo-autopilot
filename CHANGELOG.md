@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.3
+
+- `propose` no longer opens "add internal links" issues for pages Google has not crawled yet (they go to the weekly request-indexing list). Opt back in with `"proposals": { "undiscovered": true }`.
+
 ## 2.0.2
 
 - `state restore` now unstages the restored files, so a later `git add -A && git commit` can never put saved reports into your main branch.
