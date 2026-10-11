@@ -11,6 +11,7 @@ Run any job with `npx seo-autopilot run <job> [--site id] [--dry]`.
 | `mentions` | daily | `mentions.json`; AI key optional | issues labelled `seo-backlink` |
 | `audit` | daily | none (crawls your live site) | `audit.json`: findings with why and fix |
 | `analyze` | daily | output of `daily` | `insights.json`: striking distance, CTR gaps, cannibalization, decay, content gaps |
+| `speed` | weekly | none (`PAGESPEED_API_KEY` optional) | `speed.json`, `speed.md`: Core Web Vitals, lab and real-user |
 | `priorities` | daily (dry) and weekly (issue) | `audit`/`analyze` output | `priorities.json`, `priorities.md`, issue `seo-priorities` |
 | `experiments` | weekly | `experiments.json` log | `experiments.md` (14 days before vs after) |
 | `dashboard` | daily | none | `dashboard/index.html` |
@@ -32,7 +33,8 @@ Outside GitHub Actions the jobs that open issues print what they would do unless
 | `GOOGLE_KEY_JSON` | secret | everything that reads Google |
 | `INDEXNOW_KEY` | secret | IndexNow |
 | `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` | secret | optional AI judging, ideas, digest wording. `SEO_LLM_PROVIDER`, `SEO_MODEL`, `OPENAI_BASE_URL` pick the provider/model |
-| `CLAUDE_CODE_OAUTH_TOKEN` | secret | the implementer (drafts approved pages as pull requests) |
+| `CLAUDE_CODE_OAUTH_TOKEN` or `ANTHROPIC_API_KEY` | secret | the implementer (drafts approved pages as pull requests); either works and drafting is optional |
+| `PAGESPEED_API_KEY` | secret | optional, raises the PageSpeed rate limit |
 | `SEO_INGEST_URL`, `SEO_INGEST_TOKEN` | secrets | optional database dashboard |
 | `BROWSER_WS_ENDPOINT` | secret | optional cloud browser for backlinks |
 | `DEPLOY_HOOK_URL` | secret | optional rebuild hook for scheduled publishing |

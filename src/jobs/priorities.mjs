@@ -15,7 +15,7 @@ export async function run({ site, flags }) {
   if (!audit && !insights) { console.log("priorities: nothing to rank yet. Run `audit` and the daily job (then `analyze`) first."); return; }
   const inspect = readJson(`${s}/inspect-state.json`, { results: {} }).results;
   const indexing = Object.entries(inspect).filter(([, v]) => v.coverage && v.coverage !== "Submitted and indexed" && !/redirect|alternate|duplicate/i.test(v.coverage)).map(([u, v]) => `${u.replace(site.url, "/")} (${v.coverage})`);
-  const items = buildPriorities({ audit, insights, rules: RULES, pipeline: pipeline(await loadPages(site), today()), indexing });
+  const items = buildPriorities({ audit, insights, rules: RULES, pipeline: pipeline(await loadPages(site), today()), indexing, speed: readJson(`${s}/speed.json`, null) });
   writeJson(`${s}/priorities.json`, { generatedAt: new Date().toISOString(), items });
 
   const md = `# ${site.name} priorities ${today()}

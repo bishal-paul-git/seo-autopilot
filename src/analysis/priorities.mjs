@@ -17,7 +17,7 @@ const AUDIT_EFFORT = {
   "duplicate-content": "M", "slow-ttfb": "L", "sitemap-not-in-robots": "S", "robots-blocks-all": "S",
 };
 
-export function buildPriorities({ audit, insights, rules, pipeline, indexing } = {}) {
+export function buildPriorities({ audit, insights, rules, pipeline, indexing, speed } = {}) {
   const items = [];
   const add = (it) => items.push({ confidence: "medium", effort: "M", ...it, score: 0 });
 
@@ -86,6 +86,15 @@ export function buildPriorities({ audit, insights, rules, pipeline, indexing } =
       evidence: [`${g.impressions} impressions across ${g.queries} queries`],
     });
   }
+
+  // 2b. Core Web Vitals: only pages rated poor on real-user or lab data.
+  const slow = (speed?.results || []).filter((r) => !r.error && ((r.field.lcp ?? 0) > 4000 || (r.field.inp ?? 0) > 500 || (r.field.cls ?? 0) > 0.25 || r.lab.score < 50));
+  if (slow.length) add({
+    id: "speed:poor", type: "speed", title: `${slow.length} page(s) rate poor on speed`,
+    impact: Math.min(60, slow.length * 12), impactUnit: "points", confidence: slow.some((r) => r.field.lcp != null) ? "medium" : "low", effort: "M",
+    why: "Core Web Vitals are a ranking signal and slow pages lose visitors before they read anything. The effect on rankings is usually modest, so treat this as a tie-breaker, not a first fix.",
+    how: "Start with each page's top fix in the speed report (usually image size, render-blocking scripts or unused JavaScript).", evidence: slow.slice(0, 5).map((r) => `${r.url} (score ${r.lab.score})`),
+  });
 
   // 3. Indexing and pipeline.
   if (indexing?.length) add({

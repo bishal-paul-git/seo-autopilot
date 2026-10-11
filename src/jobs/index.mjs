@@ -18,6 +18,7 @@ export const JOBS = {
   dashboard: () => import("./dashboard.mjs"),
   audit: () => import("./audit.mjs"),
   analyze: () => import("./analyze.mjs"),
+  speed: () => import("./speed.mjs"),
   priorities: () => import("./priorities.mjs"),
   experiments: () => import("./experiments.mjs"),
 };

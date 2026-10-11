@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.3.0
+
+- **`speed` job:** Core Web Vitals (lab and real-user) for your top pages via PageSpeed Insights; poor pages feed the priorities list.
+- The drafting workflow accepts `ANTHROPIC_API_KEY` as well as `CLAUDE_CODE_OAUTH_TOKEN`.
+
 ## 2.2.0
 
 Expert layer: the autopilot now reasons about your site instead of only reporting numbers.
