@@ -1,7 +1,7 @@
 // Technical and on-page audit. Crawls your sitemap (and the internal links it finds), reads what a crawler sees before
 // JavaScript runs, and reports findings with the reason each matters and how to fix it. Read-only: it only makes GET and
 // HEAD requests to your own site. Writes <state>/<site>/audit.json and audit.md.
-//   npx seo-autopilot run audit [--max-pages 300]
+//   npx seo-autopilot run audit [--max-pages 300] [--engine node|go|auto]
 import { crawlSite } from "../audit/crawl.mjs";
 import { runChecks, summarize, RULES, SEVERITY_ORDER } from "../audit/rules.mjs";
 import { linkOpportunities } from "../audit/links.mjs";
@@ -10,7 +10,7 @@ import { writeJson, writeText, today } from "../core/util.mjs";
 export const description = "Crawl the site like a search engine: technical and on-page issues, link graph, internal-link opportunities";
 
 export async function run({ site, flags }) {
-  const { pages, ctx } = await crawlSite(site, { maxPages: flags["max-pages"] ? Number(flags["max-pages"]) : undefined });
+  const { pages, ctx } = await crawlSite(site, { maxPages: flags["max-pages"] ? Number(flags["max-pages"]) : undefined, engine: typeof flags.engine === "string" ? flags.engine : undefined });
   const issues = runChecks(pages, ctx);
   const summary = summarize(issues, pages.length);
   const opportunities = linkOpportunities(pages);

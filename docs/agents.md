@@ -14,6 +14,9 @@ seo-autopilot works as a small team of six agents. Each is a Markdown file in [`
 ## In GitHub Actions
 `init` and `upgrade --apply` copy the agents into your project's data folder (`seo-autopilot/agents/` by default). The workflows tell Claude to read the relevant file first. The hard limits in the workflow (scoped file edits, no build commands, issue text treated as data) apply regardless of what an agent file says.
 
+## Running agents yourself (Python runtime)
+The strategist and researcher can also run unattended in the Python agent runtime, with read-only tools and no ability to change your site. See [engines.md](engines.md).
+
 ## In Claude Code
 Copy any file from `agents/` into `.claude/agents/` (project) or `~/.claude/agents/` (all projects), then ask for it by name, for example "use seo-strategist to plan this week". They use standard subagent front matter (`name`, `description`, `tools`).
 

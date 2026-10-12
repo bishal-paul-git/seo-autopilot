@@ -74,6 +74,7 @@ seo-autopilot state restore|save                 load or save memory on the "seo
 - [Configuration reference](docs/configuration.md)
 - [Jobs and secrets](docs/jobs.md)
 - [The agents](docs/agents.md)
+- [Python and Go engines](docs/engines.md)
 - [Upgrading](docs/upgrading.md)
 - [Troubleshooting](docs/troubleshooting.md)
 - [IndexNow](docs/indexnow.md)

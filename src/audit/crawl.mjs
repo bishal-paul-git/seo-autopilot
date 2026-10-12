@@ -41,11 +41,45 @@ async function pool(items, size, worker, delay = 0) {
   return out;
 }
 
+
+/**
+ * Link graph: inbound counts and click depth from the home page (internal links to HTML pages only). Shared by the built-in
+ * crawler and the Go engine so both feed the audit rules identical data. Mutates each page: p.inbound, p.depth.
+ */
+export function linkGraph(list, homeUrl) {
+  const pages = new Map(list.map((p) => [strip(p.url), p]));
+  const key = (u) => strip(u);
+  const finalToKey = new Map(list.map((p) => [key(p.finalUrl || p.url), key(p.url)]));
+  const inbound = new Map(list.map((p) => [key(p.url), new Set()]));
+  const adj = new Map();
+  for (const p of list) {
+    const targets = new Set();
+    for (const l of p.links || []) {
+      const k = key(l.url), t = pages.has(k) ? k : finalToKey.get(k);
+      if (t && t !== key(p.url)) { targets.add(t); inbound.get(t)?.add(key(p.url)); }
+    }
+    adj.set(key(p.url), targets);
+  }
+  const home = key(homeUrl), depth = new Map([[home, 0]]), q = [home];
+  while (q.length) { const c = q.shift(); for (const n of adj.get(c) || []) if (!depth.has(n)) { depth.set(n, depth.get(c) + 1); q.push(n); } }
+  for (const p of list) { p.inbound = inbound.get(key(p.url))?.size ?? 0; p.depth = depth.has(key(p.url)) ? depth.get(key(p.url)) : null; }
+}
+
 /**
  * Crawl the site. Returns { pages, ctx } ready for runChecks().
  * opts: { maxPages, concurrency, fetchImpl }
  */
 export async function crawlSite(site, opts = {}) {
+  const engine = opts.engine ?? site.audit?.engine ?? "node";
+  if (engine === "go" || engine === "auto") {
+    const { crawlWithGo, findGoEngine } = await import("./engines.mjs");
+    if (findGoEngine()) {
+      const r = await crawlWithGo(site, opts);
+      linkGraph(r.pages, site.url);
+      return r;
+    }
+    if (engine === "go") console.log("audit: the Go engine was requested but neither a built seo-crawl nor the Go toolchain was found; using the built-in crawler.");
+  }
   const maxPages = opts.maxPages ?? site.audit?.maxPages ?? 300;
   const fetchImpl = opts.fetchImpl ?? fetch;
   const host = new URL(site.url).host;
@@ -74,23 +108,10 @@ export async function crawlSite(site, opts = {}) {
     }
   }
 
-  // Link graph: inbound counts and click depth from the home page (internal links to HTML pages only).
   const list = [...pages.values()];
+  linkGraph(list, site.url);
   const key = (u) => strip(u);
   const finalToKey = new Map(list.map((p) => [key(p.finalUrl || p.url), key(p.url)]));
-  const inbound = new Map(list.map((p) => [key(p.url), new Set()]));
-  const adj = new Map();
-  for (const p of list) {
-    const targets = new Set();
-    for (const l of p.links) {
-      const k = key(l.url), t = pages.has(k) ? k : finalToKey.get(k);
-      if (t && t !== key(p.url)) { targets.add(t); inbound.get(t)?.add(key(p.url)); }
-    }
-    adj.set(key(p.url), targets);
-  }
-  const home = key(site.url), depth = new Map([[home, 0]]), q = [home];
-  while (q.length) { const c = q.shift(); for (const n of adj.get(c) || []) if (!depth.has(n)) { depth.set(n, depth.get(c) + 1); q.push(n); } }
-  for (const p of list) { p.inbound = inbound.get(key(p.url))?.size ?? 0; p.depth = depth.has(key(p.url)) ? depth.get(key(p.url)) : null; }
 
   // Internal link targets we did not crawl: check they resolve (HEAD), capped.
   const unknownTargets = new Set();

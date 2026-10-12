@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.9.0
+
+- **Python engine (`engines/python`):** `run deepdive` groups your queries into topics (TF-IDF), flags unusual days and trends with robust statistics, and lists pages losing visibility. Standard library only.
+- **Agent runtime (Python, Claude Agent SDK):** `run agent seo-strategist` and `run agent seo-researcher` run tool-using agents over your saved data. Read-only tools, a safe web fetcher (public addresses only), turn and budget limits, an audit trail, and proposals that become approval issues only when you ask. New optional `seo-agent` workflow (off until `SEO_AGENT=true`).
+- **Go engine (`engines/go`):** `run audit --engine go` uses a fast concurrent crawler with the same output as the built-in one; a test requires identical results.
+- `doctor` reports Python, the Agent SDK and Go. CI now builds and tests both engines.
+
 ## 2.8.0
 
 - **`upgrade` command:** reports which workflows are missing or differ from this version's templates, with `--apply` to add missing ones and refresh the playbooks and agents, `--diff` to see the differences and `--force` to replace. Your pinned version tag is kept. Agent files keep your own "Project rules" section across upgrades.

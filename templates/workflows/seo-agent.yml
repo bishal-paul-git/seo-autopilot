@@ -1,0 +1,57 @@
+# seo-autopilot: the weekly agent run (optional). A tool-using AI agent reads your saved SEO data, checks the live results and
+# writes you a plan; a second agent proposes topics you might cover. Everything they produce is a GitHub issue for YOU to read
+# or approve. They cannot edit your site, publish, or open issues themselves.
+#
+# OFF until you create the repository VARIABLE  SEO_AGENT = true  (Settings > Secrets and variables > Actions > Variables).
+# Needs one of the secrets CLAUDE_CODE_OAUTH_TOKEN (your Claude subscription) or ANTHROPIC_API_KEY (pay per use).
+# Each run is capped by turns and by SEO_AGENT_BUDGET_USD (default 1.5 US dollars per agent).
+name: seo-agent
+on:
+  schedule: [{ cron: "47 7 * * 1" }]   # Mondays 07:47 UTC, after the weekly job
+  workflow_dispatch: {}
+permissions:
+  contents: write
+  issues: write
+concurrency:
+  group: seo-data
+  cancel-in-progress: false
+env:
+  SEO: "{{SPEC}}"
+jobs:
+  agents:
+    if: vars.SEO_AGENT == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with: { node-version: 20 }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Install the agent SDK
+        run: python -m pip install --quiet claude-agent-sdk
+      - name: Restore state
+        run: npx --yes "$SEO" state restore
+      - name: Deeper analysis (query topics, unusual days, pages losing visibility)
+        continue-on-error: true
+        run: npx --yes "$SEO" run deepdive
+      - name: Strategist agent (weekly plan, posted as one issue)
+        continue-on-error: true
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SEO_AGENT_BUDGET_USD: ${{ vars.SEO_AGENT_BUDGET_USD }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: npx --yes "$SEO" run agent seo-strategist --issue
+      - name: Researcher agent (topic proposals, opened as issues for your approval)
+        continue-on-error: true
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SEO_AGENT_BUDGET_USD: ${{ vars.SEO_AGENT_BUDGET_USD }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: npx --yes "$SEO" run agent seo-researcher --issues
+      - name: Save state
+        run: npx --yes "$SEO" state save

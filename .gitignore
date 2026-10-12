@@ -3,3 +3,8 @@ reports/
 *service-account*.json
 *.key.json
 .env
+__pycache__/
+*.pyc
+engines/go/seo-crawl
+engines/go/seo-crawl.exe
+.venv/

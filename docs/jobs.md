@@ -12,6 +12,8 @@ Run any job with `npx seo-autopilot run <job> [--site id] [--dry]`.
 | `audit` | daily | none (crawls your live site) | `audit.json`: findings with why and fix |
 | `analyze` | daily | output of `daily` | `insights.json`: striking distance, CTR gaps, cannibalization, decay, content gaps |
 | `refresh` | weekly | `GITHUB_TOKEN`; output of `analyze` | issues labelled `seo-proposal` + `seo-refresh` for your pages that lost visibility |
+| `deepdive` | weekly (seo-agent) | Python 3.10+ | `deepdive.md`, `deepdive.json`: query topics, unusual days, pages losing visibility |
+| `agent` | weekly (seo-agent), opt-in | Python, `claude-agent-sdk`, a Claude login | `agent-reports/`, `agent-proposals.json`, issues with `--issue` / `--issues` |
 | `geo` | weekly | none | `geo.json`, `geo.md`: AI-crawler access, llms.txt, answer-first and entity signals |
 | `speed` | weekly | none (`PAGESPEED_API_KEY` optional) | `speed.json`, `speed.md`: Core Web Vitals, lab and real-user |
 | `priorities` | daily (dry) and weekly (issue) | `audit`/`analyze` output | `priorities.json`, `priorities.md`, issue `seo-priorities` |

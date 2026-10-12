@@ -7,6 +7,8 @@ import { llmAvailable } from "../lib/llm.mjs";
 import { ingestEnabled } from "../lib/ingest.mjs";
 import { ghAvailable } from "../lib/gh.mjs";
 import { plan } from "./upgrade.mjs";
+import { findPython } from "../lib/python.mjs";
+import { findGoEngine } from "../audit/engines.mjs";
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -78,6 +80,16 @@ export async function doctor({ cwd = process.cwd() } = {}) {
     if (differs.length) warn(`${differs.length} workflow(s) differ from this version's templates (${differs.map((i) => i.file).join(", ")}): run \`seo-autopilot upgrade --diff\` to see what is new`);
     existsSync(join(c2.dataDir, "agents")) && existsSync(join(c2.dataDir, "knowledge")) ? ok("playbooks and agents are in the project") : warn("playbooks or agents missing: run `seo-autopilot upgrade --apply`");
   } catch (e) { warn(`could not compare workflows: ${e.message}`); }
+
+  console.log("\nOptional engines");
+  const py = findPython();
+  py ? ok(`Python ${py.version} found (deepdive and the agents can run)`) : warn("Python 3.10+ not found: the deepdive job and the agents are skipped (optional)");
+  if (py) {
+    const sdk = spawnSync(py.cmd, [...py.args, "-c", "import claude_agent_sdk"], { encoding: "utf8", timeout: 20000 });
+    sdk.status === 0 ? ok("claude-agent-sdk installed") : warn("claude-agent-sdk not installed: pip install claude-agent-sdk (only needed to run agents)");
+  }
+  const goEng = findGoEngine();
+  goEng ? ok(`Go crawler available (${goEng.how}); use it with audit --engine go`) : warn("Go not found: the built-in Node crawler is used (the Go engine is optional and faster on big sites)");
 
   console.log("\nGitHub secrets and variables");
   const gh = githubSetup(cwd);
