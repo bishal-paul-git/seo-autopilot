@@ -155,11 +155,24 @@ func TestCrawlSmallSite(t *testing.T) {
 	if _, ok := byURL[base+"/file.pdf"]; ok {
 		t.Fatal("asset links must not be crawled")
 	}
-	if st, ok := out.BrokenTargets[base+"/missing"]; !ok || st != 404 {
-		t.Fatalf("broken target not reported: %v", out.BrokenTargets)
+	// Links found on crawled pages are crawled in the next round, so a dead link shows up as a page with status 404.
+	if m, ok := byURL[base+"/missing"]; !ok || m.Status != 404 {
+		t.Fatalf("a dead internal link should be crawled and recorded as 404: %+v", m)
 	}
-	if len(out.BrokenTargets) != 1 {
-		t.Fatalf("unexpected broken targets: %v", out.BrokenTargets)
+	if len(out.BrokenTargets) != 0 {
+		t.Fatalf("every link target was crawled, so nothing needs probing: %v", out.BrokenTargets)
+	}
+
+	// With a single round only the sitemap pages are fetched; links they point to are probed with HEAD instead.
+	one, err := crawl(Config{SiteURL: base + "/", SitemapURL: base + "/sitemap.xml", MaxPages: 50, Concurrency: 2, Timeout: 5 * time.Second, Rounds: 1, Probe: 20, UserAgent: "test"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if st, ok := one.BrokenTargets[base+"/missing"]; !ok || st != 404 {
+		t.Fatalf("broken target not reported by the probe: %v", one.BrokenTargets)
+	}
+	if _, ok := one.BrokenTargets[base+"/discovered"]; ok {
+		t.Fatalf("a working link must not be reported broken: %v", one.BrokenTargets)
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
