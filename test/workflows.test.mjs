@@ -56,6 +56,7 @@ test("seo-check has no secrets and read-only permissions", () => {
 
 test("auto-merge and review are opt-in by repository variable and restricted to seo/ branches in the same repository", () => {
   const am = text("seo-automerge.yml"), rv = text("seo-review.yml");
+  assert.match(am, /checks: read/, "needs checks: read to look up the seo-check result");
   assert.match(am, /vars\.SEO_AUTOMERGE == 'true'/);
   assert.match(am, /startsWith\(github\.event\.workflow_run\.head_branch, 'seo\/'\)/);
   assert.match(am, /head_repository\.full_name == github\.repository/);

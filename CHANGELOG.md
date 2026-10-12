@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.9.2
+
+- Fix: `seo-automerge` now has `checks: read`, which it needs to confirm `seo-check` passed on the exact commit. Without it the lookup failed with HTTP 403 and nothing could auto-merge.
+
 ## 2.9.1
 
 - `seo-check` falls back to `npm install` (with a warning) when `npm ci` rejects the lockfile, so a lockfile written by a different npm version no longer blocks every SEO pull request and auto-merge.

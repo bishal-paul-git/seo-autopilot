@@ -16,6 +16,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  checks: read      # to confirm seo-check passed on the exact commit
 
 jobs:
   merge:
