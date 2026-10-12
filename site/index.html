@@ -127,6 +127,20 @@
   </div>
 </section>
 
+<section id="engines">
+  <div class="wrap">
+    <div class="tag">Under the hood</div>
+    <h2>Node at the core. Go and Python where they are best.</h2>
+    <p class="sub">Everything works with Node alone, with no dependencies. Two optional engines add speed and real agents, and are used only when they are installed.</p>
+    <div class="grid">
+      <div class="card"><h3>Node: the core</h3><p>Jobs, audit rules, priorities, the dashboard, the local app and the workflows. Zero dependencies, runs anywhere Node 20 does.</p></div>
+      <div class="card"><h3>Go: the crawler</h3><p>A concurrent, polite crawler for big sites with the same output as the built-in one. A test crawls the same site with both and requires identical findings.</p></div>
+      <div class="card"><h3>Python: analysis and agents</h3><p>Query topics, unusual days and trends from your own data, plus a tool-using agent runtime on the Claude Agent SDK. The agents read, fetch public pages safely and propose. They cannot edit or publish.</p></div>
+    </div>
+    <p class="sub" style="margin:22px 0 0">How the agents are kept safe, and what each engine does: <a href="https://github.com/bishal-paul-git/seo-autopilot/blob/main/docs/engines.md">engines documentation</a>.</p>
+  </div>
+</section>
+
 <section class="dark">
   <div class="wrap two">
     <div>
@@ -198,6 +212,7 @@ npx github:bishal-paul-git/seo-autopilot#v2 ui --open</pre>
     <h2>The honest answers.</h2>
     <div style="margin-top:18px">
       <details><summary>Will it write pages on its own?</summary><p>No. It opens an issue with the evidence. A page is only drafted after you add the label <code>approved</code>, arrives as a pull request, and goes live only after it is merged and its scheduled day arrives. If you choose, you can let it merge drafts that pass your build and an optional reviewer agent, so approving the topic is your only step. That is off unless you switch it on.</p></details>
+      <details><summary>Do I need Python or Go?</summary><p>No. The core runs on Node alone. Go speeds up the crawl on large sites, and Python adds the topic and anomaly analysis and the unattended agents. Each is detected automatically, and every job says plainly when something it needs is missing.</p></details>
       <details><summary>Does it need an AI subscription?</summary><p>Only for drafting pages. Everything else (reports, audit, insights, priorities, AI search checks, speed, scheduling) runs without any AI key. For drafting, use your own Claude subscription token or an API key in your own repository. Nothing goes through us.</p></details>
       <details><summary>Does it work with WordPress or a CMS?</summary><p>Reports, research, news, the digest, the indexing list and the dashboard work with any site that has a sitemap. Drafting and scheduling need pages stored as JSON or Markdown files in a repository. A CMS adapter would be a welcome contribution.</p></details>
       <details><summary>What does it cost?</summary><p>The software is free. GitHub Actions has a free tier that covers the daily jobs for a small site. AI keys and a cloud browser are optional and billed by their providers.</p></details>
