@@ -106,3 +106,15 @@ test("experiments log, evaluate and refresh run without errors", async (t) => {
   await runJob("refresh", { cwd: p.dir, flags: { dry: true } });
   assert.ok(true);
 });
+
+test("the request-indexing list shows the full URL to paste and never a Search Console page deep link", async (t) => {
+  const p = await project(t);
+  const stateDir = join(p.dir, ".seo-autopilot", readFileSync(join(p.dir, "seo-autopilot.config.json"), "utf8").match(/"id":\s*"([^"]+)"/)[1]);
+  mkdirSync(stateDir, { recursive: true });
+  writeFileSync(join(stateDir, "inspect-state.json"), JSON.stringify({ results: { [`${SITE}guide`]: { coverage: "URL is unknown to Google" }, [`${SITE}`]: { coverage: "Submitted and indexed" } } }));
+  await runJob("indexing-queue", { cwd: p.dir, flags: { dry: true } });
+  const md = readFileSync(join(stateDir, "request-indexing.md"), "utf8");
+  assert.ok(md.includes(`${SITE}guide`), "the full URL is listed for copying");
+  assert.ok(md.includes("https://search.google.com/search-console?resource_id="), "links to the property");
+  assert.ok(!md.includes("search-console/inspect"), "no page deep link (it answers 404)");
+});

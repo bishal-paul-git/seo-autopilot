@@ -22,7 +22,7 @@ export async function run({ site, flags }) {
 
   const link = () => `https://search.google.com/search-console?resource_id=${encodeURIComponent(site.searchConsoleProperty)}`;
   const md = `# Request indexing, week of ${today()}\n\nOpen Search Console, paste each URL below into the **Inspect any URL** box at the top, wait for the live test, then press **Request indexing**. About 10 a day is Google's practical limit. (Search Console has no link that opens a given page's inspection, so the URL is shown for copying.)\n\n` +
-    list.map((x) => `- [ ] ${x.url.replace(site.url, "/")} (${x.coverage}${x.requested ? `, last requested ${x.requested}` : ""})\n  [Open Search Console](${link()}), then paste `${x.url}``).join("\n") + "\n";
+    list.map((x) => `- [ ] ${x.url.replace(site.url, "/")} (${x.coverage}${x.requested ? `, last requested ${x.requested}` : ""})\n  [Open Search Console](${link()}), then paste ${x.url}`).join("\n") + "\n";
   writeText(`${site.paths.state}/request-indexing.md`, md);
   console.log(md);
 

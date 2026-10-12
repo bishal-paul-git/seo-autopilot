@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.9.4
+
+- Fix: a syntax error in the 2.9.3 request-indexing change (the weekly indexing job would have crashed). Now covered by a test that runs the job. 2.9.3 should not be used.
+
 ## 2.9.3
 
 - Fix: the request-indexing lists linked to a Search Console address that answers 404. They now open the property and show the full URL to paste into "Inspect any URL".
