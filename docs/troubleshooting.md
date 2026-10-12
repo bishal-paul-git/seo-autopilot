@@ -19,6 +19,7 @@ Optional steps use `continue-on-error`, so a failing step does not fail the run.
 |---|---|
 | Approving a topic does nothing | The drafting secret (`CLAUDE_CODE_OAUTH_TOKEN` or `ANTHROPIC_API_KEY`) is missing, or the Claude GitHub app is not installed on the repository. Check `doctor`. |
 | The pull request opens but `seo-check` never runs | Pull requests opened with the default `GITHUB_TOKEN` do not start other workflows. The drafting action opens them through the Claude GitHub app, so make sure the app is installed. |
+| `seo-check` fails at `npm ci` (lockfile does not satisfy package.json) | Usually the lockfile was written by a different npm version than the runner uses. The check now falls back to `npm install` and warns. Regenerate the lockfile with `npm install` and commit it when convenient. |
 | Auto-merge does nothing | `SEO_AUTOMERGE` is not `true`, `seo-check` has not passed on the latest commit, a changed file is outside your content folders, or (with `SEO_REQUIRE_REVIEW`) the reviewer has not added `seo-review-passed`. The run log says which. |
 | The reviewer never runs | `SEO_REVIEW` must be `true`, and the branch must be `seo/*` in the same repository. |
 

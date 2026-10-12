@@ -22,6 +22,8 @@ jobs:
         with: { node-version: 20 }
       - name: Install
         run: |
-          if [ -f package-lock.json ]; then npm ci; elif [ -f package.json ]; then npm install; fi
+          if [ -f package-lock.json ]; then
+            npm ci --no-audit --no-fund || { echo "::warning::npm ci rejected package-lock.json (often a different npm version than the one that wrote it). Falling back to npm install for this check; regenerate and commit the lockfile when you can."; npm install --no-audit --no-fund; }
+          elif [ -f package.json ]; then npm install --no-audit --no-fund; fi
       - name: Build and validate the content
         run: npm run build

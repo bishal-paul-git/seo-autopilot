@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.9.1
+
+- `seo-check` falls back to `npm install` (with a warning) when `npm ci` rejects the lockfile, so a lockfile written by a different npm version no longer blocks every SEO pull request and auto-merge.
+
 ## 2.9.0
 
 - **Python engine (`engines/python`):** `run deepdive` groups your queries into topics (TF-IDF), flags unusual days and trends with robust statistics, and lists pages losing visibility. Standard library only.
