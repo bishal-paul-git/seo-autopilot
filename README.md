@@ -17,7 +17,7 @@ That creates a config file, a few editable data files and the GitHub workflows. 
 |---|---|---|---|
 | Measure | `daily` | every day | Search Console totals, URL Inspection of the next 60 sitemap URLs, near-miss queries, no-click pages |
 | Index | `indexnow` | every day | up to 10 URLs sent to Bing, Yandex and others |
-| Index | `indexing-queue` | weekly | an issue with the 10 pages to **Request indexing** for by hand, each with a direct Search Console link |
+| Index | `indexing-queue` | weekly | an issue with the 10 pages to **Request indexing** for by hand, each with the full URL to paste into Search Console |
 | Research | `research` | weekly | keyword backlog from real queries (near-miss, question, rising, uncovered), up to 2 topic proposals |
 | Trends | `news` | every day | ranks items from your RSS/Atom feeds, proposes at most one topic a day |
 | Analyse | `digest` | weekly | week-on-week search changes, index status, pipeline, backlinks, GA4 sessions, next actions |

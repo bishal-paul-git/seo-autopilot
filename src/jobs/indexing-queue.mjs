@@ -1,6 +1,6 @@
 // "Request indexing" list. Google does not allow automating its Request indexing button for ordinary pages (the Indexing
 // API is for job and livestream pages only), so this job prepares the work for you: the ten pages that most need it,
-// newest and least-known first, each with a direct Search Console link. It writes <state>/<site>/request-indexing.md and
+// newest and least-known first, each with the full URL to paste into Search Console. It writes <state>/<site>/request-indexing.md and
 // opens ONE issue a week with the checklist. About ten manual requests a day is Google's practical limit.
 import { readJson, writeText, today } from "../core/util.mjs";
 import { ghAvailable, ensureLabel, existingTitles, openIssue } from "../lib/gh.mjs";
@@ -20,9 +20,9 @@ export async function run({ site, flags }) {
     .slice(0, Number(flags.limit ?? 10));
   if (!list.length) { console.log("indexing-queue: every inspected page is indexed or needs a fix, not a request."); return; }
 
-  const link = (u) => `https://search.google.com/search-console/inspect?resource_id=${encodeURIComponent(site.searchConsoleProperty)}&id=${encodeURIComponent(u)}`;
-  const md = `# Request indexing, week of ${today()}\n\nOpen each link, wait for the live test, then press **Request indexing**. About 10 a day is Google's practical limit. If a link does not open the right page, paste the URL into the Search Console search bar.\n\n` +
-    list.map((x) => `- [ ] ${x.url.replace(site.url, "/")} (${x.coverage}${x.requested ? `, last requested ${x.requested}` : ""})\n  [Open in Search Console](${link(x.url)})`).join("\n") + "\n";
+  const link = () => `https://search.google.com/search-console?resource_id=${encodeURIComponent(site.searchConsoleProperty)}`;
+  const md = `# Request indexing, week of ${today()}\n\nOpen Search Console, paste each URL below into the **Inspect any URL** box at the top, wait for the live test, then press **Request indexing**. About 10 a day is Google's practical limit. (Search Console has no link that opens a given page's inspection, so the URL is shown for copying.)\n\n` +
+    list.map((x) => `- [ ] ${x.url.replace(site.url, "/")} (${x.coverage}${x.requested ? `, last requested ${x.requested}` : ""})\n  [Open Search Console](${link()}), then paste `${x.url}``).join("\n") + "\n";
   writeText(`${site.paths.state}/request-indexing.md`, md);
   console.log(md);
 

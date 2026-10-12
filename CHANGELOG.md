@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.9.3
+
+- Fix: the request-indexing lists linked to a Search Console address that answers 404. They now open the property and show the full URL to paste into "Inspect any URL".
+
 ## 2.9.2
 
 - Fix: `seo-automerge` now has `checks: read`, which it needs to confirm `seo-check` passed on the exact commit. Without it the lookup failed with HTTP 403 and nothing could auto-merge.

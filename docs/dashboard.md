@@ -11,7 +11,7 @@ It shows:
 
 - clicks, impressions and average position (28-day totals), with charts over time
 - how many inspected pages are indexed, and the status of the rest
-- **the pages to request indexing for**, each with a direct Search Console link
+- **the pages to request indexing for**, each with the full URL to paste into Search Console's "Inspect any URL" box
 - the content schedule: what goes live on which day, and how many are approved but not yet dated
 - the keyword and topic backlog
 - backlink targets and their status

@@ -23,6 +23,11 @@ Optional steps use `continue-on-error`, so a failing step does not fail the run.
 | Auto-merge does nothing | `SEO_AUTOMERGE` is not `true`, `seo-check` has not passed on the latest commit, a changed file is outside your content folders, or (with `SEO_REQUIRE_REVIEW`) the reviewer has not added `seo-review-passed`. The run log says which. |
 | The reviewer never runs | `SEO_REVIEW` must be `true`, and the branch must be `seo/*` in the same repository. |
 
+## Request indexing
+| Symptom | Likely cause and fix |
+|---|---|
+| A link to a page's inspection shows a Google 404 | Search Console has no link that opens a given page's inspection. Open the property, paste the full URL into the "Inspect any URL" box, wait for the live test, then press Request indexing. The lists show the full URL for copying. |
+
 ## Jobs
 | Symptom | Likely cause and fix |
 |---|---|

@@ -33,7 +33,7 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const short = (u) => esc(String(u).replace(D.site.url, "/"));
 const table = (head, rows, empty) => rows.length ? `<div class="tbl"><table><thead><tr>${head.map((h) => `<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table></div>` : `<p class="muted">${esc(empty)}</p>`;
-const link = (u) => `https://search.google.com/search-console/inspect?resource_id=${encodeURIComponent(D.site.property)}&id=${encodeURIComponent(u)}`;
+const link = () => `https://search.google.com/search-console?resource_id=${encodeURIComponent(D.site.property)}`;
 
 function chart(rows, key, color) {
   if (rows.length < 2) return `<p class="muted">The chart appears after two days of data.</p>`;
@@ -79,7 +79,7 @@ function render() {
   ${D.speed ? `<h2>Speed (Core Web Vitals)</h2>${table(["Page", "Score", "LCP lab", "LCP users", "INP users"], D.speed.results.map((r) => r.error ? [short(r.url), "", "", "", esc(r.error)] : [short(r.url), r.lab.score, r.lab.lcp == null ? "–" : Math.round(r.lab.lcp) + " ms", r.field.lcp == null ? "no data" : r.field.lcp + " ms", r.field.inp == null ? "no data" : r.field.inp + " ms"]), "No results.")}` : ""}
 
   <h2>Pages to request indexing for (do these by hand)</h2>
-  ${table(["Page", "Status", "Action"], insp.filter(([, v]) => v.coverage && v.coverage !== "Submitted and indexed" && !/redirect|alternate|duplicate/i.test(v.coverage)).sort((a, b) => (/unknown/i.test(b[1].coverage) ? 1 : 0) - (/unknown/i.test(a[1].coverage) ? 1 : 0)).slice(0, 25).map(([u, v]) => [short(u), esc(v.coverage), `<a target="_blank" rel="noopener" href="${esc(link(u))}">Open in Search Console</a>`]), "Every inspected page is indexed or needs a fix, not a request.")}
+  ${table(["Page", "Status", "Action"], insp.filter(([, v]) => v.coverage && v.coverage !== "Submitted and indexed" && !/redirect|alternate|duplicate/i.test(v.coverage)).sort((a, b) => (/unknown/i.test(b[1].coverage) ? 1 : 0) - (/unknown/i.test(a[1].coverage) ? 1 : 0)).slice(0, 25).map(([u, v]) => [short(u), esc(v.coverage), `<a target="_blank" rel="noopener" href="${esc(link())}">Open Search Console</a>, then paste <code>${esc(u)}</code> into "Inspect any URL"`]), "Every inspected page is indexed or needs a fix, not a request.")}
 
   ${P.tracked ? `<h2>Content schedule</h2>${table(["Date", "Page"], P.schedule.slice(0, 40).map((s) => [esc(s.date), s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title || s.url)}</a>` : esc(s.title)]), "Nothing is scheduled. Approve topic proposals to fill the schedule.")}` : ""}
 
