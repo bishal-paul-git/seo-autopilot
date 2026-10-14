@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.10.0
+
+- **Twelve new agents** (eighteen in all): fact-checker, snippet optimiser, cannibalisation resolver, content pruner, schema engineer, redirect guardian, performance fixer, indexing monitor, link builder, AI search agent, local agent and reporter. Each has a mission, required reading, method, quality bar, never-list and output format. The agents README now groups the team by job. Only the original six run in the unattended workflows; the new twelve are for use in Claude Code with a person watching.
+- **Four new playbooks:** indexing and crawl diagnosis, local SEO, link building and digital PR, and SEO reporting (twenty in all).
+- The GitHub site's agents and playbooks pages are rebuilt from the files, as before.
+
 ## 2.9.4
 
 - Fix: a syntax error in the 2.9.3 request-indexing change (the weekly indexing job would have crashed). Now covered by a test that runs the job. 2.9.3 should not be used.

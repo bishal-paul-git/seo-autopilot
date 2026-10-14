@@ -21,3 +21,7 @@ The drafting agent reads these before it writes or edits a page, and the audit, 
 | [Content briefs and drafting](content-briefs-and-drafting.md) | writing the brief and the page |
 | [Editorial review checklist](editorial-review-checklist.md) | reviewing a draft before it merges |
 | [Audit fix recipes](audit-fix-recipes.md) | fixing a specific finding from the technical audit |
+| [Indexing and crawl diagnosis](indexing-and-crawl-diagnosis.md) | pages are missing from the index, or Search Console shows "not indexed" |
+| [Local SEO](local-seo.md) | the business serves a place: profile, listings, location pages |
+| [Link building and digital PR](link-building-and-digital-pr.md) | earning links honestly, and staying clear of link schemes |
+| [SEO reporting](seo-reporting.md) | writing an honest report the owner can act on |

@@ -10,7 +10,7 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 const agentsDir = join(root, "agents"), knowledgeDir = join(root, "knowledge");
 const agentFiles = readdirSync(agentsDir).filter((f) => f.startsWith("seo-") && f.endsWith(".md"));
 
-test("six agents exist", () => assert.equal(agentFiles.length, 6));
+test("eighteen agents exist", () => assert.equal(agentFiles.length, 18));
 
 for (const f of agentFiles) {
   const text = readFileSync(join(agentsDir, f), "utf8");
