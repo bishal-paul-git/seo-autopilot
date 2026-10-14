@@ -97,3 +97,30 @@ test("when nothing blocks, authority building is recommended; local, ecommerce a
   const shop = routeAgents({ profile: { mode: "edit", rendering: "html-complete", signals: { structuredData: ["Organization", "Product"], hreflang: true }, platform: { name: "Shopify" } }, site: { local: true } });
   for (const a of ["seo-local-agent", "seo-ecommerce", "seo-international"]) assert.ok(shop.steps.some((s) => s.agent === a), a);
 });
+
+test("any project that connects the repo gets every agent, every playbook and the profile and team steps in its weekly workflow", async () => {
+  const { mkdtempSync, mkdirSync, writeFileSync, readdirSync, readFileSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const { init, detectLocal } = await import("../src/cli/init.mjs");
+  const projects = {
+    "next-app": { "package.json": JSON.stringify({ dependencies: { next: "15", react: "19" } }), "next.config.mjs": "export default {}", "content/post.md": "# hi" },
+    "plain-html": { "index.html": "<h1>hi</h1>", "about.html": "<h1>about</h1>" },
+    "empty": {},
+  };
+  for (const [name, files] of Object.entries(projects)) {
+    const dir = mkdtempSync(join(tmpdir(), `seo-any-${name}-`));
+    for (const [f, text] of Object.entries(files)) { mkdirSync(join(dir, f, ".."), { recursive: true }); writeFileSync(join(dir, f), text); }
+    const log = console.log, cwd = process.cwd(); console.log = () => {}; process.chdir(dir);
+    try { await init({ flags: { url: "https://example.test/", name: name } }); } finally { process.chdir(cwd); console.log = log; }
+    const agents = readdirSync(join(dir, "seo-autopilot", "agents")).filter((f) => /^seo-.*\.md$/.test(f));
+    assert.equal(agents.length, 27, `${name}: agents`);
+    assert.ok(readdirSync(join(dir, "seo-autopilot", "knowledge")).includes("site-platforms.md"), `${name}: playbooks`);
+    const weekly = readFileSync(join(dir, ".github", "workflows", "seo-weekly.yml"), "utf8");
+    assert.match(weekly, /run profile/); assert.match(weekly, /run team/);
+    const d = detectLocal(dir);
+    if (name === "next-app") { assert.equal(d.platform.name, "Next.js"); assert.match(d.contentHint, /--content markdown --dir content/); }
+    if (name === "plain-html") assert.equal(d.platform.name, "Static HTML");
+    if (name === "empty") assert.equal(d, null);
+  }
+});

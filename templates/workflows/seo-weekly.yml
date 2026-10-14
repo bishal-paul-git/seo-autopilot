@@ -32,6 +32,9 @@ jobs:
           SEO_INGEST_URL: ${{ secrets.SEO_INGEST_URL }}
           SEO_INGEST_TOKEN: ${{ secrets.SEO_INGEST_TOKEN }}
         run: npx --yes "$SEO" run research
+      - name: Site profile (platform, rendering, edit or advise mode)
+        continue-on-error: true
+        run: npx --yes "$SEO" run profile
       - name: AI search readiness (GEO/AEO)
         continue-on-error: true
         run: npx --yes "$SEO" run geo
@@ -52,6 +55,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: npx --yes "$SEO" run priorities
+      - name: Which agents to run this week (agent plan issue)
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: npx --yes "$SEO" run team
       - name: Evaluate logged experiments
         continue-on-error: true
         run: npx --yes "$SEO" run experiments

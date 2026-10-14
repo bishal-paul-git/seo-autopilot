@@ -70,6 +70,8 @@ export async function doctor({ cwd = process.cwd() } = {}) {
     const profile = readJson(`${site.paths.backlinks}/profile.json`, null);
     !profile || /^YOUR_/i.test(profile.name || "") ? warn("backlinks/profile.json still has placeholders (backlink submitter stays idle)") : ok("backlink profile filled in");
     ingestEnabled(site) ? ok("dashboard ingest configured") : warn("no dashboard ingest (optional)");
+    const prof = readJson(`${site.paths.state}/site-profile.json`, null);
+    prof ? ok(`site profile: ${prof.platform?.name} (${prof.mode} mode)`) : warn("no site profile yet: run `seo-autopilot run profile` so the agents adapt to this site's platform (the weekly workflow does this too)");
   }
 
   console.log("\nWorkflows and agents");

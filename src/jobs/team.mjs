@@ -3,10 +3,11 @@
 import { readJson, writeJson, writeText, today } from "../core/util.mjs";
 import { routeAgents, planMarkdown } from "../analysis/agent-router.mjs";
 import { loadPages, pipeline } from "../adapters/index.mjs";
+import { ghAvailable, ensureLabel, existingTitles, openIssue } from "../lib/gh.mjs";
 
 export const description = "Decide which of the agents to run next, in order, with a ready-to-paste instruction for each";
 
-export async function run({ site }) {
+export async function run({ site, flags = {} }) {
   const s = site.paths.state;
   const profile = readJson(`${s}/site-profile.json`, null);
   let pipe = null;
@@ -26,4 +27,11 @@ export async function run({ site }) {
   const md = planMarkdown(plan, site.name);
   writeText(`${s}/agent-plan.md`, md);
   console.log(md);
+
+  if (!ghAvailable() || flags.dry || !plan.steps.length) return;
+  const L = site.labels.agentPlan || "seo-agent-plan";
+  await ensureLabel(L, "8B5CF6", "Which SEO agents to run this week");
+  const title = `Agent plan, week of ${today()}`;
+  if ((await existingTitles(L)).has(title)) return;
+  await openIssue(title, `${plan.mode === "advise" ? "This site is in **advise mode**: agents recommend, a person makes the changes.\n\n" : ""}${plan.steps.slice(0, 8).map((x) => `${x.order}. **${x.agent}**: ${x.why}\n   - ${x.prompt}`).join("\n\n")}\n\nFull plan with evidence: the \`agent-plan.md\` report. Run each agent in Claude Code; a human approves what goes live.`, [L]);
 }

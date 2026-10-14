@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.12.0
+
+- **Any project that connects the repo gets the whole team.** `init` copies all 27 agents and 26 playbooks, writes the weekly workflow with the new `profile` and `team` steps, and now says what it detected (platform, edit or advise mode) and suggests the content setting (for example `--content markdown --dir content`) without turning on file edits by itself. Covered by a test that connects a Next.js app, a plain HTML site and a bare repository.
+- The weekly workflow profiles the site and opens an **Agent plan** issue (label `seo-agent-plan`): which agents to run this week, in order, with the finding behind each.
+- `doctor` reports the site profile and tells you to run `profile` when it is missing. Existing installs get the new workflow steps with `upgrade --diff` then `upgrade --apply`.
+
 ## 2.11.0
 
 - **Works on any kind of website.** New `profile` job detects the platform (WordPress, Shopify, Wix, Squarespace, Webflow, Framer, Ghost, Drupal, Magento, Next.js, Nuxt, Astro, Gatsby, SvelteKit, Remix, TanStack Start, Angular, Hugo, Jekyll, Eleventy, Docusaurus, VitePress, single-page apps, plain HTML), how pages render (complete HTML or JavaScript-dependent), hosting, where content, redirects, robots and sitemaps live, structured data, analytics and consent. It decides **edit mode** or **advise mode** and writes `site-profile.json`. Every agent now reads it first.

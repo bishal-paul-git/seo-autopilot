@@ -8,6 +8,8 @@ import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createInterface } from "node:readline/promises";
 import { CONFIG_NAME } from "../core/config.mjs";
+import { detectProfile } from "../analysis/site-profile.mjs";
+import { listFiles } from "../jobs/profile.mjs";
 
 const TEMPLATES = fileURLToPath(new URL("../../templates/", import.meta.url));
 const KNOWLEDGE = fileURLToPath(new URL("../../knowledge/", import.meta.url));
@@ -56,7 +58,24 @@ export function keepProjectRules(fresh, existing) {
   return oldRules.trim() === freshRules.trim() ? fresh : fresh.slice(0, f) + oldRules;
 }
 
-export const slugId = (url) => new URL(url).hostname.replace(/^www\./, "").replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase();
+/** A quick, offline look at the repository so init can say what kind of site this is and suggest the content setting. */
+export function detectLocal(cwd) {
+  try {
+    const files = listFiles(cwd);
+    if (!files.length) return null;
+    let pkg = null;
+    try { pkg = JSON.parse(readFileSync(join(cwd, "package.json"), "utf8")); } catch { /* not a Node project */ }
+    const p = detectProfile({ files, pkg });
+    if (p.platform.name === "Unknown") return null;
+    const md = ["content", "src/content", "posts", "_posts", "blog", "docs"].find((d) => files.some((f) => f.startsWith(d + "/") && /\.(md|mdx)$/.test(f)));
+    const json = files.some((f) => /^(src\/)?content\/.*\.json$/.test(f));
+    const contentHint = md ? `Markdown pages found in ${md}/. To let the drafting agent write there, re-run init with: --content markdown --dir ${md}`
+      : json ? "JSON content files found. To let the drafting agent write there, re-run init with: --content json --include \"src/content/**/*.json\"" : "";
+    return { ...p, contentHint };
+  } catch { return null; }
+}
+
+export const slugId =(url) => new URL(url).hostname.replace(/^www\./, "").replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase();
 
 function copyTree(srcDir, dstDir, { force, report, transform }) {
   mkdirSync(dstDir, { recursive: true });
@@ -121,6 +140,8 @@ export async function init({ cwd = process.cwd(), flags = {}, interactive = proc
   if (!current.split(/\r?\n/).includes(line)) { appendFileSync(ignore, (current && !current.endsWith("\n") ? "\n" : "") + `${line}\n*service-account*.json\n.env\n`); report.push(`updated  ${ignore}`); }
 
   console.log(report.join("\n"));
+  const detected = detectLocal(cwd);
+  if (detected) console.log(`\nDetected in this repository: ${detected.platform.name} (${detected.platform.kind}). ${detected.mode === "edit" ? "Agents can edit the site's files on a branch once you approve." : "This looks like a hosted or CMS site, so agents will advise and a person makes the changes."}${detected.contentHint ? "\n" + detected.contentHint : ""}\nRun \`seo-autopilot run profile\` for the full picture (rendering, hosting, where redirects live).`);
   console.log(`
 Next steps
 1. Google access (needed for reports and research): create a service account, add it as a user on
