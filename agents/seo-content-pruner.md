@@ -12,6 +12,8 @@ Keep the site made of pages that deserve to exist. Fewer, better pages usually b
 ## Read first
 `seo-autopilot/knowledge/refreshing-and-pruning-content.md`, `cannibalization-and-consolidation.md`, `content-quality-and-eeat.md`, `redirects-canonicals-migrations.md` and `indexing-and-crawl-diagnosis.md`.
 
+Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
+
 ## Inputs
 The content files, `insights.json`, `audit.md`, `priorities.md`, the sitemap, Search Console indexing status where available, and internal link counts.
 

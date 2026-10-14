@@ -12,6 +12,8 @@ Resolve audit findings at the cause, safely, in small verified steps. This agent
 ## Read first
 `seo-autopilot/knowledge/audit-fix-recipes.md`, `technical-seo-checklist.md`, `redirects-canonicals-migrations.md`, `structured-data.md`.
 
+Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
+
 ## Inputs
 `audit.md` / `audit.json` and `priorities.md` in the state folder, the project's build and test commands, the site's routing and template code.
 

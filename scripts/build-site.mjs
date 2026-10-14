@@ -103,9 +103,9 @@ const shell = (pageTitle, desc, inner) => `<!doctype html><html lang="en"><head>
     const { meta, body } = frontMatter(read("agents", f));
     return `<article id="${slug(f)}"><details><summary>${inline(slug(f))}</summary><p class="meta">${inline(meta.description || "")}</p><p class="meta"><b>Tools:</b> <code>${(meta.tools || "").replace(/&/g, "&amp;").replace(/</g, "&lt;")}</code></p><div class="body">${markdown(body.replace(/^#\s+.*\n/, ""), { linkMap: map, headingOffset: 1 })}</div></details></article>`;
   }).join("\n");
-  const inner = `<h1>The agent team</h1><p class="lead">Eighteen agents, each with one job, a fixed set of tools, required reading, a quality bar and a defined hand-off. The full text of each agent is below, exactly as it ships in the repository.</p><div class="chips">${names.map((n) => `<a href="#${n}">${n}</a>`).join("")}</div><article>${markdown(intro, { linkMap: map, headingOffset: 1 })}</article>${cards}`;
+  const inner = `<h1>The agent team</h1><p class="lead">Twenty-seven agents, each with one job, a fixed set of tools, required reading, a quality bar and a defined hand-off. The full text of each agent is below, exactly as it ships in the repository.</p><div class="chips">${names.map((n) => `<a href="#${n}">${n}</a>`).join("")}</div><article>${markdown(intro, { linkMap: map, headingOffset: 1 })}</article>${cards}`;
   mkdirSync(new URL("../site/agents/", import.meta.url), { recursive: true });
-  writeFileSync(new URL("../site/agents/index.html", import.meta.url), shell("The agent team", "The eighteen seo-autopilot agents, from strategist and drafter to fact-checker, schema engineer, indexing monitor and reporter, with their full instructions.", inner));
+  writeFileSync(new URL("../site/agents/index.html", import.meta.url), shell("The agent team", "The twenty-seven seo-autopilot agents, from strategist and drafter to coordinator, onboarder, fact-checker, schema engineer and reporter, built to work on any kind of website, with their full instructions.", inner));
   console.log("wrote site/agents/index.html");
 }
 
@@ -117,6 +117,6 @@ const shell = (pageTitle, desc, inner) => `<!doctype html><html lang="en"><head>
   const cards = files.map((f) => { const md = read("knowledge", f); return `<article id="${slug(f)}"><details><summary>${inline(title(md, slug(f)))}</summary><div class="body">${markdown(md.replace(/^#\s+.*\n/, ""), { linkMap: map, headingOffset: 1 })}</div></details></article>`; }).join("\n");
   const inner = `<h1>The SEO playbooks</h1><p class="lead">What an experienced SEO checks before changing a page. The agents read these before they act, and the audit and priority reports link their advice back to them. Guidance, not search-engine rules.</p><article>${markdown(intro, { linkMap: map, headingOffset: 1 })}</article>${cards}`;
   mkdirSync(new URL("../site/playbooks/", import.meta.url), { recursive: true });
-  writeFileSync(new URL("../site/playbooks/index.html", import.meta.url), shell("The SEO playbooks", "The twenty SEO playbooks that seo-autopilot's agents read: intent, technical SEO, content quality, structured data, AI search and more.", inner));
+  writeFileSync(new URL("../site/playbooks/index.html", import.meta.url), shell("The SEO playbooks", "The twenty-six SEO playbooks that seo-autopilot's agents read: intent, technical SEO, content quality, structured data, AI search and more.", inner));
   console.log("wrote site/playbooks/index.html");
 }

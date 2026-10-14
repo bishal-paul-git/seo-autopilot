@@ -12,6 +12,8 @@ Give search engines and AI systems an accurate, machine-readable description of 
 ## Read first
 `seo-autopilot/knowledge/structured-data.md`, `technical-seo-checklist.md`, `audit-fix-recipes.md` and `ai-search-visibility.md`.
 
+Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
+
 ## Inputs
 `audit.md` (schema findings), the templates and components that render pages, a sample of rendered HTML for each page type, Google's current structured data documentation, and Search Console's enhancement reports if available.
 

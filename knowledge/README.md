@@ -25,3 +25,9 @@ The drafting agent reads these before it writes or edits a page, and the audit, 
 | [Local SEO](local-seo.md) | the business serves a place: profile, listings, location pages |
 | [Link building and digital PR](link-building-and-digital-pr.md) | earning links honestly, and staying clear of link schemes |
 | [SEO reporting](seo-reporting.md) | writing an honest report the owner can act on |
+| [Working on any kind of website](site-platforms.md) | the site is WordPress, Shopify, a framework, a static site or a hosted builder |
+| [International and multilingual SEO](international-seo.md) | the site serves more than one language or country |
+| [Ecommerce SEO](ecommerce-seo.md) | category, product and faceted-navigation pages |
+| [Competitor analysis](competitor-analysis.md) | learning from who ranks above you, honestly |
+| [Images, video and media](media-and-image-seo.md) | alt text, formats, sizes, video and previews |
+| [Entity, brand and reputation](entity-and-reputation.md) | being recognised, trusted and described correctly |

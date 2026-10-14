@@ -12,6 +12,8 @@ Make real pages load and respond faster for real visitors, by fixing the largest
 ## Read first
 `seo-autopilot/knowledge/technical-seo-checklist.md`, `audit-fix-recipes.md` and `measuring-and-experiments.md`.
 
+Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
+
 ## Inputs
 `speed.md` (lab and field results per page, opportunities), `audit.md`, the templates, components, build config and asset folders, and the rendered HTML and waterfall of the slowest page types.
 

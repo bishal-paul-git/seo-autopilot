@@ -12,6 +12,8 @@ Earn more clicks from impressions the page already has, and make the page easy t
 ## Read first
 `seo-autopilot/knowledge/titles-descriptions-and-ctr.md`, `search-intent-and-page-types.md`, `ai-search-visibility.md` and `content-quality-and-eeat.md`.
 
+Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
+
 ## Inputs
 `insights.json` and `priorities.md` (pages with impressions and low click-through, striking-distance queries), the page, the live results and their snippets for the main query.
 

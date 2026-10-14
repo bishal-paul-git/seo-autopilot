@@ -10,7 +10,7 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 const agentsDir = join(root, "agents"), knowledgeDir = join(root, "knowledge");
 const agentFiles = readdirSync(agentsDir).filter((f) => f.startsWith("seo-") && f.endsWith(".md"));
 
-test("eighteen agents exist", () => assert.equal(agentFiles.length, 18));
+test("twenty-seven agents exist", () => assert.equal(agentFiles.length, 27));
 
 for (const f of agentFiles) {
   const text = readFileSync(join(agentsDir, f), "utf8");
@@ -23,10 +23,20 @@ for (const f of agentFiles) {
     for (const m of text.matchAll(/`([a-z0-9-]+\.md)`/g)) {
       const name = m[1];
       if (name === "README.md" || name.startsWith("seo-")) continue;
-      assert.ok(existsSync(join(knowledgeDir, name)) || ["priorities.md", "audit.md", "geo.md", "speed.md", "experiments.md", "weekly-digest.md", "daily-summary.md", "news-digest.md"].includes(name), `unknown file referenced: ${name}`);
+      assert.ok(existsSync(join(knowledgeDir, name)) || ["priorities.md", "audit.md", "geo.md", "speed.md", "experiments.md", "weekly-digest.md", "daily-summary.md", "news-digest.md", "agent-plan.md", "site-profile.md"].includes(name), `unknown file referenced: ${name}`);
     }
   });
 }
+
+test("every agent starts from the site profile, so none assumes one stack", () => {
+  for (const f of agentFiles) assert.ok(readFileSync(join(agentsDir, f), "utf8").includes("site-profile.json"), f);
+});
+
+test("every agent the router can recommend exists", async () => {
+  const { routeAgents } = await import("../src/analysis/agent-router.mjs");
+  const plan = routeAgents({ profile: { mode: "edit", rendering: "js-dependent", signals: { structuredData: ["LocalBusiness", "Product"], hreflang: true, noindexOnHome: true }, platform: { name: "Shopify" } }, audit: { issues: Object.keys(RULES).map((rule) => ({ rule, url: "https://a.test/" })) }, priorities: { items: [{ type: "structure", title: "x" }, { type: "snippet", title: "y" }, { type: "refresh", title: "z" }, { type: "content", id: "strike:q", title: "w" }, { type: "ai-search", title: "v" }, { type: "indexing", title: "i" }, { id: "speed:poor", type: "speed", title: "s" }] }, inspect: { "https://a.test/": { coverage: "Crawled - currently not indexed" } }, geo: { findings: [{ title: "g" }] }, pipeline: { queued: 1, upcoming: 0, schedule: [] }, site: { local: true } });
+  for (const s of plan.steps) assert.ok(agentFiles.includes(s.agent + ".md"), "router names a missing agent: " + s.agent);
+});
 
 test("only the technical fixer may run arbitrary shell; the others are scoped", () => {
   for (const f of agentFiles) {

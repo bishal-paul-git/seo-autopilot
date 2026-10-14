@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.11.0
+
+- **Works on any kind of website.** New `profile` job detects the platform (WordPress, Shopify, Wix, Squarespace, Webflow, Framer, Ghost, Drupal, Magento, Next.js, Nuxt, Astro, Gatsby, SvelteKit, Remix, TanStack Start, Angular, Hugo, Jekyll, Eleventy, Docusaurus, VitePress, single-page apps, plain HTML), how pages render (complete HTML or JavaScript-dependent), hosting, where content, redirects, robots and sitemaps live, structured data, analytics and consent. It decides **edit mode** or **advise mode** and writes `site-profile.json`. Every agent now reads it first.
+- **Agent routing.** New `team` job reads the audit, priorities, indexing, speed and AI search reports and writes `agent-plan.md`: which agents to run, in order (blockers first), with the finding behind each and a ready-to-paste instruction. Deterministic and explainable.
+- **Nine new agents (twenty-seven in all):** coordinator, onboarder, competitor analyst, international, ecommerce, migration planner, entity and reputation, media optimiser, compliance auditor.
+- **Six new playbooks (twenty-six in all):** working on any kind of website, international SEO, ecommerce SEO, competitor analysis, images and media, entity and reputation.
+- Several sites in one config are supported with `--site <id>`; each has its own profile, plan and Project rules.
+
 ## 2.10.0
 
 - **Twelve new agents** (eighteen in all): fact-checker, snippet optimiser, cannibalisation resolver, content pruner, schema engineer, redirect guardian, performance fixer, indexing monitor, link builder, AI search agent, local agent and reporter. Each has a mission, required reading, method, quality bar, never-list and output format. The agents README now groups the team by job. Only the original six run in the unattended workflows; the new twelve are for use in Claude Code with a person watching.

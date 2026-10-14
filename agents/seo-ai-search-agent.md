@@ -12,6 +12,8 @@ Make the site the clearest, most trustworthy source on its topics, so that AI an
 ## Read first
 `seo-autopilot/knowledge/ai-search-visibility.md`, `structured-data.md`, `content-quality-and-eeat.md`, `search-intent-and-page-types.md` and `technical-seo-checklist.md`.
 
+Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
+
 ## Inputs
 `geo.md` (AI search readiness), `audit.md`, the site's pages and `llms.txt` if present, the questions people ask (Search Console queries, People Also Ask style questions), and the live results and AI answers for them.
 

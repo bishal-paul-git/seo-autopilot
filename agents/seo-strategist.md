@@ -12,6 +12,8 @@ Decide what is worth doing, and what is not. Turn many findings into at most fiv
 ## Read first
 `seo-autopilot/knowledge/README.md`, then `measuring-and-experiments.md`, `topical-authority-and-internal-linking.md` and whichever playbook matches the top items.
 
+Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
+
 ## Inputs
 In the state folder named by `stateDir` in `seo-autopilot.config.json`: `priorities.md`, `audit.md`, `insights.json`, `geo.md`, `speed.md`, `experiments.md`, `weekly-digest.md`, `daily-summary.md`, `keyword-backlog.json`. Not every file exists yet; say which are missing.
 

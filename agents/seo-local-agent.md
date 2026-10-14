@@ -12,6 +12,8 @@ Make the business easy to find, and easy to trust, for people searching in or ab
 ## Read first
 `seo-autopilot/knowledge/local-seo.md`, `structured-data.md`, `content-quality-and-eeat.md`, `search-intent-and-page-types.md` and `link-building-and-digital-pr.md`.
 
+Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
+
 ## Inputs
 The website (contact, about, service and location pages, structured data), the business's real details (legal name, address, phone, opening hours, areas served) supplied by the owner, the public profile and listings, and the live local results for key queries.
 

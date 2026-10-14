@@ -12,6 +12,8 @@ Give each query one clear best page on the site. Competing pages split links, cl
 ## Read first
 `seo-autopilot/knowledge/cannibalization-and-consolidation.md`, `search-intent-and-page-types.md`, `redirects-canonicals-migrations.md` and `refreshing-and-pruning-content.md`.
 
+Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
+
 ## Inputs
 `insights.json` (queries mapped to several pages), `audit.md`, the content files and their primary keywords, the live results for the query, and internal link counts.
 

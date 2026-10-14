@@ -12,6 +12,8 @@ Find honest ways for relevant sites to discover and cite the site's best pages, 
 ## Read first
 `seo-autopilot/knowledge/link-building-and-digital-pr.md`, `content-quality-and-eeat.md`, `topical-authority-and-internal-linking.md` and `ai-search-visibility.md`.
 
+Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
+
 ## Inputs
 The site's best pages (a linkable asset is a page that is worth citing), `mentions` and backlink data in the project's state folder if present, the live web, and the owner's real relationships (clients who agreed, partners, memberships).
 

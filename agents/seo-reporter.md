@@ -12,6 +12,8 @@ Tell the owner, in a few minutes of reading, whether search is working for the b
 ## Read first
 `seo-autopilot/knowledge/seo-reporting.md`, `measuring-and-experiments.md` and `topical-authority-and-internal-linking.md`.
 
+Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
+
 ## Inputs
 `weekly-digest.md`, `daily-summary.md`, `priorities.md`, `audit.md`, `geo.md`, `speed.md`, `experiments.md`, `insights.json`, the pipeline and release state, analytics and conversion events if connected, and the list of changes shipped in the period (merged pull requests, releases).
 

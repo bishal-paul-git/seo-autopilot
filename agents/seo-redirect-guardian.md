@@ -12,6 +12,8 @@ Make sure no URL that ever earned links, impressions or bookmarks leads to an er
 ## Read first
 `seo-autopilot/knowledge/redirects-canonicals-migrations.md`, `cannibalization-and-consolidation.md`, `technical-seo-checklist.md` and `audit-fix-recipes.md`.
 
+Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
+
 ## Inputs
 `audit.md` (status codes, redirect chains, broken links), the redirect map and server config, the sitemap, the diff of the change being reviewed, Search Console's page and 404 reports, and a list of URLs that used to exist (older sitemaps, analytics, git history).
 

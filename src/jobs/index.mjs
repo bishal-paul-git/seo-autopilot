@@ -25,6 +25,8 @@ export const JOBS = {
   speed: () => import("./speed.mjs"),
   priorities: () => import("./priorities.mjs"),
   experiments: () => import("./experiments.mjs"),
+  profile: () => import("./profile.mjs"),
+  team: () => import("./team.mjs"),
 };
 
 export async function describeJobs() {
