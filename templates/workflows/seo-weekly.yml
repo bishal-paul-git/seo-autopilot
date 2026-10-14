@@ -55,6 +55,23 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: npx --yes "$SEO" run priorities
+      - name: Consent and measurement check
+        continue-on-error: true
+        run: npx --yes "$SEO" run consent
+      - name: Sensitive-topic review gate
+        continue-on-error: true
+        run: npx --yes "$SEO" run ymyl
+      - name: Content pace (report only)
+        continue-on-error: true
+        run: npx --yes "$SEO" run pace
+      - name: Citations in search and AI answers (needs one provider key; skips cleanly without)
+        continue-on-error: true
+        env:
+          BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          DATAFORSEO_LOGIN: ${{ secrets.DATAFORSEO_LOGIN }}
+          DATAFORSEO_PASSWORD: ${{ secrets.DATAFORSEO_PASSWORD }}
+        run: npx --yes "$SEO" run citations
       - name: Which agents to run this week (agent plan issue)
         continue-on-error: true
         env:

@@ -52,7 +52,9 @@ One file, `seo-autopilot.config.json`, in the root of your repository. Paths are
 | `ga4PropertyId` | numeric GA4 property id, or `null` |
 | `ignoreQueries`, `brandTerms` | brand queries are never turned into topic proposals |
 | `feeds`, `topicsConfig`, `backlinksDir` | override the default file locations under `dataDir` |
-| `limits` | daily/weekly caps on proposals and topics |
+| `limits` | caps on proposals and topics, plus the content-pace limits `pagesPerDay` (2), `pagesPerWeek` (8) and `perTemplatePerDay` (off) |
+| `review` | sensitive-topic gate: `topics` (keyword lists) and `requireFields` (default `author`, `reviewedBy`) |
+| `citations` | `market`: default country for tracked questions (default `GB`) |
 | `ingest` | optional dashboard sync, see [dashboard.md](dashboard.md) |
 
 ## Content adapters (`content`)

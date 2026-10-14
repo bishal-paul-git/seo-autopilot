@@ -1,0 +1,6 @@
+[
+  "REPLACE THESE: write the real questions your customers ask, one per line, then delete this note entry",
+  "what is the best way to choose a supplier in my area",
+  "how much does it cost to hire a professional",
+  { "q": "who are the most trusted providers near me", "market": "GB" }
+]

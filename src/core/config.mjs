@@ -17,7 +17,8 @@ export const DEFAULTS = {
     brandTerms: [],
     content: { type: "sitemap" },
     labels: { proposal: "seo-proposal", topic: "seo-topic", approved: "approved", digest: "seo-digest", backlink: "seo-backlink", priorities: "seo-priorities" },
-    limits: { proposalsPerRun: 3, topicsPerWeek: 2, newsTopicsPerRun: 1 },
+    limits: { proposalsPerRun: 3, topicsPerWeek: 2, newsTopicsPerRun: 1, pagesPerDay: 2, pagesPerWeek: 8, perTemplatePerDay: null },
+    review: { requireFields: ["author", "reviewedBy"] },
     indexNow: { keyEnv: "INDEXNOW_KEY" },
     ingest: null,
   },
@@ -61,6 +62,18 @@ export function validate(raw) {
     if (!["sitemap", "json", "markdown"].includes(t)) errors.push(`${w}.content.type must be sitemap, json or markdown`);
     if (t === "json" && !Array.isArray(s.content.include)) errors.push(`${w}.content.include must list glob patterns for the JSON files`);
     if (t === "markdown" && !s.content.dir) errors.push(`${w}.content.dir is required for markdown content`);
+    for (const k of ["pagesPerDay", "pagesPerWeek", "perTemplatePerDay"]) {
+      const v = s.limits?.[k];
+      if (v != null && (!Number.isInteger(v) || v < 1)) errors.push(`${w}.limits.${k} must be a whole number of 1 or more`);
+    }
+    if (s.review != null) {
+      if (typeof s.review !== "object" || Array.isArray(s.review)) errors.push(`${w}.review must be an object`);
+      else {
+        if (s.review.requireFields != null && (!Array.isArray(s.review.requireFields) || s.review.requireFields.some((f) => typeof f !== "string"))) errors.push(`${w}.review.requireFields must be a list of field names`);
+        const tp = s.review.topics;
+        if (tp != null && !Array.isArray(tp) && (typeof tp !== "object" || Object.values(tp).some((v) => !Array.isArray(v)))) errors.push(`${w}.review.topics must be an object of keyword lists, for example {"health": ["symptom\w*"]}`);
+      }
+    }
   }
   return errors;
 }

@@ -1,4 +1,5 @@
 // `seo-autopilot doctor`: checks the setup and says exactly what to fix. Read-only.
+import { pickProvider } from "../lib/serp.mjs";
 import { loadConfig } from "../core/config.mjs";
 import { readJson } from "../core/util.mjs";
 import { googleKeyAvailable, getToken, SCOPES, searchAnalytics } from "../lib/google-auth.mjs";
@@ -72,6 +73,7 @@ export async function doctor({ cwd = process.cwd() } = {}) {
     ingestEnabled(site) ? ok("dashboard ingest configured") : warn("no dashboard ingest (optional)");
     const prof = readJson(`${site.paths.state}/site-profile.json`, null);
     prof ? ok(`site profile: ${prof.platform?.name} (${prof.mode} mode)`) : warn("no site profile yet: run `seo-autopilot run profile` so the agents adapt to this site's platform (the weekly workflow does this too)");
+    pickProvider() ? ok(`citations provider: ${pickProvider().name}`) : warn("no search provider key for the citations job (optional): run `seo-autopilot run citations` to see how to enable one");
   }
 
   console.log("\nWorkflows and agents");

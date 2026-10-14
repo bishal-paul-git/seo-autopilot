@@ -22,7 +22,7 @@ function countBy(issues) {
   return m;
 }
 
-export function routeAgents({ profile = null, audit = null, priorities = null, inspect = {}, speed = null, geo = null, pipeline = null, site = {}, today = "" } = {}) {
+export function routeAgents({ profile = null, audit = null, priorities = null, inspect = {}, speed = null, geo = null, pipeline = null, consent = null, ymyl = null, pace = null, citations = null, site = {}, today = "" } = {}) {
   const plan = [];
   const add = (agent, phase, why, evidence = [], prompt = "") => {
     if (plan.some((p) => p.agent === agent)) { const e = plan.find((p) => p.agent === agent); e.evidence.push(...evidence.filter((x) => !e.evidence.includes(x))); return; }
@@ -64,6 +64,16 @@ export function routeAgents({ profile = null, audit = null, priorities = null, i
   if (ofType("ai-search").length || (geo?.findings || []).length) add("ai-search-agent", PHASES.fix, "The AI search readiness report has open findings.", [...ofType("ai-search").map((i) => i.title), ...(geo?.findings || []).map((f) => f.title || f.id)].slice(0, 5), "Use the seo-ai-search-agent to test real questions and close the gaps.");
 
   if (pipeline && (pipeline.queued > 0 || pipeline.upcoming > 0)) add("fact-checker", PHASES.content, `${(pipeline.queued || 0) + (pipeline.upcoming || 0)} page(s) are waiting to go live. Check their claims first.`, (pipeline.schedule || []).slice(0, 4).map((s) => `${s.date} ${s.title}`), "Use the seo-fact-checker agent on every queued page before it is released.");
+
+  // Compliance: one entry for the auditor, ranked by its most urgent reason (a consent failure blocks, the rest are content-phase).
+  const why = [], ev = [], asks = [];
+  const highConsent = (consent?.findings || []).filter((f) => f.severity === "high");
+  if (highConsent.length) { why.push("The consent check found a high-severity problem (tracking or policy wording without a working consent mechanism)."); ev.push(...highConsent.map((f) => `${f.id}: ${f.evidence?.[0] || f.title}`)); asks.push("Use the seo-compliance-auditor agent on the consent.json findings: confirm what loads before consent and what the privacy page promises, and say what to change." + how); }
+  const needRev = (ymyl?.pages || []).filter((p) => p.status === "needs reviewer");
+  if (needRev.length) { why.push(`${needRev.length} sensitive-topic page(s) have no named author or reviewer.`); ev.push(...needRev.slice(0, 4).map((p) => `${short(p.url || p.title)}: ${p.topics.join("/")}, missing ${p.missing.join(", ")}`)); asks.push("Use the seo-compliance-auditor agent on the ymyl.json pages that need a reviewer: say what claims need a qualified sign-off and what to hold back." + how); }
+  if (why.length) add("compliance-auditor", highConsent.length ? PHASES.block : PHASES.content, why.join(" "), ev, asks.join(" "));
+  if (pace?.overLimit) add("strategist", PHASES.content, `The publishing schedule goes over the pace limits (${pace.overDays?.length || 0} day(s), ${pace.overWeeks?.length || 0} week(s)).`, [...(pace.overDays || []).slice(0, 3).map((d) => `${d.date}: ${d.count} pages`), `${pace.moves?.length || 0} page(s) would move in the recommended schedule`], "Use the seo-strategist agent to review pace.json: adopt the recommended schedule or explain why the burst is needed. Releasing many pages at once looks like scaled content.");
+  if (citations?.mostlyAbsent) add("ai-search-agent", PHASES.grow, `The site appears for only ${citations.appears} of ${citations.asked} tracked questions in search results and AI answers.`, [...(citations.absent || []).slice(0, 4), ...(citations.topCited || []).slice(0, 2).map((c) => `cited instead: ${c.domain}`)], "Use the seo-ai-search-agent on the questions in citations.json where the site is absent: see what the cited pages answer and close the gap." + how);
 
   const types = profile?.signals?.structuredData || [];
   if (profile && !types.some((t) => /Organization|LocalBusiness|Corporation|Person/.test(t))) add("entity-reputation", PHASES.fix, "The home page has no Organization or Person markup, so the business is a weak entity to search engines and AI tools.", ["structured data on the home page: " + (types.join(", ") || "none")], "Use the seo-entity-reputation agent to define the entity, its profiles and its consistent description.");

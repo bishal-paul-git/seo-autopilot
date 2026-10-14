@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.13.0
+
+- **Four new jobs**, all in the weekly workflow (`continue-on-error`) and all feeding `team`: `consent`, `ymyl`, `pace` and `citations`. Guide: `docs/measurement-and-compliance.md`.
+- `consent`: reads the delivered home page and privacy or cookie page. Flags `tracking-without-consent-tool` and `privacy-claims-consent-but-no-mechanism` (high), `consent-mode-default-not-denied` (medium), and says plainly that tags injected at runtime cannot be seen (info). The report explains the gap between real and measured traffic. A high finding puts `seo-compliance-auditor` in the `block` phase of the agent plan.
+- `ymyl`: flags pages on health, medical, legal, data protection, tax, finance, safety and children topics that lack `author` or `reviewedBy` (configurable with `review.topics` and `review.requireFields`), and shows which are held. The JSON and Markdown adapters now expose `author`, `reviewedBy` and `template` on pages.
+- `pace`: counts releases per day and week, flags bursts, halves the recommended pace when many recent pages are Crawled or Discovered but not indexed, and writes a recommended schedule that never moves a page earlier. Report only; `--json` prints it. New `limits.pagesPerDay` (2), `limits.pagesPerWeek` (8), `limits.perTemplatePerDay`.
+- `citations`: asks a SERP provider your questions (`seo-autopilot/questions.json`, 40 at most, sequential) and records whether the site is an organic result or a cited AI source, the most cited domains, absent questions and a monthly trend (last 26 runs kept). Providers: Brave Search API, SerpAPI, DataForSEO. Without a key it prints how to enable one and exits cleanly. **The providers are tested with mocked responses only; the live calls have not been run against the real APIs.**
+- `consent` also reads the site’s own same-origin scripts, so a custom banner (consent wording plus a stored granted or denied choice) counts as a consent mechanism; this is a heuristic, a third-party platform is found by name.
+- Config schema, defaults and validation accept `review` and the new `limits`. `doctor` reports whether a citations provider is set.
+
 ## 2.12.0
 
 - **Any project that connects the repo gets the whole team.** `init` copies all 27 agents and 26 playbooks, writes the weekly workflow with the new `profile` and `team` steps, and now says what it detected (platform, edit or advise mode) and suggests the content setting (for example `--content markdown --dir content`) without turning on file edits by itself. Covered by a test that connects a Next.js app, a plain HTML site and a bare repository.

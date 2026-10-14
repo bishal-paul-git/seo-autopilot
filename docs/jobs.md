@@ -18,6 +18,10 @@ Run any job with `npx seo-autopilot run <job> [--site id] [--dry]`.
 | `speed` | weekly | none (`PAGESPEED_API_KEY` optional) | `speed.json`, `speed.md`: Core Web Vitals, lab and real-user |
 | `priorities` | daily (dry) and weekly (issue) | `audit`/`analyze` output | `priorities.json`, `priorities.md`, issue `seo-priorities` |
 | `experiments` | weekly | `experiments.json` log | `experiments.md` (14 days before vs after) |
+| `consent` | weekly | none | `consent.json`, `consent.md`: tracking without a consent tool, policy wording the site does not meet |
+| `ymyl` | weekly | content type json or markdown for the real check | `ymyl.json`, `ymyl.md`: sensitive-topic pages missing an author or reviewer |
+| `pace` | weekly | dated pages (`publishAt`) | `pace.json`, `pace.md`: releases per day and week, recommended schedule (report only) |
+| `citations` | weekly | one of `BRAVE_API_KEY`, `SERPAPI_KEY`, `DATAFORSEO_LOGIN` + `DATAFORSEO_PASSWORD`; `questions.json` | `citations.json` (with history), `citations.md` |
 | `dashboard` | daily | none | `dashboard/index.html` |
 | `research` | weekly (seo-weekly) | `GOOGLE_KEY_JSON` | `keyword-backlog.json`, `keyword-research.md`, topic issues |
 | `digest` | weekly | `GOOGLE_KEY_JSON` (+ GA4 access optional) | `weekly-digest.md`, issue `seo-digest` |
@@ -39,6 +43,7 @@ Outside GitHub Actions the jobs that open issues print what they would do unless
 | `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` | secret | optional AI judging, ideas, digest wording. `SEO_LLM_PROVIDER`, `SEO_MODEL`, `OPENAI_BASE_URL` pick the provider/model |
 | `CLAUDE_CODE_OAUTH_TOKEN` or `ANTHROPIC_API_KEY` | secret | the implementer (drafts approved pages as pull requests); either works and drafting is optional |
 | `PAGESPEED_API_KEY` | secret | optional, raises the PageSpeed rate limit |
+| `BRAVE_API_KEY`, `SERPAPI_KEY`, `DATAFORSEO_LOGIN` + `DATAFORSEO_PASSWORD` | secrets | optional, any one turns on the `citations` job |
 | `SEO_INGEST_URL`, `SEO_INGEST_TOKEN` | secrets | optional database dashboard |
 | `BROWSER_WS_ENDPOINT` | secret | optional cloud browser for backlinks |
 | `DEPLOY_HOOK_URL` | secret | optional rebuild hook for scheduled publishing |

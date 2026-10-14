@@ -134,6 +134,56 @@
               },
               "newsTopicsPerRun": {
                 "type": "integer"
+              },
+              "pagesPerDay": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Content-pace governor: most pages to release in one day (default 2)."
+              },
+              "pagesPerWeek": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Most pages in any 7 days (default 8)."
+              },
+              "perTemplatePerDay": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1,
+                "description": "Most pages of one template (page type) in one day."
+              }
+            }
+          },
+          "review": {
+            "type": "object",
+            "description": "Sensitive-topic review gate (ymyl job).",
+            "properties": {
+              "topics": {
+                "type": "object",
+                "description": "Topic name to a list of keyword regex sources. Adds to or replaces the built-in topics; an empty list switches one off.",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "requireFields": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Content fields a sensitive page must have (default author, reviewedBy)."
+              }
+            }
+          },
+          "citations": {
+            "type": "object",
+            "properties": {
+              "market": {
+                "type": "string",
+                "description": "Default country for questions (default GB)."
               }
             }
           },

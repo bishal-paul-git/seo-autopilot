@@ -27,6 +27,10 @@ export const JOBS = {
   experiments: () => import("./experiments.mjs"),
   profile: () => import("./profile.mjs"),
   team: () => import("./team.mjs"),
+  consent: () => import("./consent.mjs"),
+  ymyl: () => import("./ymyl.mjs"),
+  pace: () => import("./pace.mjs"),
+  citations: () => import("./citations.mjs"),
 };
 
 export async function describeJobs() {

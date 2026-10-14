@@ -7,7 +7,7 @@
 //              "routes": [{ "match": "guides.json", "urlPattern": "/blog/{slug}" }] }
 //   content: { "type": "markdown", "dir": "content/blog", "urlPattern": "/blog/{slug}" }   front-matter files
 //
-// Pages are plain data: { id, title, keyword, questions[], text, file, url?, publishAt?, queued?, hold? }.
+// Pages are plain data: { id, title, keyword, questions[], text, file, url?, publishAt?, queued?, hold?, author?, reviewedBy?, template? }.
 // Drip publishing convention (all optional): a page with  "queued": true  is approved but not yet scheduled;
 // "publishAt": "YYYY-MM-DD"  is the day it should go live; "hold": true  keeps a finished page out of the schedule.
 import { readFileSync, writeFileSync } from "node:fs";
@@ -26,6 +26,9 @@ function urlFor(site, file, slug) {
   return pattern ? site.url.replace(/\/$/, "") + pattern.replace("{slug}", slug) : undefined;
 }
 
+// author / reviewedBy may be a string, a {name} object or a list; keep a plain string (or undefined when empty).
+const personOf = (v) => { const x = Array.isArray(v) ? v[0] : v; const n = typeof x === "object" && x ? x.name : x; return n == null || String(n).trim() === "" ? undefined : String(n).trim(); };
+
 function fromObject(it, file, site) {
   const title = String(first(it, TITLE_KEYS) ?? "");
   const questions = (it.faqs || it.faq || []).map((q) => q?.q ?? q?.question).filter(Boolean);
@@ -35,6 +38,8 @@ function fromObject(it, file, site) {
   return {
     id: slug, title, keyword, questions, text, file, url: urlFor(site, file, slug),
     publishAt: it.publishAt ?? undefined, queued: it.queued === true, hold: it.hold === true,
+    author: personOf(it.author), reviewedBy: personOf(it.reviewedBy ?? it.reviewed_by),
+    template: it.template ?? it.type ?? undefined,
   };
 }
 

@@ -73,6 +73,7 @@ seo-autopilot state restore|save                 load or save memory on the "seo
 - [Backlinks](docs/backlinks.md)
 - [Configuration reference](docs/configuration.md)
 - [Jobs and secrets](docs/jobs.md)
+- [Measurement and compliance: consent, sensitive topics, pace, citations](docs/measurement-and-compliance.md)
 - [The agents](docs/agents.md)
 - [Python and Go engines](docs/engines.md)
 - [Upgrading](docs/upgrading.md)

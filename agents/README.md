@@ -65,6 +65,8 @@ Then run `seo-autopilot run team`. It reads the audit, priorities, indexing, spe
 
 For several sites, list them all in one `seo-autopilot.config.json` and use `--site <id>`; each site gets its own profile, plan and Project rules.
 
+The weekly workflow also runs four checks that the agents use: `consent`, `ymyl`, `pace` and `citations` (see [docs/measurement-and-compliance.md](../docs/measurement-and-compliance.md)). `team` sends consent and sensitive-topic findings to the compliance auditor, pace bursts to the strategist and low citation share to the AI search agent.
+
 ## How work flows
 
 ```
