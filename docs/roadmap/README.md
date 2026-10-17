@@ -2,6 +2,9 @@
 
 Each file below is a self-contained brief for a new Claude Code session. Open a session in this repository, tell it to read `CLAUDE.md` and then the brief, and let it work. Briefs are ordered by value; "foundation" ones should come first because the rest build on them. Keep `npm test` green and follow the release procedure in `CLAUDE.md`.
 
+## Read this first: the owner's product brief
+`SEO-PRODUCT-BUILD-BRIEF.md` (repository root) is the owner's plan for the sellable, agency-focused product, including reuse of Marketing Mouse and News to Blog, with phases and acceptance gates. It takes precedence over briefs 05, 06 and 07 below, which overlap its phases 1 to 4 and must be planned through its Phase 0 reuse audit. Briefs 01, 02, 03, 04, 08 and 09 are independent of that audit. Progress files: `../implementation/STATUS.md` (start here), `CHANGELOG.md`, `DECISIONS.md`.
+
 ## Built and released (v2.13.0)
 Jobs: `audit`, `analyze`, `priorities`, `experiments`, `speed`, `geo`, `deepdive`, `refresh`, `agent`, `profile`, `team`, `consent`, `ymyl`, `pace`, `citations`, plus the daily/weekly workflow jobs (`daily`, `news`, `research`, `propose`, `digest`, `indexing-queue`, `indexnow`, `backlinks`, `mentions`, `release`, `schedule`, `dashboard`). 27 agents, 26 playbooks, Go crawler, Python agent runtime for the strategist and researcher, edit vs advise mode through the site profile, agent routing, landing site with agents and playbooks pages, release automation.
 
