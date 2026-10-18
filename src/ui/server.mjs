@@ -29,6 +29,7 @@ export const ALLOWED_JOBS = {
   deepdive: [],
   geo: [],
   quality: [],
+  links: [],
   priorities: ["--dry"],
   "indexing-queue": ["--dry"],
   schedule: ["--dry"],

@@ -2,6 +2,21 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-18, later (brief 01, item 6: links job)
+- **Code:**
+  - `relatedLinks()` in `src/audit/links.mjs`.
+  - The `src/jobs/links.mjs` job.
+  - `audit.json` pages gain `links` (internal, deduplicated).
+  - Router: a refresher step; team wiring; weekly step; UI allow-list; `docs/jobs.md`.
+  - Tests: `test/links.test.mjs` (3).
+- **Tests:** `npm test` 250 of 250.
+- **Real-world check** (Erudience local build, 127 pages):
+  - At the default threshold (2 or fewer inbound), 0 suggestions; only 1 page qualifies.
+  - At 6 or fewer, the first version produced navigation noise: home, about and services pages suggested as link sources, on words like "one".
+  - Fixed by ignoring links on half or more of the pages and words in half or more of the titles.
+  - After the fix: 60 suggestions for 22 pages, mostly blog to blog on shared topics. A few remain weak; the report presents them as suggestions only.
+- **Deployment:** none.
+
 ## 2026-10-18, later (brief 01, items 4 and 5: consent and conversion recipes, conversions job)
 - **Code and content:**
   - New playbooks: `knowledge/consent-banner-recipe.md` and `knowledge/conversion-tracking-recipe.md`, listed in the playbooks index. They are top-level files, not a `knowledge/recipes/` folder, because the site builder reads `knowledge/` flat.

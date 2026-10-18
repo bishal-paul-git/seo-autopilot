@@ -68,6 +68,9 @@ jobs:
       - name: Facts guard (numbers, prices, awards and client claims need a verified fact or a source)
         continue-on-error: true
         run: npx --yes "$SEO" run facts
+      - name: Internal links to add for weakly linked pages (report only)
+        continue-on-error: true
+        run: npx --yes "$SEO" run links
       - name: On-page quality (top query vs title, H1 and description; headings per section)
         continue-on-error: true
         run: npx --yes "$SEO" run quality

@@ -100,14 +100,14 @@ No paid API calls were made this session. Hosted cost model is proposed in D9; n
 
 Exact next actions, independent of the review:
 1. Brief 01:
-   - Items 1 to 5 are done:
+   - Items 1 to 6 are done:
      - heading and meta audits;
      - redirect tooling;
      - facts guard;
      - consent recipe;
-     - conversion recipe and the `conversions` job.
+     - conversion recipe and the `conversions` job;
+     - links job.
    - Remaining:
-     - item 6, the links job;
      - item 7, the static-content rule;
      - the release;
      - the Erudience PR.

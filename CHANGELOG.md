@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+- **New `links` job (brief 01, item 6, the idea behind Erudience's "Guides on this topic" blocks).** It lists internal links to add for pages with few inbound links (2 or fewer by default, weakest first). There are three reasons:
+  - **mention:** the source names the target's topic without linking (from the audit).
+  - **reverse:** the target links to a related page that does not link back.
+  - **sibling:** the same site section and at least two shared topic words.
+
+  How it decides:
+  - Links on half the pages or more count as navigation, not as a relationship.
+  - Words in half the site's titles are ignored.
+  - It is report only; the agent plan sends it to `seo-refresher`.
+
+  The audit now stores each page's internal links in `audit.json`, so `links` needs no second crawl.
+
+  On Erudience's build it suggests nothing at the default threshold, because only 1 page has 2 or fewer inbound links. At 6 or fewer, the first version suggested hub and navigation pages ("shared topic: one"); after the navigation and site-word filters, the suggestions are topical guide-to-guide links.
+
 - **Two recipes in the playbooks (brief 01, items 4 and 5, from Erudience's production code).**
   - `consent-banner-recipe.md`: the logic for any stack, plus plain JavaScript, React and Astro versions. The `consent` job recognises it.
   - `conversion-tracking-recipe.md`: GA4 events without personal data (`generate_lead`, `tool_complete`, `view_calendar`, `cta_click`), a `track()` helper, a click tracker for call-to-action links, and how to mark key events.

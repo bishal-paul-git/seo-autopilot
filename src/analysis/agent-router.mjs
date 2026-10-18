@@ -23,7 +23,7 @@ function countBy(issues) {
   return m;
 }
 
-export function routeAgents({ profile = null, audit = null, priorities = null, inspect = {}, speed = null, geo = null, pipeline = null, consent = null, ymyl = null, pace = null, citations = null, quality = null, redirects = null, facts = null, site = {}, today = "" } = {}) {
+export function routeAgents({ profile = null, audit = null, priorities = null, inspect = {}, speed = null, geo = null, pipeline = null, consent = null, ymyl = null, pace = null, citations = null, quality = null, redirects = null, facts = null, links = null, site = {}, today = "" } = {}) {
   const plan = [];
   const add = (agent, phase, why, evidence = [], prompt = "") => {
     // Entries are stored as "seo-<agent>"; a second reason for the same agent adds its evidence instead of a second step.
@@ -63,6 +63,8 @@ export function routeAgents({ profile = null, audit = null, priorities = null, i
   if (ofType("snippet").length) add("snippet-optimizer", PHASES.content, `${ofType("snippet").length} page(s) get impressions but fewer clicks than their position should.`, ofType("snippet").slice(0, 4).map((i) => i.title), "Use the seo-snippet-optimizer agent on the click-through underperformers." + how);
   const misaligned = (quality?.alignment || []).filter((a) => a.weak.includes("title") || a.weak.includes("description"));
   if (misaligned.length) add("snippet-optimizer", PHASES.content, `${misaligned.length} page(s) do not reflect their own top search query in the title or description.`, misaligned.slice(0, 4).map((a) => `${short(a.url)}: "${a.query}" weak in ${a.weak.join(", ")}`), "Use the seo-snippet-optimizer agent on the pages in quality.json whose title or description misses their top query." + how);
+  const linkItems = links?.items || [];
+  if (linkItems.length) add("refresher", PHASES.content, `${new Set(linkItems.map((i) => i.to)).size} weakly linked page(s) have related pages that could link to them.`, linkItems.slice(0, 4).map((i) => `${short(i.from)} -> ${short(i.to)} (${i.reason})`), "Use the seo-refresher agent on links.json: add the internal links that help a reader, one page per pull request, with descriptive anchor text." + how);
   if (ofType("refresh").length) add("refresher", PHASES.content, `${ofType("refresh").length} page(s) lost visibility.`, ofType("refresh").slice(0, 4).map((i) => i.title), "Label the refresh issues `approved`, or use the seo-refresher agent on one page at a time. Diagnose before editing.");
   if (ofType("content").length) {
     add("researcher", PHASES.content, `${ofType("content").length} topic or striking-distance opportunity(ies) are open.`, ofType("content").slice(0, 4).map((i) => i.title), "Use the seo-researcher agent to turn the best opportunities into briefs.");
