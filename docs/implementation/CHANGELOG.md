@@ -2,6 +2,21 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-18, later (brief 01, items 4 and 5: consent and conversion recipes, conversions job)
+- **Code and content:**
+  - New playbooks: `knowledge/consent-banner-recipe.md` and `knowledge/conversion-tracking-recipe.md`, listed in the playbooks index. They are top-level files, not a `knowledge/recipes/` folder, because the site builder reads `knowledge/` flat.
+  - Conversions code: `src/lib/ga4.mjs`, `src/analysis/conversions.mjs`, `src/jobs/conversions.mjs`.
+  - Wiring: config `conversions.events` (schema and validation), a weekly workflow step, `docs/jobs.md`.
+  - Tests: `test/recipes.test.mjs` (6).
+- **Tests:** `npm test` 246 of 246.
+- **Finding (Erudience production code, static reading of `src/lib/consent.ts`, `components/layout/Footer.tsx` and `components/ScriptInjector.tsx`):**
+  - Withdrawing consent through "Cookie settings" does not reload the page. `reopenConsent()` removes the stored choice, so `setConsent("denied")` sees no previous "granted".
+  - `ScriptInjector` only acts when consent is granted, so GA, Clarity and custom code keep running for the rest of the session.
+  - Not reproduced in a browser.
+  - Reported as a separate suggested task; no Erudience change made.
+- **Not verified:** the GA4 Admin API key-events call against a real property (no Google key in this environment).
+- **Deployment:** none.
+
 ## 2026-10-18, later (brief 01, item 3: facts guard)
 - **Code:**
   - `src/analysis/facts.mjs` (pure) and the `src/jobs/facts.mjs` job.

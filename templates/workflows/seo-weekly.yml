@@ -60,6 +60,11 @@ jobs:
         run: |
           npx --yes "$SEO" run redirects
           npx --yes "$SEO" run redirects smoke
+      - name: GA4 conversions (events received, key events; skips without ga4PropertyId)
+        continue-on-error: true
+        env:
+          GOOGLE_KEY_JSON: ${{ secrets.GOOGLE_KEY_JSON }}
+        run: npx --yes "$SEO" run conversions
       - name: Facts guard (numbers, prices, awards and client claims need a verified fact or a source)
         continue-on-error: true
         run: npx --yes "$SEO" run facts

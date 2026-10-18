@@ -223,6 +223,18 @@
               "null"
             ]
           },
+          "conversions": {
+            "type": "object",
+            "description": "Conversions check: the GA4 events this site should send (default [\"generate_lead\"]).",
+            "properties": {
+              "events": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
           "facts": {
             "type": "object",
             "description": "Facts guard. Default file: <dataDir>/verified-facts.json.",

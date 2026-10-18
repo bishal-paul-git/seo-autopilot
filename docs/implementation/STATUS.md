@@ -28,6 +28,7 @@ Architecture today: dependency-free Node core (`src/jobs`, `src/analysis`, `src/
 | Python runtime for strategist and researcher | `engines/python/seo_engine` |
 | `citations` providers (Brave, SerpAPI, DataForSEO) | `src/lib/serp.mjs` |
 | **New this session:** deterministic agent-eval graders and grading script | `src/analysis/evals.mjs`, `scripts/evals.mjs`, `test/evals/cases.json`, `docs/evals.md` |
+| **New this session (brief 01, items 4 and 5):** consent and conversion recipes (code executed in tests), `conversions` job | `knowledge/consent-banner-recipe.md`, `knowledge/conversion-tracking-recipe.md`, `src/lib/ga4.mjs`, `src/jobs/conversions.mjs` |
 | **New this session (brief 01, item 3):** `facts` job (claims need a verified fact or a source; strict mode for builds) | `src/analysis/facts.mjs`, `src/jobs/facts.mjs` |
 | **New this session (brief 01, item 2):** `redirects` job: check, generate (Apache, nginx, Netlify, Vercel) and smoke | `src/analysis/redirects.mjs`, `src/jobs/redirects.mjs` |
 | **New this session (brief 01, item 1):** heading outline in both crawlers, five heading rules, `quality` job (top query vs title, H1 and description; headings per section), router duplicate fix | `src/audit/extract.mjs`, `engines/go/extract.go`, `src/audit/rules.mjs`, `src/analysis/quality.mjs`, `src/jobs/quality.mjs`, `src/analysis/agent-router.mjs` |
@@ -42,6 +43,7 @@ Architecture today: dependency-free Node core (`src/jobs`, `src/analysis`, `src/
 | Eval graders | 9 tests: graders pass good samples and fail bad ones | unit on hand-written samples. **No agent evaluated** |
 | Heading rules and `quality` job | 12 unit tests; Go/Node parity test. Compared with Erudience's own scripts on a local Erudience build (127 pages): section averages identical; same 7 long H1s; matcher agrees on 320 of 321 decisions. Top-query check run on Erudience's real Search Console rows | unit, plus a real-site comparison **on a local build, not the live site** |
 | Search Console, GA4, PageSpeed | used daily by Erudience per earlier STATUS; **not re-checked this session** (Erudience repo not accessible) | real integration, prior evidence only |
+| Recipes and `conversions` | 6 tests: the recipe code runs in a fake browser, and the product's consent check recognises it; GA4 calls mocked | unit only. **GA4 Admin API key events never called live** |
 | `facts` job | 8 tests. On Erudience's real content it finds 4 unverified claims (2 prices, 2 percentages) that Erudience's own check passes through a loophole; 0 false positives after the fixes | unit, plus a real-content comparison |
 | `redirects` job | 11 tests, including smoke and check against local HTTP servers. On Erudience's real redirect files: Apache rules identical to Erudience's generator (105 of 105); same 2 problem targets flagged | unit, plus a real-data comparison. **Live smoke against a real host not run** |
 | `citations` providers | mocked only; **never run live** | mock |
@@ -76,6 +78,7 @@ Tag `v2.13.0` (plus moving tags `v2`, `v2-stable`) and the GitHub Pages site, un
   - News to Blog: the autopilot tick has no authentication (N1); AI endpoints are unauthenticated (N2); users can raise their own plan and budget (N3).
   - Marketing Mouse: server functions use the service-role client with no auth (M1); Google tokens are fetched without ownership checks (M2).
   - Whether either app is deployed is **unknown**. Owner decision D15.
+- **Erudience consent withdrawal bug** (found by running the recipe code, confirmed by reading Erudience's source): after "Cookie settings" and then Reject, analytics keeps running until the next full page load. Needs an Erudience fix; reported, not changed.
 - Access was resolved during this session: all four source repositories were readable after the owner granted access.
 - **Provider keys needed for brief 03:** a Brave Search API key, a SerpAPI key or a DataForSEO login. The owner sets them locally or as repository secrets; never paste them into chat or commit them.
 - Audit findings F1 to F10 (`PHASE-0-AUDIT.md` section 4). Highest: auto-merge publishes an unseen draft (F1); the approval actor is not checked (F2); release writes to the default branch (F3); live backlink submission exists, opt-in (F4); the Supabase template is single-tenant with a replayable token (F5); large-site Search Console truncation (F6).
@@ -97,7 +100,17 @@ No paid API calls were made this session. Hosted cost model is proposed in D9; n
 
 Exact next actions, independent of the review:
 1. Brief 01:
-   - Items 1 (heading and meta audits), 2 (redirect tooling) and 3 (facts guard) are done.
+   - Items 1 to 5 are done:
+     - heading and meta audits;
+     - redirect tooling;
+     - facts guard;
+     - consent recipe;
+     - conversion recipe and the `conversions` job.
+   - Remaining:
+     - item 6, the links job;
+     - item 7, the static-content rule;
+     - the release;
+     - the Erudience PR.
    - Then the recipe items (4 and 5), item 6 (links job) and item 7 (static-content rule).
    - Release, then open the Erudience PR that swaps its scripts for the product jobs.
 2. Brief 03, once keys exist: live `citations` with one provider and sanitised fixtures.

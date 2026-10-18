@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- **Two recipes in the playbooks (brief 01, items 4 and 5, from Erudience's production code).**
+  - `consent-banner-recipe.md`: the logic for any stack, plus plain JavaScript, React and Astro versions. The `consent` job recognises it.
+  - `conversion-tracking-recipe.md`: GA4 events without personal data (`generate_lead`, `tool_complete`, `view_calendar`, `cta_click`), a `track()` helper, a click tracker for call-to-action links, and how to mark key events.
+  - The tests run the recipes' code: a fake browser for the consent script, and a real import of `track()`.
+  - Running the consent code found a withdrawal bug, now fixed in the recipe. "Cookie settings" clears the stored choice, so "was consent granted before?" misses a later Reject and analytics keeps running. The recipe now reloads whenever the tag is loaded and the choice is "denied". Erudience has the same bug in `src/lib/consent.ts`; it is reported separately and not fixed here.
+- **New `conversions` job.**
+  - **Event counts:** the events GA4 received in the last 28 days, from the Data API (the same API the digest uses).
+  - **Key events:** which events are marked as key events, from the Admin API.
+  - **Findings:** an expected conversion missing, a conversion not marked as a key event, a key event that received nothing, or a property with no events at all.
+  - **Configuration:** `conversions.events` sets the expected events (default `generate_lead`). It has a weekly workflow step.
+  - **Not yet run against real GA4:** both calls are tested with mocked responses only.
+
 - **New `facts` job (brief 01, item 3, ported from the "no unverified facts" rule in Erudience's `validate-content.mjs`).**
   - **What it finds:** percentages, money amounts, "N+" figures, multipliers ("3x faster"), rankings ("#1"), awards, and client claims ("trusted by", "clients include", "as seen in"). Each must be in `<dataDir>/verified-facts.json` (Erudience's format) or carry a source link in the same sentence.
   - **What it reads:** json and markdown content files, or the live pages of sitemap-only sites. `--files` limits it to the files a pull request changes.
