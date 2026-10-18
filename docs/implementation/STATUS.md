@@ -60,7 +60,7 @@ Done:
 - The session's git proxy refused `git push origin v2.14.0` and `git push -f origin v2 v2-stable` ("remote end hung up"), and the available GitHub tools cannot create tags.
 - So there is no GitHub Release for 2.14.0 yet.
 - `v2` and `v2-stable` still point at v2.13.0 (`8cdf874`). Erudience, which installs `#v2`, still runs 2.13.0.
-- The Pages site is published by the `pages` workflow from `main`; whether it ran was not checked.
+- On `main` (`f10f3b3`), the `ci` and `pages` workflows both succeeded at 2026-10-18 16:36 UTC, so the landing site is published from v2.14.0.
 
 To finish, from a machine with push rights:
 ```
