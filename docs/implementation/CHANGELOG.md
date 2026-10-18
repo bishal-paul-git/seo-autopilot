@@ -2,6 +2,16 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-18, evening (release finished by the owner)
+- **Deployment actions (by the owner, in the GitHub web UI):**
+  - Published the Release `v2.14.0` (tag at `f10f3b3`).
+  - Merged seo-autopilot#9 and erudience-flow-engine#78.
+- **Verified by this session:** latest release `v2.14.0`. Later, after the owner moved them from a terminal: `v2.14.0`, `v2` and `v2-stable` all at `f10f3b3` (GitHub API reads).
+- **Failed (session access):**
+  - Merging, marking ready, pushing workflow files and creating refs all returned 403.
+  - A proposed manual-run release workflow was therefore not pushed.
+- **Documentation:** STATUS updated.
+
 ## 2026-10-18, later (release v2.14.0, partial)
 - **Deployment actions:**
   - Version bumped to 2.14.0; `CHANGELOG.md` section added; site regenerated (commit `e7668d9`).
