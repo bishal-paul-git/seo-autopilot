@@ -8,10 +8,11 @@ const RULE_GROUPS = {
   "schema-engineer": ["schema-required-missing", "jsonld-invalid", "jsonld-article-incomplete", "og-missing"],
   "international": ["hreflang-invalid", "hreflang-no-self", "hreflang-not-reciprocal"],
   "media-optimizer": ["images-no-alt"],
-  "content-pruner": ["thin-content", "duplicate-content", "orphan", "deep"],
+  "content-pruner": ["thin-content", "duplicate-content"],
+  "internal-linker": ["orphan", "deep", "generic-anchor"],
   "performance-fixer": ["slow-ttfb"],
-  "snippet-optimizer": ["title-long", "title-short", "title-duplicate", "desc-long", "desc-short", "desc-duplicate", "generic-anchor"],
-  "refresher": ["h1-long", "heading-skip", "h2-generic", "h2-repeated", "few-subheadings"],
+  // Titles, descriptions and the heading outline have one owner; refreshing a page that lost visibility is a different job.
+  "snippet-optimizer": ["title-long", "title-short", "title-duplicate", "desc-long", "desc-short", "desc-duplicate", "h1-long", "heading-skip", "h2-generic", "h2-repeated", "few-subheadings"],
 };
 
 const PHASES = { onboard: 0, block: 1, fix: 2, content: 3, grow: 4, report: 5 };
@@ -25,10 +26,20 @@ function countBy(issues) {
 
 export function routeAgents({ profile = null, audit = null, priorities = null, inspect = {}, speed = null, geo = null, pipeline = null, consent = null, ymyl = null, pace = null, citations = null, quality = null, redirects = null, facts = null, links = null, render = null, site = {}, today = "" } = {}) {
   const plan = [];
+  const advise = profile && profile.mode === "advise";
+  const how = advise ? " This site is in advise mode: recommend exact changes for a person to make; do not try to edit files." : "";
   const add = (agent, phase, why, evidence = [], prompt = "") => {
-    // Entries are stored as "seo-<agent>"; a second reason for the same agent adds its evidence instead of a second step.
+    // Entries are stored as "seo-<agent>"; a second reason for the same agent adds to that step instead of making a second one.
+    // Its instruction is kept too (it names the report to read); an earlier, more urgent phase wins.
     const e = plan.find((p) => p.agent === `seo-${agent}`);
-    if (e) { e.evidence.push(...evidence.filter((x) => !e.evidence.includes(x))); return; }
+    if (e) {
+      e.evidence.push(...evidence.filter((x) => !e.evidence.includes(x)));
+      if (!e.why.includes(why)) e.why += " " + why;
+      const extra = prompt.replace(how, "");
+      if (extra && !e.prompt.includes(extra)) e.prompt = e.prompt.replace(how, "") + " " + extra.replace(/^Use the seo-[a-z-]+ agent\b/i, "Also use it") + how;
+      if (phase < e.rank) { e.rank = phase; e.phase = Object.keys(PHASES)[phase]; }
+      return;
+    }
     plan.push({ agent: `seo-${agent}`, phase: Object.keys(PHASES)[phase], rank: phase, why, evidence: evidence.slice(0, 6), prompt });
   };
   const items = priorities?.items || [];
@@ -38,8 +49,6 @@ export function routeAgents({ profile = null, audit = null, priorities = null, i
   const ruleEvidence = (rules) => rules.filter((r) => byRule.has(r)).map((r) => `${r}: ${byRule.get(r).length} page(s), e.g. ${issueUrls([r]).join(", ")}`);
 
   if (!profile) add("onboarder", 0, "There is no site profile yet. Every other agent adapts to the platform, so start here.", [], "Use the seo-onboarder agent to profile this site, confirm what agents may change and fill in the Project rules.");
-  const advise = profile && profile.mode === "advise";
-  const how = advise ? " This site is in advise mode: recommend exact changes for a person to make; do not try to edit files." : "";
 
   if (profile && profile.rendering === "js-dependent") add("technical-fixer", 1, "The page content is not in the delivered HTML, so crawlers and AI tools may see an empty page.", ["rendering: js-dependent"], "Use the seo-technical-fixer agent to plan prerendering or server rendering for the key page types." + how);
   if (profile?.signals?.noindexOnHome) add("technical-fixer", 1, "The home page carries a noindex signal.", ["noindex on the home page"], "Use the seo-technical-fixer agent to confirm whether the home page noindex is intentional, and remove it if not." + how);
@@ -47,7 +56,7 @@ export function routeAgents({ profile = null, audit = null, priorities = null, i
   for (const [agent, rules] of Object.entries(RULE_GROUPS)) {
     const n = issueCount(rules);
     if (!n) continue;
-    const phase = ["redirect-guardian", "technical-fixer"].includes(agent) ? PHASES.block : ["snippet-optimizer", "content-pruner", "refresher"].includes(agent) ? PHASES.content : PHASES.fix;
+    const phase = ["redirect-guardian", "technical-fixer"].includes(agent) ? PHASES.block : ["snippet-optimizer", "content-pruner", "internal-linker"].includes(agent) ? PHASES.content : PHASES.fix;
     add(agent, phase, `${n} audit finding(s) in this agent's area.`, ruleEvidence(rules), `Use the seo-${agent} agent on the audit findings: ${rules.filter((r) => byRule.has(r)).join(", ")}.` + how);
   }
 
@@ -66,7 +75,7 @@ export function routeAgents({ profile = null, audit = null, priorities = null, i
   const misaligned = (quality?.alignment || []).filter((a) => a.weak.includes("title") || a.weak.includes("description"));
   if (misaligned.length) add("snippet-optimizer", PHASES.content, `${misaligned.length} page(s) do not reflect their own top search query in the title or description.`, misaligned.slice(0, 4).map((a) => `${short(a.url)}: "${a.query}" weak in ${a.weak.join(", ")}`), "Use the seo-snippet-optimizer agent on the pages in quality.json whose title or description misses their top query." + how);
   const linkItems = links?.items || [];
-  if (linkItems.length) add("refresher", PHASES.content, `${new Set(linkItems.map((i) => i.to)).size} weakly linked page(s) have related pages that could link to them.`, linkItems.slice(0, 4).map((i) => `${short(i.from)} -> ${short(i.to)} (${i.reason})`), "Use the seo-refresher agent on links.json: add the internal links that help a reader, one page per pull request, with descriptive anchor text." + how);
+  if (linkItems.length) add("internal-linker", PHASES.content, `${new Set(linkItems.map((i) => i.to)).size} weakly linked page(s) have related pages that could link to them.`, linkItems.slice(0, 4).map((i) => `${short(i.from)} -> ${short(i.to)} (${i.reason})`), "Use the seo-internal-linker agent on links.json: add the internal links that help a reader, one page per pull request, with descriptive anchor text." + how);
   if (ofType("refresh").length) add("refresher", PHASES.content, `${ofType("refresh").length} page(s) lost visibility.`, ofType("refresh").slice(0, 4).map((i) => i.title), "Label the refresh issues `approved`, or use the seo-refresher agent on one page at a time. Diagnose before editing.");
   if (ofType("content").length) {
     add("researcher", PHASES.content, `${ofType("content").length} topic or striking-distance opportunity(ies) are open.`, ofType("content").slice(0, 4).map((i) => i.title), "Use the seo-researcher agent to turn the best opportunities into briefs.");
@@ -88,7 +97,7 @@ export function routeAgents({ profile = null, audit = null, priorities = null, i
   if (citations?.mostlyAbsent) add("ai-search-agent", PHASES.grow, `The site appears for only ${citations.appears} of ${citations.asked} tracked questions in search results and AI answers.`, [...(citations.absent || []).slice(0, 4), ...(citations.topCited || []).slice(0, 2).map((c) => `cited instead: ${c.domain}`)], "Use the seo-ai-search-agent on the questions in citations.json where the site is absent: see what the cited pages answer and close the gap." + how);
 
   const types = profile?.signals?.structuredData || [];
-  if (profile && !types.some((t) => /Organization|LocalBusiness|Corporation|Person/.test(t))) add("entity-reputation", PHASES.fix, "The home page has no Organization or Person markup, so the business is a weak entity to search engines and AI tools.", ["structured data on the home page: " + (types.join(", ") || "none")], "Use the seo-entity-reputation agent to define the entity, its profiles and its consistent description.");
+  if (profile && !types.some((t) => /Organization|LocalBusiness|Corporation|Person/.test(t))) add("entity-reputation", PHASES.fix, "The home page has no Organization or Person markup, so the business is a weak entity to search engines and AI tools.", ["structured data on the home page: " + (types.join(", ") || "none")], "Use the seo-entity-reputation agent to define the entity, its profiles and its consistent description, then brief the seo-schema-engineer to add the markup.");
   if (types.some((t) => /LocalBusiness|Dentist|Store|Restaurant|ProfessionalService/.test(t)) || site.local) add("local-agent", PHASES.grow, "The site is a local business (marked up as one, or flagged local in the config).", types.filter((t) => /Local|Dentist|Store|Restaurant|Professional/.test(t)), "Use the seo-local-agent to check the profile, listings consistency and location pages.");
   if (profile?.signals?.hreflang) add("international", PHASES.fix, "The site has language or region versions.", ["hreflang present"], "Use the seo-international agent to check language targeting end to end.");
   if (/Shopify|Magento|WooCommerce/i.test(profile?.platform?.name || "") || types.some((t) => /^Product$|Offer/.test(t))) add("ecommerce", PHASES.fix, "The site sells products.", types.filter((t) => /Product|Offer/.test(t)), "Use the seo-ecommerce agent on category, product and faceted-navigation pages.");

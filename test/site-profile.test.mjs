@@ -3,6 +3,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { detectProfile, renderingOf, structuredDataTypes } from "../src/analysis/site-profile.mjs";
 import { routeAgents, planMarkdown } from "../src/analysis/agent-router.mjs";
+import { listAgents } from "../src/core/agents.mjs";
 
 const page = (body, head = "") => `<!doctype html><html><head><title>t</title>${head}</head><body>${body}</body></html>`;
 const prose = "word ".repeat(200);
@@ -114,7 +115,7 @@ test("any project that connects the repo gets every agent, every playbook and th
     const log = console.log, cwd = process.cwd(); console.log = () => {}; process.chdir(dir);
     try { await init({ flags: { url: "https://example.test/", name: name } }); } finally { process.chdir(cwd); console.log = log; }
     const agents = readdirSync(join(dir, "seo-autopilot", "agents")).filter((f) => /^seo-.*\.md$/.test(f));
-    assert.equal(agents.length, 27, `${name}: agents`);
+    assert.equal(agents.length, listAgents().length, `${name}: agents`);
     assert.ok(readdirSync(join(dir, "seo-autopilot", "knowledge")).includes("site-platforms.md"), `${name}: playbooks`);
     const weekly = readFileSync(join(dir, ".github", "workflows", "seo-weekly.yml"), "utf8");
     assert.match(weekly, /run profile/); assert.match(weekly, /run team/);

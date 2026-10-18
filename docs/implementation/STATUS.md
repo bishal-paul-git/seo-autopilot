@@ -119,7 +119,14 @@ No paid API calls were made this session. Hosted cost model is proposed in D9; n
   - Checks: `npm test` 260/260; Python 23 OK; `init` in a temp repo gave 27 agents with the right `department:` lines; `upgrade --diff` reported up to date.
   - Not checked: Claude Code actually loading the plugin's explicit `agents` list (only the JSON shape is tested).
   - Not changed: `.github/workflows/pages.yml` still filters on `agents/**`, because this session cannot push workflow files. The site still rebuilds because `site/**` changes with every release.
-- **Next, step 2:** fix ownership and inputs. That covers the router mismatches, the seven report names missing from agent Inputs, and the overlaps, with a test that every report the router sends appears in the receiving agent's Inputs. Design: `docs/architecture/DEPARTMENTS.md`.
+- **Step 2, done (local, not pushed):**
+  - New `seo-internal-linker` (28 agents).
+  - Orphan, deep and anchor findings and `links.json` go to it; heading findings go to the snippet optimizer.
+  - Each agent's Inputs now name every report the router sends (test-enforced).
+  - Fixed the router dropping a second reason's instruction.
+  - Single owners for markup and robots changes.
+  - Checks: `npm test` 262/262; Python 23 OK.
+- **Next, step 3:** work orders and validation in code. That means an envelope and validator in `src/analysis/`, a dependency graph instead of fixed phases, URL/file locks, and the fact-checker in the PR pipeline. The PR-pipeline part needs workflow-template edits, which are fine. The repository's own `.github/workflows` can't be pushed from this session.
 
 ## Next milestone
 **Owner review of Phase 0.** Acceptance criterion: the owner approves or amends D1 to D15 and answers D11, D14 and D15. Phase 1 (hosted foundation) starts only after that.

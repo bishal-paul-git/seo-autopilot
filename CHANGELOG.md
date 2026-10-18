@@ -11,6 +11,12 @@
   - Installed projects still get every agent flat in `seo-autopilot/agents/`, so workflows, the Python runtime and `upgrade` work as before.
   - The Claude Code plugin now lists its agents explicitly in `.claude-plugin/plugin.json`, because plugins only find a top-level `agents/` folder by default. A test keeps the list in step.
   - The agents page on the site is grouped by department.
+- **One owner per problem (D16, step 2).**
+  - New **seo-internal-linker** (Content) owns orphan pages, deep pages, generic anchors and the `links` job's suggestions. These used to go to the pruner and the refresher.
+  - Heading findings now go to the **seo-snippet-optimizer**, which owns titles, descriptions and the heading outline.
+  - Markup changes have one owner, the schema engineer. Entity-reputation and the AI search agent brief it, and robots changes go to the technical fixer.
+- **Agents now name every report the router sends them** (`consent.json`, `ymyl.json`, `quality.json`, `links.json`, `render.json`, `citations.json`, `pace.json`, `redirects-check.json`). A test enforces it.
+- **Router fix:** when a second finding sent the same agent, its instruction (which names the report to read) was dropped. It is now appended, and the more urgent phase wins.
 - Design and roadmap: `docs/architecture/DEPARTMENTS.md`. Research library (links still to be verified): `docs/research/REFERENCES.md`.
 
 ## 2.14.0

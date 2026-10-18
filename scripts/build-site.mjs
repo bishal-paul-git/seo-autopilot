@@ -115,9 +115,9 @@ const shell = (pageTitle, desc, inner) => `<!doctype html><html lang="en"><head>
     const charter = read(`departments/${d}`, "README.md");
     return `<h2 id="dept-${d}">${inline(title(charter, d))}</h2>${agents.filter((a) => a.department === d).map(card).join("\n")}`;
   }).join("\n");
-  const inner = `<h1>The agent team</h1><p class="lead">Twenty-seven agents in eight departments, each with one job, a fixed set of tools, required reading, a quality bar and a defined hand-off. The full text of each agent is below, exactly as it ships in the repository.</p><div class="chips">${DEPARTMENTS.map((d) => `<a href="#dept-${d}">${d}</a>`).join("")}</div><article>${markdown(intro, { linkMap: map, headingOffset: 1 })}</article>${sections}`;
+  const inner = `<h1>The agent team</h1><p class="lead">Twenty-eight agents in eight departments, each with one job, a fixed set of tools, required reading, a quality bar and a defined hand-off. The full text of each agent is below, exactly as it ships in the repository.</p><div class="chips">${DEPARTMENTS.map((d) => `<a href="#dept-${d}">${d}</a>`).join("")}</div><article>${markdown(intro, { linkMap: map, headingOffset: 1 })}</article>${sections}`;
   mkdirSync(new URL("../site/agents/", import.meta.url), { recursive: true });
-  writeFileSync(new URL("../site/agents/index.html", import.meta.url), shell("The agent team", "The twenty-seven seo-autopilot agents, from strategist and drafter to coordinator, onboarder, fact-checker, schema engineer and reporter, built to work on any kind of website, with their full instructions.", inner));
+  writeFileSync(new URL("../site/agents/index.html", import.meta.url), shell("The agent team", "The twenty-eight seo-autopilot agents, from strategist and drafter to coordinator, onboarder, fact-checker, schema engineer and reporter, built to work on any kind of website, with their full instructions.", inner));
   console.log("wrote site/agents/index.html");
 }
 

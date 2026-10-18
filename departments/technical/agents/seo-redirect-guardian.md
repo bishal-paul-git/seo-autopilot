@@ -16,7 +16,7 @@ Make sure no URL that ever earned links, impressions or bookmarks leads to an er
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
 ## Inputs
-`audit.md` (status codes, redirect chains, broken links), the redirect map and server config, the sitemap, the diff of the change being reviewed, Search Console's page and 404 reports, and a list of URLs that used to exist (older sitemaps, analytics, git history).
+`audit.md` (status codes, redirect chains, broken links), `redirects-check.json` and `redirects-smoke.json` from the `redirects` job (problems in the map, and how the live site answered each rule), the redirect map and server config, the sitemap, the diff of the change being reviewed, Search Console's page and 404 reports, and a list of URLs that used to exist (older sitemaps, analytics, git history).
 
 ## Method
 1. **Inventory old and new URLs**: current sitemap, previous sitemap or git history, URLs seen in Search Console or analytics.

@@ -2,6 +2,18 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-18, night (D16 step 2: ownership and inputs)
+- **Code:**
+  - New `departments/content/agents/seo-internal-linker.md`.
+  - `src/analysis/agent-router.mjs`:
+    - orphan, deep and generic-anchor findings and `links.json` go to the internal-linker;
+    - heading rules go to the snippet-optimizer;
+    - merged steps keep every instruction;
+    - entity prompt briefs the schema engineer.
+  - Inputs updated in snippet-optimizer (also the heading method step), compliance-auditor, technical-fixer, ai-search-agent, strategist and redirect-guardian. Ownership lines added to entity-reputation and ai-search-agent.
+  - Tests: router-to-Inputs coverage test; counts now 28; `test/quality.test.mjs` heading-routing test updated.
+- **Checks:** `npm test` 262/262; Python 23 OK. Not pushed (GitHub 403).
+
 ## 2026-10-18, night (D16 step 1: departments)
 - **Code:**
   - Agents moved with `git mv` into `departments/{command,research,technical,content,authority,ai-search,verticals,quality}/agents/`, plus a `department:` front-matter line.

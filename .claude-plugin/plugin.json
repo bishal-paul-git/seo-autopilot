@@ -34,6 +34,7 @@
     "./departments/content/agents/seo-cannibalization-resolver.md",
     "./departments/content/agents/seo-content-pruner.md",
     "./departments/content/agents/seo-drafter.md",
+    "./departments/content/agents/seo-internal-linker.md",
     "./departments/content/agents/seo-refresher.md",
     "./departments/content/agents/seo-snippet-optimizer.md",
     "./departments/authority/agents/seo-entity-reputation.md",

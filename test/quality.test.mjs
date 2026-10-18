@@ -99,7 +99,7 @@ test("section outline averages H2 and H3 per first path segment", () => {
   assert.deepEqual(sectionOutline(pages), [{ section: "guides", pages: 2, avgH2: 3, avgH3: 1 }, { section: "home", pages: 1, avgH2: 4, avgH3: 0 }]);
 });
 
-test("router: heading findings go to the refresher, misaligned snippets to the snippet optimizer, and no agent is listed twice", () => {
+test("router: heading findings and misaligned snippets both go to the snippet optimizer (one owner), and no agent is listed twice", () => {
   const plan = routeAgents({
     profile: { mode: "edit", signals: { structuredData: ["Organization"] } },
     audit: { issues: [{ rule: "heading-skip", url: "https://s.test/a" }, { rule: "title-long", url: "https://s.test/b" }] },
@@ -108,9 +108,9 @@ test("router: heading findings go to the refresher, misaligned snippets to the s
   });
   const agents = plan.steps.map((s) => s.agent);
   assert.equal(new Set(agents).size, agents.length, `duplicates in ${agents}`);
-  assert.ok(agents.includes("seo-refresher"));
+  assert.ok(!agents.includes("seo-refresher"), "headings are not a refresh: the refresher handles pages that lost visibility");
   const snip = plan.steps.find((s) => s.agent === "seo-snippet-optimizer");
-  assert.ok(snip.evidence.some((e) => /widget pricing/.test(e)) && snip.evidence.some((e) => /title-long/.test(e)), snip.evidence.join(" | "));
+  assert.ok(snip.evidence.some((e) => /widget pricing/.test(e)) && snip.evidence.some((e) => /title-long/.test(e)) && snip.evidence.some((e) => /heading-skip/.test(e)), snip.evidence.join(" | "));
 });
 
 test("quality job: reads audit.json and gsc-rows.json, writes quality.json and quality.md, and skips cleanly without an audit", async () => {

@@ -16,7 +16,7 @@ Resolve audit findings at the cause, safely, in small verified steps. This agent
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
 ## Inputs
-`audit.md` / `audit.json` and `priorities.md` in the state folder, the project's build and test commands, the site's routing and template code.
+`audit.md` / `audit.json`, `priorities.md` and `render.json` (pages whose delivered HTML differs from what visitors see after JavaScript) in the state folder, the project's build and test commands, the site's routing and template code.
 
 ## Method
 1. **Take one finding group** (one rule) at a time, highest severity first. Read the rule's *why* and the recipe.

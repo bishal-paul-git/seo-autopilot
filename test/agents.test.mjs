@@ -14,8 +14,8 @@ const agents = listAgents();
 const agentFiles = agents.map((a) => `${a.name}.md`);
 const pathOf = Object.fromEntries(agents.map((a) => [`${a.name}.md`, a.file]));
 
-test("twenty-seven agents exist, with unique names across departments", () => {
-  assert.equal(agentFiles.length, 27);
+test("twenty-eight agents exist, with unique names across departments", () => {
+  assert.equal(agentFiles.length, 28);
   assert.equal(new Set(agentFiles).size, agentFiles.length);
 });
 
@@ -58,6 +58,33 @@ test("every agent the router can recommend exists", async () => {
   const { routeAgents } = await import("../src/analysis/agent-router.mjs");
   const plan = routeAgents({ profile: { mode: "edit", rendering: "js-dependent", signals: { structuredData: ["LocalBusiness", "Product"], hreflang: true, noindexOnHome: true }, platform: { name: "Shopify" } }, audit: { issues: Object.keys(RULES).map((rule) => ({ rule, url: "https://a.test/" })) }, priorities: { items: [{ type: "structure", title: "x" }, { type: "snippet", title: "y" }, { type: "refresh", title: "z" }, { type: "content", id: "strike:q", title: "w" }, { type: "ai-search", title: "v" }, { type: "indexing", title: "i" }, { id: "speed:poor", type: "speed", title: "s" }] }, inspect: { "https://a.test/": { coverage: "Crawled - currently not indexed" } }, geo: { findings: [{ title: "g" }] }, pipeline: { queued: 1, upcoming: 0, schedule: [] }, site: { local: true } });
   for (const s of plan.steps) assert.ok(agentFiles.includes(s.agent + ".md"), "router names a missing agent: " + s.agent);
+});
+
+test("every report the router tells an agent to use is named in that agent's Inputs", async () => {
+  const { routeAgents } = await import("../src/analysis/agent-router.mjs");
+  const plan = routeAgents({
+    profile: { mode: "edit", signals: { structuredData: [] } },
+    audit: { issues: Object.keys(RULES).map((rule) => ({ rule, url: "https://a.test/" })) },
+    priorities: { items: [{ type: "structure", title: "x" }, { type: "snippet", title: "y" }, { type: "refresh", title: "z" }, { type: "content", id: "strike:q", title: "w" }, { type: "ai-search", title: "v" }, { type: "indexing", title: "i" }] },
+    consent: { findings: [{ id: "c", severity: "high", title: "c" }] },
+    ymyl: { pages: [{ url: "https://a.test/m", status: "needs reviewer", topics: ["health"], missing: ["reviewer"] }] },
+    pace: { overLimit: true, overDays: [], overWeeks: [], moves: [] },
+    citations: { mostlyAbsent: true, appears: 0, asked: 5, absent: ["q"], topCited: [] },
+    quality: { alignment: [{ url: "https://a.test/b", query: "q", weak: ["title"] }] },
+    redirects: { check: { errors: ["loop"] } },
+    facts: { unverified: [{ where: "a", claim: "47%" }] },
+    links: { items: [{ from: "https://a.test/x", to: "https://a.test/y", reason: "mention" }] },
+    render: { results: [{ url: "https://a.test/r", findings: [{ id: "prerender-text-not-on-page", severity: "high" }] }] },
+  });
+  const inputs = (name) => (readFileSync(pathOf[`${name}.md`], "utf8").match(/## Inputs\n([\s\S]*?)\n## /) || [])[1] || "";
+  let checked = 0;
+  for (const s of plan.steps) {
+    for (const m of s.prompt.matchAll(/\b([a-z][a-z-]*\.json)\b/g)) {
+      checked++;
+      assert.ok(inputs(s.agent).includes(m[1]), `${s.agent} is sent ${m[1]} but its Inputs do not mention it`);
+    }
+  }
+  assert.ok(checked >= 9, `only ${checked} report references checked`);
 });
 
 test("only the technical fixer may run arbitrary shell; the others are scoped", () => {

@@ -16,7 +16,7 @@ Keep the site safe from the practices that get sites demoted or penalised, and m
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
 ## Inputs
-The content files or crawl, the site profile, the audit and indexing reports, Search Console messages and manual-action status (the owner supplies these), the planned content list, and Google's current spam policies and quality guidance.
+The content files or crawl, the site profile, the audit and indexing reports, `consent.json` (what loads before consent, what the privacy page promises), `ymyl.json` (sensitive-topic pages and whether they name an author and qualified reviewer), Search Console messages and manual-action status (the owner supplies these), the planned content list, and Google's current spam policies and quality guidance.
 
 ## Method
 1. **Scan for policy risks** and record each with an example URL: scaled content produced mainly to rank; thin or near-duplicate pages; doorway or cloned location pages; hidden or deceptive text; keyword stuffing; cloaking or sneaky redirects; link schemes and paid links without `rel="sponsored"`; scraped or unoriginal content; fake or incentivised reviews; site reputation abuse.

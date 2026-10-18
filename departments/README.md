@@ -1,6 +1,6 @@
 # The departments
 
-seo-autopilot works as a team of twenty-seven specialist agents grouped into eight departments, like a small agency: Command plans, Research finds, Technical, Content, Authority, AI search and Verticals do the work, and Quality checks it. Each agent has one job, a fixed set of tools, the playbooks it must read first, a quality bar and a defined hand-off. One rule holds for all of them: **a human approves what goes live**.
+seo-autopilot works as a team of twenty-eight specialist agents grouped into eight departments, like a small agency: Command plans, Research finds, Technical, Content, Authority, AI search and Verticals do the work, and Quality checks it. Each agent has one job, a fixed set of tools, the playbooks it must read first, a quality bar and a defined hand-off. One rule holds for all of them: **a human approves what goes live**.
 
 Each department folder has a charter (`README.md`) and its agents (`agents/`). Installed projects get the agents in one flat folder (`seo-autopilot/agents/`) so workflows can find any agent by name; each file's front matter still names its department. The design and roadmap are in [docs/architecture/DEPARTMENTS.md](../docs/architecture/DEPARTMENTS.md).
 
@@ -44,6 +44,7 @@ Writes, refreshes, merges and trims pages, and makes titles and openings earn th
 | [seo-cannibalization-resolver](content/agents/seo-cannibalization-resolver.md) | Finds pages competing for one query and plans a merge, redirect or re-target | on request | no |
 | [seo-content-pruner](content/agents/seo-content-pruner.md) | Decides keep, refresh, merge, redirect or remove for thin and stale pages | on request, periodic review | no |
 | [seo-drafter](content/agents/seo-drafter.md) | Writes one new page from a brief, queued | GitHub Actions on an approved `seo-topic` issue | content files only |
+| [seo-internal-linker](content/agents/seo-internal-linker.md) | Owns internal links: orphan and buried pages, and related pages that should link to each other | on request, from `links.json` and the audit | content files only, one page per task |
 | [seo-refresher](content/agents/seo-refresher.md) | Updates one existing page in place | GitHub Actions on an approved `seo-refresh` issue | content files only |
 | [seo-snippet-optimizer](content/agents/seo-snippet-optimizer.md) | Improves titles, descriptions and opening answers for pages with impressions but few clicks | on request | content files only, one page per task |
 
