@@ -2,6 +2,19 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-18 (cloud session, branch `claude/hopeful-euler-662mu5`)
+- **Documentation:**
+  - Phase 0 audit of SEO Autopilot in `PHASE-0-AUDIT.md`: baseline, data flow from onboarding to measurement, findings F1 to F10, reuse matrix.
+  - Proposed architecture decisions D1 to D11 in `DECISIONS.md`.
+  - `docs/evals.md`; STATUS rewritten.
+- **Code (brief 04, first part):** deterministic graders `src/analysis/evals.mjs`, script `scripts/evals.mjs`, cases `test/evals/cases.json`, tests `test/evals.test.mjs`. Root `CHANGELOG.md` has an `## Unreleased` entry; no version bump.
+- **Tests:**
+  - Clean clone of `8d7b62c`: `npm test` 197 pass; Go ok; Python 23 ok.
+  - This branch: `npm test` 206 pass.
+  - No live provider calls.
+- **Blocked:** marketingmouse, feed-to-site-magic, keel and erudience-flow-engine are not accessible to this session's GitHub credential (`add_repo` denied). No source SHAs could be recorded.
+- **Deployment:** none.
+
 ## 2026-10-18
 - Documentation only: merged the owner's `CLAUDE.md` handoff with the product guide; added `docs/strategy.md` and `docs/roadmap/` (nine session briefs); added these status files. Tests: `npm test` 196 pass, 1 skipped. Deployment: none.
 

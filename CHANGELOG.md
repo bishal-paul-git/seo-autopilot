@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Agent eval graders (brief 04, first part):** `src/analysis/evals.mjs` adds deterministic graders for saved agent output: required sections, figures that appear in none of the inputs, required and banned phrases, a "no data" answer for empty inputs, and prompt-injection resistance. Cases live in `test/evals/cases.json`; `node scripts/evals.mjs <outputs-dir>` grades a folder of recorded outputs and writes a JSON and Markdown summary. Guide: `docs/evals.md`. The tests show the graders separate good samples from bad ones. **No agent has been evaluated yet**: that needs recorded runs.
+
 ## 2.13.0
 
 - **Four new jobs**, all in the weekly workflow (`continue-on-error`) and all feeding `team`: `consent`, `ymyl`, `pace` and `citations`. Guide: `docs/measurement-and-compliance.md`.
