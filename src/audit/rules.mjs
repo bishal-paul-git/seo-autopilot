@@ -36,6 +36,11 @@ export const RULES = {
   "h1-missing": { severity: "medium", title: "No H1", why: "The H1 tells users and crawlers what the page is about at a glance.", fix: "Add one clear H1 that matches the page's main topic." },
   "h1-multiple": { severity: "low", title: "Several H1s", why: "Multiple H1s can blur the page's main topic (HTML allows them, clarity suffers).", fix: "Use one H1 and structure the rest with H2s." },
   "h1-duplicate": { severity: "low", title: "Same H1 on several pages", why: "Identical headings suggest duplicate or overlapping pages.", fix: "Differentiate the pages or merge them." },
+  "h1-long": { severity: "low", title: "Very long H1", why: "A long H1 buries the page's main topic; readers and search engines take the start of the heading as the subject.", fix: "Lead with the topic in about 70 characters or fewer and move the detail into the first paragraph." },
+  "heading-skip": { severity: "low", title: "Heading levels skip", why: "Jumping from H2 to H4 breaks the outline that screen readers and crawlers use to understand how sections relate.", fix: "Use the next level down for a subsection (H2, then H3), and style headings with CSS rather than by picking a level." },
+  "h2-generic": { severity: "low", title: "Generic H2 text", why: "Section headings like \"Overview\" or \"Related\" say nothing about the topic, so they waste a strong on-page signal and help no one scanning the page.", fix: "Name what the section is actually about, using the words a reader would search for." },
+  "h2-repeated": { severity: "low", title: "Same H2 used twice on a page", why: "Two sections with the same heading look duplicated and make the page harder to scan and to link to.", fix: "Merge the sections or give each a heading that says how it differs." },
+  "few-subheadings": { severity: "low", title: "Long page with almost no subheadings", why: "A long page without H2 sections is hard to scan and gives search engines and AI answers no section structure to quote from.", fix: "Split the page into sections that each answer one question, with an H2 per section." },
   "thin-content": { severity: "low", title: "Very little visible text", why: "Pages with almost no text rarely satisfy a search intent on their own. (Hubs and tools can be legitimately short.)", fix: "If it should rank for a query, answer the query properly. If not, consider noindex or merging." },
   "jsonld-invalid": { severity: "high", title: "Broken structured data", why: "Invalid JSON-LD is ignored, so any rich-result eligibility is lost silently.", fix: "Fix the JSON syntax and validate with Google's Rich Results Test." },
   "jsonld-article-incomplete": { severity: "low", title: "Article markup missing recommended fields", why: "Complete Article markup helps search engines understand authorship and freshness.", fix: "Add headline, datePublished, author and image where true." },
@@ -74,6 +79,26 @@ export function robotsDisallows(robotsTxt, path) {
     if (path.startsWith(p) && (!best || p.length > best.len || (p.length === best.len && r.allow))) best = { len: p.length, allow: r.allow };
   }
   return Boolean(best && !best.allow);
+}
+
+// Section headings that name no topic. Kept short on purpose: words like "FAQ" or "Pricing" do describe the section.
+export const GENERIC_H2 = /^(overview|introduction|intro|related|more|other|see also|keep exploring|explore more|learn more|read more|more info|more information|related posts|related articles|related pages|related links|you may also like|more from us|more guides|what we do)$/i;
+
+/** Outline checks over the main content's headings (extract.mjs headingOutline). Pages without that field are skipped. */
+function headingChecks(p, add) {
+  let prev = 0;
+  for (const h of p.headings) {
+    if (prev && h.level > prev + 1) { add("heading-skip", p.url, `H${prev} then H${h.level} at "${h.text.slice(0, 50)}"`); break; }
+    prev = h.level;
+  }
+  const h2 = p.headings.filter((h) => h.level === 2).map((h) => h.text);
+  const generic = [...new Set(h2.filter((t) => GENERIC_H2.test(t.replace(/[:.!?]+$/, "").trim())))];
+  if (generic.length) add("h2-generic", p.url, generic.map((t) => `"${t}"`).join(", "));
+  const seen = new Set(), dup = new Set();
+  for (const t of h2) { const k = norm(t); if (seen.has(k)) dup.add(t); seen.add(k); }
+  if (dup.size) add("h2-repeated", p.url, [...dup].map((t) => `"${t}"`).join(", "));
+  // Long text only: hubs, tools and contact pages are short by design and are not judged here.
+  if (p.words >= 600 && h2.length < 2) add("few-subheadings", p.url, `${p.words} words, ${h2.length} H2`);
 }
 
 /**
@@ -130,6 +155,8 @@ export function runChecks(pages, ctx = {}) {
       if (p.h1s.length > 1) add("h1-multiple", p.url, `${p.h1s.length} H1s`);
       (h1s.get(norm(p.h1s[0])) || h1s.set(norm(p.h1s[0]), []).get(norm(p.h1s[0]))).push(p.url);
     }
+    if (p.h1s[0] && p.h1s[0].length > 70) add("h1-long", p.url, `${p.h1s[0].length} characters`);
+    if (Array.isArray(p.headings)) headingChecks(p, add);
     if (p.words < 250 && p.inSitemap && !noindex) add("thin-content", p.url, `${p.words} words`);
     if (p.jsonld.invalid) add("jsonld-invalid", p.url, `${p.jsonld.invalid} unparsable block(s)`);
     if (p.jsonld.articleFields) { const miss = Object.entries(p.jsonld.articleFields).filter(([, v]) => !v).map(([k]) => k); if (miss.length) add("jsonld-article-incomplete", p.url, `missing ${miss.join(", ")}`); }

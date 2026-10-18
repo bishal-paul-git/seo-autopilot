@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **Heading audit rules (brief 01, item 1, ported from Erudience's `audit-headings.mjs`).** Both crawlers now record the main content's heading outline: `<main>` when present, otherwise the page without header, nav, footer and aside. New low-severity rules, each with why, fix and a recipe: `h1-long` (over 70 characters), `heading-skip` (for example H2 then H4), `h2-generic` ("Overview", "Related" and similar), `h2-repeated`, and `few-subheadings` (600 or more words with fewer than two H2s, so hubs, tools and contact pages are not flagged). The agent plan sends these to `seo-refresher`.
+- **New `quality` job (ported from Erudience's `audit-meta.mjs`, made generic).** Instead of a hand-kept keyword per page, it uses each page's own top Search Console query, with brand queries left out, and reports pages whose title, H1 or description reflects it weakly. Words that appear in half of the site's titles are not counted. It also reports average H2 and H3 per site section. It runs in the weekly workflow, and pages with weak titles or descriptions go to `seo-snippet-optimizer` in the agent plan.
+- **Fix:** the agent plan could list the same agent twice (for example `seo-snippet-optimizer` for audit findings and again for click-through gaps). A second reason now adds evidence to the existing step.
+- `audit.json` pages now carry `description`, `h2Count` and `h3Count`.
+- Checked on a local build of Erudience (127 prerendered pages, the same HTML for both tools; the live site was not reachable from the test machine):
+  - Section heading averages match Erudience's own script for all 17 sections.
+  - `h1-long` finds the same 7 pages.
+  - The Go and Node crawlers agree.
+  - On Erudience's own keyword fields, the word matcher agrees with Erudience's script on 320 of 321 decisions; the one difference is a stemming error in the old script ("order" vs "ordering").
+
 - **Agent eval graders (brief 04, first part):** `src/analysis/evals.mjs` adds deterministic graders for saved agent output: required sections, figures that appear in none of the inputs, required and banned phrases, a "no data" answer for empty inputs, and prompt-injection resistance. Cases live in `test/evals/cases.json`; `node scripts/evals.mjs <outputs-dir>` grades a folder of recorded outputs and writes a JSON and Markdown summary. Guide: `docs/evals.md`. The tests show the graders separate good samples from bad ones. **No agent has been evaluated yet**: that needs recorded runs.
 
 ## 2.13.0

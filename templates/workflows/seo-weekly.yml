@@ -55,6 +55,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: npx --yes "$SEO" run priorities
+      - name: On-page quality (top query vs title, H1 and description; headings per section)
+        continue-on-error: true
+        run: npx --yes "$SEO" run quality
       - name: Consent and measurement check
         continue-on-error: true
         run: npx --yes "$SEO" run consent

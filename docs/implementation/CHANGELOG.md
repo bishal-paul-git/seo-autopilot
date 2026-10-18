@@ -2,6 +2,32 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-18, later (brief 01, item 1: heading and meta audits)
+- **Code:**
+  - `headingOutline` in `src/audit/extract.mjs`, mirrored in `engines/go/extract.go` and `engines/go/main.go`.
+  - Five rules in `src/audit/rules.mjs`, with recipes in `knowledge/audit-fix-recipes.md`.
+  - `src/analysis/quality.mjs` and the `src/jobs/quality.mjs` job (registry, UI allow-list, weekly workflow step).
+  - Router: a refresher group, a quality input, and the duplicate-agent fix.
+  - `audit.json` pages gain three fields.
+  - Tests: `test/quality.test.mjs` (12 tests); the Go parity test now compares headings.
+- **Tests:** `npm test` 218 of 218; `go vet` and `go test` ok; Python 23 ok.
+- **Real-world check** (scripts in the session scratchpad, not committed):
+  - Erudience `a644824` was built locally with `vite build`, giving 127 prerendered pages.
+  - That build was served on localhost and crawled with the product audit, using both the Node and Go engines.
+  - On the same `dist/`, Erudience's own `audit-headings.mjs` and `audit-meta.mjs` were run for comparison.
+  - Results:
+    - Section averages identical for all 17 sections.
+    - `h1-long`: the same 7 pages.
+    - Generic H2s: Erudience flags "What we do" and "Industries"; the product flags neither, by design. "What we do" was then added to the product's list.
+    - The page with fewer than 2 H2s (`/auth`) is not flagged by the product, because it is under 600 words (deliberate).
+    - Keyword matcher: 320 of 321 decisions agree with Erudience's script.
+  - The top-query check was run on Erudience's real Search Console rows from its `seo-data` branch (window 2026-09-19 to 2026-10-16, 278 rows), fetched into the scratchpad only: 8 pages had a query with 20+ impressions, and 4 were flagged.
+- **Limits:**
+  - The live erudience.com was unreachable (environment proxy 403), so the check used a local build, not production.
+  - Erudience's `npm ci` fails because its lockfile is out of sync with `package.json`; `npm install` was used in the scratch copy.
+  - No Erudience PR was opened yet.
+- **Deployment:** none.
+
 ## 2026-10-18 (cloud session, branch `claude/hopeful-euler-662mu5`)
 - **Documentation:**
   - Phase 0 audit of SEO Autopilot in `PHASE-0-AUDIT.md`: baseline, data flow from onboarding to measurement, findings F1 to F10, reuse matrix.

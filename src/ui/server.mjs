@@ -28,6 +28,7 @@ export const ALLOWED_JOBS = {
   speed: [],
   deepdive: [],
   geo: [],
+  quality: [],
   priorities: ["--dry"],
   "indexing-queue": ["--dry"],
   schedule: ["--dry"],

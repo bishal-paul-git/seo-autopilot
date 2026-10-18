@@ -9,7 +9,8 @@ Run any job with `npx seo-autopilot run <job> [--site id] [--dry]`.
 | `indexnow` | daily | `INDEXNOW_KEY` (+ key file on the site) | `indexnow-state.json` |
 | `news` | daily | feeds file; AI key optional | `news-digest.md`, issues labelled `seo-topic` |
 | `mentions` | daily | `mentions.json`; AI key optional | issues labelled `seo-backlink` |
-| `audit` | daily | none (crawls your live site) | `audit.json`: findings with why and fix |
+| `audit` | daily | none (crawls your live site) | `audit.json`: findings with why and fix, including heading structure (skipped levels, generic or repeated H2s, long H1s, long pages without subheadings) |
+| `quality` | weekly | output of `audit`; `daily` for the query check | `quality.json`, `quality.md`: each page's top search query vs its title, H1 and description; average headings per site section |
 | `analyze` | daily | output of `daily` | `insights.json`: striking distance, CTR gaps, cannibalization, decay, content gaps |
 | `refresh` | weekly | `GITHUB_TOKEN`; output of `analyze` | issues labelled `seo-proposal` + `seo-refresh` for your pages that lost visibility |
 | `deepdive` | weekly (seo-agent) | Python 3.10+ | `deepdive.md`, `deepdive.json`: query topics, unusual days, pages losing visibility |

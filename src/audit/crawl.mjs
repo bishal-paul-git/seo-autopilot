@@ -103,7 +103,7 @@ export async function crawlSite(site, opts = {}) {
         const x = extractPage(r.html, r.finalUrl);
         Object.assign(rec, x, { textHash: hashText(x.text) });
         for (const l of x.links) if (isInternal(l.url) && !seen.has(strip(l.url)) && !/\.(pdf|jpe?g|png|gif|svg|webp|zip|xml|json|txt|ico|css|js|mp3|mp4)(\?|$)/i.test(l.url)) { seen.add(strip(l.url)); queue.push(l.url); }
-      } else Object.assign(rec, { title: "", description: null, robots: "", viewport: null, canonical: null, alternates: [], h1s: [], h2s: [], lang: null, jsonld: { types: [], invalid: 0 }, links: [], images: 0, imagesNoAlt: 0, mixed: [], words: 0, text: "" });
+      } else Object.assign(rec, { title: "", description: null, robots: "", viewport: null, canonical: null, alternates: [], h1s: [], h2s: [], headings: [], lang: null, jsonld: { types: [], invalid: 0 }, links: [], images: 0, imagesNoAlt: 0, mixed: [], words: 0, text: "" });
       pages.set(strip(r.url), rec);
     }
   }

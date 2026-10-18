@@ -23,6 +23,7 @@ export async function run({ site, flags = {} }) {
     ymyl: readJson(`${s}/ymyl.json`, null),
     pace: readJson(`${s}/pace.json`, null),
     citations: readJson(`${s}/citations.json`, null),
+    quality: readJson(`${s}/quality.json`, null),
     pipeline: pipe,
     site,
     today: today(),

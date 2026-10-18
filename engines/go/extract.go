@@ -45,6 +45,12 @@ type JSONLD struct {
 	Nodes         []SchemaNode    `json:"nodes"`
 }
 
+// Heading is one heading of the main content, in document order.
+type Heading struct {
+	Level int    `json:"level"`
+	Text  string `json:"text"`
+}
+
 // Extracted holds everything read from one HTML document.
 type Extracted struct {
 	Title       string      `json:"title"`
@@ -55,6 +61,7 @@ type Extracted struct {
 	Alternates  []Alternate `json:"alternates"`
 	H1s         []string    `json:"h1s"`
 	H2s         []string    `json:"h2s"`
+	Headings    []Heading   `json:"headings"`
 	Lang        *string     `json:"lang"`
 	OG          OG          `json:"og"`
 	JSONLD      JSONLD      `json:"jsonld"`
@@ -87,6 +94,15 @@ var (
 	reSkipHref = regexp.MustCompile(`(?i)^(mailto:|tel:|javascript:|#)`)
 	reArticle  = regexp.MustCompile(`Article|BlogPosting|NewsArticle`)
 	reAltCanon = regexp.MustCompile(`(?i)rel=["']?(?:alternate|canonical)`)
+	reMain     = regexp.MustCompile(`(?is)<main\b.*?</main>`)
+	reHeading  = regexp.MustCompile(`(?is)<h([1-6])\b[^>]*>(.*?)</h[1-6]>`)
+	reChrome   = func() []*regexp.Regexp {
+		var out []*regexp.Regexp
+		for _, t := range []string{"header", "nav", "footer", "aside", "script", "style", "template"} {
+			out = append(out, regexp.MustCompile(`(?is)<`+t+`\b.*?</`+t+`>`))
+		}
+		return out
+	}()
 	reInvisible = func() []*regexp.Regexp {
 		var out []*regexp.Regexp
 		for _, t := range []string{"script", "style", "noscript", "svg", "template", "head"} {
@@ -252,6 +268,26 @@ func texts(re *regexp.Regexp, doc string) []string {
 	return out
 }
 
+// headingOutline returns the main content's headings in order: <main> when present, otherwise the document without
+// header, nav, footer and aside blocks. It mirrors headingOutline in src/audit/extract.mjs; keep the two in step.
+func headingOutline(doc string) []Heading {
+	doc = reComment.ReplaceAllString(doc, " ")
+	scope := reMain.FindString(doc)
+	if scope == "" {
+		scope = doc
+		for _, re := range reChrome {
+			scope = re.ReplaceAllString(scope, " ")
+		}
+	}
+	out := []Heading{}
+	for _, m := range reHeading.FindAllStringSubmatch(scope, -1) {
+		if t := stripTags(m[2]); t != "" {
+			out = append(out, Heading{Level: int(m[1][0] - '0'), Text: t})
+		}
+	}
+	return out
+}
+
 // extractPage reads one HTML document served from pageURL.
 func extractPage(doc, pageURL string) Extracted {
 	head := reHead.FindString(doc)
@@ -305,6 +341,7 @@ func extractPage(doc, pageURL string) Extracted {
 		x.OG.Image = strp(v)
 	}
 	x.H1s, x.H2s = texts(reH1, doc), texts(reH2, doc)
+	x.Headings = headingOutline(doc)
 	x.JSONLD = parseJSONLD(doc)
 
 	for _, m := range reAnchor.FindAllStringSubmatch(doc, -1) {

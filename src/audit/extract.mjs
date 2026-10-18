@@ -31,6 +31,18 @@ const normalizeUrl = (href, base) => {
   } catch { return null; }
 };
 
+/**
+ * The main content's headings in document order, as [{ level, text }]. Uses <main> when the page has one; otherwise the
+ * body without <header>, <nav>, <footer> and <aside>, so site chrome does not count as page structure. The Go engine
+ * (engines/go/extract.go headingOutline) mirrors this exactly; keep the two in step.
+ */
+export function headingOutline(html) {
+  html = String(html || "").replace(/<!--[\s\S]*?-->/g, " ");
+  const main = html.match(/<main\b[\s\S]*?<\/main>/i);
+  const scope = main ? main[0] : html.replace(/<(header|nav|footer|aside|script|style|template)\b[\s\S]*?<\/\1>/gi, " ");
+  return [...scope.matchAll(/<h([1-6])\b[^>]*>([\s\S]*?)<\/h[1-6]>/gi)].map((m) => ({ level: Number(m[1]), text: stripTags(m[2]) })).filter((h) => h.text);
+}
+
 export function extractPage(html, pageUrl) {
   html = String(html || "");
   const head = (html.match(/<head[\s\S]*?<\/head>/i) || [html.slice(0, 20000)])[0];
@@ -52,6 +64,7 @@ export function extractPage(html, pageUrl) {
 
   const h1s = [...html.matchAll(/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi)].map((m) => stripTags(m[1])).filter(Boolean);
   const h2s = [...html.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/gi)].map((m) => stripTags(m[1])).filter(Boolean);
+  const headings = headingOutline(html);
 
   const jsonld = { types: [], invalid: 0, blocks: 0, articleFields: null, nodes: [] };
   for (const m of html.matchAll(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) {
@@ -85,7 +98,7 @@ export function extractPage(html, pageUrl) {
   const words = text ? text.split(/\s+/).length : 0;
   return {
     title, description: metas.description ?? null, robots: (metas.robots || "").toLowerCase(), viewport: metas.viewport ?? null,
-    canonical, alternates, h1s, h2s, lang: (html.match(/<html\b[^>]*\blang=["']?([A-Za-z-]+)/i) || [])[1] || null,
+    canonical, alternates, h1s, h2s, headings, lang: (html.match(/<html\b[^>]*\blang=["']?([A-Za-z-]+)/i) || [])[1] || null,
     og: { title: props["og:title"] ?? null, image: props["og:image"] ?? null },
     jsonld, links, images: imgs.length, imagesNoAlt, mixed, words, text,
   };

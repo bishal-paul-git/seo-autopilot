@@ -28,6 +28,7 @@ Architecture today: dependency-free Node core (`src/jobs`, `src/analysis`, `src/
 | Python runtime for strategist and researcher | `engines/python/seo_engine` |
 | `citations` providers (Brave, SerpAPI, DataForSEO) | `src/lib/serp.mjs` |
 | **New this session:** deterministic agent-eval graders and grading script | `src/analysis/evals.mjs`, `scripts/evals.mjs`, `test/evals/cases.json`, `docs/evals.md` |
+| **New this session (brief 01, item 1):** heading outline in both crawlers, five heading rules, `quality` job (top query vs title, H1 and description; headings per section), router duplicate fix | `src/audit/extract.mjs`, `engines/go/extract.go`, `src/audit/rules.mjs`, `src/analysis/quality.mjs`, `src/jobs/quality.mjs`, `src/analysis/agent-router.mjs` |
 | Not implemented: hosted app, tenancy, billing, CMS connectors, npm package, Marketplace Action, plugin | n/a |
 
 ## Verified (evidence, not just source)
@@ -37,6 +38,7 @@ Architecture today: dependency-free Node core (`src/jobs`, `src/analysis`, `src/
 | Go crawler | `go test ./...` ok | unit |
 | Python runtime | 23 tests ok | unit with stub SDK |
 | Eval graders | 9 tests: graders pass good samples and fail bad ones | unit on hand-written samples. **No agent evaluated** |
+| Heading rules and `quality` job | 12 unit tests; Go/Node parity test. Compared with Erudience's own scripts on a local Erudience build (127 pages): section averages identical; same 7 long H1s; matcher agrees on 320 of 321 decisions. Top-query check run on Erudience's real Search Console rows | unit, plus a real-site comparison **on a local build, not the live site** |
 | Search Console, GA4, PageSpeed | used daily by Erudience per earlier STATUS; **not re-checked this session** (Erudience repo not accessible) | real integration, prior evidence only |
 | `citations` providers | mocked only; **never run live** | mock |
 
@@ -90,7 +92,12 @@ No paid API calls were made this session. Hosted cost model is proposed in D9; n
 **Owner review of Phase 0.** Acceptance criterion: the owner approves or amends D1 to D15 and answers D11, D14 and D15. Phase 1 (hosted foundation) starts only after that.
 
 Exact next actions, independent of the review:
-1. Brief 01: port the Erudience heading and meta audits, then the redirect tooling, then the facts guard, as generic jobs with tests. The sources are confirmed present (PHASE-0-AUDIT §5.4).
+1. Brief 01:
+   - Item 1 (heading and meta audits) is done.
+   - Next: item 2, the redirect tooling (`erudience-flow-engine/scripts/redirect-map.json`, `check-redirects.mjs`, `generate-htaccess.mjs`, `smoke-redirects.mjs`).
+   - Then item 3, the facts guard.
+   - Then the recipe items (4 and 5), item 6 (links job) and item 7 (static-content rule).
+   - Release, then open the Erudience PR that swaps its scripts for the product jobs.
 2. Brief 03, once keys exist: live `citations` with one provider and sanitised fixtures.
 3. Brief 04, next part: record real agent outputs for the four cases and add cases per agent.
 4. Small fixes: F2, F6, F7.
