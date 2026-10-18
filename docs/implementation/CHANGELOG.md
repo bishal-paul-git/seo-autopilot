@@ -2,6 +2,35 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-18, later (brief 01, item 7: render job)
+- **Code:**
+  - `src/analysis/render.mjs` (pure) and the `src/jobs/render.mjs` job (Playwright optional).
+  - `blockText()` and `mainScope()` in `src/audit/extract.mjs`.
+  - Router: a technical-fixer step; team wiring; opt-in weekly step (`SEO_RENDER`); `docs/jobs.md`.
+  - Tests: `test/render.test.mjs` (7). One is an end-to-end run with real headless Chromium against a local server: a one-at-a-time FAQ and a stale sentence.
+- **Tests:** `npm test` 258 of 258. In this container the end-to-end render test ran (Playwright found). In CI it skips when Playwright is not installed.
+- **Real-world check** (Erudience local build, all 127 pages, real Chromium):
+  - The first version flagged 126 pages, almost all false alarms. Four fixes, in order:
+    1. Blocks were run together in the delivered text, so headings, breadcrumbs and paragraphs became one "sentence".
+    2. `innerText` drops hidden content.
+    3. FAQ answers only enter the DOM when opened: a custom accordion with no ARIA.
+    4. A one-at-a-time accordion closes the previous answer.
+  - The fixes: one line per block; full DOM text; open `<details>`, ARIA disclosures and question-style buttons; merge text after every click.
+  - Final result:
+    - 10 pages with prerendered prose the live page does not show.
+    - 89 pages with label or heading wording differences only (low).
+    - 10 pages where most text appears only after JavaScript.
+    - 0 load errors.
+  - Confirmed examples of real drift:
+    - `/about`: the origin story is worded differently.
+    - `/privacy`: the prerendered "why, and the choices you have" vs the live "why we collect it, and the choices you have. We aim to collect only what we need."
+    - `/ai-readiness-checklist`: the questions are revealed step by step by the tool. This is a known limit: the check cannot step through tools.
+  - Erudience's own `check-static-content.mjs` passes on the same build, so it misses the drift above.
+- **Limits:**
+  - The local build may lack Supabase-backed content (network blocked).
+  - Nothing was checked against the live erudience.com.
+- **Deployment:** none.
+
 ## 2026-10-18, later (brief 01, item 6: links job)
 - **Code:**
   - `relatedLinks()` in `src/audit/links.mjs`.
