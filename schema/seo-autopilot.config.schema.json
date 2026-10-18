@@ -222,6 +222,23 @@
               "object",
               "null"
             ]
+          },
+          "redirects": {
+            "type": "object",
+            "description": "Redirect map for the redirects job. Default file: <dataDir>/redirects.json (redirects-<id>.json when the config has several sites).",
+            "properties": {
+              "file": {
+                "type": "string"
+              },
+              "format": {
+                "type": "string",
+                "enum": ["apache", "nginx", "netlify", "vercel"]
+              },
+              "output": {
+                "type": "string",
+                "description": "File the generated rules go into with --write, between seo-autopilot markers (for example public/.htaccess)."
+              }
+            }
           }
         }
       }

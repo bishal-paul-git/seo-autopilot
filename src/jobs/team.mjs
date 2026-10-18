@@ -24,6 +24,7 @@ export async function run({ site, flags = {} }) {
     pace: readJson(`${s}/pace.json`, null),
     citations: readJson(`${s}/citations.json`, null),
     quality: readJson(`${s}/quality.json`, null),
+    redirects: { check: readJson(`${s}/redirects-check.json`, null), smoke: readJson(`${s}/redirects-smoke.json`, null) },
     pipeline: pipe,
     site,
     today: today(),

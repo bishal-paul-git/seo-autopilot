@@ -25,6 +25,7 @@ Usage
   seo-autopilot ui [--port 4747] [--open]           local app to manage every project on this computer
   seo-autopilot projects add|list|remove [path]     choose which website folders the app shows
   seo-autopilot state restore|save                  load/save memory on the "seo-data" branch (used by the workflows)
+  seo-autopilot redirects [check|generate|smoke]    the redirect map: check it, write server rules, test the live site
   seo-autopilot version
 
 Jobs`);
@@ -60,6 +61,8 @@ try {
       for (const p of problems) console.log(`PROBLEM ${p.root}: ${p.error}`);
       if (!sites.length && !problems.length) console.log("No projects yet. Run: seo-autopilot projects add <folder>");
     } else throw new Error("usage: projects add|list|remove [path]");
+  } else if (cmd === "redirects") {
+    await runJob("redirects", { site: flags.site, flags, positional });
   } else if (cmd === "run") {
     const [job, ...args] = positional;
     if (!job) throw new Error("usage: run <job>. See: seo-autopilot help");

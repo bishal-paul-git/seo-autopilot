@@ -28,6 +28,7 @@ Architecture today: dependency-free Node core (`src/jobs`, `src/analysis`, `src/
 | Python runtime for strategist and researcher | `engines/python/seo_engine` |
 | `citations` providers (Brave, SerpAPI, DataForSEO) | `src/lib/serp.mjs` |
 | **New this session:** deterministic agent-eval graders and grading script | `src/analysis/evals.mjs`, `scripts/evals.mjs`, `test/evals/cases.json`, `docs/evals.md` |
+| **New this session (brief 01, item 2):** `redirects` job: check, generate (Apache, nginx, Netlify, Vercel) and smoke | `src/analysis/redirects.mjs`, `src/jobs/redirects.mjs` |
 | **New this session (brief 01, item 1):** heading outline in both crawlers, five heading rules, `quality` job (top query vs title, H1 and description; headings per section), router duplicate fix | `src/audit/extract.mjs`, `engines/go/extract.go`, `src/audit/rules.mjs`, `src/analysis/quality.mjs`, `src/jobs/quality.mjs`, `src/analysis/agent-router.mjs` |
 | Not implemented: hosted app, tenancy, billing, CMS connectors, npm package, Marketplace Action, plugin | n/a |
 
@@ -40,6 +41,7 @@ Architecture today: dependency-free Node core (`src/jobs`, `src/analysis`, `src/
 | Eval graders | 9 tests: graders pass good samples and fail bad ones | unit on hand-written samples. **No agent evaluated** |
 | Heading rules and `quality` job | 12 unit tests; Go/Node parity test. Compared with Erudience's own scripts on a local Erudience build (127 pages): section averages identical; same 7 long H1s; matcher agrees on 320 of 321 decisions. Top-query check run on Erudience's real Search Console rows | unit, plus a real-site comparison **on a local build, not the live site** |
 | Search Console, GA4, PageSpeed | used daily by Erudience per earlier STATUS; **not re-checked this session** (Erudience repo not accessible) | real integration, prior evidence only |
+| `redirects` job | 11 tests, including smoke and check against local HTTP servers. On Erudience's real redirect files: Apache rules identical to Erudience's generator (105 of 105); same 2 problem targets flagged | unit, plus a real-data comparison. **Live smoke against a real host not run** |
 | `citations` providers | mocked only; **never run live** | mock |
 
 ## Deployed
@@ -93,9 +95,8 @@ No paid API calls were made this session. Hosted cost model is proposed in D9; n
 
 Exact next actions, independent of the review:
 1. Brief 01:
-   - Item 1 (heading and meta audits) is done.
-   - Next: item 2, the redirect tooling (`erudience-flow-engine/scripts/redirect-map.json`, `check-redirects.mjs`, `generate-htaccess.mjs`, `smoke-redirects.mjs`).
-   - Then item 3, the facts guard.
+   - Items 1 (heading and meta audits) and 2 (redirect tooling) are done.
+   - Next: item 3, the facts guard (`erudience-flow-engine/scripts/validate-content.mjs`, `src/content/verified-facts.json`).
    - Then the recipe items (4 and 5), item 6 (links job) and item 7 (static-content rule).
    - Release, then open the Erudience PR that swaps its scripts for the product jobs.
 2. Brief 03, once keys exist: live `citations` with one provider and sanitised fixtures.

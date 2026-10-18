@@ -55,6 +55,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: npx --yes "$SEO" run priorities
+      - name: Redirect map check and live redirect smoke test (skip cleanly without a redirect map)
+        continue-on-error: true
+        run: |
+          npx --yes "$SEO" run redirects
+          npx --yes "$SEO" run redirects smoke
       - name: On-page quality (top query vs title, H1 and description; headings per section)
         continue-on-error: true
         run: npx --yes "$SEO" run quality

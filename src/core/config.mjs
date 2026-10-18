@@ -66,6 +66,10 @@ export function validate(raw) {
       const v = s.limits?.[k];
       if (v != null && (!Number.isInteger(v) || v < 1)) errors.push(`${w}.limits.${k} must be a whole number of 1 or more`);
     }
+    if (s.redirects != null) {
+      if (typeof s.redirects !== "object" || Array.isArray(s.redirects)) errors.push(`${w}.redirects must be an object`);
+      else if (s.redirects.format != null && !["apache", "nginx", "netlify", "vercel"].includes(s.redirects.format)) errors.push(`${w}.redirects.format must be apache, nginx, netlify or vercel`);
+    }
     if (s.review != null) {
       if (typeof s.review !== "object" || Array.isArray(s.review)) errors.push(`${w}.review must be an object`);
       else {
@@ -99,6 +103,7 @@ export function loadConfig({ cwd = process.cwd(), file } = {}) {
       feeds: abs(site.feeds ?? join(dataDir, "feeds.json")),
       topics: abs(site.topicsConfig ?? join(dataDir, "topics.json")),
       backlinks: abs(site.backlinksDir ?? join(dataDir, "backlinks")),
+      redirects: abs(site.redirects?.file ?? join(dataDir, raw.sites.length > 1 ? `redirects-${site.id}.json` : "redirects.json")),
     };
     return site;
   });

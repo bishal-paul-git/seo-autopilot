@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- **New `redirects` job (brief 01, item 2, ported from Erudience's `check-redirects.mjs`, `generate-htaccess.mjs` and `smoke-redirects.mjs`).**
+  - **The map:** one data file per site, `<dataDir>/redirects.json`, made of `redirects` (old path to new path or a full URL), `gone` (retired pages, answer 410) and `goneSections` (a whole retired path prefix). Erudience's `{ "map": ... }` shape is also read.
+  - **`check`:** finds self-redirects, redirects that would hide a live page, chains and loops, targets that are not live or are gone, and live pages marked gone or inside a retired section. A target that is scheduled but not live yet is a warning. It exits 1 on errors, so it can guard a build.
+  - **`generate`:** prints rules for Apache, nginx, Netlify or Vercel. `--write <file>` fills a marked block and keeps the file's line endings. Redirects to pages that are not live yet are held back until the target is live. Gone pages become 410s on Apache and nginx; on Netlify and Vercel they are listed for the platform to handle.
+  - **`smoke`:** asks the live site, or `--origin` for staging. Each redirect must be a 301 or 308 to its exact target, gone pages must answer 410 (a 404 gets a note), and a made-up URL must be a real 404, not a soft 404.
+  - Also `seo-autopilot redirects check|generate|smoke`, a weekly workflow step, and `site.redirects` in the config schema.
+  - The agent plan sends map errors and live failures to `seo-redirect-guardian`, which now starts from these reports.
+- Checked on Erudience's real redirect files (107 redirects, 113 retired URLs, 6 retired sections) against a local build:
+  - The product's Apache rules match the block Erudience's generator writes, 105 of 105.
+  - The check flags the same 2 targets Erudience does.
+  - The live smoke test was only run against a local test server, because the live site was not reachable from the test machine.
+
 - **Heading audit rules (brief 01, item 1, ported from Erudience's `audit-headings.mjs`).** Both crawlers now record the main content's heading outline: `<main>` when present, otherwise the page without header, nav, footer and aside. New low-severity rules, each with why, fix and a recipe: `h1-long` (over 70 characters), `heading-skip` (for example H2 then H4), `h2-generic` ("Overview", "Related" and similar), `h2-repeated`, and `few-subheadings` (600 or more words with fewer than two H2s, so hubs, tools and contact pages are not flagged). The agent plan sends these to `seo-refresher`.
 - **New `quality` job (ported from Erudience's `audit-meta.mjs`, made generic).** Instead of a hand-kept keyword per page, it uses each page's own top Search Console query, with brand queries left out, and reports pages whose title, H1 or description reflects it weakly. Words that appear in half of the site's titles are not counted. It also reports average H2 and H3 per site section. It runs in the weekly workflow, and pages with weak titles or descriptions go to `seo-snippet-optimizer` in the agent plan.
 - **Fix:** the agent plan could list the same agent twice (for example `seo-snippet-optimizer` for audit findings and again for click-through gaps). A second reason now adds evidence to the existing step.

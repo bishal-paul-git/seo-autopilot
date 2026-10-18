@@ -23,7 +23,7 @@ function countBy(issues) {
   return m;
 }
 
-export function routeAgents({ profile = null, audit = null, priorities = null, inspect = {}, speed = null, geo = null, pipeline = null, consent = null, ymyl = null, pace = null, citations = null, quality = null, site = {}, today = "" } = {}) {
+export function routeAgents({ profile = null, audit = null, priorities = null, inspect = {}, speed = null, geo = null, pipeline = null, consent = null, ymyl = null, pace = null, citations = null, quality = null, redirects = null, site = {}, today = "" } = {}) {
   const plan = [];
   const add = (agent, phase, why, evidence = [], prompt = "") => {
     // Entries are stored as "seo-<agent>"; a second reason for the same agent adds its evidence instead of a second step.
@@ -51,6 +51,8 @@ export function routeAgents({ profile = null, audit = null, priorities = null, i
     add(agent, phase, `${n} audit finding(s) in this agent's area.`, ruleEvidence(rules), `Use the seo-${agent} agent on the audit findings: ${rules.filter((r) => byRule.has(r)).join(", ")}.` + how);
   }
 
+  const redirectProblems = [...(redirects?.check?.errors || []), ...(redirects?.smoke?.results || []).filter((r) => !r.ok).map((r) => `live: ${r.path} ${r.detail}`)];
+  if (redirectProblems.length) add("redirect-guardian", PHASES.block, `${redirectProblems.length} problem(s) in the redirect map or on the live site's redirects.`, redirectProblems.slice(0, 5), "Use the seo-redirect-guardian agent on the redirects job's reports (redirects-check.json, redirects-smoke.json): fix the map, regenerate the rules, and re-run the smoke test after deploy." + how);
   const coverageBad = Object.entries(inspect || {}).filter(([, v]) => v?.coverage && v.coverage !== "Submitted and indexed" && !/redirect|alternate|duplicate/i.test(v.coverage));
   if (coverageBad.length || items.some((i) => i.type === "indexing")) add("indexing-monitor", PHASES.block, `${coverageBad.length || "Some"} page(s) are not indexed, and the request list needs checking before anyone acts on it.`, coverageBad.slice(0, 4).map(([u, v]) => `${short(u)}: ${v.coverage}`), "Use the seo-indexing-monitor agent to group the unindexed pages by cause and correct the request-indexing list.");
   const slow = (speed?.results || []).filter((r) => r.rating === "poor" || r.score != null && r.score < 50);

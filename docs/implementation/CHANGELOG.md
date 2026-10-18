@@ -2,6 +2,25 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-18, later (brief 01, item 2: redirect tooling)
+- **Code:**
+  - `src/analysis/redirects.mjs` (pure) and `src/jobs/redirects.mjs`, plus the `redirects` CLI command.
+  - `site.redirects` in the schema and validation; `paths.redirects` in the config.
+  - Router input and team wiring; weekly workflow step; redirect guardian agent text; `docs/jobs.md`.
+  - Tests: `test/redirects.test.mjs` (11), including smoke and check jobs against local HTTP servers.
+- **Tests:** `npm test` 230 of 230.
+- **Real-world check** (Erudience `a644824`, local build, scripts in the scratchpad):
+  - Erudience's own `check-redirects.mjs` reports ok with 2 waiting targets.
+  - The product's check on the converted map flags the same 2.
+  - A raw conversion without filtering shows Erudience's `retired-urls.txt` lists 10 live pages and 87 already-redirected URLs. Erudience's generator filters these silently; the product reports them.
+  - Generated Apache 301 rules: 105 in both, identical.
+  - Exact 410 lists: both empty. Every retired URL is live, redirected or inside a retired section.
+- **Not done:**
+  - A live smoke test against erudience.com (network blocked).
+  - An Apache or nginx run of the generated rules (no web server in the container).
+  - Erudience's committed `public/.htaccess` differs by 2 lines from a fresh generation. The likely reason is that the local build lacked Supabase-backed pages, so those 2 targets were "waiting" locally. Not verified.
+- **Deployment:** none.
+
 ## 2026-10-18, later (brief 01, item 1: heading and meta audits)
 - **Code:**
   - `headingOutline` in `src/audit/extract.mjs`, mirrored in `engines/go/extract.go` and `engines/go/main.go`.
