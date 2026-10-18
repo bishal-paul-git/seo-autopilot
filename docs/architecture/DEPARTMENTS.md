@@ -116,7 +116,7 @@ Claims about "ranking in ChatGPT" stay directional and measured, never promised 
    1. internal-linker: the data exists.
    2. ai-citation-tracker: needs a provider key.
    3. backlink-auditor: Search Console links export (done 2026-10-18 with the `inbound` job; real-export check pending).
-   4. log-analyst: owner uploads logs.
+   4. log-analyst: owner uploads logs (done 2026-10-18 with the `logs` job; real-log check pending).
    5. serp-watcher.
    6. digital-pr: skill first.
 6. **Real-output evals:** at least 3 cases per agent graded on recorded outputs (brief 04).

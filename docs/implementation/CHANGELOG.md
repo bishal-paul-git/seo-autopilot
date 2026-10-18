@@ -2,6 +2,19 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-18, night (D16 step 5: log analyst)
+- **Code:**
+  - New `src/analysis/logs.mjs` and `src/jobs/logs.mjs` (registered as `logs`; DNS verify uses `node:dns`, gz via `node:zlib`, no dependencies).
+  - New `departments/technical/agents/seo-log-analyst.md`.
+  - Router rule (medium crawl findings, fix phase); `team` passes `logs.json`.
+  - `src/jobs/audit.mjs` compact pages gain `noindex`.
+  - `src/cli/init.mjs` adds `seo-autopilot/logs/` to `.gitignore` (idempotent, checked by running init twice).
+  - Config validation and schema for `site.logs.dir`.
+  - Tests: `test/logs.test.mjs` (6); agent count 30.
+- **Documentation:** a "Reading your server logs" section in `knowledge/indexing-and-crawl-diagnosis.md`; `docs/jobs.md` row; org chart; Technical charter; root `CHANGELOG.md`.
+- **Checks:** `npm test` 288/288; Python OK; `go test ./...` ok.
+- **Not checked:** real logs, live DNS verification. Not pushed (GitHub 403).
+
 ## 2026-10-18, night (D16 step 5: backlink auditor)
 - **Code:**
   - New `src/analysis/inbound.mjs` and `src/jobs/inbound.mjs` (registered as `inbound`).

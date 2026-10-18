@@ -25,6 +25,7 @@
     "./departments/research/agents/seo-researcher.md",
     "./departments/technical/agents/seo-indexing-monitor.md",
     "./departments/technical/agents/seo-international.md",
+    "./departments/technical/agents/seo-log-analyst.md",
     "./departments/technical/agents/seo-media-optimizer.md",
     "./departments/technical/agents/seo-migration-planner.md",
     "./departments/technical/agents/seo-performance-fixer.md",

@@ -38,6 +38,13 @@
   - Reclaimable links route the agent in the fix phase. The weekly workflow runs `inbound` when an export is present.
   - New playbook section: "Auditing the links you already have".
   - The parser matches export columns by name and is tested on sample files shaped like the exports; **it has not yet been run on a real Search Console download.**
+- **New `logs` job and seo-log-analyst agent (Technical, D16 step 5).** They show what Googlebot, Bingbot and AI crawlers really requested, from your own server or CDN access logs (plain or .gz) in `seo-autopilot/logs/`.
+  - It tells the three kinds of AI crawler apart: AI search, fetches a person asked for, and training.
+  - It reports crawl spent on errors, redirects and parameter URLs, sitemap pages not requested, and noindex pages crawled repeatedly.
+  - `--verify` checks Googlebot and Bingbot by reverse and forward DNS and leaves fakes out.
+  - **Only totals are stored, never an IP address**, and `init` now adds `seo-autopilot/logs/` to `.gitignore`. The audit also records `noindex` per page.
+  - Parsing is tested on sample lines (combined and common formats, JSON lines); **not yet on a real host's logs.**
+  - New playbook section: "Reading your server logs".
 - Design and roadmap: `docs/architecture/DEPARTMENTS.md`. Research library (links still to be verified): `docs/research/REFERENCES.md`.
 
 ## 2.14.0

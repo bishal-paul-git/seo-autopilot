@@ -38,3 +38,11 @@ For each unindexed page: URL, status in Search Console, what was verified, the m
 - Requesting indexing for hundreds of URLs, or for pages that are blocked or duplicate.
 - Using the removals tool to "reset" pages.
 - Blaming the search engine before checking the page's own signals.
+
+## Reading your server logs
+Access logs are the only first-hand record of what crawlers requested. Download a few weeks of them from your host or CDN into `seo-autopilot/logs/` (kept out of git: logs contain visitors' IP addresses) and run `seo-autopilot run logs --verify`.
+- **Verify the crawler.** Anyone can claim to be Googlebot. Google and Bing document checking it by reverse DNS, then forward DNS back to the same address; `--verify` does this and leaves fakes out.
+- **Know where the logs come from.** If a CDN or firewall sits in front of your server, it may answer or block crawlers before your origin sees them. Prefer the CDN's logs.
+- **Find the waste.** Requests that hit errors, redirects or parameter variants are crawling not spent on real pages. Fix the links that lead there, not just the redirects.
+- **Compare with the sitemap.** Pages never requested over several weeks usually have weak internal links or little value to Google. One short window proves little.
+- **Know your AI crawlers.** There are three kinds: some fetch pages for AI search answers, some when a person asks an AI tool to read a page, and some to collect training data. Blocking a training crawler is a separate choice from appearing in AI answers, and each is a business decision made in robots.txt per crawler.

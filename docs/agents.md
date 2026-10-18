@@ -1,6 +1,6 @@
 # The agents
 
-seo-autopilot works as a team of twenty-nine agents. They are grouped into eight departments ([org chart](../departments/README.md)), and each is a Markdown file in `departments/<department>/agents/` with a mission, required reading, a method, a quality bar, a list of things it must never do and a defined output. The same text is shown on the [agents page](https://bishal-paul-git.github.io/seo-autopilot/agents/).
+seo-autopilot works as a team of thirty agents. They are grouped into eight departments ([org chart](../departments/README.md)), and each is a Markdown file in `departments/<department>/agents/` with a mission, required reading, a method, a quality bar, a list of things it must never do and a defined output. The same text is shown on the [agents page](https://bishal-paul-git.github.io/seo-autopilot/agents/).
 
 | Agent | Job | Where it runs |
 |---|---|---|

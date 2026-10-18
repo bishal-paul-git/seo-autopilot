@@ -1,6 +1,6 @@
 # The departments
 
-seo-autopilot works as a team of twenty-nine specialist agents grouped into eight departments, like a small agency: Command plans, Research finds, Technical, Content, Authority, AI search and Verticals do the work, and Quality checks it. Each agent has one job, a fixed set of tools, the playbooks it must read first, a quality bar and a defined hand-off. One rule holds for all of them: **a human approves what goes live**.
+seo-autopilot works as a team of thirty specialist agents grouped into eight departments, like a small agency: Command plans, Research finds, Technical, Content, Authority, AI search and Verticals do the work, and Quality checks it. Each agent has one job, a fixed set of tools, the playbooks it must read first, a quality bar and a defined hand-off. One rule holds for all of them: **a human approves what goes live**.
 
 Each department folder has a charter (`README.md`) and its agents (`agents/`). Installed projects get the agents in one flat folder (`seo-autopilot/agents/`) so workflows can find any agent by name; each file's front matter still names its department. The design and roadmap are in [docs/architecture/DEPARTMENTS.md](../docs/architecture/DEPARTMENTS.md).
 
@@ -29,6 +29,7 @@ Keeps the site crawlable, indexable, fast and safe to change: audits, monitors a
 |---|---|---|---|
 | [seo-indexing-monitor](technical/agents/seo-indexing-monitor.md) | Tracks what is and is not indexed, diagnoses why, corrects the request-indexing list | on request, weekly | no |
 | [seo-international](technical/agents/seo-international.md) | Language and country targeting, hreflang, canonicals, translation checks | on request | templates, on a branch (edit mode) |
+| [seo-log-analyst](technical/agents/seo-log-analyst.md) | Reads what Googlebot and AI crawlers really requested in your access logs: crawl waste, sitemap pages not crawled, fakes | on request, from `logs.json` | no |
 | [seo-media-optimizer](technical/agents/seo-media-optimizer.md) | Images, video and documents: alt text, sizes, formats, previews | on request | templates and content, on a branch (edit mode) |
 | [seo-migration-planner](technical/agents/seo-migration-planner.md) | Plans and checks a platform, domain or URL move so visibility survives | before and after a move | no |
 | [seo-performance-fixer](technical/agents/seo-performance-fixer.md) | Turns speed and Core Web Vitals findings into code fixes | on request, from `speed.md` | templates and assets, on a branch |

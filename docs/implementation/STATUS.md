@@ -143,6 +143,12 @@ No paid API calls were made this session. Hosted cost model is proposed in D9; n
   - `inbound` job (`src/analysis/inbound.mjs`, `src/jobs/inbound.mjs`), `seo-backlink-auditor` (29 agents), router rules, weekly step, config `site.inbound.dir`, playbook section.
   - Checks: `npm test` 280/280, including 6 inbound tests on sample CSVs.
   - **Not verified on a real Search Console export:** column names are matched flexibly but were not checked against a real download. Next: the owner exports Links from Search Console for Erudience and we run it.
+- **Step 5, second agent done (local, not pushed):**
+  - `logs` job (`src/analysis/logs.mjs`, `src/jobs/logs.mjs`), `seo-log-analyst` (30 agents), router rule, `noindex` in compact audit pages, `.gitignore` line from `init`, playbook section.
+  - Checks: `npm test` 288/288 (6 logs tests, including that no IP reaches a report); Python OK; `go test` ok.
+  - Not checked:
+    - real access logs;
+    - `--verify` DNS against real crawler addresses (no network in tests).
 - **Next, step 4:** add sources and "last reviewed" dates to every playbook, from `docs/research/REFERENCES.md`, with a test. It is blocked on verifying the links: page fetches are blocked in this session's network policy.
 
 ## Next milestone

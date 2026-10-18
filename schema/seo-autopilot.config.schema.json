@@ -235,6 +235,15 @@
               }
             }
           },
+          "logs": {
+            "type": "object",
+            "description": "Crawler log analysis. Folder of server access logs (plain or .gz). Default: <dataDir>/logs. Keep logs out of git: they contain visitors' IP addresses.",
+            "properties": {
+              "dir": {
+                "type": "string"
+              }
+            }
+          },
           "inbound": {
             "type": "object",
             "description": "Inbound links audit. Folder of Search Console or backlink-tool CSV exports. Default: <dataDir>/inbound-links.",

@@ -39,6 +39,7 @@ export const JOBS = {
   render: () => import("./render.mjs"),
   work: () => import("./work.mjs"),
   inbound: () => import("./inbound.mjs"),
+  logs: () => import("./logs.mjs"),
 };
 
 export async function describeJobs() {

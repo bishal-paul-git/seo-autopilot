@@ -26,7 +26,7 @@ function countBy(issues) {
   return m;
 }
 
-export function routeAgents({ profile = null, audit = null, priorities = null, inspect = {}, speed = null, geo = null, pipeline = null, consent = null, ymyl = null, pace = null, citations = null, quality = null, redirects = null, facts = null, links = null, render = null, inbound = null, site = {}, today = "" } = {}) {
+export function routeAgents({ profile = null, audit = null, priorities = null, inspect = {}, speed = null, geo = null, pipeline = null, consent = null, ymyl = null, pace = null, citations = null, quality = null, redirects = null, facts = null, links = null, render = null, inbound = null, logs = null, site = {}, today = "" } = {}) {
   const plan = [];
   const advise = profile && profile.mode === "advise";
   const how = advise ? " This site is in advise mode: recommend exact changes for a person to make; do not try to edit files." : "";
@@ -107,6 +107,9 @@ export function routeAgents({ profile = null, audit = null, priorities = null, i
   if (profile?.signals?.hreflang) add("international", PHASES.fix, "The site has language or region versions.", ["hreflang present"], "Use the seo-international agent to check language targeting end to end.");
   if (/Shopify|Magento|WooCommerce/i.test(profile?.platform?.name || "") || types.some((t) => /^Product$|Offer/.test(t))) add("ecommerce", PHASES.fix, "The site sells products.", types.filter((t) => /Product|Offer/.test(t)), "Use the seo-ecommerce agent on category, product and faceted-navigation pages.");
 
+  // Server logs: what Googlebot really requested. Waste and uncrawled sitemap pages are fix-phase; the rest is context.
+  const logFindings = (logs?.findings || []).filter((f) => ["crawl-waste", "sitemap-not-crawled", "no-googlebot"].includes(f.id) && f.severity !== "low");
+  if (logFindings.length) add("log-analyst", PHASES.fix, `The access logs show ${logFindings.length} crawling problem(s).`, logFindings.map((f) => f.title), "Use the seo-log-analyst agent on logs.json: judge the window first, then the crawl waste and the sitemap pages Googlebot did not request, with the agent that should fix each.", [...(logs.googlebot?.errors || []).map((e) => e.path), ...(logs.googlebot?.redirects || []).map((e) => e.path)]);
   // Inbound links: links into pages that now error are value already earned and being lost; patterns go to a person.
   if ((inbound?.reclaim || []).length) add("backlink-auditor", PHASES.fix, `${inbound.reclaim.length} page(s) with inbound links now answer an error, so those links are wasted.`, inbound.reclaim.slice(0, 4).map((x) => `${x.target}: ${x.status}, ${x.links} link(s)`), "Use the seo-backlink-auditor agent on inbound.json: confirm each broken target, choose the closest live page and hand the redirects to the seo-redirect-guardian.", inbound.reclaim.map((x) => x.target));
   if ((inbound?.review || []).length) add("backlink-auditor", PHASES.grow, `${inbound.review.length} inbound-link pattern(s) need a person's look (sitewide links or one dominant anchor).`, inbound.review.slice(0, 3).map((x) => x.note.split(".")[0]), "Use the seo-backlink-auditor agent to review the patterns in inbound.json with the owner. Recommend a disavow only with a manual action or confirmed arranged links.");

@@ -139,6 +139,10 @@ export async function init({ cwd = process.cwd(), flags = {}, interactive = proc
   const line = ".seo-autopilot/";
   const current = existsSync(ignore) ? readFileSync(ignore, "utf8") : "";
   if (!current.split(/\r?\n/).includes(line)) { appendFileSync(ignore, (current && !current.endsWith("\n") ? "\n" : "") + `${line}\n*service-account*.json\n.env\n`); report.push(`updated  ${ignore}`); }
+  // Server access logs for the logs job contain visitors' IP addresses: never commit them.
+  const logsLine = `${config.dataDir}/logs/`;
+  const now = existsSync(ignore) ? readFileSync(ignore, "utf8") : "";
+  if (!now.split(/\r?\n/).includes(logsLine)) { appendFileSync(ignore, (now && !now.endsWith("\n") ? "\n" : "") + `${logsLine}\n`); report.push(`updated  ${ignore} (access logs stay out of git)`); }
 
   console.log(report.join("\n"));
   const detected = detectLocal(cwd);
