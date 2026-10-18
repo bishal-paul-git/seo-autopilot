@@ -83,6 +83,16 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-10-18 D16 Departments, work orders and validation (PROPOSED, owner to confirm)
+Proposal: group agents into departments, each a folder. The departments are command, research, technical, content, authority, ai-search, verticals and quality. Each has a charter, one owner per problem type and shared skills. The router produces dependency-ordered work orders with file/URL locks so independent work can run in parallel, and nothing reaches approval until its validators pass.
+
+The full design is in `docs/architecture/DEPARTMENTS.md`, with evidence in `docs/research/AGENT-AUDIT-2026-10-18.md`.
+
+- **Rationale:** today ownership overlaps and sequencing rules are prompt-only. Several SEO areas also have agents without any data behind them.
+- **Tradeoffs:** moving files touches every loader (init/upgrade, Python runtime, site build, tests), and existing installs must be upgraded. New agents add maintenance, so each must come with a data source and eval cases.
+- **Smaller alternative:** keep the flat folder and add a `departments.json` registry. That gives the same ownership and routing benefits with no file moves, but it doesn't give the folder layout the owner asked for.
+- **Naming:** keep "SEO Autopilot" and call the organisation "the Search Desk" (recommended), or rename after a trademark check.
+
 ## 2026-10-18 Business model: open core, service first (proposed, owner to confirm)
 Keep the engine MIT; sell hosting, multi-client operations, approvals, scheduled runs, reporting and support; start with a done-for-you service through Erudience to validate demand. Alternatives and risks: `docs/strategy.md`. Consistent with the agency-first hypothesis in `SEO-PRODUCT-BUILD-BRIEF.md`, which also says prices are unvalidated.
 
