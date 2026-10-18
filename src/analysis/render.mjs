@@ -1,5 +1,5 @@
 // Delivered HTML vs the page after JavaScript runs. Pure: pass in both versions' title, H1 and main text.
-// Two failures matter (ported from Erudience's static-content check, which kept its prerendered HTML honest):
+// Two failures matter (derived from a static-content check that kept a site's prerendered HTML honest):
 //   prerendered text says something the real page does not (crawlers and AI tools read a page visitors never see)
 //   the real page's text is mostly missing from the delivered HTML (crawlers that do not run JavaScript see little)
 

@@ -87,4 +87,4 @@ The product site lives in [`site/`](site/) (with a sample-data demo of the dashb
 
 ## Status
 
-Version 2 is used in production on [erudience.com](https://erudience.com). Contributions and bug reports are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).
+Version 2 is used in production on the maintainers' own sites. Contributions and bug reports are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md).

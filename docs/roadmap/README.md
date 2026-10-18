@@ -12,7 +12,7 @@ Jobs: `audit`, `analyze`, `priorities`, `experiments`, `speed`, `geo`, `deepdive
 
 | # | Brief | Type | Why |
 |---|---|---|---|
-| 01 | [Port the Erudience tooling into the product](01-port-erudience-tooling.md) | foundation | Real, proven tools live only in the Erudience repo: heading and meta audits, redirect map and smoke test, consent and conversion recipes, facts guard |
+| 01 | [Port proven site tooling into the product](01-port-site-tooling.md) | foundation | Real, proven tools that lived only in one site's repository: heading and meta audits, redirect map and smoke test, consent and conversion recipes, facts guard |
 | 02 | [Run all 27 agents unattended and safely](02-agent-runtime-all-agents.md) | foundation | Only two agents run outside Claude Code; the rest need a safe runtime with budgets and approvals |
 | 03 | [Live-test and harden the data providers](03-live-providers-and-data.md) | foundation | `citations` has never run against real APIs; add rank tracking, Bing, CrUX, GA4 conversions |
 | 04 | [Agent evaluations and safety tests](04-agent-evals-and-safety.md) | foundation | Trust is the product: prove agents do not invent facts, follow injected instructions or overstep |
@@ -21,8 +21,10 @@ Jobs: `audit`, `analyze`, `priorities`, `experiments`, `speed`, `geo`, `deepdive
 | 07 | [Hosted cloud (SaaS) MVP](07-hosted-cloud-mvp.md) | business | GitHub App, accounts, billing, scheduled runs, no setup for the user |
 | 08 | [Distribution and launch](08-distribution-and-launch.md) | business | npm, GitHub Action and Marketplace, docs and demo site, case study, waitlist |
 | 09 | [Quality of life and gaps](09-gaps-and-polish.md) | polish | Known loose ends and small features |
+| 10 | [Page planner and funnels](10-page-planner-and-funnels.md) | product | From a business goal to a keyword map, page plan and conversion funnel, with facts the owner must supply |
+| 11 | [Ideas and findings backlog](11-ideas-and-findings.md) | backlog | Bugs and ideas found in real use, not yet briefs |
 
-Strategy and the reasoning for this order: [../strategy.md](../strategy.md).
+Strategy and the reasoning for this order: [../strategy.md](../strategy.md). How projects connect and feed back: [../connected-projects.md](../connected-projects.md).
 
 ## How to start a session
-Paste: "Work in D:\ClaudeCode\seo-autopilot. Read CLAUDE.md, then docs/roadmap/NN-name.md, and do that brief end to end: build it, test it, update docs and CHANGELOG, bump the version, and release following CLAUDE.md. Report what you verified and what you could not."
+Paste: "Work in the seo-autopilot repository. Read CLAUDE.md, then docs/roadmap/NN-name.md, and do that brief end to end: build it, test it, update docs and CHANGELOG, bump the version, and release following CLAUDE.md. Report what you verified and what you could not."

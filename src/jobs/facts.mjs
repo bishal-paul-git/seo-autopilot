@@ -1,5 +1,5 @@
 // Facts guard: every percentage, price, "500+", "3x", award, ranking or "trusted by" claim in your content must be in your
-// verified-facts file (with its source) or carry a source link in the same sentence. Ported from Erudience's hard rule.
+// verified-facts file (with its source) or carry a source link in the same sentence. Based on a hard rule used on a production site.
 //   npx seo-autopilot run facts [--strict] [--files a.json,b.md] [--max-pages 100]
 // Reads your content files (json or markdown sites) or, for sitemap sites, the visible text of your live pages. Writes
 // <state>/<site>/facts.json and facts.md. Warns by default; --strict (or "facts": { "strict": true }) exits 1 when a claim

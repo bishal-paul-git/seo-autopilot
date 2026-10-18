@@ -1,4 +1,4 @@
-// Redirect map tooling (ported from Erudience). The map is a file you keep: <dataDir>/redirects.json by default
+// Redirect map tooling (derived from tooling used on a production site). The map is a file you keep: <dataDir>/redirects.json by default
 // (see src/analysis/redirects.mjs for its shape). Three modes:
 //   npx seo-autopilot run redirects                     check the map against the site's pages; exits 1 on errors
 //   npx seo-autopilot run redirects generate [--format apache|nginx|netlify|vercel] [--write <file>]

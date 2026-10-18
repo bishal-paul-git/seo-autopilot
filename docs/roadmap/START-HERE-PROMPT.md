@@ -9,7 +9,7 @@ Repositories (GitHub, owner bishal-paul-git):
 - Primary: https://github.com/bishal-paul-git/seo-autopilot (main). Landing site: https://bishal-paul-git.github.io/seo-autopilot/ . Local path D:\ClaudeCode\seo-autopilot.
 - Source to evaluate for reuse (not to copy wholesale): https://github.com/bishal-paul-git/marketingmouse (main) and https://github.com/bishal-paul-git/feed-to-site-magic (main; this is "News to Blog").
 - Optional future execution layer, kept separate; SEO must work without it: https://github.com/bishal-paul-git/keel (master), see KEEL-AGENTIC-PLATFORM-BUILD-PLAN.md.
-- Reference production user of the engine: https://github.com/bishal-paul-git/erudience-flow-engine (private; erudience.com; local D:\ClaudeCode\erudience-flow-engine). Use it as the real-world test, never commit its restored state.
+- Connected projects (real sites that run the engine) live in their own repositories. Use one as the real-world test if the owner points you to it; never commit its restored state or any site-specific content into this repository. See docs/connected-projects.md.
 
 Read in this order, completely, before changing anything:
 1. CLAUDE.md (owner rules plus the product guide: layout, hard rules, release procedure, pitfalls).
@@ -23,9 +23,9 @@ State of the product (v2.13.0, 196 Node tests passing): dependency-free Node cor
 
 Your tasks, in order:
 A. Phase 0 of SEO-PRODUCT-BUILD-BRIEF.md: baseline and reuse audit. Run the existing tests in a clean environment, map the data flow from onboarding to evidence to recommendation to approval to publication to measurement, audit Marketing Mouse and News to Blog (record audited commit SHAs, licences, real vs mock data, ownership checks, credential handling, scheduler authentication), and produce a source-path-based reuse matrix. Write the architecture decisions (hosted boundary, workspace to client to site model, credential storage, durable jobs, access boundaries beyond RLS, cost model) in docs/implementation/DECISIONS.md with alternatives and migration implications. Do not build the hosted app until this is reviewed.
-B. In parallel, independent of A: roadmap briefs 01 (port the Erudience tooling into the product), 03 (live-test the data providers; ask the owner for provider keys, never commit them) and 04 (agent evaluations and safety tests).
+B. In parallel, independent of A: roadmap briefs 01 (port proven site tooling into the product; largely done, check STATUS.md), 03 (live-test the data providers; ask the owner for provider keys, never commit them) and 04 (agent evaluations and safety tests).
 C. After the owner approves the Phase 0 output: phases 1 to 4 of the product brief for one GitHub-backed site and one fully proven publishing path, then CMS connectors (WordPress first), then agency features, billing readiness and a small paid pilot. Validate willingness to pay before widening the integration list. Prices in earlier notes are hypotheses.
-D. Distribution (brief 08): npm package, GitHub Action, Claude Code plugin, docs and demo, an honest Erudience case study from real numbers only.
+D. Distribution (brief 08): npm package, GitHub Action, Claude Code plugin, docs and demo, an honest first case study from a real site, from real numbers only.
 
 Rules (non-negotiable):
 - A human approves what goes live. No autonomous publishing, backlink outreach or default-branch writes. Approval binds to an exact revision, destination and operation.
