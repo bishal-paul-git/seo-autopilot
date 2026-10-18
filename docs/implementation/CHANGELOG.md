@@ -2,6 +2,18 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-19 (D16: shared skills)
+- **Code:**
+  - `src/core/agents.mjs` gains `listSkills()`.
+  - `src/cli/init.mjs` copies skills to `<dataDir>/skills/<name>/SKILL.md`.
+  - `scripts/build-site.mjs` links skill pages to GitHub.
+  - Tests: two-way skills consistency (`test/agents.test.mjs`) and skills present after `init` (`test/site-profile.test.mjs`).
+- **Product content:**
+  - `departments/skills/answer-first-copy/SKILL.md` and `departments/skills/digital-pr/SKILL.md`.
+  - "Read first" skill references in the drafter, refresher, snippet-optimizer, ai-search-agent, editor, link-builder and entity-reputation; small method wording changes pointing to the skills.
+  - Org chart skills section; `CLAUDE.md` layout line.
+- **Checks:** `npm test` 289/289. Not pushed (GitHub 403 again at session start).
+
 ## 2026-10-18, night (D16 step 5: log analyst)
 - **Code:**
   - New `src/analysis/logs.mjs` and `src/jobs/logs.mjs` (registered as `logs`; DNS verify uses `node:dns`, gz via `node:zlib`, no dependencies).

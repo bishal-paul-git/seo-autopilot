@@ -149,6 +149,10 @@ No paid API calls were made this session. Hosted cost model is proposed in D9; n
   - Not checked:
     - real access logs;
     - `--verify` DNS against real crawler addresses (no network in tests).
+- **Skills layer done (local, not pushed):**
+  - `departments/skills/` with `answer-first-copy` and `digital-pr`; `listSkills()`; `init`/`upgrade` copy skills.
+  - 7 agents reference skills; a two-way consistency test; skills section in the org chart.
+  - Checks: `npm test` 289/289.
 - **Next, step 4:** add sources and "last reviewed" dates to every playbook, from `docs/research/REFERENCES.md`, with a test. It is blocked on verifying the links: page fetches are blocked in this session's network policy.
 
 ## Next milestone

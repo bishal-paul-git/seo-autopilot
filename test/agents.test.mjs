@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { RULES } from "../src/audit/rules.mjs";
 
-import { listAgents, DEPARTMENTS } from "../src/core/agents.mjs";
+import { listAgents, listSkills, DEPARTMENTS } from "../src/core/agents.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const departmentsDir = join(root, "departments"), knowledgeDir = join(root, "knowledge");
@@ -21,10 +21,33 @@ test("thirty agents exist, with unique names across departments", () => {
 
 test("every department folder is a known department with a charter, and holds only agents", () => {
   const dirs = readdirSync(departmentsDir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
-  assert.deepEqual([...dirs].sort(), [...DEPARTMENTS].sort());
+  assert.deepEqual([...dirs].sort(), [...DEPARTMENTS, "skills"].sort(), "departments/ holds the departments and the shared skills folder");
   for (const d of DEPARTMENTS) {
     assert.ok(existsSync(join(departmentsDir, d, "README.md")), `${d} has no README.md`);
     for (const f of readdirSync(join(departmentsDir, d, "agents"))) assert.match(f, /^seo-[a-z-]+\.md$/, `${d}/agents/${f}`);
+  }
+});
+
+test("skills: each has front matter naming its folder, the agents in used-by exist and name it, and every skill an agent names exists", () => {
+  const skills = listSkills();
+  assert.ok(skills.length >= 2);
+  const byName = new Map(skills.map((x) => [x.name, x]));
+  for (const sk of skills) {
+    const text = readFileSync(sk.file, "utf8").replace(/\r\n/g, "\n");
+    assert.equal((text.match(/^name:\s*(.+)$/m) || [])[1], sk.name, `${sk.name}: name`);
+    assert.ok(/^description:\s*\S/m.test(text), `${sk.name}: description`);
+    for (const h of ["## When to use", "## Never"]) assert.ok(text.includes(h), `${sk.name}: missing ${h}`);
+    assert.ok(sk.usedBy.length, `${sk.name}: used by no agent`);
+    for (const a of sk.usedBy) {
+      assert.ok(pathOf[`${a}.md`], `${sk.name}: unknown agent ${a}`);
+      assert.ok(readFileSync(pathOf[`${a}.md`], "utf8").includes(`seo-autopilot/skills/${sk.name}/SKILL.md`), `${a} does not name the ${sk.name} skill`);
+    }
+  }
+  for (const f of agentFiles) {
+    for (const m of readFileSync(pathOf[f], "utf8").matchAll(/seo-autopilot\/skills\/([a-z0-9-]+)\/SKILL\.md/g)) {
+      assert.ok(byName.has(m[1]), `${f} names a missing skill ${m[1]}`);
+      assert.ok(byName.get(m[1]).usedBy.includes(f.slice(0, -3)), `${m[1]} used-by does not list ${f}`);
+    }
   }
 });
 

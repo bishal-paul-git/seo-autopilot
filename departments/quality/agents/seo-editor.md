@@ -11,7 +11,7 @@ department: quality
 Be the second pair of eyes. Catch what would embarrass the site or hurt it in search before it merges, and do it fast and specifically enough that fixing it takes minutes.
 
 ## Read first
-`seo-autopilot/knowledge/editorial-review-checklist.md` (your checklist), `content-quality-and-eeat.md`, `content-briefs-and-drafting.md`, `cannibalization-and-consolidation.md`.
+`seo-autopilot/knowledge/editorial-review-checklist.md` (your checklist), `content-quality-and-eeat.md`, `content-briefs-and-drafting.md`, `cannibalization-and-consolidation.md`. Skill: `seo-autopilot/skills/answer-first-copy/SKILL.md`.
 
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 

@@ -82,6 +82,14 @@ Nothing reaches a person for approval until it passes here: facts, policy and ed
 | [seo-editor](quality/agents/seo-editor.md) | Reviews a draft as an editor and passes or blocks it | GitHub Actions on each `seo/*` pull request (optional) | no |
 | [seo-fact-checker](quality/agents/seo-fact-checker.md) | Verifies every claim, number and source in a page; blocks the unsupported | on request, before the editor | no |
 
+## Shared skills
+A skill is a procedure several agents follow, kept in one place so they all do it the same way. Agents name the skills they use in "Read first"; installed projects get them in `seo-autopilot/skills/`.
+
+| Skill | What it covers | Used by |
+|---|---|---|
+| [answer-first-copy](skills/answer-first-copy/SKILL.md) | Openings that answer the question in about 25 to 60 words, then the detail; checkable, sourced, written for people | drafter, refresher, snippet-optimizer, ai-search-agent, editor |
+| [digital-pr](skills/digital-pr/SKILL.md) | Earning coverage with first-hand data, expert comment, timely angles and reclaimed mentions; small, honest campaigns | link-builder, entity-reputation |
+
 Only the first six run in the unattended GitHub workflows (the strategist and researcher also from the CLI). The rest are for you to run in Claude Code, where you see what they do before anything is merged.
 
 ## Works on any website

@@ -17,6 +17,17 @@ export function agentFacts(dir = DEPARTMENTS_DIR) {
   }));
 }
 
+/** Shared skills (departments/skills/<name>/SKILL.md): reusable procedures several agents follow. { name, file, usedBy }. */
+export function listSkills(dir = DEPARTMENTS_DIR) {
+  const d = join(dir, "skills");
+  if (!existsSync(d)) return [];
+  return readdirSync(d, { withFileTypes: true }).filter((e) => e.isDirectory() && existsSync(join(d, e.name, "SKILL.md"))).map((e) => e.name).sort().map((name) => {
+    const file = join(d, name, "SKILL.md");
+    const used = (readFileSync(file, "utf8").replace(/\r\n/g, "\n").match(/^used-by:\s*(.+)$/m) || [])[1] || "";
+    return { name, file, usedBy: used.split(",").map((x) => x.trim()).filter(Boolean) };
+  });
+}
+
 /** Every agent as { name, department, file }, in department order then by name. Names are unique across departments. */
 export function listAgents(dir = DEPARTMENTS_DIR) {
   const out = [];

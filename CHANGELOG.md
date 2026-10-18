@@ -45,6 +45,11 @@
   - **Only totals are stored, never an IP address**, and `init` now adds `seo-autopilot/logs/` to `.gitignore`. The audit also records `noindex` per page.
   - Parsing is tested on sample lines (combined and common formats, JSON lines); **not yet on a real host's logs.**
   - New playbook section: "Reading your server logs".
+- **Shared skills: the third level of the department design (D16).**
+  - A skill is a procedure several agents follow, kept in one place.
+  - **answer-first-copy** is used by the drafter, refresher, snippet optimizer, AI search agent and editor; it consolidates the answer-first guidance they each repeated.
+  - **digital-pr** is used by the link builder and entity-reputation agents. It covers first-hand data, expert comment, timely angles and reclaimed mentions, in small honest campaigns where a person sends every pitch.
+  - Skills live in `departments/skills/<name>/SKILL.md`, and installs get them in `seo-autopilot/skills/`. A test checks that every agent's skills exist and that every skill lists the agents that use it.
 - Design and roadmap: `docs/architecture/DEPARTMENTS.md`. Research library (links still to be verified): `docs/research/REFERENCES.md`.
 
 ## 2.14.0

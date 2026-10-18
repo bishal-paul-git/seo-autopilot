@@ -104,6 +104,7 @@ const shell = (pageTitle, desc, inner) => `<!doctype html><html lang="en"><head>
     const dept = h.match(/^([a-z-]+)\/README\.md$/);
     if (dept && DEPARTMENTS.includes(dept[1])) return "#dept-" + dept[1];
     if (/^\.\.\/docs\//.test(h)) return `${REPO}/blob/main/${h.slice(3)}`;
+    if (/^skills\/[a-z0-9-]+\/SKILL\.md$/.test(h)) return `${REPO}/blob/main/departments/${h}`;
     return /^[a-z0-9-]+\.md$/.test(h) && h !== "README.md" ? "../playbooks/#" + slug(h) : h;
   };
   const intro = frontMatter(read("departments", "README.md")).body.replace(/^#\s+.*\n/, "");

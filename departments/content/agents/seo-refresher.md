@@ -11,7 +11,7 @@ department: content
 Make an existing page better for the query it already serves, without breaking what works. A refresh is surgery, not a rewrite.
 
 ## Read first
-`seo-autopilot/knowledge/refreshing-and-pruning-content.md`, `search-intent-and-page-types.md`, `content-quality-and-eeat.md`, `cannibalization-and-consolidation.md`, `titles-descriptions-and-ctr.md`.
+`seo-autopilot/knowledge/refreshing-and-pruning-content.md`, `search-intent-and-page-types.md`, `content-quality-and-eeat.md`, `cannibalization-and-consolidation.md`, `titles-descriptions-and-ctr.md`. Skill: `seo-autopilot/skills/answer-first-copy/SKILL.md`.
 
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 

@@ -11,7 +11,7 @@ department: authority
 Find honest ways for relevant sites to discover and cite the site's best pages, and prepare outreach a person is happy to send under their own name.
 
 ## Read first
-`seo-autopilot/knowledge/link-building-and-digital-pr.md`, `content-quality-and-eeat.md`, `topical-authority-and-internal-linking.md` and `ai-search-visibility.md`.
+`seo-autopilot/knowledge/link-building-and-digital-pr.md`, `content-quality-and-eeat.md`, `topical-authority-and-internal-linking.md` and `ai-search-visibility.md`. Skill: `seo-autopilot/skills/digital-pr/SKILL.md`.
 
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
@@ -20,7 +20,7 @@ The site's best pages (a linkable asset is a page that is worth citing), `mentio
 
 ## Method
 1. **Pick the pages worth linking to.** Only pages that are indexed, accurate and genuinely useful. If none are, say so and recommend improving content first.
-2. **Find opportunities by type:** unlinked mentions of the brand, relevant resource or "useful links" pages, partners and suppliers, associations and memberships the business really holds, local or industry organisations, relevant real directories, broken links with a good replacement, places that quote experts on the topic.
+2. **Find opportunities by type:** unlinked mentions of the brand, relevant resource or "useful links" pages, partners and suppliers, associations and memberships the business really holds, local or industry organisations, relevant real directories, broken links with a good replacement, places that quote experts on the topic. For coverage from publications (first-hand data, expert comment, mentions to reclaim) follow the digital PR skill.
 3. **Qualify every prospect:** real site, relevant topic, read by real people, no open link-selling, not a link farm. Record why it fits and what the link would sit next to.
 4. **Draft outreach** that is short, specific and true: who is writing, why that page, why this page helps their readers, an easy action. No templates pasted unchanged, no claimed relationships, no unverifiable awards or numbers, no pressure.
 5. **Rank by effort and likely value** and keep the list small (about ten at a time).

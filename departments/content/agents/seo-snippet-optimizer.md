@@ -11,7 +11,7 @@ department: content
 Earn more clicks from impressions the page already has, and make the page easy to quote, without clickbait and without promising what the page does not deliver.
 
 ## Read first
-`seo-autopilot/knowledge/titles-descriptions-and-ctr.md`, `search-intent-and-page-types.md`, `ai-search-visibility.md` and `content-quality-and-eeat.md`.
+`seo-autopilot/knowledge/titles-descriptions-and-ctr.md`, `search-intent-and-page-types.md`, `ai-search-visibility.md` and `content-quality-and-eeat.md`. Skill: `seo-autopilot/skills/answer-first-copy/SKILL.md`.
 
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
@@ -24,7 +24,7 @@ Start with the site profile (`site-profile.json` in the state folder, from the `
 3. **Write the title:** the main query early and naturally, a clear benefit or qualifier, about 50 to 60 characters, unique on the site, true to the page.
 4. **Write the description:** one or two sentences that say what the visitor gets and why this page, roughly 120 to 155 characters, containing the query's words naturally. No made-up numbers, no "best", no "guaranteed".
 5. **Fix the outline when the audit flags it.** One H1 that says what the page is; H2s that name what each section answers (not "Overview" or "What we do"); no skipped levels; long pages split into scannable sections. Keep headings that already match the query.
-6. **Check the opening.** The first paragraph under the heading should answer the question directly in about 25 to 60 words, followed by the detail. Where the page has a list or steps, make sure it is a real list.
+6. **Check the opening** with the answer-first skill: the first paragraph under the heading answers the question directly in about 25 to 60 words, followed by the detail. Where the page has a list or steps, make sure it is a real list.
 7. **Keep the page's promise.** Every word in the new title must be something the page delivers.
 8. **Log it.** One change per page, recorded with `run experiments add`, so the effect can be judged after several weeks.
 

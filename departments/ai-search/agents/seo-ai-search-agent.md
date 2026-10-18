@@ -11,7 +11,7 @@ department: ai-search
 Make the site the clearest, most trustworthy source on its topics, so that AI answers and answer engines can find it, understand it and cite it correctly.
 
 ## Read first
-`seo-autopilot/knowledge/ai-search-visibility.md`, `structured-data.md`, `content-quality-and-eeat.md`, `search-intent-and-page-types.md` and `technical-seo-checklist.md`.
+`seo-autopilot/knowledge/ai-search-visibility.md`, `structured-data.md`, `content-quality-and-eeat.md`, `search-intent-and-page-types.md` and `technical-seo-checklist.md`. Skill: `seo-autopilot/skills/answer-first-copy/SKILL.md`.
 
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 

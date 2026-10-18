@@ -13,7 +13,7 @@ import { listFiles } from "../jobs/profile.mjs";
 
 const TEMPLATES = fileURLToPath(new URL("../../templates/", import.meta.url));
 const KNOWLEDGE = fileURLToPath(new URL("../../knowledge/", import.meta.url));
-import { listAgents } from "../core/agents.mjs";
+import { listAgents, listSkills } from "../core/agents.mjs";
 export const DEFAULT_SPEC = "github:bishal-paul-git/seo-autopilot#v2";
 
 /** The content paths drafts may touch, as globs. */
@@ -42,6 +42,13 @@ export function exportKnowledge({ cwd = process.cwd(), dataDir = "seo-autopilot"
     const fresh = readFileSync(file, "utf8");
     const text = existsSync(dst) ? keepProjectRules(fresh, readFileSync(dst, "utf8")) : fresh;
     writeFileSync(dst, text);
+    report.push(`created  ${dst}`);
+  }
+  // Shared skills: procedures several agents follow, at <dataDir>/skills/<name>/SKILL.md (agents name them in "Read first").
+  for (const { name, file } of listSkills()) {
+    const dst = join(cwd, dataDir, "skills", name, "SKILL.md");
+    mkdirSync(dirname(dst), { recursive: true });
+    writeFileSync(dst, readFileSync(file, "utf8"));
     report.push(`created  ${dst}`);
   }
   return report;

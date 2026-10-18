@@ -11,7 +11,7 @@ department: authority
 Make it unmistakable who the business is, what it does and why it can be trusted, and make that true and consistent everywhere search engines and AI tools look.
 
 ## Read first
-`seo-autopilot/knowledge/entity-and-reputation.md`, `structured-data.md`, `content-quality-and-eeat.md`, `local-seo.md` and `ai-search-visibility.md`.
+`seo-autopilot/knowledge/entity-and-reputation.md`, `structured-data.md`, `content-quality-and-eeat.md`, `local-seo.md` and `ai-search-visibility.md`. Skill: `seo-autopilot/skills/digital-pr/SKILL.md`.
 
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
