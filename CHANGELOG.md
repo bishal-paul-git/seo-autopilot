@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- **New `render` job (brief 01, item 7, optional; ported from the idea of Erudience's `check-static-content.mjs`).** It loads sitemap pages in a headless browser and compares them with the HTML the server delivered.
+  - **Findings:**
+    - A prerendered sentence the page does not show (high).
+    - Headings or labels that differ (low).
+    - Most text appears only after JavaScript runs (medium).
+    - A changed title or H1 (low).
+  - **What it opens first:** `<details>`, ARIA disclosures and question-style FAQ buttons, merging the text across one-at-a-time accordions. It never clicks other buttons.
+  - **Setup:** Playwright is optional and the job skips cleanly without it; `SEO_CHROMIUM_PATH` points it at a Chromium you already have. The weekly workflow step is off until `SEO_RENDER=true`.
+  - **Agent plan:** high findings go to `seo-technical-fixer`.
+  - `blockText()` in `src/audit/extract.mjs` gives one line per block.
+
 - **New `links` job (brief 01, item 6, the idea behind Erudience's "Guides on this topic" blocks).** It lists internal links to add for pages with few inbound links (2 or fewer by default, weakest first). There are three reasons:
   - **mention:** the source names the target's topic without linking (from the audit).
   - **reverse:** the target links to a related page that does not link back.

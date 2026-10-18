@@ -31,16 +31,30 @@ const normalizeUrl = (href, base) => {
   } catch { return null; }
 };
 
+/** Visible text with one line per block (paragraph, heading, list item, cell), so blocks are never run together. */
+export function blockText(html) {
+  return String(html || "")
+    .replace(/<!--[\s\S]*?-->/g, " ")
+    .replace(/<(script|style|noscript|svg|template|head)\b[\s\S]*?<\/\1>/gi, " ")
+    .replace(/<\/?(p|div|li|ul|ol|h[1-6]|section|article|header|footer|nav|aside|main|tr|td|th|table|br|dt|dd|dl|blockquote|figure|figcaption|button|label|form|details|summary)\b[^>]*>/gi, "\n")
+    .replace(/<\/?(b|strong|i|em|span|a|small|sup|sub|code|mark|abbr|time|u|s|q|cite)\b[^>]*>/gi, "") // inline: no space, so "2022</b>." stays "2022."
+    .split("\n").map((l) => stripTags(l)).filter(Boolean).join("\n");
+}
+
+/** The main content's HTML: <main> when present, otherwise the page without header, nav, footer, aside, scripts and styles. */
+export function mainScope(html) {
+  html = String(html || "").replace(/<!--[\s\S]*?-->/g, " ");
+  const main = html.match(/<main\b[\s\S]*?<\/main>/i);
+  return main ? main[0] : html.replace(/<(header|nav|footer|aside|script|style|template)\b[\s\S]*?<\/\1>/gi, " ");
+}
+
 /**
  * The main content's headings in document order, as [{ level, text }]. Uses <main> when the page has one; otherwise the
  * body without <header>, <nav>, <footer> and <aside>, so site chrome does not count as page structure. The Go engine
  * (engines/go/extract.go headingOutline) mirrors this exactly; keep the two in step.
  */
 export function headingOutline(html) {
-  html = String(html || "").replace(/<!--[\s\S]*?-->/g, " ");
-  const main = html.match(/<main\b[\s\S]*?<\/main>/i);
-  const scope = main ? main[0] : html.replace(/<(header|nav|footer|aside|script|style|template)\b[\s\S]*?<\/\1>/gi, " ");
-  return [...scope.matchAll(/<h([1-6])\b[^>]*>([\s\S]*?)<\/h[1-6]>/gi)].map((m) => ({ level: Number(m[1]), text: stripTags(m[2]) })).filter((h) => h.text);
+  return [...mainScope(html).matchAll(/<h([1-6])\b[^>]*>([\s\S]*?)<\/h[1-6]>/gi)].map((m) => ({ level: Number(m[1]), text: stripTags(m[2]) })).filter((h) => h.text);
 }
 
 export function extractPage(html, pageUrl) {

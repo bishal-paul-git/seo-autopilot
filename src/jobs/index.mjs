@@ -36,6 +36,7 @@ export const JOBS = {
   facts: () => import("./facts.mjs"),
   conversions: () => import("./conversions.mjs"),
   links: () => import("./links.mjs"),
+  render: () => import("./render.mjs"),
 };
 
 export async function describeJobs() {

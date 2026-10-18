@@ -68,6 +68,12 @@ jobs:
       - name: Facts guard (numbers, prices, awards and client claims need a verified fact or a source)
         continue-on-error: true
         run: npx --yes "$SEO" run facts
+      - name: Rendered vs delivered HTML (optional, OFF until the repository variable SEO_RENDER is true; installs a headless browser)
+        if: vars.SEO_RENDER == 'true'
+        continue-on-error: true
+        run: |
+          npm i --no-save playwright && npx playwright install --with-deps chromium
+          npx --yes "$SEO" run render
       - name: Internal links to add for weakly linked pages (report only)
         continue-on-error: true
         run: npx --yes "$SEO" run links

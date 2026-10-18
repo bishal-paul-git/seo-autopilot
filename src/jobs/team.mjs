@@ -26,6 +26,7 @@ export async function run({ site, flags = {} }) {
     quality: readJson(`${s}/quality.json`, null),
     facts: readJson(`${s}/facts.json`, null),
     links: readJson(`${s}/links.json`, null),
+    render: readJson(`${s}/render.json`, null),
     redirects: { check: readJson(`${s}/redirects-check.json`, null), smoke: readJson(`${s}/redirects-smoke.json`, null) },
     pipeline: pipe,
     site,
