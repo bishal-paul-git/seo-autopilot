@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 2.14.0
 
 - **New `render` job (brief 01, item 7, optional; ported from the idea of Erudience's `check-static-content.mjs`).** It loads sitemap pages in a headless browser and compares them with the HTML the server delivered.
   - **Findings:**
