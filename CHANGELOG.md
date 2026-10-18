@@ -1,5 +1,78 @@
 # Changelog
 
+## 2.14.0
+
+- **New `render` job (brief 01, item 7, optional; ported from the idea of Erudience's `check-static-content.mjs`).** It loads sitemap pages in a headless browser and compares them with the HTML the server delivered.
+  - **Findings:**
+    - A prerendered sentence the page does not show (high).
+    - Headings or labels that differ (low).
+    - Most text appears only after JavaScript runs (medium).
+    - A changed title or H1 (low).
+  - **What it opens first:** `<details>`, ARIA disclosures and question-style FAQ buttons, merging the text across one-at-a-time accordions. It never clicks other buttons.
+  - **Setup:** Playwright is optional and the job skips cleanly without it; `SEO_CHROMIUM_PATH` points it at a Chromium you already have. The weekly workflow step is off until `SEO_RENDER=true`.
+  - **Agent plan:** high findings go to `seo-technical-fixer`.
+  - `blockText()` in `src/audit/extract.mjs` gives one line per block.
+
+- **New `links` job (brief 01, item 6, the idea behind Erudience's "Guides on this topic" blocks).** It lists internal links to add for pages with few inbound links (2 or fewer by default, weakest first). There are three reasons:
+  - **mention:** the source names the target's topic without linking (from the audit).
+  - **reverse:** the target links to a related page that does not link back.
+  - **sibling:** the same site section and at least two shared topic words.
+
+  How it decides:
+  - Links on half the pages or more count as navigation, not as a relationship.
+  - Words in half the site's titles are ignored.
+  - It is report only; the agent plan sends it to `seo-refresher`.
+
+  The audit now stores each page's internal links in `audit.json`, so `links` needs no second crawl.
+
+  On Erudience's build it suggests nothing at the default threshold, because only 1 page has 2 or fewer inbound links. At 6 or fewer, the first version suggested hub and navigation pages ("shared topic: one"); after the navigation and site-word filters, the suggestions are topical guide-to-guide links.
+
+- **Two recipes in the playbooks (brief 01, items 4 and 5, from Erudience's production code).**
+  - `consent-banner-recipe.md`: the logic for any stack, plus plain JavaScript, React and Astro versions. The `consent` job recognises it.
+  - `conversion-tracking-recipe.md`: GA4 events without personal data (`generate_lead`, `tool_complete`, `view_calendar`, `cta_click`), a `track()` helper, a click tracker for call-to-action links, and how to mark key events.
+  - The tests run the recipes' code: a fake browser for the consent script, and a real import of `track()`.
+  - Running the consent code found a withdrawal bug, now fixed in the recipe. "Cookie settings" clears the stored choice, so "was consent granted before?" misses a later Reject and analytics keeps running. The recipe now reloads whenever the tag is loaded and the choice is "denied". Erudience has the same bug in `src/lib/consent.ts`; it is reported separately and not fixed here.
+- **New `conversions` job.**
+  - **Event counts:** the events GA4 received in the last 28 days, from the Data API (the same API the digest uses).
+  - **Key events:** which events are marked as key events, from the Admin API.
+  - **Findings:** an expected conversion missing, a conversion not marked as a key event, a key event that received nothing, or a property with no events at all.
+  - **Configuration:** `conversions.events` sets the expected events (default `generate_lead`). It has a weekly workflow step.
+  - **Not yet run against real GA4:** both calls are tested with mocked responses only.
+
+- **New `facts` job (brief 01, item 3, ported from the "no unverified facts" rule in Erudience's `validate-content.mjs`).**
+  - **What it finds:** percentages, money amounts, "N+" figures, multipliers ("3x faster"), rankings ("#1"), awards, and client claims ("trusted by", "clients include", "as seen in"). Each must be in `<dataDir>/verified-facts.json` (Erudience's format) or carry a source link in the same sentence.
+  - **What it reads:** json and markdown content files, or the live pages of sitemap-only sites. `--files` limits it to the files a pull request changes.
+  - **When it fails:** it warns by default; `--strict` or `facts.strict` exits 1.
+  - **Agent plan:** unverified claims go to `seo-fact-checker`, as a blocker in strict mode.
+- **Stricter than the script it replaces.**
+  - A verified fact now covers only the claim inside its own text. Erudience's check let every number in a string pass if any verified fact appeared in it, because its window test always matched.
+  - On Erudience's real content, the product finds 4 unverified claims the old check passed: two plan prices and two "keep 85%" statements that differ from the verified wording.
+  - "used by" and "our clients" were tried as client patterns and dropped after they matched ordinary prose on Erudience.
+
+- **New `redirects` job (brief 01, item 2, ported from Erudience's `check-redirects.mjs`, `generate-htaccess.mjs` and `smoke-redirects.mjs`).**
+  - **The map:** one data file per site, `<dataDir>/redirects.json`, made of `redirects` (old path to new path or a full URL), `gone` (retired pages, answer 410) and `goneSections` (a whole retired path prefix). Erudience's `{ "map": ... }` shape is also read.
+  - **`check`:** finds self-redirects, redirects that would hide a live page, chains and loops, targets that are not live or are gone, and live pages marked gone or inside a retired section. A target that is scheduled but not live yet is a warning. It exits 1 on errors, so it can guard a build.
+  - **`generate`:** prints rules for Apache, nginx, Netlify or Vercel. `--write <file>` fills a marked block and keeps the file's line endings. Redirects to pages that are not live yet are held back until the target is live. Gone pages become 410s on Apache and nginx; on Netlify and Vercel they are listed for the platform to handle.
+  - **`smoke`:** asks the live site, or `--origin` for staging. Each redirect must be a 301 or 308 to its exact target, gone pages must answer 410 (a 404 gets a note), and a made-up URL must be a real 404, not a soft 404.
+  - Also `seo-autopilot redirects check|generate|smoke`, a weekly workflow step, and `site.redirects` in the config schema.
+  - The agent plan sends map errors and live failures to `seo-redirect-guardian`, which now starts from these reports.
+- Checked on Erudience's real redirect files (107 redirects, 113 retired URLs, 6 retired sections) against a local build:
+  - The product's Apache rules match the block Erudience's generator writes, 105 of 105.
+  - The check flags the same 2 targets Erudience does.
+  - The live smoke test was only run against a local test server, because the live site was not reachable from the test machine.
+
+- **Heading audit rules (brief 01, item 1, ported from Erudience's `audit-headings.mjs`).** Both crawlers now record the main content's heading outline: `<main>` when present, otherwise the page without header, nav, footer and aside. New low-severity rules, each with why, fix and a recipe: `h1-long` (over 70 characters), `heading-skip` (for example H2 then H4), `h2-generic` ("Overview", "Related" and similar), `h2-repeated`, and `few-subheadings` (600 or more words with fewer than two H2s, so hubs, tools and contact pages are not flagged). The agent plan sends these to `seo-refresher`.
+- **New `quality` job (ported from Erudience's `audit-meta.mjs`, made generic).** Instead of a hand-kept keyword per page, it uses each page's own top Search Console query, with brand queries left out, and reports pages whose title, H1 or description reflects it weakly. Words that appear in half of the site's titles are not counted. It also reports average H2 and H3 per site section. It runs in the weekly workflow, and pages with weak titles or descriptions go to `seo-snippet-optimizer` in the agent plan.
+- **Fix:** the agent plan could list the same agent twice (for example `seo-snippet-optimizer` for audit findings and again for click-through gaps). A second reason now adds evidence to the existing step.
+- `audit.json` pages now carry `description`, `h2Count` and `h3Count`.
+- Checked on a local build of Erudience (127 prerendered pages, the same HTML for both tools; the live site was not reachable from the test machine):
+  - Section heading averages match Erudience's own script for all 17 sections.
+  - `h1-long` finds the same 7 pages.
+  - The Go and Node crawlers agree.
+  - On Erudience's own keyword fields, the word matcher agrees with Erudience's script on 320 of 321 decisions; the one difference is a stemming error in the old script ("order" vs "ordering").
+
+- **Agent eval graders (brief 04, first part):** `src/analysis/evals.mjs` adds deterministic graders for saved agent output: required sections, figures that appear in none of the inputs, required and banned phrases, a "no data" answer for empty inputs, and prompt-injection resistance. Cases live in `test/evals/cases.json`; `node scripts/evals.mjs <outputs-dir>` grades a folder of recorded outputs and writes a JSON and Markdown summary. Guide: `docs/evals.md`. The tests show the graders separate good samples from bad ones. **No agent has been evaluated yet**: that needs recorded runs.
+
 ## 2.13.0
 
 - **Four new jobs**, all in the weekly workflow (`continue-on-error`) and all feeding `team`: `consent`, `ymyl`, `pace` and `citations`. Guide: `docs/measurement-and-compliance.md`.

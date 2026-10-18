@@ -55,6 +55,31 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: npx --yes "$SEO" run priorities
+      - name: Redirect map check and live redirect smoke test (skip cleanly without a redirect map)
+        continue-on-error: true
+        run: |
+          npx --yes "$SEO" run redirects
+          npx --yes "$SEO" run redirects smoke
+      - name: GA4 conversions (events received, key events; skips without ga4PropertyId)
+        continue-on-error: true
+        env:
+          GOOGLE_KEY_JSON: ${{ secrets.GOOGLE_KEY_JSON }}
+        run: npx --yes "$SEO" run conversions
+      - name: Facts guard (numbers, prices, awards and client claims need a verified fact or a source)
+        continue-on-error: true
+        run: npx --yes "$SEO" run facts
+      - name: Rendered vs delivered HTML (optional, OFF until the repository variable SEO_RENDER is true; installs a headless browser)
+        if: vars.SEO_RENDER == 'true'
+        continue-on-error: true
+        run: |
+          npm i --no-save playwright && npx playwright install --with-deps chromium
+          npx --yes "$SEO" run render
+      - name: Internal links to add for weakly linked pages (report only)
+        continue-on-error: true
+        run: npx --yes "$SEO" run links
+      - name: On-page quality (top query vs title, H1 and description; headings per section)
+        continue-on-error: true
+        run: npx --yes "$SEO" run quality
       - name: Consent and measurement check
         continue-on-error: true
         run: npx --yes "$SEO" run consent

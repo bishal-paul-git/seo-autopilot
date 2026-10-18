@@ -23,7 +23,7 @@ Start with the site profile (`site-profile.json` in the state folder, from the `
 3. **Check one hop.** Follow each old URL: it should end at a 200 page in a single redirect. Find chains (A to B to C), loops, redirects to redirects, redirects to noindex or error pages.
 4. **Fix links at the source.** Internal links, the sitemap and canonicals should point to final URLs; redirects are for outside links.
 5. **Check variants:** trailing slash, upper and lower case, `www` and non-`www`, http and https, `index` pages, query strings that should be ignored.
-6. **Keep the map as data** (one file, one line per rule, a reason) with a check that fails the build if a mapped target does not exist or a rule creates a chain.
+6. **Keep the map as data** (one file, one line per rule, a reason) with a check that fails the build if a mapped target does not exist or a rule creates a chain. The product's redirects job does this: `seo-autopilot redirects check` reads the map (`redirects`, `gone`, `goneSections` in the data folder's redirects.json), `redirects generate --format apache|nginx|netlify|vercel` writes the server rules, and `redirects smoke` asks the live site. Start from its reports (redirects-check.json, redirects-smoke.json); change the map, never the generated block by hand.
 7. **Review shipped changes**: a pull request that deletes or renames content without a matching redirect rule is a blocker.
 8. **After deploy**, re-request a sample of old URLs and report each status.
 

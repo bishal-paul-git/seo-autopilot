@@ -9,12 +9,19 @@ import { writeJson, writeText, today } from "../core/util.mjs";
 
 export const description = "Crawl the site like a search engine: technical and on-page issues, link graph, internal-link opportunities";
 
+/** Distinct internal links of a page (same host), kept in audit.json so the links job can work without crawling again. */
+function internalLinks(p, site) {
+  let host = "";
+  try { host = new URL(site.url).host; } catch { /* no site URL */ }
+  return [...new Set((p.links || []).map((l) => l.url).filter((u) => { try { return new URL(u).host === host; } catch { return false; } }))];
+}
+
 export async function run({ site, flags }) {
   const { pages, ctx } = await crawlSite(site, { maxPages: flags["max-pages"] ? Number(flags["max-pages"]) : undefined, engine: typeof flags.engine === "string" ? flags.engine : undefined });
   const issues = runChecks(pages, ctx);
   const summary = summarize(issues, pages.length);
   const opportunities = linkOpportunities(pages);
-  const compact = pages.map((p) => ({ url: p.url, finalUrl: p.finalUrl, status: p.status, title: p.title || "", h1: p.h1s?.[0] || "", words: p.words || 0, depth: p.depth, inbound: p.inbound, canonical: p.canonical || null, types: p.jsonld?.types || [], inSitemap: p.inSitemap, ttfb: Math.round(p.ttfb || 0) }));
+  const compact = pages.map((p) => ({ url: p.url, finalUrl: p.finalUrl, status: p.status, title: p.title || "", h1: p.h1s?.[0] || "", description: p.description ?? null, links: internalLinks(p, site), h2Count: p.headings ? p.headings.filter((h) => h.level === 2).length : null, h3Count: p.headings ? p.headings.filter((h) => h.level === 3).length : null, words: p.words || 0, depth: p.depth, inbound: p.inbound, canonical: p.canonical || null, types: p.jsonld?.types || [], inSitemap: p.inSitemap, ttfb: Math.round(p.ttfb || 0) }));
   writeJson(`${site.paths.state}/audit.json`, { generatedAt: new Date().toISOString(), summary, issues, opportunities, pages: compact });
 
   const grouped = {};

@@ -66,6 +66,12 @@ export function validate(raw) {
       const v = s.limits?.[k];
       if (v != null && (!Number.isInteger(v) || v < 1)) errors.push(`${w}.limits.${k} must be a whole number of 1 or more`);
     }
+    if (s.conversions != null && (typeof s.conversions !== "object" || (s.conversions.events != null && (!Array.isArray(s.conversions.events) || s.conversions.events.some((e) => typeof e !== "string"))))) errors.push(`${w}.conversions.events must be a list of GA4 event names`);
+    if (s.facts != null && (typeof s.facts !== "object" || Array.isArray(s.facts) || (s.facts.strict != null && typeof s.facts.strict !== "boolean"))) errors.push(`${w}.facts must be an object; facts.strict must be true or false`);
+    if (s.redirects != null) {
+      if (typeof s.redirects !== "object" || Array.isArray(s.redirects)) errors.push(`${w}.redirects must be an object`);
+      else if (s.redirects.format != null && !["apache", "nginx", "netlify", "vercel"].includes(s.redirects.format)) errors.push(`${w}.redirects.format must be apache, nginx, netlify or vercel`);
+    }
     if (s.review != null) {
       if (typeof s.review !== "object" || Array.isArray(s.review)) errors.push(`${w}.review must be an object`);
       else {
@@ -99,6 +105,7 @@ export function loadConfig({ cwd = process.cwd(), file } = {}) {
       feeds: abs(site.feeds ?? join(dataDir, "feeds.json")),
       topics: abs(site.topicsConfig ?? join(dataDir, "topics.json")),
       backlinks: abs(site.backlinksDir ?? join(dataDir, "backlinks")),
+      redirects: abs(site.redirects?.file ?? join(dataDir, raw.sites.length > 1 ? `redirects-${site.id}.json` : "redirects.json")),
     };
     return site;
   });

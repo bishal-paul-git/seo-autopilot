@@ -11,6 +11,7 @@ const RULE_GROUPS = {
   "content-pruner": ["thin-content", "duplicate-content", "orphan", "deep"],
   "performance-fixer": ["slow-ttfb"],
   "snippet-optimizer": ["title-long", "title-short", "title-duplicate", "desc-long", "desc-short", "desc-duplicate", "generic-anchor"],
+  "refresher": ["h1-long", "heading-skip", "h2-generic", "h2-repeated", "few-subheadings"],
 };
 
 const PHASES = { onboard: 0, block: 1, fix: 2, content: 3, grow: 4, report: 5 };
@@ -22,10 +23,12 @@ function countBy(issues) {
   return m;
 }
 
-export function routeAgents({ profile = null, audit = null, priorities = null, inspect = {}, speed = null, geo = null, pipeline = null, consent = null, ymyl = null, pace = null, citations = null, site = {}, today = "" } = {}) {
+export function routeAgents({ profile = null, audit = null, priorities = null, inspect = {}, speed = null, geo = null, pipeline = null, consent = null, ymyl = null, pace = null, citations = null, quality = null, redirects = null, facts = null, links = null, render = null, site = {}, today = "" } = {}) {
   const plan = [];
   const add = (agent, phase, why, evidence = [], prompt = "") => {
-    if (plan.some((p) => p.agent === agent)) { const e = plan.find((p) => p.agent === agent); e.evidence.push(...evidence.filter((x) => !e.evidence.includes(x))); return; }
+    // Entries are stored as "seo-<agent>"; a second reason for the same agent adds its evidence instead of a second step.
+    const e = plan.find((p) => p.agent === `seo-${agent}`);
+    if (e) { e.evidence.push(...evidence.filter((x) => !e.evidence.includes(x))); return; }
     plan.push({ agent: `seo-${agent}`, phase: Object.keys(PHASES)[phase], rank: phase, why, evidence: evidence.slice(0, 6), prompt });
   };
   const items = priorities?.items || [];
@@ -44,10 +47,14 @@ export function routeAgents({ profile = null, audit = null, priorities = null, i
   for (const [agent, rules] of Object.entries(RULE_GROUPS)) {
     const n = issueCount(rules);
     if (!n) continue;
-    const phase = ["redirect-guardian", "technical-fixer"].includes(agent) ? PHASES.block : agent === "snippet-optimizer" || agent === "content-pruner" ? PHASES.content : PHASES.fix;
+    const phase = ["redirect-guardian", "technical-fixer"].includes(agent) ? PHASES.block : ["snippet-optimizer", "content-pruner", "refresher"].includes(agent) ? PHASES.content : PHASES.fix;
     add(agent, phase, `${n} audit finding(s) in this agent's area.`, ruleEvidence(rules), `Use the seo-${agent} agent on the audit findings: ${rules.filter((r) => byRule.has(r)).join(", ")}.` + how);
   }
 
+  const renderHigh = (render?.results || []).filter((r) => (r.findings || []).some((f) => f.severity === "high" || f.id === "rendered-text-missing"));
+  if (renderHigh.length) add("technical-fixer", PHASES.block, `${renderHigh.length} page(s) deliver HTML that differs from what visitors see (stale prerendered text, or content only after JavaScript).`, renderHigh.slice(0, 4).map((r) => `${short(r.url)}: ${r.findings.filter((f) => f.severity !== "low").map((f) => f.id).join(", ")}`), "Use the seo-technical-fixer agent on render.json: regenerate prerendered text from the same source as the page, or prerender what only appears after JavaScript." + how);
+  const redirectProblems = [...(redirects?.check?.errors || []), ...(redirects?.smoke?.results || []).filter((r) => !r.ok).map((r) => `live: ${r.path} ${r.detail}`)];
+  if (redirectProblems.length) add("redirect-guardian", PHASES.block, `${redirectProblems.length} problem(s) in the redirect map or on the live site's redirects.`, redirectProblems.slice(0, 5), "Use the seo-redirect-guardian agent on the redirects job's reports (redirects-check.json, redirects-smoke.json): fix the map, regenerate the rules, and re-run the smoke test after deploy." + how);
   const coverageBad = Object.entries(inspect || {}).filter(([, v]) => v?.coverage && v.coverage !== "Submitted and indexed" && !/redirect|alternate|duplicate/i.test(v.coverage));
   if (coverageBad.length || items.some((i) => i.type === "indexing")) add("indexing-monitor", PHASES.block, `${coverageBad.length || "Some"} page(s) are not indexed, and the request list needs checking before anyone acts on it.`, coverageBad.slice(0, 4).map(([u, v]) => `${short(u)}: ${v.coverage}`), "Use the seo-indexing-monitor agent to group the unindexed pages by cause and correct the request-indexing list.");
   const slow = (speed?.results || []).filter((r) => r.rating === "poor" || r.score != null && r.score < 50);
@@ -56,6 +63,10 @@ export function routeAgents({ profile = null, audit = null, priorities = null, i
   const ofType = (t) => items.filter((i) => i.type === t);
   if (ofType("structure").length) add("cannibalization-resolver", PHASES.content, `${ofType("structure").length} query(ies) have two or more of your pages competing.`, ofType("structure").slice(0, 4).map((i) => i.title), "Use the seo-cannibalization-resolver agent on the competing queries in the priorities report." + how);
   if (ofType("snippet").length) add("snippet-optimizer", PHASES.content, `${ofType("snippet").length} page(s) get impressions but fewer clicks than their position should.`, ofType("snippet").slice(0, 4).map((i) => i.title), "Use the seo-snippet-optimizer agent on the click-through underperformers." + how);
+  const misaligned = (quality?.alignment || []).filter((a) => a.weak.includes("title") || a.weak.includes("description"));
+  if (misaligned.length) add("snippet-optimizer", PHASES.content, `${misaligned.length} page(s) do not reflect their own top search query in the title or description.`, misaligned.slice(0, 4).map((a) => `${short(a.url)}: "${a.query}" weak in ${a.weak.join(", ")}`), "Use the seo-snippet-optimizer agent on the pages in quality.json whose title or description misses their top query." + how);
+  const linkItems = links?.items || [];
+  if (linkItems.length) add("refresher", PHASES.content, `${new Set(linkItems.map((i) => i.to)).size} weakly linked page(s) have related pages that could link to them.`, linkItems.slice(0, 4).map((i) => `${short(i.from)} -> ${short(i.to)} (${i.reason})`), "Use the seo-refresher agent on links.json: add the internal links that help a reader, one page per pull request, with descriptive anchor text." + how);
   if (ofType("refresh").length) add("refresher", PHASES.content, `${ofType("refresh").length} page(s) lost visibility.`, ofType("refresh").slice(0, 4).map((i) => i.title), "Label the refresh issues `approved`, or use the seo-refresher agent on one page at a time. Diagnose before editing.");
   if (ofType("content").length) {
     add("researcher", PHASES.content, `${ofType("content").length} topic or striking-distance opportunity(ies) are open.`, ofType("content").slice(0, 4).map((i) => i.title), "Use the seo-researcher agent to turn the best opportunities into briefs.");
@@ -63,6 +74,7 @@ export function routeAgents({ profile = null, audit = null, priorities = null, i
   }
   if (ofType("ai-search").length || (geo?.findings || []).length) add("ai-search-agent", PHASES.fix, "The AI search readiness report has open findings.", [...ofType("ai-search").map((i) => i.title), ...(geo?.findings || []).map((f) => f.title || f.id)].slice(0, 5), "Use the seo-ai-search-agent to test real questions and close the gaps.");
 
+  if ((facts?.unverified || []).length) add("fact-checker", facts.strict ? PHASES.block : PHASES.content, `${facts.unverified.length} claim(s) in the content have no verified fact and no source.`, facts.unverified.slice(0, 5).map((c) => `${c.where}: ${c.claim}`), "Use the seo-fact-checker agent on facts.json: for each unverified claim, find a real source, add it to the verified-facts file with the owner, or recommend removing it. Never invent a source.");
   if (pipeline && (pipeline.queued > 0 || pipeline.upcoming > 0)) add("fact-checker", PHASES.content, `${(pipeline.queued || 0) + (pipeline.upcoming || 0)} page(s) are waiting to go live. Check their claims first.`, (pipeline.schedule || []).slice(0, 4).map((s) => `${s.date} ${s.title}`), "Use the seo-fact-checker agent on every queued page before it is released.");
 
   // Compliance: one entry for the auditor, ranked by its most urgent reason (a consent failure blocks, the rest are content-phase).

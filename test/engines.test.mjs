@@ -52,8 +52,8 @@ test("running the agent job without a name explains what is available and does n
 
 test("the Go crawler gives the same audit data as the built-in crawler", { skip: !go && "Go toolchain or seo-crawl not found" }, async () => {
   const pages = {
-    "/": `<html lang="en"><head><title>Home page title here</title><meta name="description" content="${"d".repeat(100)}"><link rel="canonical" href="BASE/"></head><body><h1>Home</h1><a href="/a">a</a><a href="/missing">m</a><a href="/old">o</a></body></html>`,
-    "/a": `<html lang="en"><head><title>Page A title here ok</title><link rel="canonical" href="BASE/a"></head><body><h1>A</h1><a href="/">home</a><script type="application/ld+json">{"@type":"FAQPage"}</script></body></html>`,
+    "/": `<html lang="en"><head><title>Home page title here</title><meta name="description" content="${"d".repeat(100)}"><link rel="canonical" href="BASE/"></head><body><header><h2>Brand</h2></header><main><h1>Home</h1><!-- <h2>hidden</h2> --><h2>Intro</h2></main><a href="/a">a</a><a href="/missing">m</a><a href="/old">o</a></body></html>`,
+    "/a": `<html lang="en"><head><title>Page A title here ok</title><link rel="canonical" href="BASE/a"></head><body><nav><h3>Menu</h3></nav><h1>A</h1><h2>Part <b>one</b></h2><h4>Deep</h4><a href="/">home</a><footer><h4>Contact</h4></footer><script type="application/ld+json">{"@type":"FAQPage"}</script></body></html>`,
     "/new": `<html lang="en"><head><title>New page title here</title></head><body><h1>New</h1></body></html>`,
   };
   const server = createServer((req, res) => {
@@ -71,7 +71,7 @@ test("the Go crawler gives the same audit data as the built-in crawler", { skip:
     const site = { url: base, sitemap: `${base}sitemap.xml`, audit: {} };
     const a = await quiet(() => crawlSite(site, { engine: "node" }));
     const b = await quiet(() => crawlSite(site, { engine: "go" }));
-    const norm = (r) => r.pages.map((p) => ({ url: p.url.replace(/\/$/, ""), status: p.status, chain: p.chain.length, title: p.title, h1: p.h1s[0] || "", inSitemap: p.inSitemap, inbound: p.inbound, depth: p.depth, jsonld: p.jsonld.types.join(), canonical: p.canonical || null })).sort((x, y) => x.url.localeCompare(y.url));
+    const norm = (r) => r.pages.map((p) => ({ url: p.url.replace(/\/$/, ""), status: p.status, chain: p.chain.length, title: p.title, h1: p.h1s[0] || "", inSitemap: p.inSitemap, inbound: p.inbound, depth: p.depth, jsonld: p.jsonld.types.join(), canonical: p.canonical || null, headings: JSON.stringify(p.headings) })).sort((x, y) => x.url.localeCompare(y.url));
     assert.deepEqual(norm(b), norm(a));
     assert.deepEqual([...b.ctx.brokenTargets.keys()].sort(), [...a.ctx.brokenTargets.keys()].sort());
     assert.equal(b.ctx.robotsTxt, a.ctx.robotsTxt);

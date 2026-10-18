@@ -21,6 +21,11 @@ What to actually do about each finding in the technical audit. Rule names match 
 - **title-missing / title-long / title-short:** one unique title per page, topic first, about 50 to 60 characters.
 - **desc-missing / desc-long / desc-short:** a unique summary of what the reader gets, about 120 to 155 characters. Search engines may rewrite it.
 - **h1-missing / h1-multiple:** one H1 stating the page topic.
+- **h1-long:** put the topic in the first words and keep the H1 to about 70 characters. The detail belongs in the opening paragraph.
+- **heading-skip:** each subsection uses the next level down (H2, then H3). If a level was picked for its look, change the CSS, not the level.
+- **h2-generic:** rename sections such as "Overview" or "Related" to say what they cover, in the reader's words. A "Related" block of links can be headed by its topic ("Guides on invoicing").
+- **h2-repeated:** two sections share a heading. Merge them, or name what makes each different.
+- **few-subheadings:** a long page with fewer than two H2s. Split it into sections that each answer one question, each under its own H2. Do not add headings for their own sake.
 - **thin-content:** if the page should rank, answer the query properly. If not (tools, legal, hubs), accept it, or add `noindex`, or merge it.
 - **images-no-alt:** describe meaningful images in the `alt` text; use empty `alt=""` for decoration.
 - **generic-anchor:** replace "click here" with words that say where the link goes.

@@ -98,6 +98,12 @@ async function sitemapAdapter(site) {
   } catch { return []; }
 }
 
+/** The content files themselves (json or markdown sites); [] for sitemap sites, whose source is not in the repository. */
+export function contentFiles(site) {
+  const t = site.content?.type ?? "sitemap";
+  return t === "json" ? jsonFiles(site) : t === "markdown" ? markdownFiles(site) : [];
+}
+
 export async function loadPages(site) {
   const t = site.content?.type ?? "sitemap";
   if (t === "json") return jsonAdapter(site);

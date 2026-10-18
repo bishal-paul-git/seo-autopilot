@@ -203,7 +203,7 @@ func crawl(cfg Config) (*Output, error) {
 }
 
 func emptyExtracted() Extracted {
-	return Extracted{Alternates: []Alternate{}, H1s: []string{}, H2s: []string{}, Links: []Link{}, Mixed: []string{},
+	return Extracted{Alternates: []Alternate{}, H1s: []string{}, H2s: []string{}, Headings: []Heading{}, Links: []Link{}, Mixed: []string{},
 		JSONLD: JSONLD{Types: []string{}, Nodes: []SchemaNode{}}}
 }
 

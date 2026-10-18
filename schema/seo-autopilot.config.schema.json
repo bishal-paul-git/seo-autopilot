@@ -222,6 +222,48 @@
               "object",
               "null"
             ]
+          },
+          "conversions": {
+            "type": "object",
+            "description": "Conversions check: the GA4 events this site should send (default [\"generate_lead\"]).",
+            "properties": {
+              "events": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "facts": {
+            "type": "object",
+            "description": "Facts guard. Default file: <dataDir>/verified-facts.json.",
+            "properties": {
+              "file": {
+                "type": "string"
+              },
+              "strict": {
+                "type": "boolean",
+                "description": "Exit 1 when a claim is unverified, so a build or pull-request check blocks it."
+              }
+            }
+          },
+          "redirects": {
+            "type": "object",
+            "description": "Redirect map for the redirects job. Default file: <dataDir>/redirects.json (redirects-<id>.json when the config has several sites).",
+            "properties": {
+              "file": {
+                "type": "string"
+              },
+              "format": {
+                "type": "string",
+                "enum": ["apache", "nginx", "netlify", "vercel"]
+              },
+              "output": {
+                "type": "string",
+                "description": "File the generated rules go into with --write, between seo-autopilot markers (for example public/.htaccess)."
+              }
+            }
           }
         }
       }
