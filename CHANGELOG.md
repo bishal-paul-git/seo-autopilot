@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **New `facts` job (brief 01, item 3, ported from the "no unverified facts" rule in Erudience's `validate-content.mjs`).**
+  - **What it finds:** percentages, money amounts, "N+" figures, multipliers ("3x faster"), rankings ("#1"), awards, and client claims ("trusted by", "clients include", "as seen in"). Each must be in `<dataDir>/verified-facts.json` (Erudience's format) or carry a source link in the same sentence.
+  - **What it reads:** json and markdown content files, or the live pages of sitemap-only sites. `--files` limits it to the files a pull request changes.
+  - **When it fails:** it warns by default; `--strict` or `facts.strict` exits 1.
+  - **Agent plan:** unverified claims go to `seo-fact-checker`, as a blocker in strict mode.
+- **Stricter than the script it replaces.**
+  - A verified fact now covers only the claim inside its own text. Erudience's check let every number in a string pass if any verified fact appeared in it, because its window test always matched.
+  - On Erudience's real content, the product finds 4 unverified claims the old check passed: two plan prices and two "keep 85%" statements that differ from the verified wording.
+  - "used by" and "our clients" were tried as client patterns and dropped after they matched ordinary prose on Erudience.
+
 - **New `redirects` job (brief 01, item 2, ported from Erudience's `check-redirects.mjs`, `generate-htaccess.mjs` and `smoke-redirects.mjs`).**
   - **The map:** one data file per site, `<dataDir>/redirects.json`, made of `redirects` (old path to new path or a full URL), `gone` (retired pages, answer 410) and `goneSections` (a whole retired path prefix). Erudience's `{ "map": ... }` shape is also read.
   - **`check`:** finds self-redirects, redirects that would hide a live page, chains and loops, targets that are not live or are gone, and live pages marked gone or inside a retired section. A target that is scheduled but not live yet is a warning. It exits 1 on errors, so it can guard a build.

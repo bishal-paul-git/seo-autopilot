@@ -11,6 +11,7 @@ Run any job with `npx seo-autopilot run <job> [--site id] [--dry]`.
 | `mentions` | daily | `mentions.json`; AI key optional | issues labelled `seo-backlink` |
 | `audit` | daily | none (crawls your live site) | `audit.json`: findings with why and fix, including heading structure (skipped levels, generic or repeated H2s, long H1s, long pages without subheadings) |
 | `redirects` | weekly (check and smoke) | a redirect map (`<dataDir>/redirects.json`) | `redirects-check.json/.md` (targets live, no chains, loops or hidden pages); `redirects generate` prints Apache, nginx, Netlify or Vercel rules (`--write <file>` fills a marked block); `redirects smoke` writes `redirects-smoke.json/.md` from the live site |
+| `facts` | weekly (warn); `--strict` for a build or PR check | content files (json or markdown sites) or the live pages; `<dataDir>/verified-facts.json` | `facts.json`, `facts.md`: unverified percentages, prices, "N+" figures, multipliers, rankings, awards and client claims; sourced and verified ones listed separately |
 | `quality` | weekly | output of `audit`; `daily` for the query check | `quality.json`, `quality.md`: each page's top search query vs its title, H1 and description; average headings per site section |
 | `analyze` | daily | output of `daily` | `insights.json`: striking distance, CTR gaps, cannibalization, decay, content gaps |
 | `refresh` | weekly | `GITHUB_TOKEN`; output of `analyze` | issues labelled `seo-proposal` + `seo-refresh` for your pages that lost visibility |

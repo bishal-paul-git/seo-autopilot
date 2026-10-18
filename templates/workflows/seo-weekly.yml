@@ -60,6 +60,9 @@ jobs:
         run: |
           npx --yes "$SEO" run redirects
           npx --yes "$SEO" run redirects smoke
+      - name: Facts guard (numbers, prices, awards and client claims need a verified fact or a source)
+        continue-on-error: true
+        run: npx --yes "$SEO" run facts
       - name: On-page quality (top query vs title, H1 and description; headings per section)
         continue-on-error: true
         run: npx --yes "$SEO" run quality

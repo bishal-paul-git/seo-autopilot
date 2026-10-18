@@ -66,6 +66,7 @@ export function validate(raw) {
       const v = s.limits?.[k];
       if (v != null && (!Number.isInteger(v) || v < 1)) errors.push(`${w}.limits.${k} must be a whole number of 1 or more`);
     }
+    if (s.facts != null && (typeof s.facts !== "object" || Array.isArray(s.facts) || (s.facts.strict != null && typeof s.facts.strict !== "boolean"))) errors.push(`${w}.facts must be an object; facts.strict must be true or false`);
     if (s.redirects != null) {
       if (typeof s.redirects !== "object" || Array.isArray(s.redirects)) errors.push(`${w}.redirects must be an object`);
       else if (s.redirects.format != null && !["apache", "nginx", "netlify", "vercel"].includes(s.redirects.format)) errors.push(`${w}.redirects.format must be apache, nginx, netlify or vercel`);

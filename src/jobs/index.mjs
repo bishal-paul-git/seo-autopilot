@@ -33,6 +33,7 @@ export const JOBS = {
   citations: () => import("./citations.mjs"),
   quality: () => import("./quality.mjs"),
   redirects: () => import("./redirects.mjs"),
+  facts: () => import("./facts.mjs"),
 };
 
 export async function describeJobs() {

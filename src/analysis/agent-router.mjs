@@ -23,7 +23,7 @@ function countBy(issues) {
   return m;
 }
 
-export function routeAgents({ profile = null, audit = null, priorities = null, inspect = {}, speed = null, geo = null, pipeline = null, consent = null, ymyl = null, pace = null, citations = null, quality = null, redirects = null, site = {}, today = "" } = {}) {
+export function routeAgents({ profile = null, audit = null, priorities = null, inspect = {}, speed = null, geo = null, pipeline = null, consent = null, ymyl = null, pace = null, citations = null, quality = null, redirects = null, facts = null, site = {}, today = "" } = {}) {
   const plan = [];
   const add = (agent, phase, why, evidence = [], prompt = "") => {
     // Entries are stored as "seo-<agent>"; a second reason for the same agent adds its evidence instead of a second step.
@@ -70,6 +70,7 @@ export function routeAgents({ profile = null, audit = null, priorities = null, i
   }
   if (ofType("ai-search").length || (geo?.findings || []).length) add("ai-search-agent", PHASES.fix, "The AI search readiness report has open findings.", [...ofType("ai-search").map((i) => i.title), ...(geo?.findings || []).map((f) => f.title || f.id)].slice(0, 5), "Use the seo-ai-search-agent to test real questions and close the gaps.");
 
+  if ((facts?.unverified || []).length) add("fact-checker", facts.strict ? PHASES.block : PHASES.content, `${facts.unverified.length} claim(s) in the content have no verified fact and no source.`, facts.unverified.slice(0, 5).map((c) => `${c.where}: ${c.claim}`), "Use the seo-fact-checker agent on facts.json: for each unverified claim, find a real source, add it to the verified-facts file with the owner, or recommend removing it. Never invent a source.");
   if (pipeline && (pipeline.queued > 0 || pipeline.upcoming > 0)) add("fact-checker", PHASES.content, `${(pipeline.queued || 0) + (pipeline.upcoming || 0)} page(s) are waiting to go live. Check their claims first.`, (pipeline.schedule || []).slice(0, 4).map((s) => `${s.date} ${s.title}`), "Use the seo-fact-checker agent on every queued page before it is released.");
 
   // Compliance: one entry for the auditor, ranked by its most urgent reason (a consent failure blocks, the rest are content-phase).

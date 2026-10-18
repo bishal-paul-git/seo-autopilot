@@ -223,6 +223,19 @@
               "null"
             ]
           },
+          "facts": {
+            "type": "object",
+            "description": "Facts guard. Default file: <dataDir>/verified-facts.json.",
+            "properties": {
+              "file": {
+                "type": "string"
+              },
+              "strict": {
+                "type": "boolean",
+                "description": "Exit 1 when a claim is unverified, so a build or pull-request check blocks it."
+              }
+            }
+          },
           "redirects": {
             "type": "object",
             "description": "Redirect map for the redirects job. Default file: <dataDir>/redirects.json (redirects-<id>.json when the config has several sites).",

@@ -2,6 +2,25 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-18, later (brief 01, item 3: facts guard)
+- **Code:**
+  - `src/analysis/facts.mjs` (pure) and the `src/jobs/facts.mjs` job.
+  - `contentFiles()` exported from `src/adapters/index.mjs`.
+  - `site.facts` in the schema and validation.
+  - Router: a fact-checker step; team wiring; weekly workflow step; fact-checker agent text; `docs/jobs.md`.
+  - Tests: `test/facts.test.mjs` (8).
+- **Tests:** `npm test` 239 of 239.
+- **Real-world check** (Erudience `a644824`, scratch copy):
+  - Erudience's `validate-content.mjs` reports 0 errors.
+  - Product `checkFacts` over the same 13 collections: 4 unverified (2 prices in `products[1].pricingNote`, and "85%" twice in `products[2]`), 13 verified.
+  - The 4 are genuine gaps. The old rule passes any number in a string that contains any verified fact: `ctx.includes(m[0])` is always true.
+  - False positives found on the way ("used by", "our clients", and sentence context cut at decimal points) were fixed before commit.
+  - The real job was also run with Erudience's own config plus `facts.file` set to `src/content/verified-facts.json`. That config edit was made in the scratch copy only. It gave the same 4 claims.
+- **For the Erudience PR:**
+  - Set `facts.file` to `src/content/verified-facts.json`, and include the products and services content files.
+  - The 4 claims need the owner to confirm the prices and the 85% wording, or remove them. Not done here: that is a content decision for the owner.
+- **Deployment:** none.
+
 ## 2026-10-18, later (brief 01, item 2: redirect tooling)
 - **Code:**
   - `src/analysis/redirects.mjs` (pure) and `src/jobs/redirects.mjs`, plus the `redirects` CLI command.
