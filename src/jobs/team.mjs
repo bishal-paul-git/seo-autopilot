@@ -1,9 +1,12 @@
 // Tells you which agents to run next and in what order, from the audit, priorities, indexing, speed and AI search reports.
-// Writes <state>/<site>/agent-plan.json and agent-plan.md. Run `profile` first so the plan fits the site's platform.
+// Writes <state>/<site>/agent-plan.json, agent-plan.md and work-orders.json (who owns each piece of work, what must finish
+// first, which pages it locks and which checks it must pass; see src/analysis/work-orders.mjs). Run `profile` first.
 import { readJson, writeJson, writeText, today } from "../core/util.mjs";
 import { routeAgents, planMarkdown } from "../analysis/agent-router.mjs";
 import { loadPages, pipeline } from "../adapters/index.mjs";
 import { ghAvailable, ensureLabel, existingTitles, openIssue } from "../lib/gh.mjs";
+import { agentFacts } from "../core/agents.mjs";
+import { buildWorkOrders, validateOrders, waves, ordersMarkdown } from "../analysis/work-orders.mjs";
 
 export const description = "Decide which of the agents to run next, in order, with a ready-to-paste instruction for each";
 
@@ -12,6 +15,7 @@ export async function run({ site, flags = {} }) {
   const profile = readJson(`${s}/site-profile.json`, null);
   let pipe = null;
   try { pipe = pipeline(await loadPages(site), today()); } catch { /* content adapter unavailable: skip the pipeline */ }
+  const ymyl = readJson(`${s}/ymyl.json`, null);
   const plan = routeAgents({
     profile,
     audit: readJson(`${s}/audit.json`, null),
@@ -20,7 +24,7 @@ export async function run({ site, flags = {} }) {
     speed: readJson(`${s}/speed.json`, null),
     geo: readJson(`${s}/geo.json`, null),
     consent: readJson(`${s}/consent.json`, null),
-    ymyl: readJson(`${s}/ymyl.json`, null),
+    ymyl,
     pace: readJson(`${s}/pace.json`, null),
     citations: readJson(`${s}/citations.json`, null),
     quality: readJson(`${s}/quality.json`, null),
@@ -33,7 +37,13 @@ export async function run({ site, flags = {} }) {
     today: today(),
   });
   writeJson(`${s}/agent-plan.json`, plan);
-  const md = planMarkdown(plan, site.name);
+  const facts = agentFacts();
+  const sensitivePaths = (ymyl?.pages || []).filter((p) => p.status === "needs reviewer" && p.url).map((p) => String(p.url).replace(/^https?:\/\/[^/]+/, "") || "/");
+  const orders = buildWorkOrders(plan, facts, { sensitivePaths });
+  const problems = validateOrders(orders, new Set(Object.keys(facts)));
+  if (problems.length) throw new Error(`work orders are inconsistent (a bug, please report it): ${problems.join("; ")}`);
+  writeJson(`${s}/work-orders.json`, { generatedAt: plan.generatedAt, date: plan.date, waves: waves(orders), orders });
+  const md = planMarkdown(plan, site.name) + "\n" + ordersMarkdown(orders);
   writeText(`${s}/agent-plan.md`, md);
   console.log(md);
 

@@ -11,6 +11,9 @@ on:
 permissions:
   contents: read
 
+env:
+  SEO: "{{SPEC}}"
+
 jobs:
   build:
     if: startsWith(github.head_ref, 'seo/')
@@ -18,6 +21,7 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - name: Install
@@ -27,3 +31,11 @@ jobs:
           elif [ -f package.json ]; then npm install --no-audit --no-fund; fi
       - name: Build and validate the content
         run: npm run build
+      # Every number, price, award or client claim in the changed content must be in verified-facts.json or carry a source.
+      # Warns by default; set "facts": { "strict": true } in seo-autopilot.config.json to make an unverified claim fail the check.
+      - name: Facts guard on the changed content
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          files=$(git diff --name-only "origin/$BASE...HEAD" -- '*.json' '*.md' '*.mdx' | { grep -v '^seo-autopilot' || true; } | paste -sd, -)
+          if [ -n "$files" ]; then npx --yes "$SEO" run facts --files "$files"; else echo "No content files changed."; fi

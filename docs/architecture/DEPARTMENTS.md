@@ -110,7 +110,7 @@ Claims about "ranking in ChatGPT" stay directional and measured, never promised 
    - Add each department README.
    - Acceptance: tests green; `init` and `upgrade` in a temp repo place agents correctly; site renders the org chart.
 2. **Fix ownership and inputs.** Router mismatches, the seven missing report names, overlaps (table above). Acceptance: router tests per rule; grep test that every report the router sends appears in the receiving agent's Inputs.
-3. **Work orders and validation in code.** Envelope, validator, dependency graph, locks; the fact-checker in the PR pipeline. Acceptance: unit tests; one end-to-end dry run on Erudience.
+3. **Work orders and validation in code** (done 2026-10-18: `src/analysis/work-orders.mjs`, `run work`, facts check in `seo-check`). Envelope, validator, dependency graph, locks; the fact-checker in the PR pipeline. Acceptance: unit tests; one end-to-end dry run on Erudience.
 4. **Sourced playbooks.** Every playbook gets "Sources" (from REFERENCES.md) and "Last reviewed" dates; a test fails if a playbook has none or is older than 12 months.
 5. **New agents, one at a time, each with data and evals.** The internal-linker was added early, in step 2, because its data already existed. The rest, in order:
    1. internal-linker: the data exists.

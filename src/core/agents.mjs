@@ -1,6 +1,6 @@
 // Where the agent definitions live. In the product they are grouped by department (departments/<dept>/agents/<name>.md);
 // installed projects get them flat in <dataDir>/agents/, so workflows and the Python runtime find any agent by name alone.
-import { readdirSync, existsSync } from "node:fs";
+import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -8,6 +8,14 @@ export const DEPARTMENTS_DIR = fileURLToPath(new URL("../../departments/", impor
 
 /** Departments in pipeline order: plan, find, fix, write, earn, answer engines, special sites, then the checks before approval. */
 export const DEPARTMENTS = ["command", "research", "technical", "content", "authority", "ai-search", "verticals", "quality"];
+
+/** { name: { department, edits } } for the work-order planner. An agent edits files if its tools allow Edit, Write or any shell. */
+export function agentFacts(dir = DEPARTMENTS_DIR) {
+  return Object.fromEntries(listAgents(dir).map(({ name, department, file }) => {
+    const tools = (readFileSync(file, "utf8").replace(/\r\n/g, "\n").match(/^tools:\s*(.+)$/m) || [])[1] || "";
+    return [name, { department, edits: /(^|,\s*)(Edit|Write|Bash)(\s*,|\s*$)/.test(tools) }];
+  }));
+}
 
 /** Every agent as { name, department, file }, in department order then by name. Names are unique across departments. */
 export function listAgents(dir = DEPARTMENTS_DIR) {

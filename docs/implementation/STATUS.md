@@ -126,7 +126,20 @@ No paid API calls were made this session. Hosted cost model is proposed in D9; n
   - Fixed the router dropping a second reason's instruction.
   - Single owners for markup and robots changes.
   - Checks: `npm test` 262/262; Python 23 OK.
-- **Next, step 3:** work orders and validation in code. That means an envelope and validator in `src/analysis/`, a dependency graph instead of fixed phases, URL/file locks, and the fact-checker in the PR pipeline. The PR-pipeline part needs workflow-template edits, which are fine. The repository's own `.github/workflows` can't be pushed from this session.
+- **Step 3, done (local, not pushed):**
+  - `src/analysis/work-orders.mjs`: orders, dependencies, page locks, waves, validators and the approval gate.
+  - Router steps now carry every target page; site-wide rules count as the whole site.
+  - `team` writes `work-orders.json`, plus a waves section in `agent-plan.md`.
+  - New `work` job (status file `work-status.json` acts as the lock).
+  - `seo-check` template runs `facts` on changed content.
+  - Checks:
+    - `npm test` 272/272;
+    - a simulated PR branch with a new page claiming "47%" was flagged by the new check step;
+    - `init` substitutes `{{SPEC}}` in `seo-check.yml`.
+  - Not done:
+    - Nothing runs agents from the work orders automatically. A person or the coordinator uses `run work`.
+    - The fact-checker *agent* is not in the PR pipeline; the deterministic `facts` check is. Adding the agent would need a Claude login in `seo-check`, which runs with no secrets by design.
+- **Next, step 4:** add sources and "last reviewed" dates to every playbook, from `docs/research/REFERENCES.md`, with a test. It is blocked on verifying the links: page fetches are blocked in this session's network policy.
 
 ## Next milestone
 **Owner review of Phase 0.** Acceptance criterion: the owner approves or amends D1 to D15 and answers D11, D14 and D15. Phase 1 (hosted foundation) starts only after that.

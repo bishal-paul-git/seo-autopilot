@@ -2,6 +2,20 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-18, night (D16 step 3: work orders)
+- **Code:**
+  - New `src/analysis/work-orders.mjs`, `src/jobs/work.mjs` (registered as `work`) and `agentFacts()` in `src/core/agents.mjs`.
+  - `src/analysis/agent-router.mjs`: steps carry all target paths; `SITE_WIDE_RULES` are whole-site.
+  - `src/jobs/team.mjs` writes `work-orders.json` and validates it (throws on inconsistency).
+  - `templates/workflows/seo-check.yml`: full-history checkout, plus a facts step on changed `.json`/`.md`/`.mdx` files outside `seo-autopilot/`, made pipefail-safe.
+  - Tests: `test/work-orders.test.mjs` (9).
+- **Documentation:** `docs/jobs.md` rows for `team` and `work`; root `CHANGELOG.md`.
+- **Checks:**
+  - `npm test` 272/272;
+  - a manual simulation of the facts step on a temp repo flagged "47%";
+  - `init` SPEC substitution.
+- Not pushed (GitHub 403).
+
 ## 2026-10-18, night (D16 step 2: ownership and inputs)
 - **Code:**
   - New `departments/content/agents/seo-internal-linker.md`.

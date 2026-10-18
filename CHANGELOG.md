@@ -17,6 +17,16 @@
   - Markup changes have one owner, the schema engineer. Entity-reputation and the AI search agent brief it, and robots changes go to the technical fixer.
 - **Agents now name every report the router sends them** (`consent.json`, `ymyl.json`, `quality.json`, `links.json`, `render.json`, `citations.json`, `pace.json`, `redirects-check.json`). A test enforces it.
 - **Router fix:** when a second finding sent the same agent, its instruction (which names the report to read) was dropped. It is now appended, and the more urgent phase wins.
+- **Work orders: order of work, page locks and the approval gate are now code (D16, step 3).**
+  - `team` also writes `work-orders.json`. Each agent's work has an owner and department, the pages it touches (or the whole site), what must finish first, and the checks it must pass. The orders are grouped into waves that can run in parallel.
+  - Ordering rules: blockers come before later work on the same pages, or before everything when site-wide. Two edits to the same page never overlap. The report comes last. Advisory agents never take locks.
+  - Checks before approval:
+    - content changes: build, `facts`, fact-checker and editor, plus the compliance auditor on sensitive pages;
+    - redirects: build and `redirects`;
+    - markup and templates: build and `audit`.
+  - New `work` job: `--start` refuses while dependencies are unfinished or the pages are held; `--check name=pass|fail`, `--done`/`--fail`, and `--ready`, which exits 1 until every check has passed.
+  - Pure logic in `src/analysis/work-orders.mjs`, with tests.
+- **`seo-check` now runs the facts guard on the changed content files** of every `seo/*` pull request. It needs no secrets. It warns by default, and fails the check when `"facts": { "strict": true }` is set.
 - Design and roadmap: `docs/architecture/DEPARTMENTS.md`. Research library (links still to be verified): `docs/research/REFERENCES.md`.
 
 ## 2.14.0

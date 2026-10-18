@@ -16,6 +16,8 @@ const RULE_GROUPS = {
 };
 
 const PHASES = { onboard: 0, block: 1, fix: 2, content: 3, grow: 4, report: 5 };
+// Findings about the whole site (robots.txt, sitemap discovery): their single URL stands for every page.
+const SITE_WIDE_RULES = new Set(["robots-blocks-all", "sitemap-not-in-robots"]);
 const short = (u) => String(u || "").replace(/^https?:\/\/[^/]+/, "") || "/";
 
 function countBy(issues) {
@@ -28,19 +30,22 @@ export function routeAgents({ profile = null, audit = null, priorities = null, i
   const plan = [];
   const advise = profile && profile.mode === "advise";
   const how = advise ? " This site is in advise mode: recommend exact changes for a person to make; do not try to edit files." : "";
-  const add = (agent, phase, why, evidence = [], prompt = "") => {
+  // targets: every page path the step concerns (not just the examples in evidence), so work orders can lock pages.
+  // Steps with no targets concern the whole site.
+  const add = (agent, phase, why, evidence = [], prompt = "", targets = []) => {
     // Entries are stored as "seo-<agent>"; a second reason for the same agent adds to that step instead of making a second one.
     // Its instruction is kept too (it names the report to read); an earlier, more urgent phase wins.
     const e = plan.find((p) => p.agent === `seo-${agent}`);
     if (e) {
       e.evidence.push(...evidence.filter((x) => !e.evidence.includes(x)));
+      e.targets.push(...targets.filter((t) => !e.targets.includes(t)));
       if (!e.why.includes(why)) e.why += " " + why;
       const extra = prompt.replace(how, "");
       if (extra && !e.prompt.includes(extra)) e.prompt = e.prompt.replace(how, "") + " " + extra.replace(/^Use the seo-[a-z-]+ agent\b/i, "Also use it") + how;
       if (phase < e.rank) { e.rank = phase; e.phase = Object.keys(PHASES)[phase]; }
       return;
     }
-    plan.push({ agent: `seo-${agent}`, phase: Object.keys(PHASES)[phase], rank: phase, why, evidence: evidence.slice(0, 6), prompt });
+    plan.push({ agent: `seo-${agent}`, phase: Object.keys(PHASES)[phase], rank: phase, why, evidence: evidence.slice(0, 6), prompt, targets: [...new Set(targets)] });
   };
   const items = priorities?.items || [];
   const byRule = countBy(audit?.issues);
@@ -57,25 +62,25 @@ export function routeAgents({ profile = null, audit = null, priorities = null, i
     const n = issueCount(rules);
     if (!n) continue;
     const phase = ["redirect-guardian", "technical-fixer"].includes(agent) ? PHASES.block : ["snippet-optimizer", "content-pruner", "internal-linker"].includes(agent) ? PHASES.content : PHASES.fix;
-    add(agent, phase, `${n} audit finding(s) in this agent's area.`, ruleEvidence(rules), `Use the seo-${agent} agent on the audit findings: ${rules.filter((r) => byRule.has(r)).join(", ")}.` + how);
+    add(agent, phase, `${n} audit finding(s) in this agent's area.`, ruleEvidence(rules), `Use the seo-${agent} agent on the audit findings: ${rules.filter((r) => byRule.has(r)).join(", ")}.` + how, rules.flatMap((r) => (byRule.get(r) || []).map((i) => (SITE_WIDE_RULES.has(r) ? "*" : short(i.url)))));
   }
 
   const renderHigh = (render?.results || []).filter((r) => (r.findings || []).some((f) => f.severity === "high" || f.id === "rendered-text-missing"));
-  if (renderHigh.length) add("technical-fixer", PHASES.block, `${renderHigh.length} page(s) deliver HTML that differs from what visitors see (stale prerendered text, or content only after JavaScript).`, renderHigh.slice(0, 4).map((r) => `${short(r.url)}: ${r.findings.filter((f) => f.severity !== "low").map((f) => f.id).join(", ")}`), "Use the seo-technical-fixer agent on render.json: regenerate prerendered text from the same source as the page, or prerender what only appears after JavaScript." + how);
+  if (renderHigh.length) add("technical-fixer", PHASES.block, `${renderHigh.length} page(s) deliver HTML that differs from what visitors see (stale prerendered text, or content only after JavaScript).`, renderHigh.slice(0, 4).map((r) => `${short(r.url)}: ${r.findings.filter((f) => f.severity !== "low").map((f) => f.id).join(", ")}`), "Use the seo-technical-fixer agent on render.json: regenerate prerendered text from the same source as the page, or prerender what only appears after JavaScript." + how, renderHigh.map((r) => short(r.url)));
   const redirectProblems = [...(redirects?.check?.errors || []), ...(redirects?.smoke?.results || []).filter((r) => !r.ok).map((r) => `live: ${r.path} ${r.detail}`)];
   if (redirectProblems.length) add("redirect-guardian", PHASES.block, `${redirectProblems.length} problem(s) in the redirect map or on the live site's redirects.`, redirectProblems.slice(0, 5), "Use the seo-redirect-guardian agent on the redirects job's reports (redirects-check.json, redirects-smoke.json): fix the map, regenerate the rules, and re-run the smoke test after deploy." + how);
   const coverageBad = Object.entries(inspect || {}).filter(([, v]) => v?.coverage && v.coverage !== "Submitted and indexed" && !/redirect|alternate|duplicate/i.test(v.coverage));
-  if (coverageBad.length || items.some((i) => i.type === "indexing")) add("indexing-monitor", PHASES.block, `${coverageBad.length || "Some"} page(s) are not indexed, and the request list needs checking before anyone acts on it.`, coverageBad.slice(0, 4).map(([u, v]) => `${short(u)}: ${v.coverage}`), "Use the seo-indexing-monitor agent to group the unindexed pages by cause and correct the request-indexing list.");
+  if (coverageBad.length || items.some((i) => i.type === "indexing")) add("indexing-monitor", PHASES.block, `${coverageBad.length || "Some"} page(s) are not indexed, and the request list needs checking before anyone acts on it.`, coverageBad.slice(0, 4).map(([u, v]) => `${short(u)}: ${v.coverage}`), "Use the seo-indexing-monitor agent to group the unindexed pages by cause and correct the request-indexing list.", coverageBad.map(([u]) => short(u)));
   const slow = (speed?.results || []).filter((r) => r.rating === "poor" || r.score != null && r.score < 50);
-  if (slow.length || items.some((i) => i.id === "speed:poor")) add("performance-fixer", PHASES.fix, `${slow.length || "Some"} page(s) rate poor on speed.`, slow.slice(0, 4).map((r) => `${short(r.url)}: ${r.score ?? r.rating}`), "Use the seo-performance-fixer agent on the slowest page types in the speed report." + how);
+  if (slow.length || items.some((i) => i.id === "speed:poor")) add("performance-fixer", PHASES.fix, `${slow.length || "Some"} page(s) rate poor on speed.`, slow.slice(0, 4).map((r) => `${short(r.url)}: ${r.score ?? r.rating}`), "Use the seo-performance-fixer agent on the slowest page types in the speed report." + how, slow.map((r) => short(r.url)));
 
   const ofType = (t) => items.filter((i) => i.type === t);
   if (ofType("structure").length) add("cannibalization-resolver", PHASES.content, `${ofType("structure").length} query(ies) have two or more of your pages competing.`, ofType("structure").slice(0, 4).map((i) => i.title), "Use the seo-cannibalization-resolver agent on the competing queries in the priorities report." + how);
   if (ofType("snippet").length) add("snippet-optimizer", PHASES.content, `${ofType("snippet").length} page(s) get impressions but fewer clicks than their position should.`, ofType("snippet").slice(0, 4).map((i) => i.title), "Use the seo-snippet-optimizer agent on the click-through underperformers." + how);
   const misaligned = (quality?.alignment || []).filter((a) => a.weak.includes("title") || a.weak.includes("description"));
-  if (misaligned.length) add("snippet-optimizer", PHASES.content, `${misaligned.length} page(s) do not reflect their own top search query in the title or description.`, misaligned.slice(0, 4).map((a) => `${short(a.url)}: "${a.query}" weak in ${a.weak.join(", ")}`), "Use the seo-snippet-optimizer agent on the pages in quality.json whose title or description misses their top query." + how);
+  if (misaligned.length) add("snippet-optimizer", PHASES.content, `${misaligned.length} page(s) do not reflect their own top search query in the title or description.`, misaligned.slice(0, 4).map((a) => `${short(a.url)}: "${a.query}" weak in ${a.weak.join(", ")}`), "Use the seo-snippet-optimizer agent on the pages in quality.json whose title or description misses their top query." + how, misaligned.map((a) => short(a.url)));
   const linkItems = links?.items || [];
-  if (linkItems.length) add("internal-linker", PHASES.content, `${new Set(linkItems.map((i) => i.to)).size} weakly linked page(s) have related pages that could link to them.`, linkItems.slice(0, 4).map((i) => `${short(i.from)} -> ${short(i.to)} (${i.reason})`), "Use the seo-internal-linker agent on links.json: add the internal links that help a reader, one page per pull request, with descriptive anchor text." + how);
+  if (linkItems.length) add("internal-linker", PHASES.content, `${new Set(linkItems.map((i) => i.to)).size} weakly linked page(s) have related pages that could link to them.`, linkItems.slice(0, 4).map((i) => `${short(i.from)} -> ${short(i.to)} (${i.reason})`), "Use the seo-internal-linker agent on links.json: add the internal links that help a reader, one page per pull request, with descriptive anchor text." + how, linkItems.map((i) => short(i.from)));
   if (ofType("refresh").length) add("refresher", PHASES.content, `${ofType("refresh").length} page(s) lost visibility.`, ofType("refresh").slice(0, 4).map((i) => i.title), "Label the refresh issues `approved`, or use the seo-refresher agent on one page at a time. Diagnose before editing.");
   if (ofType("content").length) {
     add("researcher", PHASES.content, `${ofType("content").length} topic or striking-distance opportunity(ies) are open.`, ofType("content").slice(0, 4).map((i) => i.title), "Use the seo-researcher agent to turn the best opportunities into briefs.");
@@ -92,7 +97,7 @@ export function routeAgents({ profile = null, audit = null, priorities = null, i
   if (highConsent.length) { why.push("The consent check found a high-severity problem (tracking or policy wording without a working consent mechanism)."); ev.push(...highConsent.map((f) => `${f.id}: ${f.evidence?.[0] || f.title}`)); asks.push("Use the seo-compliance-auditor agent on the consent.json findings: confirm what loads before consent and what the privacy page promises, and say what to change." + how); }
   const needRev = (ymyl?.pages || []).filter((p) => p.status === "needs reviewer");
   if (needRev.length) { why.push(`${needRev.length} sensitive-topic page(s) have no named author or reviewer.`); ev.push(...needRev.slice(0, 4).map((p) => `${short(p.url || p.title)}: ${p.topics.join("/")}, missing ${p.missing.join(", ")}`)); asks.push("Use the seo-compliance-auditor agent on the ymyl.json pages that need a reviewer: say what claims need a qualified sign-off and what to hold back." + how); }
-  if (why.length) add("compliance-auditor", highConsent.length ? PHASES.block : PHASES.content, why.join(" "), ev, asks.join(" "));
+  if (why.length) add("compliance-auditor", highConsent.length ? PHASES.block : PHASES.content, why.join(" "), ev, asks.join(" "), highConsent.length ? [] : needRev.filter((p) => p.url).map((p) => short(p.url)));
   if (pace?.overLimit) add("strategist", PHASES.content, `The publishing schedule goes over the pace limits (${pace.overDays?.length || 0} day(s), ${pace.overWeeks?.length || 0} week(s)).`, [...(pace.overDays || []).slice(0, 3).map((d) => `${d.date}: ${d.count} pages`), `${pace.moves?.length || 0} page(s) would move in the recommended schedule`], "Use the seo-strategist agent to review pace.json: adopt the recommended schedule or explain why the burst is needed. Releasing many pages at once looks like scaled content.");
   if (citations?.mostlyAbsent) add("ai-search-agent", PHASES.grow, `The site appears for only ${citations.appears} of ${citations.asked} tracked questions in search results and AI answers.`, [...(citations.absent || []).slice(0, 4), ...(citations.topCited || []).slice(0, 2).map((c) => `cited instead: ${c.domain}`)], "Use the seo-ai-search-agent on the questions in citations.json where the site is absent: see what the cited pages answer and close the gap." + how);
 
