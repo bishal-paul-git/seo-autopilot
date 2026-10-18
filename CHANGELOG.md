@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+- **Agents are now organised into eight departments (D16, step 1).**
+  - The departments are Command, Research, Technical (audit and monitor), Content, Authority (backlinks), AI search (AEO/GEO), Verticals and Quality (validators).
+  - Each has a charter in `departments/<dept>/README.md`, and the org chart is `departments/README.md`.
+  - Agent files moved to `departments/<dept>/agents/` and gained a `department:` front-matter line.
+- **Behaviour is unchanged.**
+  - Agent names are the same.
+  - Installed projects still get every agent flat in `seo-autopilot/agents/`, so workflows, the Python runtime and `upgrade` work as before.
+  - The Claude Code plugin now lists its agents explicitly in `.claude-plugin/plugin.json`, because plugins only find a top-level `agents/` folder by default. A test keeps the list in step.
+  - The agents page on the site is grouped by department.
+- Design and roadmap: `docs/architecture/DEPARTMENTS.md`. Research library (links still to be verified): `docs/research/REFERENCES.md`.
+
 ## 2.14.0
 
 - **New `render` job (brief 01, item 7, optional; ported from the idea of Erudience's `check-static-content.mjs`).** It loads sitemap pages in a headless browser and compares them with the HTML the server delivered.

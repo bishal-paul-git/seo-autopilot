@@ -1,7 +1,7 @@
 # Implementation status
 
 Last updated: 2026-10-18 (UTC).
-- Branch `claude/hopeful-euler-662mu5`, audited base commit `8d7b62c` (v2.13.0 plus docs). Draft PR: https://github.com/bishal-paul-git/seo-autopilot/pull/8.
+- Branch `claude/hopeful-euler-662mu5`, based on `main` at `f205108` (v2.14.0 plus docs). Its work is **committed locally but not pushed**: the session's GitHub access returns 403 for every write. There is no PR yet.
 - Source repos audited (static review):
   - marketingmouse `e115eac`
   - feed-to-site-magic `f72276c`
@@ -110,6 +110,16 @@ No npm package, no hosted service.
 
 ## Usage and cost
 No paid API calls were made this session. Hosted cost model is proposed in D9; no figures exist yet.
+
+## Departments (D16, approved by the owner 2026-10-18)
+- **Step 1, done (local, not pushed):**
+  - 27 agents moved to `departments/<dept>/agents/`, across 8 departments with charters.
+  - `src/core/agents.mjs` lists them, and `init`, `upgrade`, the site build, tests and `.claude-plugin/plugin.json` use it.
+  - Installed projects are unchanged (flat `seo-autopilot/agents/`).
+  - Checks: `npm test` 260/260; Python 23 OK; `init` in a temp repo gave 27 agents with the right `department:` lines; `upgrade --diff` reported up to date.
+  - Not checked: Claude Code actually loading the plugin's explicit `agents` list (only the JSON shape is tested).
+  - Not changed: `.github/workflows/pages.yml` still filters on `agents/**`, because this session cannot push workflow files. The site still rebuilds because `site/**` changes with every release.
+- **Next, step 2:** fix ownership and inputs. That covers the router mismatches, the seven report names missing from agent Inputs, and the overlaps, with a test that every report the router sends appears in the receiving agent's Inputs. Design: `docs/architecture/DEPARTMENTS.md`.
 
 ## Next milestone
 **Owner review of Phase 0.** Acceptance criterion: the owner approves or amends D1 to D15 and answers D11, D14 and D15. Phase 1 (hosted foundation) starts only after that.

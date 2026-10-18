@@ -2,6 +2,17 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-18, night (D16 step 1: departments)
+- **Code:**
+  - Agents moved with `git mv` into `departments/{command,research,technical,content,authority,ai-search,verticals,quality}/agents/`, plus a `department:` front-matter line.
+  - New `src/core/agents.mjs`. Updated `src/cli/init.mjs`, `scripts/build-site.mjs` (site grouped by department; `../docs` links go to GitHub), `test/agents.test.mjs` (department, uniqueness, charter and plugin-list tests), the Python test fixtures, `package.json` files and `.claude-plugin/plugin.json` (explicit agents list).
+- **Documentation:**
+  - `departments/README.md` (org chart) and 8 charters.
+  - `CLAUDE.md` layout lines, `docs/agents.md`, `docs/content-automation.md`, and the root `CHANGELOG.md` Unreleased entry.
+  - Earlier the same evening: `docs/research/AGENT-AUDIT-2026-10-18.md`, `docs/research/REFERENCES.md` (108 links, all search-result-only because page fetches were blocked), `docs/architecture/DEPARTMENTS.md` and D16.
+- **Checks:** `npm test` 260/260; `python3 -m unittest discover -s tests` 23 OK; `init` and `upgrade --diff` in a temp repo.
+- **Not pushed:** GitHub writes return 403 in this session.
+
 ## 2026-10-18, evening (release finished by the owner)
 - **Deployment actions (by the owner, in the GitHub web UI):**
   - Published the Release `v2.14.0` (tag at `f10f3b3`).

@@ -113,7 +113,7 @@ class StateAndTools(unittest.TestCase):
         (self.sd / "gsc-rows.json").write_text(json.dumps({"window": {"start": "a", "end": "b"}, "rows": rows()}), encoding="utf-8")
         (self.sd / "secret.key").write_text("nope", encoding="utf-8")
         (self.dd / "knowledge" / "search-intent.md").write_text("# Intent", encoding="utf-8")
-        for f in (ROOT / "agents").glob("seo-*.md"):
+        for f in (ROOT / "departments").glob("*/agents/seo-*.md"):
             (self.dd / "agents" / f.name).write_text(f.read_text(encoding="utf-8"), encoding="utf-8")
         self.ctx = tools.Context(state=State(self.sd, self.dd), site_url="https://s.test/", site_id="s", project_root=base)
 
@@ -216,7 +216,7 @@ class Runner(unittest.TestCase):
             (dd / "agents").mkdir(parents=True)
             sd.mkdir()
             (sd / "priorities.md").write_text("# P\n1. thing", encoding="utf-8")
-            (dd / "agents" / "seo-strategist.md").write_text((ROOT / "agents" / "seo-strategist.md").read_text(encoding="utf-8"), encoding="utf-8")
+            (dd / "agents" / "seo-strategist.md").write_text((ROOT / "departments" / "command" / "agents" / "seo-strategist.md").read_text(encoding="utf-8"), encoding="utf-8")
             ctx = tools.Context(state=State(sd, dd), site_url="https://s.test/", site_id="s", project_root=base)
             seen = {}
 
