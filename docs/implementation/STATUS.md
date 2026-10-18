@@ -80,7 +80,10 @@ Tag `v2.13.0` (plus moving tags `v2`, `v2-stable`) and the GitHub Pages site, un
   - Marketing Mouse: server functions use the service-role client with no auth (M1); Google tokens are fetched without ownership checks (M2).
   - Whether either app is deployed is **unknown**. Owner decision D15.
 - **Erudience prerender drift:** 10 pages' prerendered HTML says sentences the live page does not, including the privacy page. Needs Erudience to regenerate its static content; reported, not changed.
-- **Erudience consent withdrawal bug** (found by running the recipe code, confirmed by reading Erudience's source): after "Cookie settings" and then Reject, analytics keeps running until the next full page load. Needs an Erudience fix; reported, not changed.
+- **Erudience consent withdrawal bug:** after "Cookie settings" and then Reject, analytics kept running until the next full page load.
+  - Fixed in a draft PR: https://github.com/bishal-paul-git/erudience-flow-engine/pull/78 (commit `162906d`).
+  - The bug was reproduced and the fix verified in headless Chromium on a local build.
+  - **Not deployed.** Needs the owner's merge, then a check on the live site.
 - Access was resolved during this session: all four source repositories were readable after the owner granted access.
 - **Provider keys needed for brief 03:** a Brave Search API key, a SerpAPI key or a DataForSEO login. The owner sets them locally or as repository secrets; never paste them into chat or commit them.
 - Audit findings F1 to F10 (`PHASE-0-AUDIT.md` section 4). Highest: auto-merge publishes an unseen draft (F1); the approval actor is not checked (F2); release writes to the default branch (F3); live backlink submission exists, opt-in (F4); the Supabase template is single-tenant with a replayable token (F5); large-site Search Console truncation (F6).

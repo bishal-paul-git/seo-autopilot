@@ -2,6 +2,18 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-18, later (Erudience consent fix)
+- **Code:**
+  - Repository: erudience-flow-engine, branch `claude/hopeful-euler-662mu5`, commit `162906d`, draft PR https://github.com/bishal-paul-git/erudience-flow-engine/pull/78.
+  - Change: `src/lib/consent.ts`. `setConsent("denied")` now reloads whenever measurement code is on the page (`#ga-script`, `[data-custom-head]`, `#custom-body-code`) instead of checking the stored choice, which "Cookie settings" had already cleared.
+- **Evidence** (headless Chromium, local production build, real GA replaced by its marker element because Supabase is unreachable):
+  - Before: Accept, then Cookie settings, then Reject gave no reload and left the tag on the page.
+  - After: the page reloads and the tag is gone.
+  - First-visit Reject: no reload.
+  - eslint passes.
+  - tsc: the same 4 pre-existing errors in `DynamicWorkflowPage.tsx` with and without the change.
+- **Deployment:** none. The owner merges; the live site is checked afterwards.
+
 ## 2026-10-18, later (brief 01, item 7: render job)
 - **Code:**
   - `src/analysis/render.mjs` (pure) and the `src/jobs/render.mjs` job (Playwright optional).
