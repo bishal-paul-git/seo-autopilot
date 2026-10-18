@@ -12,7 +12,8 @@ Dated session entries; history is preserved. Product release notes are in the ro
   - Clean clone of `8d7b62c`: `npm test` 197 pass; Go ok; Python 23 ok.
   - This branch: `npm test` 206 pass.
   - No live provider calls.
-- **Blocked:** marketingmouse, feed-to-site-magic, keel and erudience-flow-engine are not accessible to this session's GitHub credential (`add_repo` denied). No source SHAs could be recorded.
+- **Access:** at first, marketingmouse, feed-to-site-magic, keel and erudience-flow-engine were not accessible and the push was refused with a 403. After the owner granted access, the push succeeded (draft PR https://github.com/bishal-paul-git/seo-autopilot/pull/8) and all four repositories were cloned.
+- **Documentation:** source audits added as PHASE-0-AUDIT §5, findings M1-M8 and N1-N8, with reuse-matrix rows. Decisions D12-D15 added. Audited SHAs: marketingmouse `e115eac`, feed-to-site-magic `f72276c`, keel `92195e1`, erudience-flow-engine `a644824`. These are static reviews; nothing in those repositories was run or changed.
 - **Deployment:** none.
 
 ## 2026-10-18

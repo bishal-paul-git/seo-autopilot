@@ -4,7 +4,11 @@ Date: 2026-10-18 (UTC). Branch `claude/hopeful-euler-662mu5`, audited commit `8d
 Environment: Linux cloud container, Node 22.22.0, Go 1.24.7, Python 3.13.16. Not the owner's Windows machine.
 Scope: `SEO-PRODUCT-BUILD-BRIEF.md` Phase 0. Nothing here is product code; it is the evidence the Phase 0 gate asks for.
 
-Status of the gate: **partly met.** The SEO Autopilot half (baseline, data flow, reuse matrix, decisions) is done. The Marketing Mouse and News to Blog half is **blocked by access** (section 5), so no reuse decision about them is made here.
+Status of the gate: **met for review.** Both halves are done:
+- SEO Autopilot (sections 1 to 4).
+- The source repositories (section 5), once access was granted later the same day.
+
+The owner still has to review and approve before any hosted code is written.
 
 ## 1. Baseline checks (run in a clean clone)
 `git clone` of the branch into a scratch folder, then:
@@ -74,17 +78,73 @@ Each finding is backed by the files cited. Severity reflects the hosted-product 
 
 What already meets the brief and should be kept: the "data, never instructions" prompts (`seo-implement.yml:62-64`, `seo-review.yml:49-50`); SSRF-safe fetch with pinned resolved IPs (`engines/python/seo_engine/safefetch.py`); the local UI's host, origin and token checks with an allow-list of jobs (`src/ui/server.mjs`); secretless PR builds (`seo-check.yml`); keys kept out of errors (`src/lib/serp.mjs:3`); content-glob edit scoping (`src/cli/init.mjs:27-30`).
 
-## 5. Source repositories: access blocked
-| Repository | Requested | Result | Audited SHA | Licence |
+## 5. Source repositories
+Access was granted after the first draft of this audit. All audits are static source reviews of shallow clones: nothing was run or deployed, and no live app was probed. Line references are to the audited commit.
+
+| Repository | Audited SHA | Licence | Stack | Tests |
 |---|---|---|---|---|
-| `bishal-paul-git/marketingmouse` (main) | `add_repo`; anonymous `git ls-remote` | "you don't have access"; anonymous needs credentials (private) | **not audited** | unknown |
-| `bishal-paul-git/feed-to-site-magic` (main) | same | same | **not audited** | unknown |
-| `bishal-paul-git/keel` (master) | same | same | **not audited** | unknown |
-| `bishal-paul-git/erudience-flow-engine` | same | same | not audited (needed for brief 01) | unknown |
+| `marketingmouse` (main) | `e115eac894ffb3af8a5b7626f766684a783bfeb0` (only commit) | **none** (no LICENSE file, no `license` field, `"private": true`) | TanStack Start, React 19, Supabase, Cloudflare Workers, Lovable-generated | **0** |
+| `feed-to-site-magic` / News to Blog (main) | `f72276c5016c4cf077c4b86fedc4ae75c87d857c` | **none** | same stack | **0** |
+| `keel` (master) | `92195e1dd8277948b46e6901aba93932b80d423e` | none found | Python FastAPI plus static frontend | `backend/tests` (pytest), not run here |
+| `erudience-flow-engine` (main) | `a644824c94742cf695b77c2b54d46e998706d4dc` | none found | Vite and React | not reviewed; used for brief 01 only |
 
-This session's GitHub credential lists only `echoscribe-ai`, `tenanthousingdisrepair` and `trioagency` beyond this repository. To unblock: grant the Claude GitHub App access to those four repositories (https://github.com/apps/claude/installations/select_target), or reconnect GitHub at https://claude.ai/connect-github, then start a session with them selected.
+Licence note: all four have the same owner, so the owner can relicense the code into this MIT repository. Any code copied in must be the owner's own work, not third-party or generated code with other terms. Record that decision before copying.
 
-Nothing below states what those repositories contain. The checklist each audit must answer is the one in `SEO-PRODUCT-BUILD-BRIEF.md`: audited SHA, licence and notices, real vs mock data (`mock-data.ts`), provider calls, ownership checks, token refresh, pagination, error handling, tests, credential storage, scheduler authentication and replay protection, and publish defaults.
+### 5.1 Marketing Mouse: findings
+Verified by hand: `src/lib/content.functions.ts:99-104` and `.env` tracking. The rest comes from a structured read and is cited.
+- **M1 (critical): many server functions have no auth middleware and use the service-role client, so RLS does not protect them.**
+  - Affected: content, chat, research, competitors, keyword research, LLM visibility and gsc-extras functions.
+  - Effect: anyone who knows a project or article UUID can read or change another tenant's data and spend the platform's OpenRouter, Firecrawl and DataForSEO credits.
+  - Example: `deleteArticle` deletes any article by id with `supabaseAdmin` and no auth (`content.functions.ts:99-104`).
+  - Only connections, projects, gsc, ga4, dataforseo and openpagerank use `requireSupabaseAuth`.
+- **M2 (critical): Google tokens are fetched by `projectId` alone.** `google-token.server.ts:58-62` uses the admin client. `listGscSites` and `listGa4Properties` pass a caller-supplied `projectId` with no ownership check, so a signed-in user can read another tenant's property list.
+- **M3 (high): Google OAuth tokens are stored in plaintext** in `provider_connections.access_token` and `refresh_token` (callback `:107-109`).
+  - `authenticated` has `SELECT` on those columns.
+  - Two more bugs: the code overwrites the refresh token with null when Google omits it (`:108-109`), and the OAuth state is not bound to the session user.
+- **M4 (high): some research and chat paths use a platform-wide Google connector** (`connector-gateway.lovable.dev` with the platform's key), keyed on a site URL the user can set. This is not the per-user OAuth flow, and it conflicts with rule 6 (users bring their own keys).
+- **M5 (high): no SSRF protection.** `fetchSiteMetadata` (unauthenticated, follows redirects) and the public `/api/analyze` route fetch any URL.
+- **M6 (medium): no Search Console paging.** Requests use `rowLimit` 500 and no `startRow`, and GA4 account listings are not paged. Some GA4 sub-report errors are silently swallowed and shown as empty results.
+- **M7 (medium): AI estimates look like data.** Values such as estimated volume appear without an "AI estimate" label (`app.projects.$projectId.tsx:826`), which conflicts with rule 2 (no invented facts). `mock-data.ts` is empty and nothing imports it, so no demo numbers ship.
+- **M8 (info):**
+  - No scheduler, no tests, no README.
+  - `ROADMAP.md` describes a different product.
+  - A committed `.env` contains only the public Supabase URL and anon key: not a secret leak, but `.env` is not ignored.
+  - The RLS pattern itself (`owner_id = auth.uid()`, `owns_project()`) is sound wherever the user-scoped client is used.
+
+### 5.2 News to Blog: findings
+Verified by hand: tick handler auth, generate middleware, and unused credit functions.
+- **N1 (critical): the autopilot tick has no authentication.** `src/routes/api/public/hooks/autopilot-tick.ts:17-22` is `POST: async () =>`, which reads every enabled project with the service role and generates articles. There is no secret, constant-time comparison, replay protection or concurrency lock. The browser also calls it with no credentials (`AutopilotDialog.tsx:97`). Its comment says pg_cron calls it, but no schedule exists in the migrations.
+- **N2 (critical): unauthenticated AI endpoints.** `generateArticle`, `refineArticle`, `generateFeatureImage` and `/api/generate-stream` have no auth middleware and spend the shared `LOVABLE_API_KEY`.
+- **N3 (high): budgets are not enforced, and users can raise their own limits.**
+  - `reserveCredits` and `logUsage` are defined but never called.
+  - `profiles.plan_id` (migration `20260711181433:1`) and the `projects` budget columns can be written by the owning user through RLS.
+- **N4 (high): publisher credentials are stored in plaintext.** WordPress, Ghost and Webflow secrets sit in `projects.cms_credentials` jsonb and are loaded into the browser. Notification channels are plaintext too.
+- **N5 (high): stored XSS.** Article HTML is rendered with `dangerouslySetInnerHTML` without sanitising (`GenerationWorkspace.tsx:375`, `blog.$slug.tsx:129`). The public publish API stores unsanitised HTML, and its token `scope` is never checked.
+- **N6 (high): SSRF.** `probeFeed`, `resolveLink` and the WordPress featured-image upload fetch caller-supplied URLs.
+- **N7 (medium): feed text has no injection boundary.** Feed text is pasted into the prompt next to the instructions with no delimiting. Only the title and a 320-character snippet reach the model, so wholesale republishing is unlikely. Published output carries no source attribution or canonical.
+- **N8 (medium): publishing is not idempotent.** Re-publishing creates a duplicate post, and the external id is discarded (only the URL is kept). There are no retries and no adapter tests.
+- **Good:**
+  - Autopilot creates **drafts**, and `autoPublish` defaults to false (`autopilot.functions.ts:13`, tick `:218`).
+  - API tokens are random, stored as SHA-256 and revocable.
+  - Dedupe hashes are unique per project.
+  - Workspace and member tables exist, though project access still keys on `user_id`.
+
+### 5.3 Keel
+A separate Python and FastAPI product. Its plan (`KEEL-AGENTIC-PLATFORM-BUILD-PLAN.md` §4-5) already decides much of what D1 to D7 here decide: Postgres metadata store, Postgres job queue with leases, explicit connection binding, and approval binding. `backend/seo_tool.py` is a one-page check against a dev preview, not a crawler.
+
+Proposal: share the *patterns* and the decision text, not code (the languages differ). Integration later goes through this engine's CLI and JSON outputs. SEO Autopilot must not depend on Keel.
+
+### 5.4 Erudience
+Every file brief 01 names exists in `erudience-flow-engine`:
+- scripts: `audit-headings.mjs`, `audit-meta.mjs`, `redirect-map.json`, `check-redirects.mjs`, `generate-htaccess.mjs`, `smoke-redirects.mjs`, `validate-content.mjs`, `check-static-content.mjs`;
+- `src/content/verified-facts.json`, `src/lib/consent.ts`, `src/components/ConsentBanner.tsx`, `src/lib/track.ts`, `src/content/related-guides.mjs`.
+
+Brief 01 is unblocked.
+
+### 5.5 Conclusion on reuse
+Neither app can be the hosted base as it stands. Both have cross-tenant or unauthenticated paths. Neither has tests, a durable scheduler or encrypted credentials. What carries over is the **UI and the integration logic**; the server boundary is replaced by D2 to D6.
+
+On Google data, this engine's contract wins (decision D12). The reasons: it is tested, it uses the user's own credentials, and it pages better (though F6 still needs fixing). Marketing Mouse's derived metrics (striking distance, movers) are ported into `src/analysis/`, with tests.
 
 ## 6. Reuse matrix
 Decisions for SEO Autopilot sources. **Keep** = use as is. **Adapt** = keep the logic and change the interface. **Replace** = the hosted product needs a different mechanism (the OSS path keeps the old one). **Defer** = not needed before the gate it serves.
@@ -112,9 +172,22 @@ Decisions for SEO Autopilot sources. **Keep** = use as is. **Adapt** = keep the 
 | Supabase ingest example | `templates/dashboard-supabase/*` | Keep as example only | F5 |
 | Static dashboard and local UI | `src/jobs/dashboard.mjs`, `src/dashboard/template.html`, `src/ui/*`, `src/core/collect.mjs` | Adapt | `collectSiteData` is a usable view model for the hosted dashboard. The HTML is replaced by the hosted UI (stack decided after the Marketing Mouse audit) |
 | Content adapters | `src/adapters/index.mjs` | Keep | Read side of publishing. CMS adapters come later (brief 06 via phase 4) |
-| Marketing Mouse modules listed in the brief | not accessible | **Undecided** | Section 5 |
-| News to Blog modules listed in the brief | not accessible | **Undecided** | Section 5 |
+| MM dashboard shell and navigation | `marketingmouse/src/components/app-sidebar.tsx`, `src/routes/_authenticated/app.tsx`, `src/components/ui/*` | **Keep (UI)** | Clean workspace and project shell; carries no server logic |
+| MM project onboarding | `src/routes/_authenticated/app.projects.tsx`, `src/lib/site-scrape.functions.ts` | Adapt | Keep the flow. The fetch needs auth, SSRF protection and a rate limit (M5) |
+| MM Google connections | `src/lib/connections.functions.ts`, `src/routes/api/oauth/google/callback.ts`, `src/lib/google-token.server.ts` | Adapt heavily | Keep the flow shape and scopes. Needs encryption, ownership checks, state bound to the session, the refresh-token fix and an allow-listed `redirect_uri` (M2, M3; D4) |
+| MM GSC and GA4 views | `src/lib/gsc.functions.ts`, `ga4.functions.ts`, project tabs | Adapt | UI and derived metrics kept. Data comes from this engine's contract (D12) |
+| MM keyword, research, competitor, LLM-visibility views | `keyword-research`, `dataforseo`, `competitors`, `research`, `llm-visibility` functions and tabs | Adapt | UI kept. The server is rewritten behind D6 with per-workspace quotas (D9) and long fan-outs moved to jobs (D5). Remove the platform Google connector (M4) and label AI estimates (M7) |
+| MM content workspace | `src/lib/content.functions.ts`, ContentTab | Adapt | UI kept; server replaced (M1). Content flow merges with News to Blog's editor (Phase 3) |
+| MM `/api/analyze` | `src/routes/api/analyze.ts` | **Replace (drop)** | Public, unauthenticated, spends platform credits, SSRF (M5) |
+| MM reporting and alerts | n/a | Build new | Nothing exists; use this engine's digest and priorities |
+| N2B feed parsing and catalog | `feed-to-site-magic/src/lib/feeds.functions.ts`, `feed-catalog.ts` | Adapt | Compare with `src/lib/feed.mjs`, keep one parser. The fetch moves behind a safe fetcher (N6). Catalog entries are data to review, not to trust |
+| N2B editorial workspace | `src/components/GenerationWorkspace.tsx` | Adapt (UI) | Usable editor. Sanitise HTML (N5) and show sources next to the draft (Phase 3 gate) |
+| N2B personas and prompts | `src/lib/persona-templates.ts`, `default-prompts.ts`, `editorial-cleanup.ts` | Adapt | Keep the "original, not a summary" rules. Wrap feed text as delimited data (N7) and add attribution and canonical policy |
+| N2B autopilot tick, queue, budget, limits, usage | `src/routes/api/public/hooks/autopilot-tick.ts`, `autopilot`, `budget`, `limits`, `usage` functions | **Replace** | N1 to N3. Keep only the dedupe-hash idea and drafts-only defaults |
+| N2B publishers (WordPress, Ghost, Webflow, Bluesky, webhook) | `src/lib/publish.functions.ts`, `src/lib/publishers/*` | Adapt | The API calls are a base for D7 adapters. Add encrypted credentials (N4), idempotency, stored external ids and retries (N8), and contract tests against an authorised staging site before claiming support |
+| N2B API tokens | `src/lib/api-tokens.functions.ts` | Keep the pattern | Hashed and revocable. Enforce scopes and project ownership |
+| N2B tenancy (`workspaces`, `workspace_members`) | migrations `20260710034937` | Replace | D2 keys access on membership, not `user_id` |
 
 ## 7. What would change this audit
-- Access to the source repositories may turn "adapt" rows for the dashboard, onboarding and editorial workflow into "reuse from Marketing Mouse or News to Blog". It may also fix the hosted web stack.
+- A live check of the deployed Marketing Mouse and News to Blog apps. Not done; probing a live service needs the owner's permission.
 - Live Erudience runs could show behaviour that fixture tests do not. Nothing here was checked against production.

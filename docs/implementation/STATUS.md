@@ -1,12 +1,20 @@
 # Implementation status
 
 Last updated: 2026-10-18 (UTC).
-- Branch `claude/hopeful-euler-662mu5`, audited base commit `8d7b62c` (v2.13.0 plus docs). Pull request: see CHANGELOG entry.
+- Branch `claude/hopeful-euler-662mu5`, audited base commit `8d7b62c` (v2.13.0 plus docs). Draft PR: https://github.com/bishal-paul-git/seo-autopilot/pull/8.
+- Source repos audited (static review):
+  - marketingmouse `e115eac`
+  - feed-to-site-magic `f72276c`
+  - keel `92195e1`
+  - erudience-flow-engine `a644824`
 - Environment: Linux cloud container, Node 22.22.0, Go 1.24.7, Python 3.13.16. Earlier entries came from the owner's Windows 11 machine.
 
 ## Goal and phase
 One sellable SEO product for small agencies and site owners (`SEO-PRODUCT-BUILD-BRIEF.md`).
-- **Current milestone: Phase 0 (baseline and reuse audit). Partly done, awaiting owner review.** The SEO Autopilot half is written in `PHASE-0-AUDIT.md`, with proposed architecture decisions D1 to D11 in `DECISIONS.md`. The Marketing Mouse and News to Blog half is **blocked: no access**.
+- **Current milestone: Phase 0 (baseline and reuse audit). Written up, awaiting owner review.**
+  - `PHASE-0-AUDIT.md`: SEO Autopilot audit, plus the source-repository audits in §5.
+  - `DECISIONS.md`: proposed D1 to D15.
+  - Headline: neither Marketing Mouse nor News to Blog can be the hosted base. Both have unauthenticated or cross-tenant server paths, no tests, plaintext credentials and no licence. Their UI and integration logic are reusable; their server layer is not.
 - No hosted code may be written until the owner approves Phase 0.
 
 Architecture today: dependency-free Node core (`src/jobs`, `src/analysis`, `src/audit`), optional Go crawler (`engines/go`) and Python agent runtime (`engines/python`), 27 agents (`agents/`), 26 playbooks (`knowledge/`), GitHub Actions templates (`templates/workflows`), static site (`site/`). The data flow from onboarding to measurement is mapped in `PHASE-0-AUDIT.md` section 3.
@@ -58,11 +66,18 @@ Tag `v2.13.0` (plus moving tags `v2`, `v2-stable`) and the GitHub Pages site, un
 | Live provider calls, Erudience runs | **not run** |
 
 ## Known issues, risks, missing access
-- **Access blocked:** `marketingmouse`, `feed-to-site-magic`, `keel` and `erudience-flow-engine` are not readable with this session's GitHub credential. This blocks the reuse half of Phase 0 and all of brief 01. Fix: grant the Claude GitHub App access to them, then start a session with them selected.
+- **Security issues in the source apps (outside this repository):**
+  - News to Blog: the autopilot tick has no authentication (N1); AI endpoints are unauthenticated (N2); users can raise their own plan and budget (N3).
+  - Marketing Mouse: server functions use the service-role client with no auth (M1); Google tokens are fetched without ownership checks (M2).
+  - Whether either app is deployed is **unknown**. Owner decision D15.
+- Access was resolved during this session: all four source repositories were readable after the owner granted access.
 - **Provider keys needed for brief 03:** a Brave Search API key, a SerpAPI key or a DataForSEO login. The owner sets them locally or as repository secrets; never paste them into chat or commit them.
 - Audit findings F1 to F10 (`PHASE-0-AUDIT.md` section 4). Highest: auto-merge publishes an unseen draft (F1); the approval actor is not checked (F2); release writes to the default branch (F3); live backlink submission exists, opt-in (F4); the Supabase template is single-tenant with a replayable token (F5); large-site Search Console truncation (F6).
 - Owner decisions pending:
-  - Approve or amend D1 to D11.
+  - Approve or amend D1 to D15, especially:
+    - D13: hosted UI on TanStack Start, with engine jobs in a separate Node worker.
+    - D14: confirm you own and relicense the source-app code, which has no licence.
+    - D15: whether the source apps are live.
   - D11 (auto-merge and release semantics).
   - F4 (keep the backlink submitter?).
   - Where hosted code lives (D1 proposes `cloud/` in this repository).
@@ -72,17 +87,12 @@ Tag `v2.13.0` (plus moving tags `v2`, `v2-stable`) and the GitHub Pages site, un
 No paid API calls were made this session. Hosted cost model is proposed in D9; no figures exist yet.
 
 ## Next milestone
-**Phase 0 completion.** Acceptance criteria:
-- Source repositories audited, with SHAs, licences and the brief's checklist.
-- Reuse matrix rows for their modules.
-- The owner approves or amends D1 to D11.
+**Owner review of Phase 0.** Acceptance criterion: the owner approves or amends D1 to D15 and answers D11, D14 and D15. Phase 1 (hosted foundation) starts only after that.
 
-Exact next actions:
-1. The owner grants repository access and answers the pending decisions above.
-2. Audit Marketing Mouse and News to Blog and add their rows to `PHASE-0-AUDIT.md`.
-3. In parallel:
-   - brief 03, once keys exist (live `citations` with one provider, sanitised fixtures);
-   - brief 04 next part (record real agent outputs for the four cases, add cases per agent);
-   - small fixes F2, F6, F7.
+Exact next actions, independent of the review:
+1. Brief 01: port the Erudience heading and meta audits, then the redirect tooling, then the facts guard, as generic jobs with tests. The sources are confirmed present (PHASE-0-AUDIT §5.4).
+2. Brief 03, once keys exist: live `citations` with one provider and sanitised fixtures.
+3. Brief 04, next part: record real agent outputs for the four cases and add cases per agent.
+4. Small fixes: F2, F6, F7.
 
-Resume prompt: "Read CLAUDE.md, docs/implementation/STATUS.md and PHASE-0-AUDIT.md. If the source repos are now accessible, audit them per SEO-PRODUCT-BUILD-BRIEF.md and complete the reuse matrix; otherwise continue brief 04 or 03. Do not start the hosted app until the owner approves the decisions in DECISIONS.md."
+Resume prompt: "Read CLAUDE.md, docs/implementation/STATUS.md, PHASE-0-AUDIT.md and DECISIONS.md. If the owner has approved Phase 0, start Phase 1 per SEO-PRODUCT-BUILD-BRIEF.md and D1-D15; otherwise continue brief 01 (Erudience tooling port) on a feature branch."

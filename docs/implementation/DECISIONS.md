@@ -1,14 +1,14 @@
 # Decisions
 
 ## 2026-10-18 Phase 0 architecture decisions (PROPOSED, awaiting owner review; nothing is built)
-Evidence: `PHASE-0-AUDIT.md` (same folder). These decisions cover SEO Autopilot only. Marketing Mouse and News to Blog could not be read (access blocked), so every decision that depends on them is marked **open**. When that audit happens it may overturn D1's UI stack and D3's choice of store. Nothing here commits to a vendor or spends money.
+Evidence: `PHASE-0-AUDIT.md` (same folder). D1 to D11 were written from the SEO Autopilot audit. D12 to D15 were added after Marketing Mouse, News to Blog and Keel were audited later the same day (PHASE-0-AUDIT §5). Neither source audit overturned D1 to D11. Nothing here commits to a vendor or spends money.
 
 **D1 Hosted boundary.** The hosted app is a separate package (proposed: `cloud/` in this repository, with its own `package.json`, excluded from the npm `files` list). It calls the engine through a typed job contract; the engine is never rewritten into the app.
 - Stage 1: a worker runs the unchanged CLI (`bin/seo-autopilot.mjs run <job> --site <id>`) in an isolated temp directory. Config is rendered from DB rows and credentials are injected as env. The worker reads the JSON reports and stores them as versioned results (job, engine version, site, source window, generatedAt, input hash).
 - Stage 2: add a `StateStore` seam to `src/jobs/*` so jobs read and write through an interface; the file store stays the CLI default. The core stays dependency-free.
 - Alternatives: (a) rewrite the analysis in the app's language, rejected because it means two sources of truth and loses the tests. (b) GitHub App only, with no servers (brief 07 option a): cheapest, but repository sites only and no central evidence store. Recommended as the first *distribution* mode, not the hosted product.
 - Migration: none for CLI users.
-- Open: the web stack, until the Marketing Mouse audit.
+- Web stack and where jobs execute: see D13.
 
 **D2 Tenancy and ownership.** Model: workspace → client → site → environment (production, staging).
 - `memberships(workspace_id, user_id, role)` with roles owner, admin, editor and viewer, plus optional client-scoped grants for agency staff and client viewers.
@@ -67,7 +67,21 @@ Evidence: `PHASE-0-AUDIT.md` (same folder). These decisions cover SEO Autopilot 
 
 Recommendation: (c) now, then (b) at the next minor release.
 
-**Open until the source repositories are readable:** whether to reuse Marketing Mouse's onboarding, connection and dashboard code; which Google data contract wins (this engine's or Marketing Mouse's, one only); whether to reuse News to Blog's editorial queue and publishers; Keel integration points.
+**D12 One Google data contract (decided by the source audit, PHASE-0-AUDIT §5).** This engine's Search Console and GA4 code (`src/lib/google-auth.mjs`, `src/jobs/daily.mjs`) is the single source of truth. Marketing Mouse's derived metrics are ported into `src/analysis/` with tests; its token handling and queries are not. Reasons:
+- MM fetches tokens without ownership checks (M2).
+- MM uses a platform-wide connector (M4).
+- MM pages less and has no tests.
+
+**D13 Hosted UI stack and the execution split (proposed).** Use TanStack Start, React and Supabase for the hosted UI and API, because the reusable UI from both source apps is written in it. The server layer is new and follows D6; neither app's server functions are carried over (M1, N1, N2).
+- Engine jobs do **not** run in Cloudflare Workers: the CLI spawns git, Go and Python, and writes files. Jobs run in a separate Node worker (a container or VM) that claims jobs from Postgres (D5).
+- Alternatives: a plain Node server (fewer moving parts, but the UI would have to be rewritten), or the Workers runtime only (cannot run the engine).
+- Cost: one more deployable unit.
+
+**D14 Source code provenance.** Code copied from Marketing Mouse or News to Blog comes in only as small reviewed files, adapted to this repository's style, with tests. The owner must confirm in writing (in this file) that they own that code and relicense it under MIT, because neither repository has a licence. Lovable-generated scaffolding is acceptable once the owner confirms the platform's terms allow it.
+
+**D15 Security issues in the source apps (owner decision, outside this repository).** M1 to M5 and N1 to N6 are live risks *if those apps are deployed*; this audit could not tell whether they are. Recommendation: the owner checks whether they are deployed and, if so, restricts them (fix N1 and N2 first, then M1 and M2) or takes them offline, before marketing them. This repository will not copy their server code, whatever is decided.
+
+**Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
 ## 2026-10-18 Business model: open core, service first (proposed, owner to confirm)
 Keep the engine MIT; sell hosting, multi-client operations, approvals, scheduled runs, reporting and support; start with a done-for-you service through Erudience to validate demand. Alternatives and risks: `docs/strategy.md`. Consistent with the agency-first hypothesis in `SEO-PRODUCT-BUILD-BRIEF.md`, which also says prices are unvalidated.
