@@ -2,6 +2,21 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-18, night (D16 step 5: backlink auditor)
+- **Code:**
+  - New `src/analysis/inbound.mjs` and `src/jobs/inbound.mjs` (registered as `inbound`).
+  - New `departments/authority/agents/seo-backlink-auditor.md`.
+  - Router rules for reclaim (fix phase) and review (grow phase), with targets.
+  - `team` passes `inbound.json`.
+  - Config validation and schema for `site.inbound.dir`.
+  - `seo-weekly.yml` gets a `run inbound` step.
+  - Tests: `test/inbound.test.mjs` (6); agent count 29; coverage test includes inbound.
+- **Documentation:**
+  - `knowledge/link-building-and-digital-pr.md` gets an "Auditing the links you already have" section.
+  - `docs/jobs.md` row, org chart, Authority charter, root `CHANGELOG.md`.
+- **Checks:** `npm test` 280/280; Python 23 OK.
+- **Not checked:** a real Search Console export. Not pushed (GitHub 403).
+
 ## 2026-10-18, night (D16 step 3: work orders)
 - **Code:**
   - New `src/analysis/work-orders.mjs`, `src/jobs/work.mjs` (registered as `work`) and `agentFacts()` in `src/core/agents.mjs`.

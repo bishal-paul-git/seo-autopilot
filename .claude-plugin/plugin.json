@@ -37,6 +37,7 @@
     "./departments/content/agents/seo-internal-linker.md",
     "./departments/content/agents/seo-refresher.md",
     "./departments/content/agents/seo-snippet-optimizer.md",
+    "./departments/authority/agents/seo-backlink-auditor.md",
     "./departments/authority/agents/seo-entity-reputation.md",
     "./departments/authority/agents/seo-link-builder.md",
     "./departments/ai-search/agents/seo-ai-search-agent.md",

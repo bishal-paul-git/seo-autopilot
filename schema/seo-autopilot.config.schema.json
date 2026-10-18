@@ -235,6 +235,15 @@
               }
             }
           },
+          "inbound": {
+            "type": "object",
+            "description": "Inbound links audit. Folder of Search Console or backlink-tool CSV exports. Default: <dataDir>/inbound-links.",
+            "properties": {
+              "dir": {
+                "type": "string"
+              }
+            }
+          },
           "facts": {
             "type": "object",
             "description": "Facts guard. Default file: <dataDir>/verified-facts.json.",

@@ -14,8 +14,8 @@ const agents = listAgents();
 const agentFiles = agents.map((a) => `${a.name}.md`);
 const pathOf = Object.fromEntries(agents.map((a) => [`${a.name}.md`, a.file]));
 
-test("twenty-eight agents exist, with unique names across departments", () => {
-  assert.equal(agentFiles.length, 28);
+test("twenty-nine agents exist, with unique names across departments", () => {
+  assert.equal(agentFiles.length, 29);
   assert.equal(new Set(agentFiles).size, agentFiles.length);
 });
 
@@ -45,7 +45,7 @@ for (const f of agentFiles) {
     for (const m of text.matchAll(/`([a-z0-9-]+\.md)`/g)) {
       const name = m[1];
       if (name === "README.md" || name.startsWith("seo-")) continue;
-      assert.ok(existsSync(join(knowledgeDir, name)) || ["priorities.md", "audit.md", "geo.md", "speed.md", "experiments.md", "weekly-digest.md", "daily-summary.md", "news-digest.md", "agent-plan.md", "site-profile.md"].includes(name), `unknown file referenced: ${name}`);
+      assert.ok(existsSync(join(knowledgeDir, name)) || ["priorities.md", "audit.md", "geo.md", "speed.md", "experiments.md", "weekly-digest.md", "daily-summary.md", "news-digest.md", "agent-plan.md", "site-profile.md", "inbound.md"].includes(name), `unknown file referenced: ${name}`);
     }
   });
 }
@@ -75,6 +75,7 @@ test("every report the router tells an agent to use is named in that agent's Inp
     facts: { unverified: [{ where: "a", claim: "47%" }] },
     links: { items: [{ from: "https://a.test/x", to: "https://a.test/y", reason: "mention" }] },
     render: { results: [{ url: "https://a.test/r", findings: [{ id: "prerender-text-not-on-page", severity: "high" }] }] },
+    inbound: { reclaim: [{ target: "/old", status: 404, links: 3 }], review: [{ kind: "sitewide", note: "n. x" }] },
   });
   const inputs = (name) => (readFileSync(pathOf[`${name}.md`], "utf8").match(/## Inputs\n([\s\S]*?)\n## /) || [])[1] || "";
   let checked = 0;

@@ -1,6 +1,6 @@
 # The departments
 
-seo-autopilot works as a team of twenty-eight specialist agents grouped into eight departments, like a small agency: Command plans, Research finds, Technical, Content, Authority, AI search and Verticals do the work, and Quality checks it. Each agent has one job, a fixed set of tools, the playbooks it must read first, a quality bar and a defined hand-off. One rule holds for all of them: **a human approves what goes live**.
+seo-autopilot works as a team of twenty-nine specialist agents grouped into eight departments, like a small agency: Command plans, Research finds, Technical, Content, Authority, AI search and Verticals do the work, and Quality checks it. Each agent has one job, a fixed set of tools, the playbooks it must read first, a quality bar and a defined hand-off. One rule holds for all of them: **a human approves what goes live**.
 
 Each department folder has a charter (`README.md`) and its agents (`agents/`). Installed projects get the agents in one flat folder (`seo-autopilot/agents/`) so workflows can find any agent by name; each file's front matter still names its department. The design and roadmap are in [docs/architecture/DEPARTMENTS.md](../docs/architecture/DEPARTMENTS.md).
 
@@ -53,6 +53,7 @@ Earns links and mentions honestly and makes the business a clear, trusted entity
 
 | Agent | Job | Runs | Can change files? |
 |---|---|---|---|
+| [seo-backlink-auditor](authority/agents/seo-backlink-auditor.md) | Audits inbound links from a Search Console or tool export: links to reclaim, new and lost sites, patterns to review | on request, from `inbound.json` | no |
 | [seo-entity-reputation](authority/agents/seo-entity-reputation.md) | Makes the business a clear, consistent, trusted entity; branded search and reviews | on request | no |
 | [seo-link-builder](authority/agents/seo-link-builder.md) | Finds honest link opportunities and drafts outreach for you to send | on request | no |
 

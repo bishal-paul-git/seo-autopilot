@@ -31,6 +31,7 @@ export async function run({ site, flags = {} }) {
     facts: readJson(`${s}/facts.json`, null),
     links: readJson(`${s}/links.json`, null),
     render: readJson(`${s}/render.json`, null),
+    inbound: readJson(`${s}/inbound.json`, null),
     redirects: { check: readJson(`${s}/redirects-check.json`, null), smoke: readJson(`${s}/redirects-smoke.json`, null) },
     pipeline: pipe,
     site,

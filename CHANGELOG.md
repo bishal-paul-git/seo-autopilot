@@ -27,6 +27,17 @@
   - New `work` job: `--start` refuses while dependencies are unfinished or the pages are held; `--check name=pass|fail`, `--done`/`--fail`, and `--ready`, which exits 1 until every check has passed.
   - Pure logic in `src/analysis/work-orders.mjs`, with tests.
 - **`seo-check` now runs the facts guard on the changed content files** of every `seo/*` pull request. It needs no secrets. It warns by default, and fails the check when `"facts": { "strict": true }` is set.
+- **New `inbound` job and seo-backlink-auditor agent (Authority, D16 step 5).** They audit the links pointing at your site from a Search Console Links export (or a backlink-tool CSV) saved in `seo-autopilot/inbound-links/`. No API key is needed.
+  - The report covers:
+    - links into pages that now error (reclaim them with a redirect);
+    - links through redirects;
+    - top linking sites and pages;
+    - new and lost sites since the last export;
+    - sitewide or one-anchor patterns for a person to review.
+  - It never contacts anyone and never writes a disavow file. The agent recommends a disavow only with a manual action or confirmed arranged links.
+  - Reclaimable links route the agent in the fix phase. The weekly workflow runs `inbound` when an export is present.
+  - New playbook section: "Auditing the links you already have".
+  - The parser matches export columns by name and is tested on sample files shaped like the exports; **it has not yet been run on a real Search Console download.**
 - Design and roadmap: `docs/architecture/DEPARTMENTS.md`. Research library (links still to be verified): `docs/research/REFERENCES.md`.
 
 ## 2.14.0

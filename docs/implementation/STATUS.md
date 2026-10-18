@@ -139,6 +139,10 @@ No paid API calls were made this session. Hosted cost model is proposed in D9; n
   - Not done:
     - Nothing runs agents from the work orders automatically. A person or the coordinator uses `run work`.
     - The fact-checker *agent* is not in the PR pipeline; the deterministic `facts` check is. Adding the agent would need a Claude login in `seo-check`, which runs with no secrets by design.
+- **Step 5, first agent done (local, not pushed):**
+  - `inbound` job (`src/analysis/inbound.mjs`, `src/jobs/inbound.mjs`), `seo-backlink-auditor` (29 agents), router rules, weekly step, config `site.inbound.dir`, playbook section.
+  - Checks: `npm test` 280/280, including 6 inbound tests on sample CSVs.
+  - **Not verified on a real Search Console export:** column names are matched flexibly but were not checked against a real download. Next: the owner exports Links from Search Console for Erudience and we run it.
 - **Next, step 4:** add sources and "last reviewed" dates to every playbook, from `docs/research/REFERENCES.md`, with a test. It is blocked on verifying the links: page fetches are blocked in this session's network policy.
 
 ## Next milestone
