@@ -33,6 +33,6 @@ If you already have a site with an admin area, you can send the results to your 
 
 Set both as repository secrets. Each job then POSTs its results to your endpoint with the header `x-ingest-token`.
 
-A ready-made endpoint and schema are in [`templates/dashboard-supabase`](../templates/dashboard-supabase): one SQL migration (tables with admin-only read access) and one Edge Function that checks the token and stores results. Your admin page then reads the tables (`seo_daily_summary`, `seo_inspections`, `seo_backlinks`, `seo_digests`, `seo_topics`). The Erudience site's `/admin/seo` page is a working example built on exactly these tables.
+A ready-made endpoint and schema are in [`templates/dashboard-supabase`](../templates/dashboard-supabase): one SQL migration (tables with admin-only read access) and one Edge Function that checks the token and stores results. Your admin page then reads the tables (`seo_daily_summary`, `seo_inspections`, `seo_backlinks`, `seo_digests`, `seo_topics`). A site's `/admin/seo` page is a working example built on exactly these tables.
 
 You do not need this for the autopilot to work.

@@ -19,7 +19,7 @@ test("block text keeps one line per block, so a heading never runs into its para
 
 test("prose vs labels: only full sentences of eight words or more count as prose", () => {
   assert.equal(isProse("This policy explains what personal data we collect and why."), true);
-  assert.equal(isProse("Erudience services related to this guide"), false);
+  assert.equal(isProse("Acme services related to this guide"), false);
   assert.equal(isProse("Short sentence here."), false);
   assert.deepEqual(sentences("Menu\nThis line has six words in it.\nShort one."), ["This line has six words in it."]);
 });
@@ -30,7 +30,7 @@ test("matching pages raise nothing; punctuation, case and line breaks do not mat
 });
 
 test("a prerendered sentence the page does not say is high; a different label is low", () => {
-  const raw = page("Erudience services related to this guide\nWe began in 2022 as an IT provider and became an automation company.\nShared sentence that is on both pages for sure.");
+  const raw = page("Acme services related to this guide\nWe began in 2022 as an IT provider and became an automation company.\nShared sentence that is on both pages for sure.");
   const ren = page("Where to go next\nWe began in 2022 as an IT provider, helping firms with their systems.\nShared sentence that is on both pages for sure.");
   const r = compareRender(raw, ren);
   assert.deepEqual(ids(r), ["prerender-labels-differ", "prerender-text-not-on-page"]);

@@ -1,6 +1,6 @@
 # Recipe: privacy-safe conversion tracking in GA4
 
-Use this when the digest or the `conversions` job shows that GA4 receives page views but no conversions, or when you want to know which pages bring leads and not just visits. It is the pattern Erudience runs in production (`src/lib/track.ts` and a click tracker), made framework-neutral. It assumes analytics loads only after consent (see [the consent banner recipe](consent-banner-recipe.md)): every call below does nothing until the GA4 tag is present.
+Use this when the digest or the `conversions` job shows that GA4 receives page views but no conversions, or when you want to know which pages bring leads and not just visits. It is a pattern that runs in production (a small tracking module and a click tracker), made framework-neutral. It assumes analytics loads only after consent (see [the consent banner recipe](consent-banner-recipe.md)): every call below does nothing until the GA4 tag is present.
 
 ## Rules
 1. **Never send personal data.** No names, emails, phone numbers, company names, free text the visitor typed, or URLs with personal query strings. GA4's terms forbid it, and you do not need it to measure conversions. Send categories you chose ("contact", "book"), never values the visitor entered.

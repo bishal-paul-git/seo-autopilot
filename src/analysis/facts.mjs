@@ -1,8 +1,8 @@
 // Facts guard: finds statements a reader takes as fact (percentages, prices, "500+ clients", "3x faster", awards, "trusted
 // by", "#1") and checks each against the site's verified-facts file or a source link in the same sentence. Pure: no network,
-// no writes. Ported from Erudience (scripts/validate-content.mjs, its "no unverified facts" hard rule) and made generic.
+// no writes. Based on a "no unverified facts" content guard used on a production site, made generic.
 //
-// verified-facts.json (same shape as Erudience's):
+// verified-facts.json (shape below):
 //   { "facts": [ { "match": "creators keep 85% of sales", "source": "where it was checked", "status": "owner-confirmed" } ] }
 // A claim passes when a fact's "match" text contains it and appears in the same text. Status "needs-owner-check" passes
 // with a warning on every run until someone confirms it.
@@ -14,7 +14,7 @@ const CLAIMS = [
   ["multiplier", /\b\d+(?:\.\d+)?\s?x\s+(?:faster|more|better|cheaper|higher|less|fewer|the)\b/gi],
   ["ranking", /(?:#\s?1\b|\bnumber one\b|\bno\.\s?1\b)/gi],
   ["award", /\b(?:award[- ]winning|awarded|winner of|won the)\b/gi],
-  // "used by" and "our clients" were tried and dropped: on Erudience they matched ordinary prose ("used by scrapers",
+  // "used by" and "our clients" were tried and dropped: on a real site they matched ordinary prose ("used by scrapers",
   // "advice to our clients") rather than claims about who the clients are.
   ["named clients", /\b(?:trusted by|clients include|customers include|as seen (?:in|on)|featured (?:in|on))\b/gi],
 ];

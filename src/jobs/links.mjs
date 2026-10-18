@@ -1,7 +1,7 @@
 // Internal links to add, for the pages with the fewest inbound links first: a reviewable list, never an edit. Reads the
 // saved audit (audit.json: the link graph and the audit's own mention opportunities); fetches nothing.
 // Writes <state>/<site>/links.json and links.md.   npx seo-autopilot run links [--max-inbound 2]
-// Ported from the idea behind Erudience's related-guides blocks (pages link back to the guides that are about them).
+// Based on the idea of related-guides blocks (pages link back to the guides that are about them).
 import { readJson, writeJson, writeText, today } from "../core/util.mjs";
 import { relatedLinks } from "../audit/links.mjs";
 

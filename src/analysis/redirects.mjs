@@ -1,5 +1,5 @@
 // Redirect map: check it, turn it into server rules, and judge a smoke test of the live site. Pure: no network, no writes.
-// Ported from Erudience (scripts/check-redirects.mjs, generate-htaccess.mjs, smoke-redirects.mjs) and made host-neutral.
+// Derived from redirect check, generate and smoke-test scripts used on a production site, made host-neutral.
 //
 // The map is data the site owner keeps, by default <dataDir>/redirects.json:
 //   { "redirects": { "/old-page": "/new-page", "/old-guide": "https://other-site.example/guide" },
@@ -26,7 +26,7 @@ export function normPath(v, siteUrl) {
 const trim = (p) => (p.length > 1 ? p.replace(/\/+$/, "") || "/" : p);
 const external = (p) => /^https?:\/\//i.test(p);
 
-/** Read the map (also Erudience's { map } shape). Entries that are not usable paths are reported, not dropped silently. */
+/** Read the map (also the { map } shape). Entries that are not usable paths are reported, not dropped silently. */
 export function parseMap(raw, siteUrl) {
   const redirects = new Map(), gone = [], goneSections = [], bad = [];
   const src = raw?.redirects ?? raw?.map ?? {};

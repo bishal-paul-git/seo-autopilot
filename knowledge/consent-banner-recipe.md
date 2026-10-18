@@ -1,6 +1,6 @@
 # Recipe: a consent banner that really gates analytics
 
-Use this when the `consent` job reports `tracking-without-consent-tool` or `privacy-claims-consent-but-no-mechanism`, or when you add analytics to a site. It is the pattern Erudience runs in production, written so it works on any stack. The `consent` job recognises it (consent wording next to a stored `granted` or `denied` choice), so after you ship it the finding clears.
+Use this when the `consent` job reports `tracking-without-consent-tool` or `privacy-claims-consent-but-no-mechanism`, or when you add analytics to a site. It is a pattern that runs in production, written so it works on any stack. The `consent` job recognises it (consent wording next to a stored `granted` or `denied` choice), so after you ship it the finding clears.
 
 This is engineering guidance, not legal advice. Whether analytics needs consent depends on where the business and its visitors are. UK and EU rules (PECR, the ePrivacy rules) have generally required it for analytics cookies, and the UK rules have been changing. Have a qualified person confirm what your site needs and what your privacy page should say. Asking first is the safe default.
 
@@ -74,7 +74,7 @@ Save as `/consent.js`, set your measurement ID, and include it on every page wit
 ```
 
 ## React (Vite, Next.js client components, Remix)
-The consent state lives in one small module; the banner and the script loader both read it. This is the shape of Erudience's `src/lib/consent.ts`, `ConsentBanner.tsx` and its script loader.
+The consent state lives in one small module; the banner and the script loader both read it. This is the shape of a small consent module, a banner component and a script loader.
 
 ```tsx
 // consent.ts
