@@ -2,6 +2,16 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-18, later (release v2.14.0, partial)
+- **Deployment actions:**
+  - Version bumped to 2.14.0; `CHANGELOG.md` section added; site regenerated (commit `e7668d9`).
+  - Gate passed: `npm test` 258 of 258, `go vet`/`go test`, Python unittest.
+  - PR #8 marked ready and merged into `main` with a merge commit (`f10f3b3`); tests re-run on `main`: 258 of 258.
+- **Failed:**
+  - Pushing tags `v2.14.0`, `v2` and `v2-stable` was refused by the session's git proxy; there is no API tool to create tags.
+  - The release is therefore incomplete: no GitHub Release, and the moving tags remain on v2.13.0.
+  - Commands for the owner are in STATUS.
+
 ## 2026-10-18, later (Erudience consent fix)
 - **Code:**
   - Repository: erudience-flow-engine, branch `claude/hopeful-euler-662mu5`, commit `162906d`, draft PR https://github.com/bishal-paul-git/erudience-flow-engine/pull/78.

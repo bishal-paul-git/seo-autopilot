@@ -50,7 +50,28 @@ Architecture today: dependency-free Node core (`src/jobs`, `src/analysis`, `src/
 | `citations` providers | mocked only; **never run live** | mock |
 
 ## Deployed
-Tag `v2.13.0` (plus moving tags `v2`, `v2-stable`) and the GitHub Pages site, unchanged this session. **Nothing from this session is released or deployed.** No npm package, no hosted service.
+**v2.14.0 is half released (2026-10-18).**
+
+Done:
+- PR https://github.com/bishal-paul-git/seo-autopilot/pull/8 is merged into `main`. Merge commit `f10f3b3`, `package.json` 2.14.0, `CHANGELOG.md` has a `## 2.14.0` section, `site/` is regenerated.
+- `npm test` passes 258 of 258 on `main`; Go and Python pass.
+
+**Not done:** the tags.
+- The session's git proxy refused `git push origin v2.14.0` and `git push -f origin v2 v2-stable` ("remote end hung up"), and the available GitHub tools cannot create tags.
+- So there is no GitHub Release for 2.14.0 yet.
+- `v2` and `v2-stable` still point at v2.13.0 (`8cdf874`). Erudience, which installs `#v2`, still runs 2.13.0.
+- The Pages site is published by the `pages` workflow from `main`; whether it ran was not checked.
+
+To finish, from a machine with push rights:
+```
+git fetch origin && git checkout main && git pull
+git tag v2.14.0 f10f3b3 && git tag -f v2 f10f3b3 && git tag -f v2-stable f10f3b3
+git push origin v2.14.0 && git push -f origin v2 v2-stable
+```
+
+Consider leaving `v2-stable` for `promote-stable.yml` a few days later. That workflow treats `v2-stable` as a delayed tag; CLAUDE.md says to force it with `v2`.
+
+No npm package, no hosted service.
 
 ## This session's changes
 - Documentation:
