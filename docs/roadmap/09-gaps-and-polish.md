@@ -1,6 +1,6 @@
 # 09 Known gaps and polish
 
-Small items found while running the product on Erudience. Any order; one release per batch.
+Small items found while running the product on a real production site. Any order; one release per batch.
 
 **Fix**
 1. `ymyl` false alarms (tree surgeons flagged for "safety"): per-site allow-list, page-type filter, show matched words.
@@ -11,7 +11,7 @@ Small items found while running the product on Erudience. Any order; one release
 6. `profile`: `gohugo.io` reports Unknown and `ghost.org` reports Hugo. Add signals and a table test of 30 well-known sites using recorded HTML.
 7. Optional headless render to compare delivered vs rendered text for single-page apps.
 8. One shared helper that preserves CRLF/LF for every in-place file patch.
-9. `upgrade` for customised workflows: three-way diff and merge new steps (Erudience needed manual edits).
+9. `upgrade` for customised workflows: three-way diff and merge new steps (a customised weekly workflow needed manual edits).
 
 **Add**
 - `run agents --list` and `--explain <agent>`; a `--site all` portfolio summary.
@@ -21,4 +21,4 @@ Small items found while running the product on Erudience. Any order; one release
 - Let `pace` apply its schedule on request (needs a safe writer per content type and a confirmation step).
 - CLI and docs translations.
 
-**Done when:** each item verified on Erudience or a fixture, tests added, CHANGELOG, release.
+**Done when:** each item verified on a real site or a fixture, tests added, CHANGELOG, release.

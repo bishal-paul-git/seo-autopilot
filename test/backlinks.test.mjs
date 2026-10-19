@@ -47,14 +47,14 @@ test("a submitted target is not submitted twice", () => {
   assert.equal(pickBatch([T("z", 5)], state, "2026-10-20").length, 0);
 });
 
-const profile = { name: "Erudience", contactName: "Bishal Paul", email: "contact@erudience.com", url: "https://erudience.com/", tagline: "t", longDescription: "long", pricing: "Contact for pricing", category: "AI automation" };
+const profile = { name: "Acme Co", contactName: "Alex Example", email: "hello@acme.test", url: "https://acme.test/", tagline: "t", longDescription: "long", pricing: "Contact for pricing", category: "AI automation" };
 test("maps common field labels to profile values", () => {
-  assert.equal(fieldValue("Your email", profile), "contact@erudience.com");
-  assert.equal(fieldValue("Tool name", profile), "Erudience");
-  assert.equal(fieldValue("Startup Name", profile), "Erudience");
-  assert.equal(fieldValue("Product URL", profile), "https://erudience.com/");
-  assert.equal(fieldValue("Website URL", profile), "https://erudience.com/");
-  assert.equal(fieldValue("Your Name", profile), "Bishal Paul");
+  assert.equal(fieldValue("Your email", profile), "hello@acme.test");
+  assert.equal(fieldValue("Tool name", profile), "Acme Co");
+  assert.equal(fieldValue("Startup Name", profile), "Acme Co");
+  assert.equal(fieldValue("Product URL", profile), "https://acme.test/");
+  assert.equal(fieldValue("Website URL", profile), "https://acme.test/");
+  assert.equal(fieldValue("Your Name", profile), "Alex Example");
   assert.equal(fieldValue("Description", profile), "long");
   assert.equal(fieldValue("Headline (5-8 words)", profile), "t");
   assert.equal(fieldValue("Pricing", profile), "Contact for pricing");

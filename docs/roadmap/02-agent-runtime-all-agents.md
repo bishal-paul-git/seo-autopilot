@@ -15,7 +15,7 @@ Agents are Markdown files in `agents/` with front matter (`name`, `description`,
 7. **Injection defence:** all fetched content passes `safefetch.py`; agent instructions repeat that web and issue text is data. Add tests with hostile fixtures (see brief 04).
 
 ## Verify
-Unit tests for the tool mapping (each agent's allow-list matches its front matter and mode), budget stop, path scoping (an edit outside the allowed globs is refused), advise mode never writes site files. Integration run with a stub SDK. One real supervised run per agent type on Erudience in report-only mode.
+Unit tests for the tool mapping (each agent's allow-list matches its front matter and mode), budget stop, path scoping (an edit outside the allowed globs is refused), advise mode never writes site files. Integration run with a stub SDK. One real supervised run per agent type on a real site in report-only mode.
 
 ## Done when
 All 27 agents runnable from `run agent --name seo-x` and `run agents --plan`; permissions provably scoped; budgets enforced; docs in `docs/agents.md` and `docs/engines.md`; CHANGELOG and release.

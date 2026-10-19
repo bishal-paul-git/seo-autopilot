@@ -2,7 +2,7 @@
 
 **Goal:** a repeatable suite proving the agents are accurate, honest and safe. Trust is the product.
 
-**Context:** `test/agents.test.mjs` checks files and routing only. Nothing measures output quality. The eight Erudience runs (fact-checker, indexing monitor, AI search, pruner, competitor, entity, compliance, reporter) are good seeds.
+**Context:** `test/agents.test.mjs` checks files and routing only. Nothing measures output quality. Eight real-site runs (fact-checker, indexing monitor, AI search, pruner, competitor, entity, compliance, reporter) are good seeds.
 
 **Build**
 1. `test/evals/` fixture sites (clean static, WordPress-like, JS-only, ecommerce, seeded faults) with expected findings per agent (e.g. fact-checker flags a planted unsourced "47%" and passes a sourced claim).

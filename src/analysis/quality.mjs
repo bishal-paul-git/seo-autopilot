@@ -9,7 +9,7 @@ export const words = (s) => String(s || "").toLowerCase().split(/[^\p{L}\p{N}]+/
 /**
  * Same word, allowing English endings: the shared prefix must reach the shorter word's length minus two letters, and at
  * least four. "invoice"/"invoices", "price"/"pricing" and "automation"/"automating" match; "car"/"care" and "firm"/"form"
- * do not. Suffix-stripping stemmers got "invoice"/"invoices" wrong, which is why this replaced the Erudience one.
+ * do not. Suffix-stripping stemmers got "invoice"/"invoices" wrong, which is why this replaced the earlier approach.
  */
 export function sameWord(a, b) {
   if (a === b) return true;
@@ -31,7 +31,7 @@ export function coverage(text, query, ignore = new Set()) {
 /**
  * Words in at least half of the site's titles (sites of 10 pages or more). A word on every page, such as "ai" on an AI
  * agency's site, says nothing about which page a query belongs to, and counting it lets a title pass while the query's
- * distinctive word is missing. Erudience kept such words in a hand-written stop list; this finds them from the site.
+ * distinctive word is missing. A hand-written stop list used to hold such words; this finds them from the site.
  */
 export function siteWords(titles = [], { share = 0.5, minPages = 10 } = {}) {
   const list = titles.filter(Boolean);
@@ -58,7 +58,7 @@ export function topQueries(rows = [], { brandTerms = [], minImpressions = 20 } =
 
 /**
  * Pages whose top query is weakly reflected in the title (under 75 percent of its words), the H1 (under 60 percent) or the
- * description (under 75 percent). Thresholds follow the Erudience audit this was ported from; they are guidelines.
+ * description (under 75 percent). Thresholds follow the audit this was derived from; they are guidelines.
  * `pages` are audit.json pages: { url, finalUrl, status, title, h1, description }.
  */
 export function keywordAlignment(pages = [], rows = [], opts = {}) {

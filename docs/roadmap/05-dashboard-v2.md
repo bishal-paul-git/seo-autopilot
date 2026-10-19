@@ -12,4 +12,4 @@
 5. Single folder, works offline, no external requests, keyboard accessible. All untrusted text (queries, titles) escaped.
 6. `run dashboard --portfolio` for all sites, plus a JSON export.
 
-**Done when:** snapshot tests on fixture data, escaping tests, reviewed on Erudience data, screenshots in `site/`, docs, release.
+**Done when:** snapshot tests on fixture data, escaping tests, reviewed on real site data, screenshots in `site/`, docs, release.

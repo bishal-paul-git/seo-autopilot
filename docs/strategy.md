@@ -3,7 +3,7 @@
 Where seo-autopilot can go from here, written for the owner and for any session planning work. It is an analysis with a recommendation, not a promise of revenue.
 
 ## What exists
-A complete open-source SEO team: 12 jobs plus audit and engines, 27 agents, 26 playbooks, a landing site, and one real production user (Erudience). It runs in the user's own GitHub repository with the user's own Google and AI accounts. That design is a strength (no data leaves the user's control, no per-user running cost for us) and the main barrier to growth (the user must be comfortable with GitHub, secrets and a command line).
+A complete open-source SEO team: 12 jobs plus audit and engines, 27 agents, 26 playbooks, a landing site, and real production use on the maintainers' own sites. It runs in the user's own GitHub repository with the user's own Google and AI accounts. That design is a strength (no data leaves the user's control, no per-user running cost for us) and the main barrier to growth (the user must be comfortable with GitHub, secrets and a command line).
 
 ## Who would use it
 1. **Developers and technical founders** with a site in a repository (frameworks, static generators). Can use today. Small willingness to pay; they value open source.
@@ -14,10 +14,10 @@ A complete open-source SEO team: 12 jobs plus audit and engines, 27 agents, 26 p
 
 | Route | What it is | Upside | Downside |
 |---|---|---|---|
-| Pure open source | MIT, community, no revenue | Trust, adoption, contributions, credibility for Erudience | No income; support burden grows with users |
+| Pure open source | MIT, community, no revenue | Trust, adoption, contributions, credibility for the maintainers' other work | No income; support burden grows with users |
 | **Open core + hosted cloud** | Core stays MIT. A paid hosted version adds a GitHub App (no setup), dashboard, multi-site, approvals inbox, scheduled runs, reports, CMS connectors, support | Recurring revenue; reaches non-technical users; the free core drives awareness | Needs a real web product, billing, support, security work; costs of running jobs unless users bring keys |
 | Agency white-label | Cloud for agencies: many sites, client reports with their branding | Highest price per customer; fewer customers needed | Long sales cycles; needs reporting and permissions features |
-| Done-for-you service | Erudience (or partners) runs it for clients as a monthly SEO service | Revenue immediately; funds the product; case studies | Not scalable; outcomes are uncertain, so never promise rankings |
+| Done-for-you service | The maintainers (or partners) run it for clients as a monthly SEO service | Revenue immediately; funds the product; case studies | Not scalable; outcomes are uncertain, so never promise rankings |
 | Marketplace apps | GitHub Marketplace Action, Claude plugin, WordPress plugin, Shopify app | Distribution to people already looking | Review processes; each platform is its own build |
 | Closed source or one-off sale | Stop publishing, sell licences | None that open core lacks | Loses trust and distribution; SEO buyers distrust black boxes |
 
@@ -26,9 +26,9 @@ A complete open-source SEO team: 12 jobs plus audit and engines, 27 agents, 26 p
 
 1. **Keep the core MIT.** Trust and distribution are the moat in SEO tooling; the agents, playbooks and honest-reporting stance are the differentiator, and are easier to believe when readable.
 2. **Sell what the core cannot give a non-technical or busy buyer:** a hosted version (no GitHub setup), multi-site dashboard and approvals, scheduled runs and reports, connectors that apply approved changes to WordPress and Shopify through their APIs, and support. Users bring their own AI login or key, so our running cost stays low.
-3. **Start with the service, not the SaaS.** Offer "SEO autopilot, run for you" through Erudience to a few clients. It pays for development, produces real before and after data and case studies, and shows which features customers actually ask for. Price on effort and deliverables, not on rankings.
+3. **Start with the service, not the SaaS.** Offer "SEO autopilot, run for you" to a few clients through the maintainers' own company. It pays for development, produces real before and after data and case studies, and shows which features customers actually ask for. Price on effort and deliverables, not on rankings.
 4. **Target agencies first for the paid cloud.** One agency with 20 sites is worth more than 20 individual owners, and its needs (multi-site, reporting, approvals) are the ones the product already half-has.
-5. **Add distribution cheaply:** publish to npm, a GitHub Marketplace Action, a short docs and demo site, and a public case study (Erudience, with real numbers once there are enough to mean something).
+5. **Add distribution cheaply:** publish to npm, a GitHub Marketplace Action, a short docs and demo site, and a public case study (a real site, with real numbers once there are enough to mean something).
 
 ## Why not the alternatives first
 - A full SaaS before validation is months of work with no proof of demand. The service and the waitlist test demand first.
@@ -43,7 +43,7 @@ A complete open-source SEO team: 12 jobs plus audit and engines, 27 agents, 26 p
 - **Support load:** invest in `doctor`, `upgrade` and docs before growing users.
 
 ## Suggested sequence
-1. **Weeks 1 to 4:** finish the roadmap items marked "foundation" (`docs/roadmap/`), publish to npm, build the docs and demo site, write the Erudience case study as data accumulates, open a waitlist for the cloud, offer the done-for-you service to a small number of clients.
+1. **Weeks 1 to 4:** finish the roadmap items marked "foundation" (`docs/roadmap/`), publish to npm, build the docs and demo site, write the first case study as data accumulates, open a waitlist for the cloud, offer the done-for-you service to a small number of clients.
 2. **Months 2 to 3:** build the cloud MVP for repository-based sites (GitHub App, dashboard, approvals inbox, Stripe billing). Onboard a handful of agencies as design partners.
 3. **Months 4 to 6:** WordPress connector (REST API, approval gate), client reports with white-label, agent evaluations as a public benchmark. Then decide on Shopify and others from demand.
 
