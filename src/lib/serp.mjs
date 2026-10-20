@@ -1,4 +1,6 @@
-// SERP providers for the citations job. Each returns { results:[{url,domain,title,position}], aiSources:[{domain,url}], raw:false }.
+// SERP providers for the citations, rank and keywords jobs. Each returns { results:[{url,domain,title,position}],
+// aiSources:[{domain,url}], features:[{type,domains}], raw:false }. Feature types: featured-snippet, people-also-ask, local-pack,
+// video, images, top-stories, shopping, ai-overview, knowledge-panel, discussions.
 // Chosen by environment variable: BRAVE_API_KEY, SERPAPI_KEY, or DATAFORSEO_LOGIN + DATAFORSEO_PASSWORD (first one found wins).
 // `fetchFn` is injectable so tests never touch the network. Keys go in headers or the request only and are never logged or put in errors.
 // Request formats follow each provider's public documentation; they have not been exercised against the live services.
@@ -24,7 +26,9 @@ export const brave = {
     const url = `https://api.search.brave.com/res/v1/web/search?${new URLSearchParams({ q, country: country(market), count: "20" })}`;
     const j = await getJson(f, "brave", url, { headers: { Accept: "application/json", "X-Subscription-Token": env.BRAVE_API_KEY } });
     const results = (j.web?.results || []).map((r, i) => norm(r.url, r.title, i + 1));
-    return { results: dedupe(results), aiSources: [], raw: false };
+    const features = [["faq", "people-also-ask"], ["videos", "video"], ["news", "top-stories"], ["locations", "local-pack"], ["discussions", "discussions"]]
+      .filter(([k]) => (j[k]?.results || []).length).map(([k, type]) => ({ type, domains: [...new Set(j[k].results.map((r) => domainOf(r.url || r.meta_url?.hostname || "")).filter(Boolean))] }));
+    return { results: dedupe(results), aiSources: [], features, raw: false };
   },
 };
 
@@ -46,7 +50,19 @@ export const serpapi = {
       } catch { /* the AI Overview token expires within a minute; organic results are still useful */ }
     }
     const aiSources = dedupe((refs || []).map((r) => ({ url: r.link || r.url, domain: domainOf(r.link || r.url) })));
-    return { results: dedupe(results), aiSources, raw: false };
+    const has = (x) => (Array.isArray(x) ? x.length : Boolean(x));
+    const doms = (list, key = "link") => [...new Set((Array.isArray(list) ? list : [list]).map((r) => domainOf(r?.[key] || r?.link || "")).filter(Boolean))];
+    const features = [
+      has(j.answer_box) && { type: "featured-snippet", domains: doms(j.answer_box) },
+      has(j.related_questions) && { type: "people-also-ask", domains: doms(j.related_questions) },
+      has(j.local_results?.places || j.local_results) && { type: "local-pack", domains: [] },
+      has(j.inline_videos) && { type: "video", domains: doms(j.inline_videos) },
+      has(j.inline_images) && { type: "images", domains: [] },
+      has(j.top_stories) && { type: "top-stories", domains: doms(j.top_stories) },
+      has(j.shopping_results || j.inline_shopping) && { type: "shopping", domains: [] },
+      (has(j.ai_overview) || aiSources.length) && { type: "ai-overview", domains: [...new Set(aiSources.map((s) => s.domain))] },
+    ].filter(Boolean);
+    return { results: dedupe(results), aiSources, features, raw: false };
   },
 };
 
@@ -65,7 +81,16 @@ export const dataforseo = {
     const results = items.filter((i) => i.type === "organic").map((i) => ({ url: i.url, domain: (i.domain || domainOf(i.url)).replace(/^www\./, "").toLowerCase(), title: i.title || "", position: i.rank_absolute ?? i.rank_group }));
     const refs = items.filter((i) => i.type === "ai_overview").flatMap((i) => [...(i.references || []), ...(i.items || []).flatMap((e) => e.references || [])]);
     const aiSources = dedupe(refs.map((r) => ({ url: r.url, domain: (r.domain || domainOf(r.url)).replace(/^www\./, "").toLowerCase() })));
-    return { results: dedupe(results), aiSources, raw: false };
+    const TYPES = { featured_snippet: "featured-snippet", people_also_ask: "people-also-ask", local_pack: "local-pack", map: "local-pack", video: "video", images: "images", top_stories: "top-stories", shopping: "shopping", ai_overview: "ai-overview", knowledge_graph: "knowledge-panel", discussions_and_forums: "discussions" };
+    const byType = new Map();
+    for (const i of items) {
+      const type = TYPES[i.type];
+      if (!type) continue;
+      const set = byType.get(type) || byType.set(type, new Set()).get(type);
+      for (const d of [i.domain, ...(i.items || []).map((e) => e.domain), ...(i.references || []).map((e) => e.domain)]) if (d) set.add(String(d).replace(/^www\./, "").toLowerCase());
+    }
+    const features = [...byType].map(([type, set]) => ({ type, domains: [...set] }));
+    return { results: dedupe(results), aiSources, features, raw: false };
   },
 };
 
