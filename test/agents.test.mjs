@@ -106,6 +106,11 @@ test("every report the router tells an agent to use is named in that agent's Inp
     gap: { topics: [{ topic: "t", competitors: ["r.test"] }], gap: { missing: [1], weak: [] } },
     aiVisibility: { asked: 10, totals: { citationShare: 0.1 }, gaps: [{ q: "q", citedInstead: ["r.test"] }] },
     authority: { intersect: [{ domain: "d.test", linksTo: ["a", "b"] }], profile: { lostDomains: ["x", "y", "z"] } },
+    linkgraph: { underLinked: [{ url: "https://a.test/u", impressions: 50, score: 3, donors: [{ url: "https://a.test/" }] }], orphans: [{ url: "https://a.test/o" }] },
+    vitals: { origin: { current: { passes: false }, regressions: [] }, pages: [] },
+    changes: { results: [{ kind: "yours", url: "https://a.test/k", changes: [{ field: "noindex", important: true }] }, { kind: "competitor", url: "https://c.test/x", changes: [{ field: "title", important: true }] }] },
+    schema: { results: [{ url: "https://a.test/", checks: [{ problems: [{ level: "error", note: "x" }] }], suggestions: [{ type: "Organization" }] }] },
+    entity: { knowledgeGraph: { found: false }, wikidata: { found: false }, actions: ["Google: x"] },
   });
   const inputs = (name) => (readFileSync(pathOf[`${name}.md`], "utf8").match(/## Inputs\n([\s\S]*?)\n## /) || [])[1] || "";
   let checked = 0;
@@ -115,7 +120,7 @@ test("every report the router tells an agent to use is named in that agent's Inp
       assert.ok(inputs(s.agent).includes(m[1]), `${s.agent} is sent ${m[1]} but its Inputs do not mention it`);
     }
   }
-  assert.ok(checked >= 16, `only ${checked} report references checked`);
+  assert.ok(checked >= 22, `only ${checked} report references checked`);
 });
 
 test("only the technical fixer may run arbitrary shell; the others are scoped", () => {

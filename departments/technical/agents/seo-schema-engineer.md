@@ -16,7 +16,7 @@ Give search engines and AI systems an accurate, machine-readable description of 
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
 ## Inputs
-`audit.md` (schema findings), the templates and components that render pages, a sample of rendered HTML for each page type, Google's current structured data documentation, and Search Console's enhancement reports if available.
+`audit.md` (schema findings), `schema.json` from the `schema` job (errors in existing markup, claims the visible page does not show, and drafted JSON-LD with `<fill: ...>` placeholders that a person must supply; never fill a placeholder with a guess), the templates and components that render pages, a sample of rendered HTML for each page type, Google's current structured data documentation, and Search Console's enhancement reports if available.
 
 ## Method
 1. **Map page types to schema types.** Home: Organization and WebSite. Service: Service (with provider). Article or guide: Article (author, dates). Page with a real Q&A section: FAQPage only if the questions and answers are visible. Every page below the root: BreadcrumbList. Real premises: LocalBusiness. Products with real prices: Product and Offer.

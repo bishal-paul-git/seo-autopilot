@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- **Site intelligence and the MCP server (decision D19).**
+  - `seo-autopilot mcp`: an MCP server, so Claude Desktop, Claude Code and other assistants can read reports, search your queries, inspect a page and run analysis jobs. It is read-only by default, and paid jobs need confirmation. The Claude Code plugin registers it. See `docs/mcp.md`.
+  - `linkgraph`: internal PageRank, click depth, orphans, leaked links, and under-linked pages with search demand, with the related pages to link from.
+  - `vitals`: real-user Core Web Vitals from the Chrome UX Report, with a 25-period history and regressions (free key).
+  - `changes`: weekly change monitor for your key pages and competitors' winning pages.
+  - `schema`: checks JSON-LD against requirements and the visible page; drafts missing markup from page facts, with placeholders.
+  - `entity`: Google Knowledge Graph and Wikidata, matched by official website, plus sameAs actions.
+  - The rank tracker now shows each query's intent.
+  - The router sends these findings to the internal linker, performance fixer, technical fixer, competitor analyst, schema engineer and entity agent.
+  - Workflows: `linkgraph` daily; `schema`, `changes` and `vitals` weekly; `entity` monthly.
 - **Research suite (decision D18): the features of a paid SEO suite, on your own data and keys.** See `docs/research-suite.md`.
   - `keywords`: keyword explorer. Covers parent topics, intent, demand with its source, difficulty, owner pages, gaps and questions. Sources: Search Console, plus Bing, DataForSEO, live results (topics grouped by shared results), Open PageRank and opt-in autocomplete.
   - `rank`: daily rank tracker from Search Console. History beyond 16 months, movers, a visibility index and buckets. `--serp` adds search features, competitors and share of voice.

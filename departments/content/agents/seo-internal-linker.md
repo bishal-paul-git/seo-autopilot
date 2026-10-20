@@ -16,7 +16,7 @@ Make every page worth finding reachable through useful links from related pages 
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
 ## Inputs
-In the state folder: `links.json` (suggested links for weakly linked pages, each with source, target, anchor, reason and evidence), `audit.json` / `audit.md` (the `orphan` and `deep` findings, inbound link counts and click depth per page) and `insights.json` (which pages earn impressions, so links point readers at pages that answer real searches). The content files of the source pages.
+In the state folder: `links.json` (suggested links for weakly linked pages, each with source, target, anchor, reason and evidence), `audit.json` / `audit.md` (the `orphan` and `deep` findings, inbound link counts and click depth per page) `insights.json` (which pages earn impressions, so links point readers at pages that answer real searches) and `linkgraph.json` from the `linkgraph` job (internal PageRank per page, click depth, orphans, links to redirects or errors, and pages that earn search demand but get little internal weight, with strong related pages to link from). The content files of the source pages.
 
 ## Method
 1. **Pick the targets.** Start with orphan pages that are in the sitemap, then pages more than three clicks from home, then the weakly linked pages in `links.json`. Skip a target if it should not exist (thin, duplicate, outdated): hand it to the seo-content-pruner instead of linking to it.

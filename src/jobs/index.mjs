@@ -54,6 +54,7 @@ export const JOBS = {
   vitals: () => import("./vitals.mjs"),
   changes: () => import("./changes.mjs"),
   schema: () => import("./schema.mjs"),
+  entity: () => import("./entity.mjs"),
 };
 
 export async function describeJobs() {

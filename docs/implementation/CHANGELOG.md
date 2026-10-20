@@ -2,6 +2,20 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-20 (D19 site intelligence and MCP server)
+- **Code:**
+  - `src/mcp/server.mjs` and the `mcp` CLI command; `mcpServers` in `.claude-plugin/plugin.json`.
+  - Analysis modules: `src/analysis/linkgraph.mjs`, `vitals.mjs`, `changes.mjs`, `schema.mjs`, `entity.mjs`.
+  - Jobs: `linkgraph`, `vitals`, `changes`, `schema`, `entity`.
+  - Intent labels on rank rows.
+  - Router rules and team inputs; `research.logo` and `research.sameAs` config; workflow steps.
+- **Docs:** `docs/mcp.md`, the site intelligence section in `docs/research-suite.md`, `docs/jobs.md` rows, D19, and inputs for 6 agents.
+- **Checks:**
+  - `npm test`: 388 pass, including a real stdio MCP session.
+  - All workflow YAML parses.
+  - The Chrome UX Report, Knowledge Graph and Wikidata APIs are mocked; **no live call** was made.
+- **Not pushed** (GitHub writes refused).
+
 ## 2026-10-20 (D18 research suite)
 - **Code:**
   - `src/analysis/text.mjs`, `keywords.mjs`, `rank.mjs`, `gap.mjs`, `optimize.mjs`, `ai-visibility.mjs` and `authority.mjs`.

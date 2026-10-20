@@ -16,7 +16,7 @@ Make real pages load and respond faster for real visitors, by fixing the largest
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
 ## Inputs
-`speed.md` (lab and field results per page, opportunities), `audit.md`, the templates, components, build config and asset folders, and the rendered HTML and waterfall of the slowest page types.
+`speed.md` (lab and field results per page, opportunities), `vitals.json` from the `vitals` job (real-user Core Web Vitals from the Chrome UX Report for the whole site and top pages, the 25-period history and regressions; fix what real users feel first), `audit.md`, the templates, components, build config and asset folders, and the rendered HTML and waterfall of the slowest page types.
 
 ## Method
 1. **Separate lab from field.** Lab tests (Lighthouse-style) are diagnostics; real-user data (field) is what counts. Say which each number is. If there is no field data yet (a young or low-traffic site), say so.

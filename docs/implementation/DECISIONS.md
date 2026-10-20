@@ -83,6 +83,27 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-10-20 D19 Site intelligence and the MCP server (owner: "more real capabilities")
+- **Decision:** add capabilities that need no paid provider. These are:
+  - internal PageRank and link-graph analysis;
+  - real-user Core Web Vitals history (Chrome UX Report);
+  - a page change monitor;
+  - a structured data checker and generator;
+  - an entity check (Google Knowledge Graph, Wikidata).
+  Also an MCP server, so AI assistants can use the reports and jobs.
+- **Tradeoffs and rules:**
+  - **Internal PageRank** measures the site's own linking, not Google's view, and the report says so.
+  - **Structured data drafts** use only facts from the page, the config and the URL. Unknowns stay as `<fill: ...>` placeholders, so no fact is invented. Markup that claims what the page does not show is flagged as an error, after Google's structured data policies.
+  - **The change monitor** keeps sentence fingerprints, not copies of competitors' text.
+  - **The entity check** treats creating a Wikidata item as a person's decision, and only for genuinely notable businesses.
+  - **The MCP server** is read-only by default:
+    - files are limited to the state folder;
+    - `run_job` has a fixed allowlist with no publishing, issue, merge or submit jobs;
+    - `team` and `priorities` are forced to run dry;
+    - paid jobs need `confirm_cost`;
+    - it uses no shell, and has no dependencies (newline-delimited JSON-RPC over stdio).
+- **Status:** unit and fixture tested; the MCP server was also tested through a real stdio session. The Chrome UX Report, Knowledge Graph and Wikidata APIs have not been called live.
+
 ## 2026-10-20 D18 Research suite instead of a paid SEO suite (owner request: "those features or better, real solutions")
 - **Decision:** build keyword research, rank tracking, competitor gap, content optimisation, AI visibility, backlink authority and a traffic forecast into the product. Run them on the site's own data (Search Console) plus keys the user brings. No Ahrefs or Semrush subscription, and no maintainer keys.
 - **Choices and tradeoffs:**

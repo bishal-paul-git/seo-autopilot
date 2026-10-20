@@ -175,6 +175,10 @@ No paid API calls were made this session. Hosted cost model is proposed in D9; n
     - Checks: `npm test` 323/323; YAML parse; `bash -n`; `init` installs 12 workflows.
     - **Not run on GitHub**, and the watch thresholds are untested on real traffic.
   - D17 roadmap is code-complete except the AI reviewer as a required check in more repositories (needs each site owner's Claude key).
+- **D19 site intelligence and MCP server (local, not pushed), 2026-10-20:** `mcp`, `linkgraph`, `vitals`, `changes`, `schema` and `entity`, plus intent labels on rank rows.
+  - **Verified:** `npm test` 388/388, including a real stdio MCP session through the CLI.
+  - **Not verified:** the CrUX, Knowledge Graph and Wikidata APIs (mocked); MCP with a real Claude Desktop or Claude Code client.
+  - **Next:** connect the MCP server in Claude Code on a real site and ask for `site_overview`. Run `linkgraph` and `schema` on a real site (free, no key).
 - **D18 research suite (local, not pushed), 2026-10-20:** `keywords`, `rank`, `gap`, `optimize`, `ai-visibility`, `authority` and Python `forecast`. They replace a paid SEO suite with Search Console plus the user's own keys. See `docs/research-suite.md`.
   - **Implemented:**
     - the jobs, analysis modules and provider clients;

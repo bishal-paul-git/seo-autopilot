@@ -4,6 +4,8 @@
 // Search Console positions are averages over every place and device the query was shown; they are the site's real data,
 // not one scraped rank. The live check is one location at one moment. Reports say which is which.
 
+import { label } from "./keywords.mjs";
+
 const addDays = (d, n) => new Date(Date.parse(d + "T00:00:00Z") + n * 864e5).toISOString().slice(0, 10);
 
 // A fixed, relative click curve so visibility is comparable between runs (the site's own curve moves as data grows).
@@ -58,7 +60,7 @@ export function trackQueries(series, queries, today, { lag = 3, span = 7 } = {})
     const now = windowStats(s, from, to), prev = windowStats(s, pFrom, pTo), month = windowStats(s, mFrom, mTo);
     const change = now.position != null && prev.position != null ? Number((prev.position - now.position).toFixed(1)) : null;
     const status = now.position == null ? (prev.position != null ? "lost" : "not ranking") : prev.position == null ? "new" : Math.abs(change) < 1 ? "steady" : change > 0 ? "up" : "down";
-    return { query: q, position: now.position, previous: prev.position, monthAgo: month.position, change, monthChange: now.position != null && month.position != null ? Number((month.position - now.position).toFixed(1)) : null, clicks: now.clicks, impressions: now.impressions, status };
+    return { query: q, intent: label({ query: q }).intent, position: now.position, previous: prev.position, monthAgo: month.position, change, monthChange: now.position != null && month.position != null ? Number((month.position - now.position).toFixed(1)) : null, clicks: now.clicks, impressions: now.impressions, status };
   });
 }
 
@@ -127,7 +129,7 @@ export function rankMarkdown({ siteName, summary: s, rows, live = null, basis, h
     const opp = live.perQuery.filter((r) => (r.features || []).some((f) => !f.held && ["featured-snippet", "people-also-ask", "video", "local-pack"].includes(f.type)) && r.livePosition != null && r.livePosition <= 10);
     if (opp.length) L.push("", "### Features you could win (you are on page one, someone else holds the feature)", ...opp.slice(0, 15).map((r) => `- ${r.query} (live ${r.livePosition}): ${r.features.filter((f) => !f.held).map((f) => `${f.type}${f.by.length ? ` held by ${f.by.join(", ")}` : ""}`).join("; ")}`));
   }
-  L.push("", "## All tracked queries", "", "| Query | Position | Last week | 4 weeks ago | Clicks | Impressions | Status |", "|---|---|---|---|---|---|---|");
-  for (const r of rows) L.push(`| ${r.query} | ${r.position ?? "-"} | ${r.previous ?? "-"} | ${r.monthAgo ?? "-"} | ${r.clicks} | ${r.impressions} | ${r.status} |`);
+  L.push("", "## All tracked queries", "", "| Query | Intent | Position | Last week | 4 weeks ago | Clicks | Impressions | Status |", "|---|---|---|---|---|---|---|---|");
+  for (const r of rows) L.push(`| ${r.query} | ${r.intent} | ${r.position ?? "-"} | ${r.previous ?? "-"} | ${r.monthAgo ?? "-"} | ${r.clicks} | ${r.impressions} | ${r.status} |`);
   return L.join("\n") + "\n";
 }

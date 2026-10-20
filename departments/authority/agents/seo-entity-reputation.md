@@ -16,7 +16,7 @@ Make it unmistakable who the business is, what it does and why it can be trusted
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
 ## Inputs
-The home, About, contact and author pages, structured data on the home page, the business's real profiles and registry entries (supplied by the owner), branded search results, and what AI answers say about the business.
+`entity.json` from the `entity` job (whether Google's Knowledge Graph and Wikidata hold an entity whose official website is this site, look-alikes with the same name, and missing sameAs links), the home, About, contact and author pages, structured data on the home page, the business's real profiles and registry entries (supplied by the owner), branded search results, and what AI answers say about the business.
 
 ## Method
 1. **Search the brand name** (and name plus product, name plus reviews). Record what appears, what is wrong, missing or out of date, and which results the business controls.

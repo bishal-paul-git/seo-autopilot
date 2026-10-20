@@ -142,6 +142,18 @@ jobs:
           BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
         run: npx --yes "$SEO" run authority
+      - name: Structured data checks and drafts for the home page and top pages
+        continue-on-error: true
+        run: npx --yes "$SEO" run schema
+      - name: Page change monitor (your key pages and competitors' winning pages)
+        continue-on-error: true
+        run: npx --yes "$SEO" run changes
+      - name: Real-user Core Web Vitals (Chrome UX Report; skips cleanly without a key)
+        continue-on-error: true
+        env:
+          CRUX_API_KEY: ${{ secrets.CRUX_API_KEY }}
+          PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
+        run: npx --yes "$SEO" run vitals
       - name: Which agents to run this week (agent plan issue; with SEO_AUTOPILOT=true also work-order issues the autopilot drafts)
         continue-on-error: true
         env:

@@ -66,6 +66,7 @@ jobs:
           npx --yes "$SEO" run audit
           npx --yes "$SEO" run analyze
           npx --yes "$SEO" run priorities --dry
+          npx --yes "$SEO" run linkgraph
       - name: IndexNow
         continue-on-error: true
         env:

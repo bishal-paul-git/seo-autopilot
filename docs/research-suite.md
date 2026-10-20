@@ -24,12 +24,25 @@ The agents use these reports:
 
 `team` recommends the right agent when a report shows something worth acting on.
 
+## Site intelligence (free or nearly free)
+| Job | What it does | Needs |
+|---|---|---|
+| `linkgraph` | Internal link graph. Internal PageRank per page (how your own links spread weight), click depth from the home page, orphan pages, and links that leak weight to redirects, errors or noindex pages. Also lists the pages that earn Search Console demand but get little internal weight, each with the strong, related pages that should link to them | the saved audit and Search Console rows; fetches nothing |
+| `vitals` | Real-user Core Web Vitals from the Chrome UX Report (what Chrome users actually experienced) for the whole site and your top pages: current 28 days, the 25-period history, and regressions | a free Google API key with the Chrome UX Report API enabled (`CRUX_API_KEY`) |
+| `changes` | Page change monitor: what changed since last week on your key pages (an accidental noindex, canonical or status change) and on competitors' winning pages (titles, headings, structured data, rewrites) | nothing; pages from `watch-pages.json`, or your top pages plus the gap report's competitor pages |
+| `schema` | Structured data. Checks existing JSON-LD against required fields and against what the page visibly shows (prices, ratings or FAQ answers only in the markup are a spam-policy risk). Drafts the missing Organization, WebSite, Article, breadcrumb and FAQ markup from facts on the page, with `<fill: ...>` where a person must supply something | nothing |
+| `entity` | Entity check: whether Google's Knowledge Graph and Wikidata hold an entity whose official website is this site, look-alikes with the same name, and missing sameAs links | nothing for Wikidata; `GOOGLE_KG_API_KEY` (free) for the Knowledge Graph |
+
+Use any of this from Claude or another AI assistant with the [MCP server](mcp.md) (`seo-autopilot mcp`).
+
 ## Schedules
-- **Daily:** `rank` (Search Console only, free).
+- **Daily:** `rank` (Search Console only, free) and `linkgraph` (after the audit).
+- **Weekly, always free:** `schema`, `changes`, and `vitals` once its key is set.
 - **Weekly:**
   - `keywords`, `gap` and `authority` run on whatever keys are set.
   - `rank --serp` runs only when the repository variable `SEO_RANK_LIVE` is `true`, because it spends SERP credits: one search per tracked query, capped by `research.serpLimit`, default 50.
 - **Monthly:**
+  - `entity`.
   - `forecast` feeds the monthly report.
   - `ai-visibility` runs only when `SEO_AI_VISIBILITY` is `true`. It makes questions × engines × runs paid API calls, capped at 40 questions.
 - **On request:** `optimize` and `keywords "<seed>"`.
@@ -58,6 +71,8 @@ Set each key as a repository secret, or in your shell when running locally. Neve
 | `OPENPAGERANK_API_KEY` | Open PageRank (free key) | keywords difficulty, authority |
 | `BRAVE_API_KEY` or `SERPAPI_KEY` | Brave Search API or SerpAPI | live results (rank --serp, keywords --serp, optimize) |
 | `PERPLEXITY_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY` | Each AI provider | ai-visibility |
+| `CRUX_API_KEY` | Google Cloud API key with the Chrome UX Report API (free) | vitals |
+| `GOOGLE_KG_API_KEY` | Google Cloud API key with the Knowledge Graph Search API (free) | entity |
 
 Check each provider's current prices before switching a scheduled step on. The defaults keep paid steps off.
 
