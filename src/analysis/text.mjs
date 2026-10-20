@@ -28,6 +28,16 @@ const root = (w) => { const s = stem(w); return s.length > 4 && s.endsWith("e") 
 /** Meaningful stems of a text: stop words dropped, then stemmed. */
 export const terms = (s) => tokens(s, { stop: true }).filter((w) => w.length > 1).map(root);
 
+/** stem -> the word form most used in these texts, so reports show "uptime guarantee", not the stems "uptim guarante". */
+export function surfaces(texts) {
+  const seen = new Map();
+  for (const s of texts) for (const w of tokens(s, { stop: true })) { if (w.length < 2) continue; const r = root(w), m = seen.get(r) || seen.set(r, new Map()).get(r); m.set(w, (m.get(w) || 0) + 1); }
+  const out = new Map();
+  for (const [r, m] of seen) out.set(r, [...m].sort((a, b) => b[1] - a[1] || a[0].length - b[0].length)[0][0]);
+  return out;
+}
+export const showTerm = (term, map) => term.split(" ").map((w) => map.get(w) || w).join(" ");
+
 /** Unigram and bigram stems, the units counted by the optimiser. Bigrams skip across stop words only once. */
 export function grams(s) {
   const t = terms(s);

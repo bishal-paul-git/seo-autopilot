@@ -46,6 +46,7 @@ export const JOBS = {
   keywords: () => import("./keywords.mjs"),
   rank: () => import("./rank.mjs"),
   gap: () => import("./gap.mjs"),
+  optimize: () => import("./optimize.mjs"),
 };
 
 export async function describeJobs() {
