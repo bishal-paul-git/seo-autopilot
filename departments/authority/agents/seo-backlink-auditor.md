@@ -16,7 +16,7 @@ Keep the value of links the site has already earned, catch the few patterns wort
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
 ## Inputs
-In the state folder: `inbound.json` / `inbound.md` from the `inbound` job (links into pages that now error, links through redirects, top linking sites and pages, new and lost linking sites, patterns to review), `audit.json` (each page's status, to confirm a target really errors), and `redirects-check.json` if present. Search Console's Manual actions status, supplied by the owner. The export files themselves are in `seo-autopilot/inbound-links/`.
+In the state folder: `inbound.json` / `inbound.md` from the `inbound` job (links into pages that now error, links through redirects, top linking sites and pages, new and lost linking sites, patterns to review), `audit.json` (each page's status, to confirm a target really errors), `redirects-check.json` if present, and `authority.json` from the `authority` job (referring domains from every source with Open PageRank authority, new and lost since the last run). Search Console's Manual actions status, supplied by the owner. The export files themselves are in `seo-autopilot/inbound-links/`.
 
 ## Method
 1. **Check the data first.** Which exports were read, how many rows, how recent the crawl is. An export is a sample: a "lost" site may only be missing from this export. With no audit, say links could not be matched to page status.

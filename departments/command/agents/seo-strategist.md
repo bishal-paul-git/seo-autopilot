@@ -16,7 +16,7 @@ Decide what is worth doing, and what is not. Turn many findings into at most fiv
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
 ## Inputs
-In the state folder named by `stateDir` in `seo-autopilot.config.json`: `priorities.md`, `audit.md`, `insights.json`, `geo.md`, `speed.md`, `experiments.md`, `weekly-digest.md`, `daily-summary.md`, `keyword-backlog.json`, `pace.json` (whether the publishing schedule goes over the pace limits, and the recommended schedule). Not every file exists yet; say which are missing.
+In the state folder named by `stateDir` in `seo-autopilot.config.json`: `priorities.md`, `audit.md`, `insights.json`, `geo.md`, `speed.md`, `experiments.md`, `weekly-digest.md`, `daily-summary.md`, `keyword-backlog.json`, `pace.json` (whether the publishing schedule goes over the pace limits, and the recommended schedule), `rank.json` (tracked positions and movers), `forecast.json` (whether traffic is inside its normal range), `keywords.json` and `gap.json` (topics with no page, and competitor gaps). Not every file exists yet; say which are missing.
 
 ## Method
 1. **Establish the baseline.** Clicks, impressions, average position, indexed pages and trend from the digest. Note the data window and how little data a young site has. Under about 1,000 impressions a month, rankings are noisy and most percentage changes mean nothing; say so.

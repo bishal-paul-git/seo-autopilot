@@ -9,8 +9,9 @@ import { trackedSet, mergeSeries, trackQueries, summarise, liveCheck, weight, vi
 const add = (d, n) => new Date(Date.parse(d + "T00:00:00Z") + n * 864e5).toISOString().slice(0, 10);
 const daily = (from, n, pos, imp = 10, clicks = 1) => Object.fromEntries(Array.from({ length: n }, (_, i) => [add(from, i), [clicks, imp, pos]]));
 
-test("tracked set: your list wins (the example note is ignored); otherwise top non-brand queries by impressions", () => {
-  assert.deepEqual(trackedSet(["REPLACE THESE ...", "Web Hosting", { q: "vps" }], []).queries, ["web hosting", "vps"]);
+test("tracked set: your list wins (an untouched template is ignored); otherwise top non-brand queries by impressions", () => {
+  assert.deepEqual(trackedSet(["Web Hosting", { q: "vps" }], []).queries, ["web hosting", "vps"]);
+  assert.deepEqual(trackedSet(["REPLACE THESE ...", "your main service"], [{ query: "real", impressions: 5 }]).queries, ["real"], "the untouched template is ignored");
   const t = trackedSet([], [{ query: "acme login", impressions: 900 }, { query: "a", impressions: 5 }, { query: "b", impressions: 50 }, { query: "a", impressions: 60 }], { n: 2, brandTerms: ["acme"] });
   assert.deepEqual(t.queries, ["a", "b"]); assert.match(t.basis, /top 2/);
 });

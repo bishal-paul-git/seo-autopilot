@@ -16,7 +16,7 @@ Show what searchers are being given today and where this site can give them some
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
 ## Inputs
-The target queries (from `insights.json`, `priorities.md` or the owner), the site's own pages for them, and the live results. The site profile tells you the market and language.
+The target queries (from `insights.json`, `priorities.md` or the owner), `gap.json` from the `gap` job (queries competitors rank top 10 for where the site is absent or on page two, grouped by topic, and the competitor pages behind them), `rank.json` (who holds the search features), the site's own pages for them, and the live results. For one page against the top results, the `optimize` job's report (`optimize/<page>.json`) lists the terms, sections and questions they share. The site profile tells you the market and language.
 
 ## Method
 1. **Pick at most five queries**, preferring ones just off page one with a clear content gap.

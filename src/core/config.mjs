@@ -79,6 +79,17 @@ export function validate(raw) {
     }
     if (s.logs != null && (typeof s.logs !== "object" || Array.isArray(s.logs) || (s.logs.dir != null && typeof s.logs.dir !== "string"))) errors.push(`${w}.logs must be an object; logs.dir must be a folder path`);
     if (s.inbound != null && (typeof s.inbound !== "object" || Array.isArray(s.inbound) || (s.inbound.dir != null && typeof s.inbound.dir !== "string"))) errors.push(`${w}.inbound must be an object; inbound.dir must be a folder path`);
+    if (s.research != null) {
+      const r = s.research;
+      if (typeof r !== "object" || Array.isArray(r)) errors.push(`${w}.research must be an object`);
+      else {
+        for (const k of ["competitors", "competitorNames", "aliases", "engines"]) if (r[k] != null && (!Array.isArray(r[k]) || r[k].some((x) => typeof x !== "string"))) errors.push(`${w}.research.${k} must be a list of strings`);
+        if (Array.isArray(r.engines) && r.engines.some((e) => !["perplexity", "openai", "anthropic", "gemini"].includes(e))) errors.push(`${w}.research.engines may list perplexity, openai, anthropic and gemini`);
+        if (r.market != null && (typeof r.market !== "string" || !/^[A-Za-z]{2}$/.test(r.market))) errors.push(`${w}.research.market must be a two-letter country code, for example "GB" or "US"`);
+        if (r.aiRuns != null && (!Number.isInteger(r.aiRuns) || r.aiRuns < 1 || r.aiRuns > 5)) errors.push(`${w}.research.aiRuns must be a whole number from 1 to 5`);
+        if (r.serpLimit != null && (!Number.isInteger(r.serpLimit) || r.serpLimit < 1 || r.serpLimit > 200)) errors.push(`${w}.research.serpLimit must be a whole number from 1 to 200`);
+      }
+    }
     if (s.redirects != null) {
       if (typeof s.redirects !== "object" || Array.isArray(s.redirects)) errors.push(`${w}.redirects must be an object`);
       else if (s.redirects.format != null && !["apache", "nginx", "netlify", "vercel"].includes(s.redirects.format)) errors.push(`${w}.redirects.format must be apache, nginx, netlify or vercel`);

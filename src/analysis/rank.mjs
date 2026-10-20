@@ -19,7 +19,9 @@ export function windowStats(s = {}, from, to) {
 
 /** Which queries to track: the user's list, else the top `n` non-brand queries by impressions in Search Console rows. */
 export function trackedSet(list, rows = [], { n = 50, brandTerms = [] } = {}) {
-  const own = (list || []).map((x) => String(x?.q ?? x).toLowerCase().trim()).filter((q) => q && !/^replace these/i.test(q));
+  // A list still holding the template's "REPLACE THESE" note is the untouched example: ignore all of it.
+  const raw = (list || []).map((x) => String(x?.q ?? x).toLowerCase().trim()).filter(Boolean);
+  const own = raw.some((q) => /^replace these/i.test(q)) ? [] : raw;
   if (own.length) return { queries: [...new Set(own)], basis: "your tracked-queries.json" };
   const brand = brandTerms.map((b) => b.toLowerCase()).filter(Boolean), by = new Map();
   for (const r of rows) { const q = String(r.query).toLowerCase(); if (!brand.some((b) => q.includes(b))) by.set(q, (by.get(q) || 0) + r.impressions); }

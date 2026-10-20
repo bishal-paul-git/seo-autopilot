@@ -16,7 +16,7 @@ Earn more clicks from impressions the page already has, and make the page easy t
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
 ## Inputs
-`insights.json` and `priorities.md` (pages with impressions and low click-through, striking-distance queries), `quality.json` (pages whose title, H1 or description misses their own top query, and headings per section), the heading findings in `audit.md` (`h1-long`, `heading-skip`, `h2-generic`, `h2-repeated`, `few-subheadings`), the page, the live results and their snippets for the main query.
+`insights.json` and `priorities.md` (pages with impressions and low click-through, striking-distance queries), `quality.json` (pages whose title, H1 or description misses their own top query, and headings per section), the heading findings in `audit.md` (`h1-long`, `heading-skip`, `h2-generic`, `h2-repeated`, `few-subheadings`), `rank.json` (search features shown for the query and who holds them), the page, the live results and their snippets for the main query.
 
 ## Method
 1. **Pick the right pages.** Enough impressions to matter, click-through clearly below what its position usually earns, and no other cause (a better competitor, a wrong intent). If the cause is not the snippet, say so and stop.

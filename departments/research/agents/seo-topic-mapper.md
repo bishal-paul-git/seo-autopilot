@@ -16,7 +16,7 @@ Give the site one clear map: every topic it should own, the page that owns it, t
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
 ## Inputs
-`insights.json` and `keyword-backlog.json` (queries, pages, positions, impressions), query clusters from the Python engine when installed (`query_clusters`), `links.json` (internal links), `audit.md`, the site's pages from the content paths in `seo-autopilot.config.json`, and live results to check which queries share results.
+`keywords.json` from the `keywords` job (topics grouped by shared results or by words, with intent, demand, difficulty, owner page and gaps), `insights.json` and `keyword-backlog.json` (queries, pages, positions, impressions), query clusters from the Python engine when installed (`query_clusters`), `links.json` (internal links), `audit.md`, the site's pages from the content paths in `seo-autopilot.config.json`, and live results to check which queries share results.
 
 ## Method
 1. **Collect queries** from Search Console and the keyword backlog, plus questions from the question-mining skill. Drop branded and irrelevant ones and say how many.

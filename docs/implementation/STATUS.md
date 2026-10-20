@@ -175,6 +175,20 @@ No paid API calls were made this session. Hosted cost model is proposed in D9; n
     - Checks: `npm test` 323/323; YAML parse; `bash -n`; `init` installs 12 workflows.
     - **Not run on GitHub**, and the watch thresholds are untested on real traffic.
   - D17 roadmap is code-complete except the AI reviewer as a required check in more repositories (needs each site owner's Claude key).
+- **D18 research suite (local, not pushed), 2026-10-20:** `keywords`, `rank`, `gap`, `optimize`, `ai-visibility`, `authority` and Python `forecast`. They replace a paid SEO suite with Search Console plus the user's own keys. See `docs/research-suite.md`.
+  - **Implemented:**
+    - the jobs, analysis modules and provider clients;
+    - router rules;
+    - workflow steps (paid steps are opt-in: `SEO_RANK_LIVE`, `SEO_AI_VISIBILITY`);
+    - the config block and agent inputs.
+  - **Verified:**
+    - `npm test` 364/364;
+    - Python 27/27;
+    - Go ok;
+    - forecast CLI run end to end on synthetic data.
+    - Every provider is mocked.
+  - **Not verified:** no live call to Bing, DataForSEO, Open PageRank, autocomplete, Brave, SerpAPI, Perplexity, OpenAI, Anthropic or Gemini; no run on a real site.
+  - **Next:** run `keywords`, `rank` and `optimize` on a real site with Search Console (free). Then one paid key at a time, checking each report against the provider's own dashboard.
 - **Next, step 4:** add sources and "last reviewed" dates to every playbook, from `docs/research/REFERENCES.md`, with a test. It is blocked on verifying the links: page fetches are blocked in this session's network policy.
 
 ## Next milestone

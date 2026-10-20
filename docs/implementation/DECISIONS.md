@@ -83,6 +83,19 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-10-20 D18 Research suite instead of a paid SEO suite (owner request: "those features or better, real solutions")
+- **Decision:** build keyword research, rank tracking, competitor gap, content optimisation, AI visibility, backlink authority and a traffic forecast into the product. Run them on the site's own data (Search Console) plus keys the user brings. No Ahrefs or Semrush subscription, and no maintainer keys.
+- **Choices and tradeoffs:**
+  - **Search Console first.** Positions and demand come from the site's own first-party data and are free. The cost is no data for queries the site was never shown for. A provider key (DataForSEO) fills that, labelled as an estimate.
+  - **Grouping by shared results.** When live results are available, 3 or more shared top-10 URLs define a topic, the method the big suites use. Without live results, grouping falls back to same-words, and the report says which method was used.
+  - **Difficulty without a link index.** Difficulty is the average Open PageRank (from the open Common Crawl graph) of the top-10 domains. It is cruder than a suite's own index, so it is labelled with its basis.
+  - **Autocomplete is off by default** (`--suggest`). Google's endpoint is public but unofficial, and its terms restrict automated queries. When on, it is capped, spaced out, and used only for wording, never as volume.
+  - **AI visibility uses the engines' official APIs with web search on.** That covers Perplexity, OpenAI Responses with `web_search`, Claude with `web_search_20260209` and server-side fallback, and Gemini with `google_search`. Results are compared only within the same question set, repeated runs measure variance, and raw answers are kept as evidence. Consumer apps can answer differently from the APIs; the report says so.
+  - **Paid steps are opt-in per schedule.** They are switched on by `SEO_RANK_LIVE` and `SEO_AI_VISIBILITY`, and free steps always run.
+  - **Forecast in Python, standard library only** (Holt-Winters with a weekly season, grid-searched). It runs in the optional engine, so the Node core stays dependency-free. The range assumes independent errors and is on the narrow side; it prompts a look, not a conclusion.
+- **Not built:** paid-ads intelligence and social tools (different products), and a web-scale crawl of our own (that would need infrastructure the product does not run).
+- **Status:** all mocked or fixture tested. No provider has been called live from this project yet.
+
 ## 2026-10-20 D17 Graduated autopilot (APPROVED by the owner)
 The owner decided that a person should not approve every change: routine work runs and publishes on a schedule, and a person is asked only about high-risk changes. This replaces the earlier rule "a human approves what goes live".
 - **Levels per kind of change** (`src/analysis/autonomy.mjs`, shown by `run autopilot`):

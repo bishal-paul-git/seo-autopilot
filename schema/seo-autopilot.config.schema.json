@@ -260,6 +260,19 @@
               }
             }
           },
+          "research": {
+            "type": "object",
+            "description": "Research suite: keyword explorer, rank tracker, gap, optimiser, AI visibility and authority. All optional.",
+            "properties": {
+              "market": { "type": "string", "pattern": "^[A-Za-z]{2}$", "description": "Country for live results and provider data (default: citations.market, else GB)." },
+              "competitors": { "type": "array", "items": { "type": "string" }, "description": "Competitor domains, for example [\"rival.com\"]. Otherwise found from share of voice." },
+              "competitorNames": { "type": "array", "items": { "type": "string" }, "description": "Competitor names to look for in AI answers." },
+              "aliases": { "type": "array", "items": { "type": "string" }, "description": "Other names of the business to detect in AI answers (short forms, misspellings)." },
+              "engines": { "type": "array", "items": { "enum": ["perplexity", "openai", "anthropic", "gemini"] }, "description": "AI engines to ask (default: every engine with a key)." },
+              "aiRuns": { "type": "integer", "minimum": 1, "maximum": 5, "description": "Times each question is asked per engine (default 2)." },
+              "serpLimit": { "type": "integer", "minimum": 1, "maximum": 200, "description": "Tracked queries checked live by rank --serp (default 50)." }
+            }
+          },
           "inbound": {
             "type": "object",
             "description": "Inbound links audit. Folder of Search Console or backlink-tool CSV exports. Default: <dataDir>/inbound-links.",

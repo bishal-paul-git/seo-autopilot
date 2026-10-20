@@ -16,7 +16,7 @@ Show, from real data, how visible the site is on its important queries and which
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
 ## Inputs
-`insights.json` and `daily-summary.md` (Search Console queries, positions, clicks and impressions), `page-daily.json` (per-page history), `citations.json` (live results from a search provider, when a key is set), `priorities.md`, the tracked query list in Project rules, and the live results you can see.
+`rank.json` and `rank-history.json` from the `rank` job (tracked positions this week, last week and four weeks ago, movers, visibility, and with `--serp` the live features, competitors and share of voice), `forecast.json` (whether clicks are inside their normal range), `gap.json`, `insights.json` and `daily-summary.md` (Search Console queries, positions, clicks and impressions), `page-daily.json` (per-page history), `citations.json` (live results from a search provider, when a key is set), `priorities.md`, the tracked query list in Project rules, and the live results you can see.
 
 ## Method
 1. **Build the tracked set:** 20 to 100 queries the business cares about, from Search Console first (queries with impressions, grouped by intent with the search-intent-labelling skill) plus any the owner names. Keep it stable between runs.

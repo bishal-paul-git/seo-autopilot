@@ -2,6 +2,25 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-20 (D18 research suite)
+- **Code:**
+  - `src/analysis/text.mjs`, `keywords.mjs`, `rank.mjs`, `gap.mjs`, `optimize.mjs`, `ai-visibility.mjs` and `authority.mjs`.
+  - `src/lib/research-sources.mjs` (Bing, DataForSEO, Open PageRank, autocomplete) and `src/lib/ai-engines.mjs` (Perplexity, OpenAI, Anthropic, Gemini).
+  - Search features added to `src/lib/serp.mjs`, and paging (`extra`) to the Search Console helper.
+  - Jobs: `keywords`, `rank`, `gap`, `optimize`, `ai-visibility`, `authority` and `forecast`.
+  - Python `engines/python/seo_engine/forecast.py` and a `forecast` CLI command.
+  - Router rules and the `team` inputs; the forecast line in the monthly report.
+  - Config `research` validation and schema; `templates/data/tracked-queries.json`.
+  - Workflow steps in `seo-daily`, `seo-weekly` and `seo-monthly`.
+- **Bug found by a test and fixed:** re-fetched Search Console days were added to the saved history instead of replacing it (`mergeSeries`).
+- **Docs:** `docs/research-suite.md`, rows in `docs/jobs.md`, D18 in `DECISIONS.md`, inputs for 13 agents.
+- **Checks:**
+  - `npm test`: 364 pass.
+  - `python3 -m unittest discover -s tests` (engines/python): 27 pass.
+  - The forecast CLI was run end to end on synthetic data.
+  - All workflow YAML parses.
+  - Every provider is mocked. **No live provider call was made.**
+
 ## 2026-10-20 (agents and skills from the owner's research notes)
 - **Content (product):** 3 agents (`departments/research/agents/seo-serp-analyst.md`, `seo-topic-mapper.md`, `departments/ai-search/agents/seo-ai-visibility-tracker.md`) and 5 skills (`departments/skills/question-mining`, `search-intent-labelling`, `traffic-potential`, `broken-link-reclamation`, `ai-answer-testing`); skill references added to 6 existing agents; charters, org chart, `.claude-plugin/plugin.json`, `docs/agents.md`, `CLAUDE.md` counts.
 - **Source:** the owner's three research notes (Ahrefs vs Semrush; two architecture blueprints). The GitHub repositories they name could not be opened from this session (403), so no code or licence was checked and nothing was copied.

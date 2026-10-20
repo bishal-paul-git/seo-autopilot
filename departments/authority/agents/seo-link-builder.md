@@ -16,7 +16,7 @@ Find honest ways for relevant sites to discover and cite the site's best pages, 
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
 ## Inputs
-The site's best pages (a linkable asset is a page that is worth citing), `mentions` and backlink data in the project's state folder if present, the live web, and the owner's real relationships (clients who agreed, partners, memberships).
+The site's best pages (a linkable asset is a page that is worth citing), `mentions` and backlink data in the project's state folder if present, `authority.json` from the `authority` job (referring domains with authority, and the link intersect: sites that link to several competitors but not to this site), the live web, and the owner's real relationships (clients who agreed, partners, memberships).
 
 ## Method
 1. **Pick the pages worth linking to.** Only pages that are indexed, accurate and genuinely useful. If none are, say so and recommend improving content first.

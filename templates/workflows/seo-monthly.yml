@@ -1,6 +1,8 @@
-# seo-autopilot: monthly report (decision D17). On the 1st of each month it re-runs the full audit, then reports what the
-# autopilot published, what the watch rolled back, search traffic over the last 28 days vs the 28 before, and how audit
-# findings changed since last month. Opens one "Monthly SEO report YYYY-MM" issue; changes nothing on your site.
+# seo-autopilot: monthly report (decision D17). On the 1st of each month it re-runs the full audit and reports:
+# what the autopilot published and what the watch rolled back; search traffic over the last 28 days vs the 28 before, and
+# whether it is inside its normal range (Python forecast); how audit findings changed since last month; and, when
+# SEO_AI_VISIBILITY is true, how AI answer engines mention and cite the site. Opens one "Monthly SEO report YYYY-MM" issue.
+# It changes nothing on your site.
 name: seo-monthly
 on:
   schedule: [{ cron: "11 6 1 * *" }]   # 06:11 UTC on the 1st of each month
@@ -29,6 +31,20 @@ jobs:
       - name: Ranked priorities (report only; the weekly job opens the issue)
         continue-on-error: true
         run: npx --yes "$SEO" run priorities --dry
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Traffic against its normal range (Python Holt-Winters baseline)
+        continue-on-error: true
+        run: npx --yes "$SEO" run forecast
+      - name: AI visibility (asks AI engines your questions; paid API calls, ON when SEO_AI_VISIBILITY is true)
+        if: vars.SEO_AI_VISIBILITY == 'true'
+        continue-on-error: true
+        env:
+          PERPLEXITY_API_KEY: ${{ secrets.PERPLEXITY_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: npx --yes "$SEO" run ai-visibility
       - name: Last month's merged pull requests
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

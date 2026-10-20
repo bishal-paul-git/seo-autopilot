@@ -16,7 +16,7 @@ Give the owner a steady, honest measure of the site's presence in AI answers, so
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
 ## Inputs
-`citations.json` (tracked questions and who each provider cites), `geo.md` (AI search readiness), Search Console queries phrased as questions, the business facts in `seo-autopilot.config.json` and Project rules (names, aliases, services, places), the previous visibility report if one exists, and the live AI answers and search results you can reach.
+`ai-visibility.json` from the `ai-visibility` job (every recorded answer per engine and run: mentions, cited URLs, who is cited instead, history), `citations.json` (tracked questions and who each search provider cites), `geo.md` (AI search readiness), Search Console queries phrased as questions, the business facts in `seo-autopilot.config.json` and Project rules (names, aliases, services, places), the previous visibility report if one exists, and the live AI answers and search results you can reach.
 
 ## Method
 1. **Fix the question set** with the ai-answer-testing skill: 20 to 40 real questions from the site's own data, grouped by intent and service, saved with their wording so every run asks the same thing. Change it only on purpose and say so.

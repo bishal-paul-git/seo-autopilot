@@ -16,7 +16,7 @@ Tell the owner, in a few minutes of reading, whether search is working for the b
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
 ## Inputs
-`weekly-digest.md`, `daily-summary.md`, `priorities.md`, `audit.md`, `geo.md`, `speed.md`, `experiments.md`, `insights.json`, the pipeline and release state, analytics and conversion events if connected, and the list of changes shipped in the period (merged pull requests, releases).
+`weekly-digest.md`, `daily-summary.md`, `priorities.md`, `audit.md`, `geo.md`, `speed.md`, `experiments.md`, `insights.json`, `rank.json` and `rank-history.json` (visibility over time), `forecast.json` (actual against the normal range), `ai-visibility.json` (mentions and citations in AI answers), `authority.json`, the pipeline and release state, analytics and conversion events if connected, and the list of changes shipped in the period (merged pull requests, releases).
 
 ## Method
 1. **State the period and the comparison period**, and how much data there is. Note data lags and gaps.

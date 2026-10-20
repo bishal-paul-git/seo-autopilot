@@ -111,6 +111,16 @@ test("work orders: the weekly team step gets the autopilot switch, the implement
   assert.match(t, /any other agent label means: comment that it needs a person/);
 });
 
+test("research suite: free Search Console steps always run; steps that spend credits only when their switch is on", () => {
+  assert.match(text("seo-daily.yml"), /run rank\n/);
+  const w = text("seo-weekly.yml"), m = text("seo-monthly.yml");
+  for (const job of ["keywords", "gap", "authority"]) assert.match(w, new RegExp(`run ${job}\\n`), job);
+  assert.match(w.slice(w.lastIndexOf("\n", w.indexOf("run rank --serp") - 1) - 900, w.indexOf("run rank --serp")), /if: vars\.SEO_RANK_LIVE == 'true'/, "live rank checks cost SERP credits");
+  assert.match(m.slice(m.indexOf("AI visibility"), m.indexOf("run ai-visibility")), /if: vars\.SEO_AI_VISIBILITY == 'true'/, "AI answers cost API calls");
+  assert.ok(m.indexOf("run forecast") < m.indexOf("run monthly"), "the forecast feeds the monthly report");
+  assert.ok(w.indexOf("run gap") < w.indexOf("run team"), "the team plan sees the research reports");
+});
+
 test("only people with write access can approve a change for the implementer, and the kill switch stops it", () => {
   const t = text("seo-implement.yml");
   assert.match(t, /collaborators\/\$ACTOR\/permission/);

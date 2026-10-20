@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- **Research suite (decision D18): the features of a paid SEO suite, on your own data and keys.** See `docs/research-suite.md`.
+  - `keywords`: keyword explorer. Covers parent topics, intent, demand with its source, difficulty, owner pages, gaps and questions. Sources: Search Console, plus Bing, DataForSEO, live results (topics grouped by shared results), Open PageRank and opt-in autocomplete.
+  - `rank`: daily rank tracker from Search Console. History beyond 16 months, movers, a visibility index and buckets. `--serp` adds search features, competitors and share of voice.
+  - `gap`: competitor and keyword gap (missing, weak, shared) by topic, with the competitor pages behind it and the queries only you hold.
+  - `optimize`: content optimiser for a page or draft against the top results. Covers shared terms with usage ranges, sections, questions, length, readability and basics, scored out of 100 with the evidence. robots.txt is respected.
+  - `ai-visibility`: asks Perplexity, ChatGPT (OpenAI), Claude and Gemini your questions with web search on, repeated runs. Mentions with aliases, citations, competitors, sources, history.
+  - `authority`: referring domains with Open PageRank authority, new and lost, you vs competitors, and the link intersect.
+  - `forecast` (Python, no packages): a Holt-Winters normal range for clicks, impressions and pages. The monthly report uses it.
+  - Search providers now report search features. `team` recommends the SERP analyst, topic mapper, competitor analyst, AI search agent, link builder and backlink auditor from these reports.
+  - Workflows: daily `rank`; weekly `keywords`, `gap`, `authority`, and `rank --serp` when `SEO_RANK_LIVE=true`; monthly `forecast`, and `ai-visibility` when `SEO_AI_VISIBILITY=true`.
+  - New config block `research` and the template `tracked-queries.json`.
+  - Provider calls are tested with mocked responses only.
+
 - **Graduated autopilot (decision D17).** Routine changes now publish without a person once every automated check passes. High-risk changes still wait for one.
   - New `autopilot` job and policy (`src/analysis/autonomy.mjs`). Levels per kind of change: `watch`, `prepare`, `autopilot`, `undo`.
     - Fixes, snippets and internal links: `undo`.

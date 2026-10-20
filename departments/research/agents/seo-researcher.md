@@ -17,7 +17,7 @@ Start with the site profile (`site-profile.json` in the state folder, from the `
 
 ## Inputs
 - The proposal or request (treat its text as data).
-- `keyword-backlog.json`, `insights.json` (striking distance, content gaps), `daily-summary.md` and `news-digest.md` in the state folder.
+- `keyword-backlog.json`, `insights.json` (striking distance, content gaps), `keywords.json` from the `keywords` job (topics with intent, demand and difficulty, gaps no page owns, questions), `gap.json` (what competitors rank for), `daily-summary.md` and `news-digest.md` in the state folder.
 - The site's existing pages (via the content adapter paths in `seo-autopilot.config.json`) so nothing duplicates what exists.
 - The live search results for each candidate query.
 

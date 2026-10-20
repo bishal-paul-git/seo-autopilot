@@ -100,6 +100,12 @@ test("every report the router tells an agent to use is named in that agent's Inp
     render: { results: [{ url: "https://a.test/r", findings: [{ id: "prerender-text-not-on-page", severity: "high" }] }] },
     inbound: { reclaim: [{ target: "/old", status: 404, links: 3 }], review: [{ kind: "sitewide", note: "n. x" }] },
     logs: { findings: [{ id: "crawl-waste", severity: "medium", title: "waste" }], googlebot: { errors: [{ path: "/e" }], redirects: [] } },
+    rank: { summary: { losers: [1, 2, 3].map((i) => ({ query: `q${i}`, previous: 3, position: 9 })), lost: ["gone"] } },
+    forecast: { site: { clicks: { verdict: "below the normal range", actual: 50, expected: 90 } } },
+    keywords: { gaps: [{ parent: "topic", demand: { value: 40, basis: "b" } }] },
+    gap: { topics: [{ topic: "t", competitors: ["r.test"] }], gap: { missing: [1], weak: [] } },
+    aiVisibility: { asked: 10, totals: { citationShare: 0.1 }, gaps: [{ q: "q", citedInstead: ["r.test"] }] },
+    authority: { intersect: [{ domain: "d.test", linksTo: ["a", "b"] }], profile: { lostDomains: ["x", "y", "z"] } },
   });
   const inputs = (name) => (readFileSync(pathOf[`${name}.md`], "utf8").match(/## Inputs\n([\s\S]*?)\n## /) || [])[1] || "";
   let checked = 0;
@@ -109,7 +115,7 @@ test("every report the router tells an agent to use is named in that agent's Inp
       assert.ok(inputs(s.agent).includes(m[1]), `${s.agent} is sent ${m[1]} but its Inputs do not mention it`);
     }
   }
-  assert.ok(checked >= 9, `only ${checked} report references checked`);
+  assert.ok(checked >= 16, `only ${checked} report references checked`);
 });
 
 test("only the technical fixer may run arbitrary shell; the others are scoped", () => {
