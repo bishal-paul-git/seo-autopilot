@@ -86,7 +86,7 @@ export function liveCheck(serps = {}, ownDomain) {
     for (const [d, p] of best) sov.set(d, (sov.get(d) || 0) + weight(p));
     const mine = [...best].find(([d]) => isOwn(d));
     const features = (s.features || []).map((f) => ({ type: f.type, held: (f.domains || []).some(isOwn), by: (f.domains || []).filter((d) => !isOwn(d)).slice(0, 3) }));
-    perQuery.push({ query: q, livePosition: mine ? mine[1] : null, url: mine ? (s.results.find((r) => isOwn(r.domain))?.url || "") : "", features, top3: (s.results || []).slice(0, 3).map((r) => r.domain), aiCited: (s.aiSources || []).some((a) => isOwn(a.domain)) });
+    perQuery.push({ query: q, livePosition: mine ? mine[1] : null, url: mine ? (s.results.find((r) => isOwn(r.domain))?.url || "") : "", features, top3: (s.results || []).slice(0, 3).map((r) => r.domain), results: (s.results || []).slice(0, 10).map((r) => ({ domain: r.domain, position: r.position, url: r.url || "" })), aiCited: (s.aiSources || []).some((a) => isOwn(a.domain)) });
   }
   const n = queries.length || 1;
   const share = [...sov].map(([domain, w]) => ({ domain, share: Number(((w / n) * 100).toFixed(1)), own: isOwn(domain) })).sort((a, b) => b.share - a.share);
