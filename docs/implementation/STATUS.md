@@ -165,7 +165,10 @@ No paid API calls were made this session. Hosted cost model is proposed in D9; n
     - all workflow templates parse as YAML;
     - `bash -n` on the changed scripts.
   - **Not tested on GitHub:** the workflows have not run on a real repository; `gh` and GitHub APIs are not exercised by the tests.
-  - Next for D17: a scheduled implement job driven by the work orders, a monthly workflow, and post-publish monitoring with auto-revert.
+  - Part 2: the scheduled `seo-autopilot` workflow. It picks one allowed proposal issue twice a day, then drafts, checks (no secrets), reviews and merges it through the existing workflows, now callable.
+    - Checks: `npm test` 303/303; YAML parse; `bash -n` on all changed run scripts; `init` installs it with placeholders filled.
+    - **Not run on GitHub.** Reusable-workflow calls, check-run names ("job / build") and permissions are untested live.
+  - Next for D17: post-publish monitoring with auto-revert for `undo` changes, a monthly workflow, and driving the agents from `team` work orders (not only proposal issues).
 - **Next, step 4:** add sources and "last reviewed" dates to every playbook, from `docs/research/REFERENCES.md`, with a test. It is blocked on verifying the links: page fetches are blocked in this session's network policy.
 
 ## Next milestone

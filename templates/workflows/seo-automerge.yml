@@ -19,6 +19,13 @@ on:
   workflow_run:
     workflows: [seo-check, seo-review]
     types: [completed]
+  # Called by the scheduled seo-autopilot workflow after its own check and review jobs (then SEO_AUTOMERGE is not needed:
+  # turning on SEO_AUTOPILOT is the opt-in). The same gates apply.
+  workflow_call:
+    inputs:
+      branch:
+        type: string
+        required: true
 
 permissions:
   contents: write
@@ -35,12 +42,12 @@ env:
 jobs:
   merge:
     if: >-
+      vars.SEO_AUTOPILOT_PAUSED != 'true' && (startsWith(inputs.branch, 'seo/') || (
       vars.SEO_AUTOMERGE == 'true' &&
-      vars.SEO_AUTOPILOT_PAUSED != 'true' &&
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'pull_request' &&
       startsWith(github.event.workflow_run.head_branch, 'seo/') &&
-      github.event.workflow_run.head_repository.full_name == github.repository
+      github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-latest
     steps:
       # The default branch, for the config and policy only. The pull request's code is never checked out or run.
@@ -51,14 +58,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
-          BRANCH: ${{ github.event.workflow_run.head_branch }}
-          SHA: ${{ github.event.workflow_run.head_sha }}
+          BRANCH: ${{ inputs.branch || github.event.workflow_run.head_branch }}
+          SHA: ${{ github.event.workflow_run.head_sha || '' }}
           REQUIRE_REVIEW: ${{ vars.SEO_REQUIRE_REVIEW }}
         run: |
           set -eu
+          if [ -z "$SHA" ]; then SHA=$(gh pr list --head "$BRANCH" --state open --json headRefOid --jq '.[0].headRefOid // empty'); fi
+          if [ -z "$SHA" ]; then echo "No open pull request for $BRANCH; nothing to merge."; exit 0; fi
           pr=$(gh pr list --head "$BRANCH" --state open --json number,headRefOid --jq ".[] | select(.headRefOid==\"$SHA\") | .number" | head -1)
           if [ -z "$pr" ]; then echo "No open pull request at the checked commit; nothing to merge."; exit 0; fi
-          check() { gh api "repos/$GH_REPO/commits/$SHA/check-runs" --jq "[.check_runs[] | select(.name==\"$1\") | .conclusion] | first"; }
+          # "build" / "review" when run on their own; "<caller job> / build" when called by the seo-autopilot workflow.
+          check() { gh api "repos/$GH_REPO/commits/$SHA/check-runs" --jq "[.check_runs[] | select(.name==\"$1\" or (.name | endswith(\" / $1\"))) | .conclusion] | first"; }
           if [ "$(check build)" != "success" ]; then echo "seo-check has not passed on this commit; not merging."; exit 0; fi
           if [ "${REQUIRE_REVIEW:-}" != "false" ]; then
             if [ "$(check review)" != "success" ]; then echo "The reviewer has not finished on this commit; not merging yet."; exit 0; fi

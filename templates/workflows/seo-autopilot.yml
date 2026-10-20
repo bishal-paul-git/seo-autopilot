@@ -1,0 +1,123 @@
+# seo-autopilot: the autopilot loop (decision D17). Twice a day it picks ONE open proposal issue that the site's autopilot
+# policy allows (a refresh, a new page within the weekly limit, a snippet or link fix), drafts it, builds it with no secrets,
+# has the reviewer agent check it, and merges it only if every check passed on that commit. Kinds the policy keeps for a
+# person (sensitive topics, robots and sitemaps, migrations, deletions, outreach, workflow or dependency changes) are never
+# picked. Proposal issues come from the daily and weekly jobs; label one seo-hold to keep the autopilot away from it.
+#
+# OFF until you create the repository VARIABLE  SEO_AUTOPILOT = true. It also needs SEO_REVIEW = true (the reviewer) and the
+# same Claude secret as seo-implement. Kill switch: the variable SEO_AUTOPILOT_PAUSED = true.
+# The jobs call the existing seo-implement, seo-check, seo-review and seo-automerge workflows, so their safety rules apply.
+name: seo-autopilot
+on:
+  schedule: [{ cron: "23 7,15 * * *" }]   # 07:23 and 15:23 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seo-autopilot
+  cancel-in-progress: false
+
+env:
+  SEO: "{{SPEC}}"
+
+jobs:
+  pick:
+    if: vars.SEO_AUTOPILOT == 'true' && vars.SEO_AUTOPILOT_PAUSED != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    outputs:
+      issue: ${{ steps.pick.outputs.issue }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Pick the next issue the policy allows
+        id: pick
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eu
+          gh issue list --state open --limit 100 --json number,labels --search "label:seo-topic,seo-refresh,seo-snippet,seo-links,seo-fix" > "$RUNNER_TEMP/issues.json"
+          since_day=$(date -u +%Y-%m-%d); since_week=$(date -u -d '7 days ago' +%Y-%m-%d)
+          merged() { gh pr list --state merged --search "merged:>=$1" --limit 200 --json headRefName,labels --jq "[.[] | select(.headRefName | startswith(\"seo/\")) $2] | length"; }
+          today=$(merged "$since_day" "")
+          week=$(merged "$since_week" '| select([.labels[].name] | index("seo-topic"))')
+          npx --yes "$SEO" run autopilot --pick --issues-file "$RUNNER_TEMP/issues.json" --max 1 --today "$today" --new-this-week "$week"
+
+  draft:
+    needs: pick
+    if: needs.pick.outputs.issue != ''
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+    uses: ./.github/workflows/seo-implement.yml
+    with:
+      issue: ${{ fromJSON(needs.pick.outputs.issue) }}
+    secrets: inherit
+
+  locate:
+    needs: [pick, draft]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+    outputs:
+      pr: ${{ steps.find.outputs.pr }}
+      branch: ${{ steps.find.outputs.branch }}
+      base: ${{ steps.find.outputs.base }}
+    steps:
+      - name: Find the drafted pull request and mark the issue as drafted
+        id: find
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          N: ${{ needs.pick.outputs.issue }}
+        run: |
+          set -eu
+          gh label create seo-drafted --color C5DEF5 --description "Drafted by the autopilot" 2>/dev/null || true
+          gh issue edit "$N" --add-label seo-drafted || true
+          pr=$(gh pr list --head "seo/issue-$N" --state open --json number --jq '.[0].number // empty')
+          echo "pr=$pr" >> "$GITHUB_OUTPUT"
+          echo "branch=seo/issue-$N" >> "$GITHUB_OUTPUT"
+          echo "base=$(gh repo view --json defaultBranchRef --jq .defaultBranchRef.name)" >> "$GITHUB_OUTPUT"
+          [ -n "$pr" ] || echo "The drafter opened no pull request (it explains why on issue #$N)."
+
+  check:
+    needs: locate
+    if: needs.locate.outputs.pr != ''
+    permissions:
+      contents: read
+    uses: ./.github/workflows/seo-check.yml
+    with:
+      ref: ${{ needs.locate.outputs.branch }}
+      base: ${{ needs.locate.outputs.base }}
+
+  review:
+    needs: [locate, check]
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+    uses: ./.github/workflows/seo-review.yml
+    with:
+      pr: ${{ fromJSON(needs.locate.outputs.pr) }}
+    secrets: inherit
+
+  merge:
+    needs: [locate, review]
+    permissions:
+      contents: write
+      pull-requests: write
+      checks: read
+    uses: ./.github/workflows/seo-automerge.yml
+    with:
+      branch: ${{ needs.locate.outputs.branch }}

@@ -106,7 +106,7 @@ The owner decided that a person should not approve every change: routine work ru
   - F2: the implementer did not check who added `approved`; now only write, maintain or admin can trigger it.
   - F3: release pushed to the default branch with no pause; it is now behind the kill switch and only dates pages already merged.
 - **Still to build (D17 roadmap):**
-  - running the agents automatically from the work orders on a schedule (labels added with the workflow token do not trigger workflows, so this needs a scheduled implement job);
+  - running the agents automatically on a schedule: DONE for proposal issues (`seo-autopilot` workflow, which calls implement, check, review and merge in one run, because changes made with the workflow token do not trigger other workflows). Not yet driven by the work orders from `team`;
   - a monthly workflow;
   - post-publish monitoring with automatic revert for `undo` changes;
   - the AI reviewer as a required check in more repositories (it needs the site owner's Claude key).

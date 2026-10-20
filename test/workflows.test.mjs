@@ -43,6 +43,7 @@ for (const f of files) {
     for (const m of t.matchAll(/uses:\s*([^\s#]+)/g)) {
       const ref = m[1];
       if (/^(actions|github)\//.test(ref)) continue;
+      if (/^\.\/\.github\/workflows\/seo-[a-z-]+\.yml$/.test(ref)) continue; // our own workflows, in the same repository
       assert.match(ref, /@[0-9a-f]{40}$/, `unpinned third-party action ${ref}`);
     }
   });
@@ -67,6 +68,19 @@ test("auto-merge and review are opt-in by repository variable and restricted to 
   assert.match(text("seo-release.yml"), /vars\.SEO_AUTOPILOT_PAUSED != 'true'/, "the kill switch stops publishing");
   assert.match(rv, /vars\.SEO_REVIEW == 'true'/);
   assert.match(rv, /startsWith\(github\.head_ref, 'seo\/'\)/);
+});
+
+test("the autopilot loop is opt-in and pausable, and the build check it calls never receives secrets", () => {
+  const t = text("seo-autopilot.yml");
+  assert.match(t, /vars\.SEO_AUTOPILOT == 'true' && vars\.SEO_AUTOPILOT_PAUSED != 'true'/);
+  assert.match(t, /run autopilot --pick/, "the policy picks the work, in tested code");
+  const check = t.slice(t.indexOf("\n  check:"), t.indexOf("\n  review:"));
+  assert.match(check, /uses: \.\/\.github\/workflows\/seo-check\.yml/);
+  assert.ok(!/secrets/.test(check), "seo-check is called without secrets");
+  assert.match(check, /contents: read/);
+  for (const job of ["draft", "review"]) assert.match(t.slice(t.indexOf(`\n  ${job}:`)), /secrets: inherit/, job);
+  for (const f of ["seo-implement.yml", "seo-check.yml", "seo-review.yml", "seo-automerge.yml"]) assert.match(text(f), /workflow_call:/, `${f} can be called by the autopilot`);
+  assert.match(text("seo-implement.yml"), /if: \$\{\{ !inputs\.issue \}\}/, "the approver check is skipped only when the autopilot calls it");
 });
 
 test("only people with write access can approve a change for the implementer, and the kill switch stops it", () => {

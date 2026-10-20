@@ -17,6 +17,10 @@
     - **Breaking:** if you use auto-merge without the reviewer, set `SEO_REQUIRE_REVIEW=false`.
   - **`seo-implement`** only accepts an `approved` label from someone with write access, and labels its pull request with the issue's kind of change.
   - **`seo-release`** respects the kill switch.
+  - **New `seo-autopilot` workflow:** the autopilot loop. Twice a day it picks one open proposal issue that the policy allows, oldest first; held, approved and already-drafted issues and human-only kinds are skipped, and the limits apply.
+    - It drafts the issue by calling `seo-implement`, builds it by calling `seo-check` (no secrets), reviews it by calling `seo-review`, and merges it by calling `seo-automerge` with the same gates.
+    - It is opt-in with the variable `SEO_AUTOPILOT=true` and needs `SEO_REVIEW=true`. Those four workflows can now be called (`workflow_call`) as well as triggered as before.
+    - Why a single workflow: changes made with the workflow's own token do not start other workflows, so a scheduled job that only added labels would trigger nothing.
 
 - **Agents are now organised into eight departments (D16, step 1).**
   - The departments are Command, Research, Technical (audit and monitor), Content, Authority (backlinks), AI search (AEO/GEO), Verticals and Quality (validators).

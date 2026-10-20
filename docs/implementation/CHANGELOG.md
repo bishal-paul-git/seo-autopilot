@@ -2,6 +2,16 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-20 (D17: graduated autopilot, part 2: the autopilot loop)
+- **Code:**
+  - `pickWork()` in `src/analysis/autonomy.mjs`, and `run autopilot --pick`.
+  - New `templates/workflows/seo-autopilot.yml`.
+  - `workflow_call` inputs added to `seo-implement` (issue), `seo-check` (ref, base), `seo-review` (pr) and `seo-automerge` (branch).
+  - Automerge finds the head commit itself when called, and matches check runs named either "build" or "<job> / build".
+  - Tests: 2 new autonomy tests; a workflow test that the called build check never receives secrets; local reusable workflows allowed in the pinning rule.
+- **Checks:** `npm test` 303/303; YAML parse; `bash -n`; `init` installs the workflow with placeholders filled.
+- **Not run on GitHub.** Not pushed (GitHub writes refused).
+
 ## 2026-10-20 (D17: graduated autopilot, part 1)
 - **Owner decision:** routine changes publish without a person after automated checks. Recorded as D17; `CLAUDE.md` rule #1 rewritten.
 - **Code:**

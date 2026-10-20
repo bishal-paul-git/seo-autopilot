@@ -79,3 +79,33 @@ test("autopilot job: prints the policy, and --decide exits 1 for a held change a
     assert.equal(process.exitCode, 1); assert.match(out, /paused/);
   } finally { console.log = log; process.exitCode = 0; delete process.env.SEO_AUTOPILOT_PAUSED; }
 });
+
+test("picking work: only kinds the policy publishes, nothing held, approved or already drafted, within the limits", async () => {
+  const { pickWork } = await import("../src/analysis/autonomy.mjs");
+  const p = resolvePolicy({});
+  const issues = [
+    { number: 9, labels: ["seo-topic"] }, { number: 3, labels: ["seo-refresh", "seo-hold"] }, { number: 4, labels: ["seo-refresh", "seo-drafted"] },
+    { number: 5, labels: ["seo-outreach"] }, { number: 6, labels: ["seo-refresh"] }, { number: 7, labels: ["question"] }, { number: 8, labels: ["seo-topic"] },
+  ];
+  assert.deepEqual(pickWork(issues, p, { max: 5 }).map((x) => [x.number, x.cls]), [[6, "refresh"], [8, "new-page"], [9, "new-page"]]);
+  assert.deepEqual(pickWork(issues, p, { max: 5, newPagesThisWeek: 2 }).map((x) => x.number), [6, 8], "one new page left this week");
+  assert.deepEqual(pickWork(issues, p, { max: 1 }).map((x) => x.number), [6], "oldest first, one per run");
+  assert.deepEqual(pickWork(issues, p, { max: 5, today: 10 }), [], "daily limit reached");
+  assert.deepEqual(pickWork(issues, resolvePolicy({ paused: true }), { max: 5 }), []);
+  assert.deepEqual(pickWork(issues, resolvePolicy({ levels: { refresh: "prepare", "new-page": "prepare" } }), { max: 5 }), []);
+});
+
+test("autopilot job --pick: prints the choice and writes the issue number for the workflow", async () => {
+  const { mkdtempSync, writeFileSync, readFileSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const d = mkdtempSync(join(tmpdir(), "seo-pick-"));
+  writeFileSync(join(d, "issues.json"), JSON.stringify([{ number: 12, labels: [{ name: "seo-refresh" }] }, { number: 2, labels: [{ name: "seo-hold" }, { name: "seo-topic" }] }]));
+  const out = join(d, "out"); writeFileSync(out, "");
+  const { run } = await import("../src/jobs/autopilot.mjs");
+  const log = console.log; let said = ""; console.log = (m) => { said += m; }; process.env.GITHUB_OUTPUT = out;
+  try { await run({ site: { name: "S", content: {}, autopilot: {} }, flags: { pick: true, "issues-file": join(d, "issues.json") } }); }
+  finally { console.log = log; delete process.env.GITHUB_OUTPUT; }
+  assert.match(said, /#12 \(refresh\)/);
+  assert.equal(readFileSync(out, "utf8"), "issue=12\n");
+});

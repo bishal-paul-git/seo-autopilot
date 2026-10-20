@@ -7,6 +7,15 @@ name: seo-check
 on:
   pull_request:
     branches: [main, master]
+  # Called by the scheduled seo-autopilot workflow with the drafted branch. No secrets are passed to it.
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: true
+      base:
+        type: string
+        required: true
 
 permissions:
   contents: read
@@ -16,12 +25,14 @@ env:
 
 jobs:
   build:
-    if: startsWith(github.head_ref, 'seo/')
+    if: startsWith(github.head_ref, 'seo/') || startsWith(inputs.ref, 'seo/')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.ref || '' }}
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - name: Install
@@ -35,7 +46,7 @@ jobs:
       # Warns by default; set "facts": { "strict": true } in seo-autopilot.config.json to make an unverified claim fail the check.
       - name: Facts guard on the changed content
         env:
-          BASE: ${{ github.base_ref }}
+          BASE: ${{ inputs.base || github.base_ref }}
         run: |
           files=$(git diff --name-only "origin/$BASE...HEAD" -- '*.json' '*.md' '*.mdx' | { grep -v '^seo-autopilot' || true; } | paste -sd, -)
           if [ -n "$files" ]; then npx --yes "$SEO" run facts --files "$files"; else echo "No content files changed."; fi

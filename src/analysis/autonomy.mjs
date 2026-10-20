@@ -84,3 +84,25 @@ export function decide(change, policy, counts = {}) {
   if (change.cls === "new-page" && (counts.newPagesThisWeek ?? 0) >= policy.limits.newPagesPerWeek) return no(`weekly new-page limit reached (${policy.limits.newPagesPerWeek}): publishing many new pages at once looks like scaled content`);
   return { merge: true, level, cls: change.cls, watch: level === "undo", reasons: [...reasons, `allowed at "${level}"`] };
 }
+
+/**
+ * Which open proposal issues to draft without a person, oldest first. issues: [{ number, labels: [names] }] from the
+ * proposal jobs (seo-topic, seo-refresh, ...). Skips issues on hold, already approved or drafted, and kinds the policy keeps
+ * for a person; new pages count against the weekly limit. Returns [{ number, cls }], at most `max`.
+ */
+export function pickWork(issues = [], policy, { today = 0, newPagesThisWeek = 0, max = 1 } = {}) {
+  if (!policy.enabled || policy.paused) return [];
+  const out = [];
+  let day = today, week = newPagesThisWeek;
+  for (const i of [...issues].sort((a, b) => a.number - b.number)) {
+    if (out.length >= max || day >= policy.limits.changesPerDay) break;
+    const labels = i.labels || [];
+    if (labels.some((l) => ["seo-hold", "approved", "seo-drafted"].includes(l))) continue;
+    const cls = labels.map((l) => LABEL_CLASS[l]).find(Boolean);
+    if (!cls || rank(policy.levels[cls] || "prepare") < rank("autopilot")) continue;
+    if (cls === "new-page") { if (week >= policy.limits.newPagesPerWeek) continue; week++; }
+    day++;
+    out.push({ number: i.number, cls });
+  }
+  return out;
+}
