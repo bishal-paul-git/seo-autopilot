@@ -103,6 +103,14 @@ test("monthly report: runs on the 1st, reads merged pull requests and opens one 
   assert.ok(!/gh pr merge|git push/.test(t), "report only");
 });
 
+test("work orders: the weekly team step gets the autopilot switch, the implementer only follows the three content agents", () => {
+  assert.match(text("seo-weekly.yml"), /SEO_AUTOPILOT: \$\{\{ vars\.SEO_AUTOPILOT \}\}/);
+  const t = text("seo-implement.yml");
+  assert.match(t, /seo-work-order/);
+  for (const a of ["seo-snippet-optimizer", "seo-internal-linker", "seo-refresher"]) assert.match(t, new RegExp(`agents/${a}\\.md`));
+  assert.match(t, /any other agent label means: comment that it needs a person/);
+});
+
 test("only people with write access can approve a change for the implementer, and the kill switch stops it", () => {
   const t = text("seo-implement.yml");
   assert.match(t, /collaborators\/\$ACTOR\/permission/);

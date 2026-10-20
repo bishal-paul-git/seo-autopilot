@@ -1,6 +1,6 @@
 # Implementation status
 
-Last updated: 2026-10-18 (UTC).
+Last updated: 2026-10-20 (UTC).
 - Branch `claude/hopeful-euler-662mu5`, based on `main` at `f205108` (v2.14.0 plus docs). Its work is **committed locally but not pushed**: the session's GitHub access returns 403 for every write. There is no PR yet.
 - Source repos audited (static review):
   - marketingmouse `e115eac`
@@ -168,11 +168,17 @@ No paid API calls were made this session. Hosted cost model is proposed in D9; n
   - Part 2: the scheduled `seo-autopilot` workflow. It picks one allowed proposal issue twice a day, then drafts, checks (no secrets), reviews and merges it through the existing workflows, now callable.
     - Checks: `npm test` 303/303; YAML parse; `bash -n` on all changed run scripts; `init` installs it with placeholders filled.
     - **Not run on GitHub.** Reusable-workflow calls, check-run names ("job / build") and permissions are untested live.
-  - Next for D17: post-publish monitoring with auto-revert for `undo` changes, a monthly workflow, and driving the agents from `team` work orders (not only proposal issues).
+  - Parts 3 to 5 (2026-10-20):
+    - `seo-watch` + `watch` job: reverts an `undo`-level change through a pull request when a changed page errors, the change added a noindex, or clicks fell clearly more than the rest of the site over 14 days. Indexing status is not judged.
+    - `seo-monthly` + `monthly` job: autopilot ledger, rollbacks, 28-day traffic vs the 28 before, audit findings vs last month, experiments; one issue a month.
+    - Work orders drive agents: `team` opens `seo-work-order` issues for ready snippet, link and refresh orders the policy allows; the loop drafts them.
+    - Checks: `npm test` 323/323; YAML parse; `bash -n`; `init` installs 12 workflows.
+    - **Not run on GitHub**, and the watch thresholds are untested on real traffic.
+  - D17 roadmap is code-complete except the AI reviewer as a required check in more repositories (needs each site owner's Claude key).
 - **Next, step 4:** add sources and "last reviewed" dates to every playbook, from `docs/research/REFERENCES.md`, with a test. It is blocked on verifying the links: page fetches are blocked in this session's network policy.
 
 ## Next milestone
-**Owner review of Phase 0.** Acceptance criterion: the owner approves or amends D1 to D15 and answers D11, D14 and D15. Phase 1 (hosted foundation) starts only after that.
+**Push this branch and run the autopilot on one real site** (blocked: this session's GitHub writes return 403; the owner pushes from their PC per RESTORE.md). Acceptance: on a test repository with `SEO_AUTOPILOT=true` and `SEO_REVIEW=true`, one proposal goes from issue to merged PR with every check green, one deliberate bad change is reverted by `seo-watch`, and `seo-monthly` opens its issue. Then: **owner review of Phase 0.** Acceptance criterion: the owner approves or amends D1 to D15 and answers D11, D14 and D15. Phase 1 (hosted foundation) starts only after that.
 
 Exact next actions, independent of the review:
 1. Brief 01:
@@ -193,4 +199,4 @@ Exact next actions, independent of the review:
 3. Brief 04, next part: record real agent outputs for the four cases and add cases per agent.
 4. Small fixes: F2, F6, F7.
 
-Resume prompt: "Read CLAUDE.md, docs/implementation/STATUS.md, PHASE-0-AUDIT.md and DECISIONS.md. If the owner has approved Phase 0, start Phase 1 per SEO-PRODUCT-BUILD-BRIEF.md and D1-D15; otherwise continue brief 01 (Erudience tooling port) on a feature branch."
+Resume prompt (autopilot): "Read CLAUDE.md and docs/implementation/STATUS.md. Branch claude/hopeful-euler-662mu5 holds D16 and D17 (not yet pushed or run on GitHub). Push it, open a draft PR, then test seo-autopilot, seo-watch and seo-monthly on a test repository and fix what breaks." Older resume prompt: "Read CLAUDE.md, docs/implementation/STATUS.md, PHASE-0-AUDIT.md and DECISIONS.md. If the owner has approved Phase 0, start Phase 1 per SEO-PRODUCT-BUILD-BRIEF.md and D1-D15; otherwise continue brief 01 (Erudience tooling port) on a feature branch."

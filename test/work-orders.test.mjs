@@ -1,9 +1,10 @@
 // Work orders: sequencing, page locks and the approval gate are code, so they are tested like code.
 import test from "node:test";
 import assert from "node:assert/strict";
-import { buildWorkOrders, validateWorkOrder, validateOrders, readyOrders, waves, approvalReady, validatorsFor, ordersMarkdown } from "../src/analysis/work-orders.mjs";
+import { buildWorkOrders, validateWorkOrder, validateOrders, readyOrders, waves, approvalReady, validatorsFor, ordersMarkdown, workOrderIssues } from "../src/analysis/work-orders.mjs";
 import { routeAgents } from "../src/analysis/agent-router.mjs";
 import { agentFacts } from "../src/core/agents.mjs";
+import { resolvePolicy } from "../src/analysis/autonomy.mjs";
 
 const facts = agentFacts();
 const known = new Set(Object.keys(facts));
@@ -119,4 +120,17 @@ test("team and work jobs: the plan becomes work orders, starts are refused until
   const saved = JSON.parse(readFileSync(join(state, "work-status.json"), "utf8"));
   assert.equal(saved.status["seo-technical-fixer"], "done");
   assert.equal(saved.status["seo-snippet-optimizer"], "running");
+});
+
+test("autopilot work orders: one issue per page for ready, page-scoped snippet and link orders; nothing sensitive, blocked or site-wide", () => {
+  const o = (agent, extra = {}) => ({ id: agent, agent, edits: true, scope: "pages", targets: ["/a", "/b"], dependsOn: [], validators: ["build", "facts", "seo-fact-checker", "seo-editor"], why: "w", evidence: ["e"], ...extra });
+  const policy = resolvePolicy({});
+  const issues = workOrderIssues([o("seo-snippet-optimizer"), o("seo-internal-linker", { targets: ["/c"] }), o("seo-technical-fixer"), o("seo-refresher", { scope: "site", targets: [] }),
+    o("seo-internal-linker", { id: "x", targets: ["/d"], dependsOn: ["seo-technical-fixer"] }), o("seo-snippet-optimizer", { targets: ["/e"], validators: ["seo-compliance-auditor"] })], policy);
+  assert.deepEqual(issues.map((i) => i.page), ["/a", "/b", "/c"]);
+  assert.deepEqual(issues[0].labels, ["seo-work-order", "seo-snippet", "agent:seo-snippet-optimizer"]);
+  assert.match(issues[2].title, /^Add internal links on \/c$/);
+  assert.equal(workOrderIssues([o("seo-snippet-optimizer")], policy, { max: 1 }).length, 1, "capped");
+  assert.deepEqual(workOrderIssues([o("seo-snippet-optimizer")], resolvePolicy({ levels: { snippet: "prepare" } })), [], "a kind the policy keeps for a person");
+  assert.deepEqual(workOrderIssues([o("seo-snippet-optimizer")], resolvePolicy({ paused: true })), [], "paused");
 });

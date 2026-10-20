@@ -2,6 +2,16 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-20 (D17 parts 3 to 5: watch and undo, monthly report, work orders drive agents)
+- **Code:**
+  - Watch and undo: `src/analysis/watch.mjs`, `src/jobs/watch.mjs`, `templates/workflows/seo-watch.yml`; automerge labels `undo`-level merges `seo-watch`.
+  - Monthly: `src/analysis/monthly.mjs`, `src/jobs/monthly.mjs`, `templates/workflows/seo-monthly.yml`.
+  - Work orders: `workOrderIssues()` and `AUTOPILOT_AGENTS` in `src/analysis/work-orders.mjs`; `team` opens the issues when `SEO_AUTOPILOT=true`; `seo-weekly` passes the switch; `seo-implement` accepts `seo-work-order` and reads `agent:<name>` (three content agents only), with snippet and link rules.
+  - Tests: `test/watch.test.mjs` (5), `test/monthly.test.mjs` (5), one new work-order test, three new workflow assertions.
+- **Docs:** root `CHANGELOG.md`, `docs/jobs.md` (watch, monthly, team), D17 roadmap in `DECISIONS.md`, this file, `STATUS.md`.
+- **Checks:** `npm test` 323/323; every workflow template parses as YAML; `bash -n` on every run script; `init` into an empty repository installs all 12 workflows with placeholders filled.
+- **Not run on GitHub.** Not pushed (GitHub writes refused). No deployment.
+
 ## 2026-10-20 (D17: graduated autopilot, part 2: the autopilot loop)
 - **Code:**
   - `pickWork()` in `src/analysis/autonomy.mjs`, and `run autopilot --pick`.

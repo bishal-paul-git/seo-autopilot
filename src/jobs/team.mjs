@@ -6,7 +6,8 @@ import { routeAgents, planMarkdown } from "../analysis/agent-router.mjs";
 import { loadPages, pipeline } from "../adapters/index.mjs";
 import { ghAvailable, ensureLabel, existingTitles, openIssue } from "../lib/gh.mjs";
 import { agentFacts } from "../core/agents.mjs";
-import { buildWorkOrders, validateOrders, waves, ordersMarkdown } from "../analysis/work-orders.mjs";
+import { buildWorkOrders, validateOrders, waves, ordersMarkdown, workOrderIssues } from "../analysis/work-orders.mjs";
+import { resolvePolicy } from "../analysis/autonomy.mjs";
 
 export const description = "Decide which of the agents to run next, in order, with a ready-to-paste instruction for each";
 
@@ -50,6 +51,16 @@ export async function run({ site, flags = {} }) {
   console.log(md);
 
   if (!ghAvailable() || flags.dry || !plan.steps.length) return;
+  // With the autopilot on (repository variable SEO_AUTOPILOT=true), routine content orders become issues the
+  // seo-autopilot workflow drafts, checks and merges under the same policy and limits. Never in advise mode.
+  if (process.env.SEO_AUTOPILOT === "true" && plan.mode !== "advise") {
+    const issues = workOrderIssues(orders, resolvePolicy({ ...(site.autopilot || {}), paused: site.autopilot?.paused || process.env.SEO_AUTOPILOT_PAUSED === "true" }));
+    if (issues.length) {
+      for (const l of ["seo-work-order", ...new Set(issues.flatMap((i) => i.labels.slice(1)))]) await ensureLabel(l, "0E8A16", l === "seo-work-order" ? "Work order the autopilot may draft" : "");
+      const seen = await existingTitles("seo-work-order");
+      for (const i of issues) if (!seen.has(i.title)) await openIssue(i.title, i.body, i.labels);
+    }
+  }
   const L = site.labels.agentPlan || "seo-agent-plan";
   await ensureLabel(L, "8B5CF6", "Which SEO agents to run this week");
   const title = `Agent plan, week of ${today()}`;

@@ -100,11 +100,13 @@ jobs:
           DATAFORSEO_LOGIN: ${{ secrets.DATAFORSEO_LOGIN }}
           DATAFORSEO_PASSWORD: ${{ secrets.DATAFORSEO_PASSWORD }}
         run: npx --yes "$SEO" run citations
-      - name: Which agents to run this week (agent plan issue)
+      - name: Which agents to run this week (agent plan issue; with SEO_AUTOPILOT=true also work-order issues the autopilot drafts)
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
+          SEO_AUTOPILOT: ${{ vars.SEO_AUTOPILOT }}
+          SEO_AUTOPILOT_PAUSED: ${{ vars.SEO_AUTOPILOT_PAUSED }}
         run: npx --yes "$SEO" run team
       - name: Evaluate logged experiments
         continue-on-error: true
