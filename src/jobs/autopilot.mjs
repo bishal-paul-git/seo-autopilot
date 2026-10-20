@@ -43,5 +43,6 @@ Checks before anything publishes: build, facts guard, the AI reviewer, and the t
   const change = classifyChange({ files: list(flags.files), addedFiles: list(flags["added-files"]), labels: list(flags.labels), contentGlobs: contentGlobs(site.content), addedText, review: site.review || {} });
   const d = decide(change, policy, { today: Number(flags.today ?? 0), newPagesThisWeek: Number(flags["new-this-week"] ?? 0) });
   console.log(`${d.merge ? "MERGE" : "HOLD"}: ${d.cls} at "${d.level}" (levels: ${LEVELS.join(" < ")}). ${d.reasons.join("; ")}.`);
+  if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `watch=${d.merge && d.watch ? "true" : "false"}\nclass=${d.cls}\n`);
   if (!d.merge) process.exitCode = 1;
 }

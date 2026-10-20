@@ -82,8 +82,15 @@ jobs:
           merged() { gh pr list --state merged --search "merged:>=$1" --limit 200 --json headRefName,labels --jq "[.[] | select(.headRefName | startswith(\"seo/\")) $2] | length"; }
           today=$(merged "$since_day" "")
           week=$(merged "$since_week" '| select([.labels[].name] | index("seo-topic"))')
-          if ! npx --yes "$SEO" run autopilot --decide --files "$files" --added-files "$added" --labels "$labels" --added-file "$RUNNER_TEMP/added.txt" --today "$today" --new-this-week "$week"; then
+          if ! GITHUB_OUTPUT="$RUNNER_TEMP/decision" npx --yes "$SEO" run autopilot --decide --files "$files" --added-files "$added" --labels "$labels" --added-file "$RUNNER_TEMP/added.txt" --today "$today" --new-this-week "$week"; then
             gh pr comment "$pr" --body "Autopilot held this change for a person to merge (see the seo-automerge run for the reason)." || true
             exit 0
           fi
           gh pr merge "$pr" --squash --delete-branch --match-head-commit "$SHA"
+          # The record of what the autopilot published, and which changes seo-watch must check and may revert.
+          gh label create seo-autopilot-merged --color 1D76DB --description "Merged by the autopilot after every check" 2>/dev/null || true
+          gh pr edit "$pr" --add-label seo-autopilot-merged || true
+          if grep -qx 'watch=true' "$RUNNER_TEMP/decision" 2>/dev/null; then
+            gh label create seo-watch --color FBCA04 --description "Published by the autopilot; watched and reverted on regression" 2>/dev/null || true
+            gh pr edit "$pr" --add-label seo-watch || true
+          fi

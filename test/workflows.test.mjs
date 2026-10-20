@@ -83,6 +83,18 @@ test("the autopilot loop is opt-in and pausable, and the build check it calls ne
   assert.match(text("seo-implement.yml"), /if: \$\{\{ !inputs\.issue \}\}/, "the approver check is skipped only when the autopilot calls it");
 });
 
+test("watch and undo: reverts go through a pull request and a no-secrets build, the pause leaves the merge to a person", () => {
+  const t = text("seo-watch.yml");
+  assert.match(t, /vars\.SEO_AUTOPILOT == 'true'/);
+  assert.match(t, /git revert --no-edit/);
+  assert.ok(!/git push origin (main|master|HEAD)\b/.test(t) && !/git push\s*$/m.test(t), "never pushes to the default branch");
+  const check = t.slice(t.indexOf("\n  check:"), t.indexOf("\n  merge:"));
+  assert.match(check, /seo-check\.yml/); assert.ok(!/secrets/.test(check));
+  assert.match(t.slice(t.indexOf("\n  merge:")), /vars\.SEO_AUTOPILOT_PAUSED != 'true'/);
+  assert.match(t, /--match-head-commit/);
+  assert.match(text("seo-automerge.yml"), /--add-label seo-watch/, "auto-merge marks undo-level changes for the watch");
+});
+
 test("only people with write access can approve a change for the implementer, and the kill switch stops it", () => {
   const t = text("seo-implement.yml");
   assert.match(t, /collaborators\/\$ACTOR\/permission/);
