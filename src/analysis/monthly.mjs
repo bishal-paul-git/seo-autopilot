@@ -66,7 +66,7 @@ export function experimentSummary(results = []) {
 
 const pct = (a, b) => (b ? `${a >= b ? "+" : ""}${Math.round(((a - b) / b) * 100)}%` : a ? "new" : "no change");
 
-export function monthlyMarkdown({ siteName, month, traffic, ledger, audit, experiments, priorities = [] }) {
+export function monthlyMarkdown({ siteName, month, traffic, ledger, audit, experiments, priorities = [], forecast = null }) {
   const t = traffic, L = [];
   L.push(`# ${siteName} monthly SEO report, ${month}`, "");
   L.push(`## Search traffic (${t.window.from} to ${t.window.to} vs the 28 days before)`);
@@ -75,6 +75,8 @@ export function monthlyMarkdown({ siteName, month, traffic, ledger, audit, exper
     L.push(`- Clicks: ${t.now.clicks} (${pct(t.now.clicks, t.before.clicks)}), impressions: ${t.now.impressions} (${pct(t.now.impressions, t.before.impressions)})`);
     if (t.gained.length) L.push(`- Most clicks gained: ${t.gained.map((p) => `${p.url} (+${p.change})`).join(", ")}`);
     if (t.lost.length) L.push(`- Most clicks lost: ${t.lost.map((p) => `${p.url} (${p.change})`).join(", ")}`);
+    const fc = forecast?.site?.clicks;
+    if (fc) L.push(`- Against the site's own normal range (Holt-Winters baseline, ${fc.from} to ${fc.to}): ${fc.actual} clicks vs ${fc.expected} expected (range ${fc.low} to ${fc.high}), **${fc.verdict}**.`);
     L.push("- This is what happened, not proof of why: seasonality, Google updates and other changes move traffic too.");
   }
   L.push("", "## What the autopilot did");

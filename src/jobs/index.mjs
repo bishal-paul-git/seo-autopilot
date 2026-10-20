@@ -48,6 +48,8 @@ export const JOBS = {
   gap: () => import("./gap.mjs"),
   optimize: () => import("./optimize.mjs"),
   "ai-visibility": () => import("./ai-visibility.mjs"),
+  authority: () => import("./authority.mjs"),
+  forecast: () => import("./forecast.mjs"),
 };
 
 export async function describeJobs() {

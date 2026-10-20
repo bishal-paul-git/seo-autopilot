@@ -30,6 +30,7 @@ export async function run({ site, flags = {} }) {
     audit: auditChange(summary, baseline),
     experiments: experimentSummary(log.map((e) => evaluate(e, series, day, { controls: controlGroup(e, series, excluded) }))),
     priorities: readJson(`${s}/priorities.json`, { items: [] }).items.slice(0, 5),
+    forecast: readJson(`${s}/forecast.json`, null),
   };
   const md = monthlyMarkdown({ siteName: site.name, ...report });
   writeJson(`${s}/monthly.json`, { generatedAt: new Date().toISOString(), ...report });
