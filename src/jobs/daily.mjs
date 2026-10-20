@@ -5,6 +5,7 @@ import { existsSync } from "node:fs";
 import { getToken, SCOPES, searchAnalytics } from "../lib/google-auth.mjs";
 import { ingest } from "../lib/ingest.mjs";
 import { readJson, writeJson, writeText, dayOf } from "../core/util.mjs";
+import { matchesAny, slashOnlyDifference, inSiteLanguage } from "../analysis/scope.mjs";
 
 export const description = "Search Console report, URL inspection of the next sitemap URLs, and proposal candidates";
 
@@ -27,7 +28,7 @@ export async function run({ site, flags }) {
     const j = await r.json();
     if (j.error) { console.log(site.id, "error", url, j.error.message); if ([429, 403].includes(j.error.code)) break; continue; }
     const x = j.inspectionResult?.indexStatusResult || {};
-    state.results[url] = { checkedAt: new Date().toISOString(), coverage: x.coverageState, fetch: x.pageFetchState, googleCanonical: x.googleCanonical, lastCrawl: x.lastCrawlTime };
+    state.results[url] = { checkedAt: new Date().toISOString(), coverage: x.coverageState, fetch: x.pageFetchState, googleCanonical: x.googleCanonical, userCanonical: x.userCanonical, lastCrawl: x.lastCrawlTime };
     done++;
   }
   writeJson(stateFile, state);
@@ -49,19 +50,29 @@ export async function run({ site, flags }) {
   for (const r of await q(dayOf(dailyFrom), dayOf(end), ["date", "page"], 25000)) { (pageDaily[r.keys[1]] ||= {})[r.keys[0]] = [r.clicks, r.impressions, Number(r.position.toFixed(1))]; }
   writeJson(dailyFile, pageDaily);
   const p = (u) => u.replace(site.url, "/");
-  const notIndexed = Object.entries(state.results).filter(([, v]) => v.coverage !== "Submitted and indexed");
-  const nearRows = queries.filter((r) => r.position > 5 && r.position < 20 && r.impressions >= 3).slice(0, 10);
+  // Count only pages that are in the sitemap now and not marked retired: a URL that was removed or redirected on purpose
+  // (404, 410, 301) stays in the inspection memory but is not a problem to fix.
+  const live = new Set(urls);
+  const scoped = Object.entries(state.results).filter(([u]) => live.has(u) && !matchesAny(u, site.retired));
+  const excluded = Object.keys(state.results).length - scoped.length;
+  const notIndexed = scoped.filter(([, v]) => v.coverage !== "Submitted and indexed");
+  const slashOnly = scoped.filter(([u, v]) => slashOnlyDifference(v.googleCanonical, u) || slashOnlyDifference(v.userCanonical, v.googleCanonical));
+  const nearRows = queries.filter((r) => r.position > 5 && r.position < 20 && r.impressions >= 3 && inSiteLanguage(r.keys[0], site.language)).slice(0, 10);
   const lowCtr = pages.filter((r) => r.impressions >= 10 && r.clicks === 0).slice(0, 8);
 
   const md = `# ${site.name} SEO daily summary ${dayOf(Date.now())}
 
 Search Console ${dayOf(start)} to ${dayOf(end)}: ${T.clicks ?? 0} clicks, ${T.impressions ?? 0} impressions, avg position ${(T.position ?? 0).toFixed(1)}.
-Inspected ${done} pages today. ${notIndexed.length} of ${Object.keys(state.results).length} known pages are not indexed.
+Inspected ${done} pages today. ${notIndexed.length} of ${scoped.length} known pages are not indexed${excluded ? ` (${excluded} inspected URL${excluded === 1 ? "" : "s"} left out: no longer in the sitemap or marked retired)` : ""}.
 
 ## Not indexed
 ${notIndexed.slice(0, 30).map(([u, v]) => `- ${p(u)} (${v.coverage})`).join("\n") || "- none"}
 
-## Near-miss queries (positions 5-20): candidates for a new page or a better title
+${slashOnly.length ? `## Canonical differs only by a trailing slash
+Google picked a different version than the page declares. Make the canonical, internal links, sitemap and redirects all use one form.
+${slashOnly.slice(0, 15).map(([u, v]) => `- ${p(u)}: Google chose ${v.googleCanonical}`).join("\n")}
+
+` : ""}## Near-miss queries (positions 5-20): candidates for a new page or a better title
 ${nearRows.map((r) => `- "${r.keys[0]}": pos ${r.position.toFixed(1)}, ${r.impressions} impr`).join("\n") || "- none yet"}
 
 ## Pages with impressions but no clicks: rewrite title and description
@@ -74,7 +85,7 @@ ${lowCtr.map((r) => `- ${p(r.keys[0])}: ${r.impressions} impr, 0 clicks`).join("
   const history = readJson(histFile, []).filter((h) => h.day !== dayOf(Date.now()));
   history.push({
     day: dayOf(Date.now()), clicks: T.clicks ?? 0, impressions: T.impressions ?? 0, position: Number((T.position ?? 0).toFixed(2)),
-    inspected: Object.keys(state.results).length, indexed: Object.keys(state.results).length - notIndexed.length, notIndexed: notIndexed.length,
+    inspected: scoped.length, indexed: scoped.length - notIndexed.length, notIndexed: notIndexed.length,
   });
   writeJson(histFile, history.slice(-400));
 

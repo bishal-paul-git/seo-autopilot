@@ -66,6 +66,10 @@ export function validate(raw) {
       const v = s.limits?.[k];
       if (v != null && (!Number.isInteger(v) || v < 1)) errors.push(`${w}.limits.${k} must be a whole number of 1 or more`);
     }
+    for (const k of ["thinIgnore", "retired"]) {
+      if (s[k] != null && (!Array.isArray(s[k]) || s[k].some((v) => typeof v !== "string"))) errors.push(`${w}.${k} must be a list of URL path patterns, for example ["/contact", "/blog/*"]`);
+    }
+    if (s.language != null && (typeof s.language !== "string" || !/^[a-z]{2}(-[A-Za-z]{2,4})?$/.test(s.language))) errors.push(`${w}.language must be a language code such as "en" or "en-GB"`);
     if (s.conversions != null && (typeof s.conversions !== "object" || (s.conversions.events != null && (!Array.isArray(s.conversions.events) || s.conversions.events.some((e) => typeof e !== "string"))))) errors.push(`${w}.conversions.events must be a list of GA4 event names`);
     if (s.facts != null && (typeof s.facts !== "object" || Array.isArray(s.facts) || (s.facts.strict != null && typeof s.facts.strict !== "boolean"))) errors.push(`${w}.facts must be an object; facts.strict must be true or false`);
     if (s.redirects != null) {

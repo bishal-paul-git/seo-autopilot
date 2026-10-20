@@ -1,9 +1,13 @@
 // SEO experiment log. Record what you changed and when, and the report compares the 14 days after with the 14 days before.
 //   npx seo-autopilot run experiments add <page-url> "<what you changed>" [YYYY-MM-DD]
+//   npx seo-autopilot run experiments log-git <ref> (log every title, description or H1 rewrite made since <ref>, JSON content sites)
 //   npx seo-autopilot run experiments            (evaluate every logged experiment)
 // The log is a plain file you own: <dataDir>/experiments.json. Results are directional (no control group).
 import { readJson, writeJson, writeText, today } from "../core/util.mjs";
-import { evaluate, controlGroup } from "../analysis/experiments.mjs";
+import { evaluate, controlGroup, metaChanges } from "../analysis/experiments.mjs";
+import { spawnSync } from "node:child_process";
+import { contentFiles } from "../adapters/index.mjs";
+import { relative } from "node:path";
 
 export const description = "Log an SEO change and measure the 14 days before vs after (directional, no control group)";
 
@@ -17,6 +21,32 @@ export async function run({ site, positional }) {
     log.push({ url: full, change, date: date || today() });
     writeJson(file, log);
     console.log(`logged: ${full} on ${date || today()}: ${change}`);
+    return;
+  }
+  if (cmd === "log-git") {
+    // Closes the gap where the log stayed empty because logging was manual: compare content files at <ref> with now.
+    const ref = url;
+    if (!ref) throw new Error("usage: run experiments log-git <git-ref>   (for example HEAD~5 or a tag)");
+    let added = 0;
+    for (const abs of contentFiles(site).filter((f) => f.endsWith(".json"))) {
+      const rel = relative(site.paths.root, abs).split("\\").join("/");
+      const old = spawnSync("git", ["show", ref + ":" + rel], { cwd: site.paths.root, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+      if (old.status !== 0) continue;
+      let before, after; try { before = JSON.parse(old.stdout); after = readJson(abs, null); } catch { continue; }
+      // The date of the change is the last commit that touched this file, not today: the before/after windows depend on it.
+      const last = spawnSync("git", ["log", "-1", "--format=%cs", "--", rel], { cwd: site.paths.root, encoding: "utf8" });
+      const changedOn = last.status === 0 && last.stdout.trim() ? last.stdout.trim() : today();
+      for (const c of metaChanges(before, after)) {
+        const route = (site.content.routes || []).find((r) => rel.includes(r.match));
+        const pattern = route?.urlPattern || site.content.urlPattern;
+        if (!pattern) continue;
+        const full = site.url.replace(/\/$/, "") + pattern.replace("{slug}", c.id);
+        if (log.some((e) => e.url === full && e.change === c.change && e.date === changedOn)) continue;
+        log.push({ url: full, change: c.change, date: changedOn }); added++;
+      }
+    }
+    writeJson(file, log);
+    console.log(`logged ${added} experiment(s) from changes since ${ref}`);
     return;
   }
   const series = readJson(`${site.paths.state}/page-daily.json`, {});

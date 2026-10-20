@@ -11,6 +11,7 @@ import { ghAvailable, ensureLabel, existingTitles, openIssue } from "../lib/gh.m
 import { askJson, NO_FAKE_RULES } from "../lib/llm.mjs";
 import { ingest } from "../lib/ingest.mjs";
 import { loadPages, makeCovered } from "../adapters/index.mjs";
+import { inSiteLanguage } from "../analysis/scope.mjs";
 
 export const description = "Weekly keyword research from Search Console, a keyword backlog, and topic proposals";
 
@@ -32,6 +33,7 @@ export async function run({ site }) {
   for (const r of recent) {
     const query = clean(r.keys[0], 90).toLowerCase();
     if (!query || brand.some((x) => query.includes(x))) continue;
+    if (!inSiteLanguage(query, site.language)) continue; // a query in a language the site does not publish in is not a topic
     const prev = before.get(r.keys[0]);
     const kinds = [];
     if (r.position > 5 && r.position < 20 && r.impressions >= 3) kinds.push("near-miss");
