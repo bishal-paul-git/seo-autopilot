@@ -95,6 +95,14 @@ test("watch and undo: reverts go through a pull request and a no-secrets build, 
   assert.match(text("seo-automerge.yml"), /--add-label seo-watch/, "auto-merge marks undo-level changes for the watch");
 });
 
+test("monthly report: runs on the 1st, reads merged pull requests and opens one report issue without touching the site", () => {
+  const t = text("seo-monthly.yml");
+  assert.match(t, /cron: "\d+ \d+ 1 \* \*"/);
+  assert.match(t, /run monthly --prs/);
+  assert.match(t, /pull-requests: read/);
+  assert.ok(!/gh pr merge|git push/.test(t), "report only");
+});
+
 test("only people with write access can approve a change for the implementer, and the kill switch stops it", () => {
   const t = text("seo-implement.yml");
   assert.match(t, /collaborators\/\$ACTOR\/permission/);

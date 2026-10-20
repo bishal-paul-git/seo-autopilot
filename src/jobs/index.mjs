@@ -42,6 +42,7 @@ export const JOBS = {
   logs: () => import("./logs.mjs"),
   autopilot: () => import("./autopilot.mjs"),
   watch: () => import("./watch.mjs"),
+  monthly: () => import("./monthly.mjs"),
 };
 
 export async function describeJobs() {

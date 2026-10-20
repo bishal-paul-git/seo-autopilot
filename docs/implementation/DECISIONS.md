@@ -107,8 +107,8 @@ The owner decided that a person should not approve every change: routine work ru
   - F3: release pushed to the default branch with no pause; it is now behind the kill switch and only dates pages already merged.
 - **Still to build (D17 roadmap):**
   - running the agents automatically on a schedule: DONE for proposal issues (`seo-autopilot` workflow, which calls implement, check, review and merge in one run, because changes made with the workflow token do not trigger other workflows). Not yet driven by the work orders from `team`;
-  - a monthly workflow;
-  - post-publish monitoring with automatic revert for `undo` changes;
+  - a monthly workflow: DONE (`seo-monthly`, `monthly` job: autopilot ledger, rollbacks, 28-day traffic, audit findings vs last month, experiments);
+  - post-publish monitoring with automatic revert for `undo` changes: DONE (`seo-watch`, `watch` job: reverts through a pull request when a changed page errors, the change added a noindex, or clicks fell clearly more than the rest of the site over 14 days; indexing status is not judged because no per-change snapshot exists);
   - the AI reviewer as a required check in more repositories (it needs the site owner's Claude key).
 - **Risks:** Google's spam policies on scaled content, and wrong facts on sensitive topics. They are mitigated by the pace limits, the facts guard, the reviewer, and the human-only classes. Default behaviour for existing installs is unchanged until they set `SEO_AUTOMERGE=true`. Breaking change for those who already use auto-merge without the reviewer: they must now set `SEO_REQUIRE_REVIEW=false` explicitly, or enable the reviewer.
 

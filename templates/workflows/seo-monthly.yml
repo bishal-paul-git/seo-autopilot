@@ -1,0 +1,44 @@
+# seo-autopilot: monthly report (decision D17). On the 1st of each month it re-runs the full audit, then reports what the
+# autopilot published, what the watch rolled back, search traffic over the last 28 days vs the 28 before, and how audit
+# findings changed since last month. Opens one "Monthly SEO report YYYY-MM" issue; changes nothing on your site.
+name: seo-monthly
+on:
+  schedule: [{ cron: "11 6 1 * *" }]   # 06:11 UTC on the 1st of each month
+  workflow_dispatch: {}
+permissions:
+  contents: write
+  issues: write
+  pull-requests: read
+concurrency:
+  group: seo-data
+  cancel-in-progress: false
+env:
+  SEO: "{{SPEC}}"
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Restore state
+        run: npx --yes "$SEO" state restore
+      - name: Full site audit
+        continue-on-error: true
+        run: npx --yes "$SEO" run audit
+      - name: Ranked priorities (report only; the weekly job opens the issue)
+        continue-on-error: true
+        run: npx --yes "$SEO" run priorities --dry
+      - name: Last month's merged pull requests
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          since=$(date -u -d '31 days ago' +%Y-%m-%d)
+          gh pr list --state merged --search "merged:>=$since" --limit 200 --json number,title,mergedAt,labels > "$RUNNER_TEMP/prs.json" || echo "[]" > "$RUNNER_TEMP/prs.json"
+      - name: Monthly report (issue)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: npx --yes "$SEO" run monthly --prs "$RUNNER_TEMP/prs.json"
+      - name: Save state
+        run: npx --yes "$SEO" state save
