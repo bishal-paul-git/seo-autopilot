@@ -54,7 +54,8 @@ export function describe(c) {
 
 export function changesMarkdown({ siteName, results, date }) {
   const changed = results.filter((r) => r.changes.length && r.changes[0].field !== "new");
-  const L = [`# ${siteName} page changes, ${date}`, "", `${results.length} watched pages checked; ${changed.length} changed since the last check. Text is compared by sentence fingerprints, so a rewrite shows as a share of sentences changed.`, ""];
+  const failed = results.filter((r) => r.error), first = results.filter((r) => r.changes[0]?.field === "new").length;
+  const L = [`# ${siteName} page changes, ${date}`, "", `${results.length - failed.length} of ${results.length} watched page(s) read${first ? ` (${first} for the first time, so nothing to compare yet)` : ""}; ${changed.length} changed since the last check. Text is compared by sentence fingerprints, so a rewrite shows as a share of sentences changed.`, ""];
   for (const group of [["yours", "Your pages"], ["competitor", "Competitor pages"]]) {
     const g = changed.filter((r) => r.kind === group[0]);
     if (!g.length) continue;
@@ -62,8 +63,7 @@ export function changesMarkdown({ siteName, results, date }) {
     for (const r of g) L.push(`- **${r.url}**${r.changes.some((c) => c.important) ? " (important)" : ""}`, ...r.changes.map((c) => `  - ${describe(c)}`));
     L.push("");
   }
-  const failed = results.filter((r) => r.error);
   if (failed.length) L.push("## Could not check", ...failed.map((r) => `- ${r.url}: ${r.error}`));
-  if (!changed.length) L.push("Nothing changed that matters.");
+  if (!changed.length && results.length > failed.length + first) L.push("Nothing changed that matters.");
   return L.join("\n") + "\n";
 }

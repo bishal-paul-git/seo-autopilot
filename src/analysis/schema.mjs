@@ -119,7 +119,8 @@ export function crumbs(url, titles) {
 export function schemaMarkdown({ siteName, results }) {
   const errors = results.reduce((n, r) => n + r.checks.reduce((m, c) => m + c.problems.filter((p) => p.level === "error").length, 0), 0);
   const drafts = results.reduce((n, r) => n + r.suggestions.length, 0);
-  const L = [`# ${siteName} structured data`, "", `${results.length} pages checked: ${errors} error(s) in existing markup, ${drafts} suggested addition(s). Markup must describe what the page visibly shows; drafts use only facts from the page and your config, and "<fill: ...>" marks what a person must supply. The seo-schema-engineer applies them.`, ""];
+  const read = results.filter((r) => !r.error), failed = results.filter((r) => r.error);
+  const L = [`# ${siteName} structured data`, "", `${read.length} page(s) checked${failed.length ? ` (${failed.length} could not be read)` : ""}: ${errors} error(s) in existing markup, ${drafts} suggested addition(s). Markup must describe what the page visibly shows; drafts use only facts from the page and your config, and "<fill: ...>" marks what a person must supply. The seo-schema-engineer applies them.`, ""];
   for (const r of results) {
     const probs = r.checks.flatMap((c) => c.problems.map((p) => `${c.type}: ${p.note}${p.level === "error" ? " **(error)**" : ""}`));
     if (!probs.length && !r.suggestions.length && !r.invalid) continue;
@@ -128,5 +129,6 @@ export function schemaMarkdown({ siteName, results }) {
     L.push(...probs.map((p) => `- ${p}`));
     for (const s of r.suggestions) L.push(`- Add ${s.type}: ${s.why}`, "", "```json", JSON.stringify(s.jsonld, null, 2), "```", "");
   }
+  if (failed.length) L.push("## Could not check", ...failed.map((r) => `- ${r.url}: ${r.error}`));
   return L.join("\n") + "\n";
 }
