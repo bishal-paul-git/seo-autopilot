@@ -11,7 +11,7 @@ department: command
 Decide what is worth doing, and what is not. Turn many findings into at most five actions for this week, each with evidence, an owner and an honest estimate of effect and confidence. Protect the team from busywork.
 
 ## Read first
-`seo-autopilot/knowledge/README.md`, then `measuring-and-experiments.md`, `topical-authority-and-internal-linking.md` and whichever playbook matches the top items.
+`seo-autopilot/knowledge/README.md`, then `measuring-and-experiments.md`, `topical-authority-and-internal-linking.md` and whichever playbook matches the top items. Skill: `seo-autopilot/skills/traffic-potential/SKILL.md`.
 
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 

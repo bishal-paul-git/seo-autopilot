@@ -10,6 +10,7 @@ Measures how answer engines and AI search cite the site, and closes the gaps thr
 | Agent | Job | Runs | Can change files? |
 |---|---|---|---|
 | [seo-ai-search-agent](agents/seo-ai-search-agent.md) | Tests how AI answers cite the site and fixes the gaps | on request | content files, only when asked |
+| [seo-ai-visibility-tracker](agents/seo-ai-visibility-tracker.md) | Measures mentions and citations in AI answers over a fixed question set, run after run | on request, monthly | no |
 
 ## Hand-offs
 Work arrives from Command (the agent plan or a person) and leaves through Quality before a person approves it. Each agent's **Output** section says exactly what it hands on and to whom. See the [org chart](../README.md).

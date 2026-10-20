@@ -11,7 +11,7 @@ department: research
 Produce briefs that a writer can execute without guessing: the right query, the right intent, real evidence of demand and an honest view of whether this site can win it.
 
 ## Read first
-`seo-autopilot/knowledge/keyword-research-and-clustering.md`, `search-intent-and-page-types.md`, `content-briefs-and-drafting.md`, `cannibalization-and-consolidation.md`.
+`seo-autopilot/knowledge/keyword-research-and-clustering.md`, `search-intent-and-page-types.md`, `content-briefs-and-drafting.md`, `cannibalization-and-consolidation.md`. Skills: `seo-autopilot/skills/question-mining/SKILL.md` and `seo-autopilot/skills/search-intent-labelling/SKILL.md`.
 
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 

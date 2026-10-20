@@ -1,6 +1,6 @@
 # The departments
 
-seo-autopilot works as a team of thirty specialist agents grouped into eight departments, like a small agency: Command plans, Research finds, Technical, Content, Authority, AI search and Verticals do the work, and Quality checks it. Each agent has one job, a fixed set of tools, the playbooks it must read first, a quality bar and a defined hand-off. One rule holds for all of them: **nothing goes live unchecked**. Routine changes publish on autopilot once every automated check passes (and are watched and reverted if they make things worse); sensitive topics, site-wide indexing changes, migrations, deletions and outreach always wait for a person (decision D17, `seo-autopilot run autopilot`).
+seo-autopilot works as a team of thirty-three specialist agents grouped into eight departments, like a small agency: Command plans, Research finds, Technical, Content, Authority, AI search and Verticals do the work, and Quality checks it. Each agent has one job, a fixed set of tools, the playbooks it must read first, a quality bar and a defined hand-off. One rule holds for all of them: **nothing goes live unchecked**. Routine changes publish on autopilot once every automated check passes (and are watched and reverted if they make things worse); sensitive topics, site-wide indexing changes, migrations, deletions and outreach always wait for a person (decision D17, `seo-autopilot run autopilot`).
 
 Each department folder has a charter (`README.md`) and its agents (`agents/`). Installed projects get the agents in one flat folder (`seo-autopilot/agents/`) so workflows can find any agent by name; each file's front matter still names its department. The design and roadmap are in [docs/architecture/DEPARTMENTS.md](../docs/architecture/DEPARTMENTS.md).
 
@@ -21,6 +21,8 @@ Finds what is worth doing: topics, questions, competitors and gaps, from real da
 |---|---|---|---|
 | [seo-competitor-analyst](research/agents/seo-competitor-analyst.md) | Studies who ranks above you and finds gaps you can fill with real material | on request | no |
 | [seo-researcher](research/agents/seo-researcher.md) | Finds topics worth a page and writes the brief | on request, topic proposals | no |
+| [seo-serp-analyst](research/agents/seo-serp-analyst.md) | Tracks positions, search features and share of voice on the queries that matter | on request, weekly or monthly | no |
+| [seo-topic-mapper](research/agents/seo-topic-mapper.md) | Maps every topic to one owner page: clusters, intent, potential, gaps and overlaps | on request, before a content plan | no |
 
 ## [Technical (audit and monitor)](technical/README.md)
 Keeps the site crawlable, indexable, fast and safe to change: audits, monitors and fixes templates and config.
@@ -64,6 +66,7 @@ Measures how answer engines and AI search cite the site, and closes the gaps thr
 | Agent | Job | Runs | Can change files? |
 |---|---|---|---|
 | [seo-ai-search-agent](ai-search/agents/seo-ai-search-agent.md) | Tests how AI answers cite the site and fixes the gaps | on request | content files, only when asked |
+| [seo-ai-visibility-tracker](ai-search/agents/seo-ai-visibility-tracker.md) | Measures mentions and citations in AI answers over a fixed question set, run after run | on request, monthly | no |
 
 ## [Verticals (local, e-commerce)](verticals/README.md)
 Specialist rules for local businesses and online shops.
@@ -87,8 +90,13 @@ A skill is a procedure several agents follow, kept in one place so they all do i
 
 | Skill | What it covers | Used by |
 |---|---|---|
+| [ai-answer-testing](skills/ai-answer-testing/SKILL.md) | Fair tests of AI answers: a fixed question set, names and aliases to detect, repeated runs, who is cited and whether it is true | ai-visibility-tracker, ai-search-agent |
 | [answer-first-copy](skills/answer-first-copy/SKILL.md) | Openings that answer the question in about 25 to 60 words, then the detail; checkable, sourced, written for people | drafter, refresher, snippet-optimizer, ai-search-agent, editor |
 | [digital-pr](skills/digital-pr/SKILL.md) | Earning coverage with first-hand data, expert comment, timely angles and reclaimed mentions; small, honest campaigns | link-builder, entity-reputation |
+| [broken-link-reclamation](skills/broken-link-reclamation/SKILL.md) | Recovering links to dead pages: own broken inbound links first (redirect or restore), then other sites' dead pages, outreach drafted only | link-builder, backlink-auditor, redirect-guardian |
+| [question-mining](skills/question-mining/SKILL.md) | Real questions from Search Console, customers, People Also Ask, suggestions and forums, deduplicated and evidenced | researcher, ai-search-agent, topic-mapper, ai-visibility-tracker |
+| [search-intent-labelling](skills/search-intent-labelling/SKILL.md) | Consistent intent labels from the query words, confirmed by the live results, and the page type each needs | researcher, topic-mapper, serp-analyst |
+| [traffic-potential](skills/traffic-potential/SKILL.md) | What a topic is worth: the whole cluster, own Search Console data first, provider estimates labelled, ranges and confidence | topic-mapper, serp-analyst, strategist |
 
 Only the first six run in the unattended GitHub workflows (the strategist and researcher also from the CLI). The rest are for you to run in Claude Code, where you see what they do before anything is merged.
 

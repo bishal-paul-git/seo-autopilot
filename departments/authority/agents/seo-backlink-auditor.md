@@ -11,7 +11,7 @@ department: authority
 Keep the value of links the site has already earned, catch the few patterns worth a human look, and stop needless or harmful "link cleanup", which is the usual mistake.
 
 ## Read first
-`seo-autopilot/knowledge/link-building-and-digital-pr.md`, `redirects-canonicals-migrations.md` and `content-quality-and-eeat.md`.
+`seo-autopilot/knowledge/link-building-and-digital-pr.md`, `redirects-canonicals-migrations.md` and `content-quality-and-eeat.md`. Skill: `seo-autopilot/skills/broken-link-reclamation/SKILL.md`.
 
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 

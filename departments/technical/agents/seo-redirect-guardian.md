@@ -11,7 +11,7 @@ department: technical
 Make sure no URL that ever earned links, impressions or bookmarks leads to an error, a chain or the wrong page, and that nothing shipped silently removes a live URL.
 
 ## Read first
-`seo-autopilot/knowledge/redirects-canonicals-migrations.md`, `cannibalization-and-consolidation.md`, `technical-seo-checklist.md` and `audit-fix-recipes.md`.
+`seo-autopilot/knowledge/redirects-canonicals-migrations.md`, `cannibalization-and-consolidation.md`, `technical-seo-checklist.md` and `audit-fix-recipes.md`. Skill: `seo-autopilot/skills/broken-link-reclamation/SKILL.md`.
 
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 

@@ -2,6 +2,11 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-20 (agents and skills from the owner's research notes)
+- **Content (product):** 3 agents (`departments/research/agents/seo-serp-analyst.md`, `seo-topic-mapper.md`, `departments/ai-search/agents/seo-ai-visibility-tracker.md`) and 5 skills (`departments/skills/question-mining`, `search-intent-labelling`, `traffic-potential`, `broken-link-reclamation`, `ai-answer-testing`); skill references added to 6 existing agents; charters, org chart, `.claude-plugin/plugin.json`, `docs/agents.md`, `CLAUDE.md` counts.
+- **Source:** the owner's three research notes (Ahrefs vs Semrush; two architecture blueprints). The GitHub repositories they name could not be opened from this session (403), so no code or licence was checked and nothing was copied.
+- **Checks:** `npm test` 326/326 (agent structure, skill two-way references, plugin list). Agents not evaluated on real outputs.
+
 ## 2026-10-20 (D17 parts 3 to 5: watch and undo, monthly report, work orders drive agents)
 - **Code:**
   - Watch and undo: `src/analysis/watch.mjs`, `src/jobs/watch.mjs`, `templates/workflows/seo-watch.yml`; automerge labels `undo`-level merges `seo-watch`.

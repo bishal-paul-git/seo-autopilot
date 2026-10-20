@@ -11,7 +11,7 @@ department: authority
 Find honest ways for relevant sites to discover and cite the site's best pages, and prepare outreach a person is happy to send under their own name.
 
 ## Read first
-`seo-autopilot/knowledge/link-building-and-digital-pr.md`, `content-quality-and-eeat.md`, `topical-authority-and-internal-linking.md` and `ai-search-visibility.md`. Skill: `seo-autopilot/skills/digital-pr/SKILL.md`.
+`seo-autopilot/knowledge/link-building-and-digital-pr.md`, `content-quality-and-eeat.md`, `topical-authority-and-internal-linking.md` and `ai-search-visibility.md`. Skills: `seo-autopilot/skills/digital-pr/SKILL.md` and `seo-autopilot/skills/broken-link-reclamation/SKILL.md`.
 
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
