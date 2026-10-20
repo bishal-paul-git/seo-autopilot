@@ -270,6 +270,8 @@
               "aliases": { "type": "array", "items": { "type": "string" }, "description": "Other names of the business to detect in AI answers (short forms, misspellings)." },
               "engines": { "type": "array", "items": { "enum": ["perplexity", "openai", "anthropic", "gemini"] }, "description": "AI engines to ask (default: every engine with a key)." },
               "aiRuns": { "type": "integer", "minimum": 1, "maximum": 5, "description": "Times each question is asked per engine (default 2)." },
+              "logo": { "type": "string", "description": "Full URL of the logo image, used in suggested Organization markup." },
+              "sameAs": { "type": "array", "items": { "type": "string" }, "description": "Your official profile URLs (social, Wikipedia, Wikidata, directories), used in suggested Organization markup and the entity check." },
               "serpLimit": { "type": "integer", "minimum": 1, "maximum": 200, "description": "Tracked queries checked live by rank --serp (default 50)." }
             }
           },

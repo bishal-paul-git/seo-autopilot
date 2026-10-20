@@ -83,7 +83,8 @@ export function validate(raw) {
       const r = s.research;
       if (typeof r !== "object" || Array.isArray(r)) errors.push(`${w}.research must be an object`);
       else {
-        for (const k of ["competitors", "competitorNames", "aliases", "engines"]) if (r[k] != null && (!Array.isArray(r[k]) || r[k].some((x) => typeof x !== "string"))) errors.push(`${w}.research.${k} must be a list of strings`);
+        if (r.logo != null && (typeof r.logo !== "string" || !/^https:\/\//.test(r.logo))) errors.push(`${w}.research.logo must be a full https URL of your logo image`);
+        for (const k of ["competitors", "competitorNames", "aliases", "engines", "sameAs"]) if (r[k] != null && (!Array.isArray(r[k]) || r[k].some((x) => typeof x !== "string"))) errors.push(`${w}.research.${k} must be a list of strings`);
         if (Array.isArray(r.engines) && r.engines.some((e) => !["perplexity", "openai", "anthropic", "gemini"].includes(e))) errors.push(`${w}.research.engines may list perplexity, openai, anthropic and gemini`);
         if (r.market != null && (typeof r.market !== "string" || !/^[A-Za-z]{2}$/.test(r.market))) errors.push(`${w}.research.market must be a two-letter country code, for example "GB" or "US"`);
         if (r.aiRuns != null && (!Number.isInteger(r.aiRuns) || r.aiRuns < 1 || r.aiRuns > 5)) errors.push(`${w}.research.aiRuns must be a whole number from 1 to 5`);
