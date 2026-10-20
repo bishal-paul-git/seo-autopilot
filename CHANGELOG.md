@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+- **Graduated autopilot (decision D17).** Routine changes now publish without a person once every automated check passes. High-risk changes still wait for one.
+  - New `autopilot` job and policy (`src/analysis/autonomy.mjs`). Levels per kind of change: `watch`, `prepare`, `autopilot`, `undo`.
+    - Fixes, snippets and internal links: `undo`.
+    - Refreshes, new pages and template changes: `autopilot`.
+    - Sensitive topics, robots and sitemap changes, migrations, deletions, outreach, and changes to workflows or dependencies: always a person.
+    - Limits: 10 automatic changes a day and 3 new pages a week by default.
+    - Kill switch: the repository variable `SEO_AUTOPILOT_PAUSED=true`.
+  - **`seo-automerge`** is now policy-driven and safer:
+    - the reviewer must have passed on the exact commit being merged (a pass label left from an earlier commit no longer counts);
+    - any new page file counts as a new page whatever its label;
+    - added text touching health, money or legal topics goes to a person;
+    - the merge is pinned to the checked commit.
+    - **Breaking:** if you use auto-merge without the reviewer, set `SEO_REQUIRE_REVIEW=false`.
+  - **`seo-implement`** only accepts an `approved` label from someone with write access, and labels its pull request with the issue's kind of change.
+  - **`seo-release`** respects the kill switch.
+
 - **Agents are now organised into eight departments (D16, step 1).**
   - The departments are Command, Research, Technical (audit and monitor), Content, Authority (backlinks), AI search (AEO/GEO), Verticals and Quality (validators).
   - Each has a charter in `departments/<dept>/README.md`, and the org chart is `departments/README.md`.

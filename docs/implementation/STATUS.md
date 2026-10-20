@@ -153,6 +153,19 @@ No paid API calls were made this session. Hosted cost model is proposed in D9; n
   - `departments/skills/` with `answer-first-copy` and `digital-pr`; `listSkills()`; `init`/`upgrade` copy skills.
   - 7 agents reference skills; a two-way consistency test; skills section in the org chart.
   - Checks: `npm test` 289/289.
+- **D17 graduated autopilot, first part done (local, not pushed), 2026-10-20:**
+  - Autonomy policy and `autopilot` job.
+  - `seo-automerge`: review on the same commit, policy decision, pinned merge, kill switch.
+  - `seo-implement`: approver must have write access; PR labelled with the kind of change.
+  - `seo-release`: kill switch.
+  - Rule #1 changed in `CLAUDE.md`.
+  - Checks:
+    - `npm test` 298/298, including 7 autonomy tests and the new workflow assertions;
+    - Python OK;
+    - all workflow templates parse as YAML;
+    - `bash -n` on the changed scripts.
+  - **Not tested on GitHub:** the workflows have not run on a real repository; `gh` and GitHub APIs are not exercised by the tests.
+  - Next for D17: a scheduled implement job driven by the work orders, a monthly workflow, and post-publish monitoring with auto-revert.
 - **Next, step 4:** add sources and "last reviewed" dates to every playbook, from `docs/research/REFERENCES.md`, with a test. It is blocked on verifying the links: page fetches are blocked in this session's network policy.
 
 ## Next milestone

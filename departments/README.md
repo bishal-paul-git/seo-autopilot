@@ -1,6 +1,6 @@
 # The departments
 
-seo-autopilot works as a team of thirty specialist agents grouped into eight departments, like a small agency: Command plans, Research finds, Technical, Content, Authority, AI search and Verticals do the work, and Quality checks it. Each agent has one job, a fixed set of tools, the playbooks it must read first, a quality bar and a defined hand-off. One rule holds for all of them: **a human approves what goes live**.
+seo-autopilot works as a team of thirty specialist agents grouped into eight departments, like a small agency: Command plans, Research finds, Technical, Content, Authority, AI search and Verticals do the work, and Quality checks it. Each agent has one job, a fixed set of tools, the playbooks it must read first, a quality bar and a defined hand-off. One rule holds for all of them: **nothing goes live unchecked**. Routine changes publish on autopilot once every automated check passes (and are watched and reverted if they make things worse); sensitive topics, site-wide indexing changes, migrations, deletions and outreach always wait for a person (decision D17, `seo-autopilot run autopilot`).
 
 Each department folder has a charter (`README.md`) and its agents (`agents/`). Installed projects get the agents in one flat folder (`seo-autopilot/agents/`) so workflows can find any agent by name; each file's front matter still names its department. The design and roadmap are in [docs/architecture/DEPARTMENTS.md](../docs/architecture/DEPARTMENTS.md).
 

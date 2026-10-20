@@ -235,6 +235,22 @@
               }
             }
           },
+          "autopilot": {
+            "type": "object",
+            "description": "What publishes by itself (D17). Levels: watch < prepare < autopilot < undo. Sensitive topics, site-wide indexing, migrations, deletions and outreach never go above prepare.",
+            "properties": {
+              "enabled": { "type": "boolean" },
+              "paused": { "type": "boolean", "description": "Kill switch: nothing merges or publishes automatically. The repository variable SEO_AUTOPILOT_PAUSED=true does the same." },
+              "levels": { "type": "object", "additionalProperties": { "enum": ["watch", "prepare", "autopilot", "undo"] } },
+              "limits": {
+                "type": "object",
+                "properties": {
+                  "newPagesPerWeek": { "type": "integer", "minimum": 0 },
+                  "changesPerDay": { "type": "integer", "minimum": 0 }
+                }
+              }
+            }
+          },
           "logs": {
             "type": "object",
             "description": "Crawler log analysis. Folder of server access logs (plain or .gz). Default: <dataDir>/logs. Keep logs out of git: they contain visitors' IP addresses.",

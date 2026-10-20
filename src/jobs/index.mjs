@@ -40,6 +40,7 @@ export const JOBS = {
   work: () => import("./work.mjs"),
   inbound: () => import("./inbound.mjs"),
   logs: () => import("./logs.mjs"),
+  autopilot: () => import("./autopilot.mjs"),
 };
 
 export async function describeJobs() {

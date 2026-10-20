@@ -2,6 +2,19 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-20 (D17: graduated autopilot, part 1)
+- **Owner decision:** routine changes publish without a person after automated checks. Recorded as D17; `CLAUDE.md` rule #1 rewritten.
+- **Code:**
+  - New `src/analysis/autonomy.mjs` and `src/jobs/autopilot.mjs` (registered as `autopilot`).
+  - Config validation and schema for `site.autopilot`.
+  - `templates/workflows/seo-automerge.yml` rewritten (fixes F1).
+  - `seo-implement.yml`: approver permission check (fixes F2), kill switch, PR labelled with the kind of change.
+  - `seo-release.yml`: kill switch (F3).
+  - Tests: `test/autonomy.test.mjs` (7) and new assertions in `test/workflows.test.mjs`.
+- **Documentation:** D17 in DECISIONS; `CLAUDE.md`; `departments/README.md`; `docs/strategy.md`; `docs/jobs.md`; root `CHANGELOG.md`.
+- **Checks:** `npm test` 298/298; Python OK; YAML parse of all templates; `bash -n` on the changed run scripts.
+- **Not run on GitHub.** Not pushed (GitHub writes refused in this environment).
+
 ## 2026-10-19 (D16: shared skills)
 - **Code:**
   - `src/core/agents.mjs` gains `listSkills()`.

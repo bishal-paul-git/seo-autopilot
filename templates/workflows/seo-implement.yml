@@ -30,6 +30,7 @@ concurrency:
 jobs:
   implement:
     if: >-
+      vars.SEO_AUTOPILOT_PAUSED != 'true' &&
       github.event.label.name == 'approved' &&
       (contains(github.event.issue.labels.*.name, 'seo-proposal') || contains(github.event.issue.labels.*.name, 'seo-topic'))
     runs-on: ubuntu-latest
@@ -37,6 +38,14 @@ jobs:
     env:
       SEO: "{{SPEC}}"
     steps:
+      # Anyone who can label issues could otherwise start the agent: only people with write access may approve.
+      - name: Check that the person who approved has write access
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ACTOR: ${{ github.event.sender.login }}
+        run: |
+          perm=$(gh api "repos/$GITHUB_REPOSITORY/collaborators/$ACTOR/permission" --jq .permission || echo none)
+          case "$perm" in admin|maintain|write) echo "Approved by $ACTOR ($perm).";; *) echo "::error::$ACTOR ($perm) cannot approve changes; ignoring the label."; exit 1;; esac
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       - uses: actions/setup-node@v4
@@ -87,3 +96,15 @@ jobs:
               data behind it, the files, the risk, and "Closes #${{ github.event.issue.number }}".
             - If the change is not possible or would need a claim you cannot support, comment on the issue explaining why
               and make no pull request.
+      # The autopilot policy decides by the kind of change, so the pull request carries the issue's kind (not the agent's choice).
+      - name: Label the pull request with the kind of change
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          N: ${{ github.event.issue.number }}
+        run: |
+          pr=$(gh pr list --head "seo/issue-$N" --state open --json number --jq '.[0].number // empty')
+          [ -n "$pr" ] || exit 0
+          for l in $(gh issue view "$N" --json labels --jq '.labels[].name'); do
+            case "$l" in seo-topic|seo-refresh|seo-snippet|seo-links|seo-fix|seo-template) gh pr edit "$pr" --add-label "$l" || true;; esac
+          done

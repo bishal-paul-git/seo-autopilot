@@ -83,6 +83,35 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-10-20 D17 Graduated autopilot (APPROVED by the owner)
+The owner decided that a person should not approve every change: routine work runs and publishes on a schedule, and a person is asked only about high-risk changes. This replaces the earlier rule "a human approves what goes live".
+- **Levels per kind of change** (`src/analysis/autonomy.mjs`, shown by `run autopilot`):
+  - `watch` reports only;
+  - `prepare` opens a PR for a person;
+  - `autopilot` merges and publishes after every check;
+  - `undo` does the same and then watches the live result and reverts on regression.
+- **Defaults:**
+  - fixes, snippets and internal links publish at `undo`;
+  - refreshes, new pages and template changes publish at `autopilot`;
+  - sensitive topics, site-wide indexing (robots, sitemaps, headers, redirect rules), migrations, deletions, outreach and infrastructure (workflows, dependencies, the autopilot's config and agents) stay at `prepare`, and a site cannot raise them.
+- **Checks before an automatic merge**, all on the exact commit:
+  - seo-check build;
+  - the reviewer agent's check and pass label;
+  - the policy decision, which includes sensitive-topic detection in the added text and treating any new page file as a new page whatever its label;
+  - daily and weekly limits (10 changes a day, 3 new pages a week by default, to stay clear of scaled-content patterns);
+  - a merge pinned to that commit.
+- **Kill switch:** the repository variable `SEO_AUTOPILOT_PAUSED=true`, or `autopilot.paused` in the config, stops implementing, merging and releasing.
+- **Fixes to the gaps found in the Phase 0 audit:**
+  - F1: auto-merge accepted a reviewer label left from an earlier commit and had no policy; now the reviewer check must pass on the same commit, and the merge is pinned.
+  - F2: the implementer did not check who added `approved`; now only write, maintain or admin can trigger it.
+  - F3: release pushed to the default branch with no pause; it is now behind the kill switch and only dates pages already merged.
+- **Still to build (D17 roadmap):**
+  - running the agents automatically from the work orders on a schedule (labels added with the workflow token do not trigger workflows, so this needs a scheduled implement job);
+  - a monthly workflow;
+  - post-publish monitoring with automatic revert for `undo` changes;
+  - the AI reviewer as a required check in more repositories (it needs the site owner's Claude key).
+- **Risks:** Google's spam policies on scaled content, and wrong facts on sensitive topics. They are mitigated by the pace limits, the facts guard, the reviewer, and the human-only classes. Default behaviour for existing installs is unchanged until they set `SEO_AUTOMERGE=true`. Breaking change for those who already use auto-merge without the reviewer: they must now set `SEO_REQUIRE_REVIEW=false` explicitly, or enable the reviewer.
+
 ## 2026-10-18 D16 Departments, work orders and validation (PROPOSED, owner to confirm)
 Proposal: group agents into departments, each a folder. The departments are command, research, technical, content, authority, ai-search, verticals and quality. Each has a charter, one owner per problem type and shared skills. The router produces dependency-ordered work orders with file/URL locks so independent work can run in parallel, and nothing reaches approval until its validators pass.
 

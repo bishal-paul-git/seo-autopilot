@@ -60,9 +60,21 @@ test("auto-merge and review are opt-in by repository variable and restricted to 
   assert.match(am, /vars\.SEO_AUTOMERGE == 'true'/);
   assert.match(am, /startsWith\(github\.event\.workflow_run\.head_branch, 'seo\/'\)/);
   assert.match(am, /head_repository\.full_name == github\.repository/);
-  assert.match(am, /\{\{CONTENT_GLOBS\}\}/);
+  assert.match(am, /vars\.SEO_AUTOPILOT_PAUSED != 'true'/, "the kill switch stops auto-merge");
+  assert.match(am, /run autopilot --decide/, "the policy decides, in tested code");
+  assert.match(am, /check review\)" != "success"/, "the reviewer must have passed on this exact commit, not an earlier one");
+  assert.match(am, /--match-head-commit "\$SHA"/, "the merge is pinned to the checked commit");
+  assert.match(text("seo-release.yml"), /vars\.SEO_AUTOPILOT_PAUSED != 'true'/, "the kill switch stops publishing");
   assert.match(rv, /vars\.SEO_REVIEW == 'true'/);
   assert.match(rv, /startsWith\(github\.head_ref, 'seo\/'\)/);
+});
+
+test("only people with write access can approve a change for the implementer, and the kill switch stops it", () => {
+  const t = text("seo-implement.yml");
+  assert.match(t, /collaborators\/\$ACTOR\/permission/);
+  assert.match(t, /admin\|maintain\|write\)/);
+  assert.ok(t.indexOf("collaborators/$ACTOR/permission") < t.indexOf("anthropics/claude-code-action"), "the check runs before the agent");
+  assert.match(t, /vars\.SEO_AUTOPILOT_PAUSED != 'true'/);
 });
 
 test("the implementer cannot run build or install commands and may only edit content paths", () => {

@@ -68,6 +68,15 @@ export function validate(raw) {
     }
     if (s.conversions != null && (typeof s.conversions !== "object" || (s.conversions.events != null && (!Array.isArray(s.conversions.events) || s.conversions.events.some((e) => typeof e !== "string"))))) errors.push(`${w}.conversions.events must be a list of GA4 event names`);
     if (s.facts != null && (typeof s.facts !== "object" || Array.isArray(s.facts) || (s.facts.strict != null && typeof s.facts.strict !== "boolean"))) errors.push(`${w}.facts must be an object; facts.strict must be true or false`);
+    if (s.autopilot != null) {
+      const a = s.autopilot;
+      if (typeof a !== "object" || Array.isArray(a)) errors.push(`${w}.autopilot must be an object`);
+      else {
+        if (a.levels != null && (typeof a.levels !== "object" || Array.isArray(a.levels) || Object.values(a.levels).some((v) => !["watch", "prepare", "autopilot", "undo"].includes(v)))) errors.push(`${w}.autopilot.levels values must be watch, prepare, autopilot or undo`);
+        if (a.limits != null && (typeof a.limits !== "object" || Object.values(a.limits).some((v) => !Number.isInteger(v) || v < 0))) errors.push(`${w}.autopilot.limits must be whole numbers`);
+        for (const k of ["enabled", "paused"]) if (a[k] != null && typeof a[k] !== "boolean") errors.push(`${w}.autopilot.${k} must be true or false`);
+      }
+    }
     if (s.logs != null && (typeof s.logs !== "object" || Array.isArray(s.logs) || (s.logs.dir != null && typeof s.logs.dir !== "string"))) errors.push(`${w}.logs must be an object; logs.dir must be a folder path`);
     if (s.inbound != null && (typeof s.inbound !== "object" || Array.isArray(s.inbound) || (s.inbound.dir != null && typeof s.inbound.dir !== "string"))) errors.push(`${w}.inbound must be an object; inbound.dir must be a folder path`);
     if (s.redirects != null) {
