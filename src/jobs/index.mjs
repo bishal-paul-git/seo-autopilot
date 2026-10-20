@@ -50,6 +50,7 @@ export const JOBS = {
   "ai-visibility": () => import("./ai-visibility.mjs"),
   authority: () => import("./authority.mjs"),
   forecast: () => import("./forecast.mjs"),
+  linkgraph: () => import("./linkgraph.mjs"),
 };
 
 export async function describeJobs() {
