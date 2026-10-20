@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.15.0
+
+Fixes for gaps found running the product on a real production site (roadmap brief 09, items 2 to 5, plus pace and experiments from brief 11).
+
+- **`thinIgnore` (site config).** URL path patterns (`*` is a wildcard) for pages that are meant to be short: hubs, tools, funnel pages. The `thin-content` rule skips them.
+- **`retired` (site config).** URL path patterns for pages removed or redirected on purpose. They are left out of the not-indexed counts, the weekly digest and the request-indexing list.
+- **Honest indexing counts.** The daily report now counts only URLs that are in the sitemap today and not retired, says how many inspected URLs it left out, and writes the dashboard history from the same numbers. The request-indexing list shows each page's last inspection date.
+- **Trailing-slash canonicals.** The daily report lists pages where Google chose a canonical that differs from the page only by a trailing slash.
+- **`language` (site config, for example `en` or `en-GB`).** Search queries clearly in another language are no longer turned into topic proposals or near-miss candidates. Short stop-word check, silent when unsure, no dependency.
+- **`run pace --apply`.** Writes the recommended `publishAt` dates for JSON and Markdown content. It never moves a page earlier, keeps line endings, and refuses a JSON file it could not rewrite without changing its formatting (that page is reported as skipped). Without `--apply` it stays report only.
+- **`run experiments log-git <ref>`.** Logs an experiment for every page whose title, description or H1 was rewritten since a git ref (JSON content), dated by the last commit that touched the file, so the experiment log no longer depends on manual entries.
+- Tests: `test/scope.test.mjs` (9 tests, offline). Total suite 265 passing.
+
 ## 2.14.0
 
 - **New `render` job (brief 01, item 7, optional; ported from the idea of the reference site's `check-static-content.mjs`).** It loads sitemap pages in a headless browser and compares them with the HTML the server delivered.

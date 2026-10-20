@@ -18,7 +18,7 @@ function internalLinks(p, site) {
 
 export async function run({ site, flags }) {
   const { pages, ctx } = await crawlSite(site, { maxPages: flags["max-pages"] ? Number(flags["max-pages"]) : undefined, engine: typeof flags.engine === "string" ? flags.engine : undefined });
-  const issues = runChecks(pages, ctx);
+  const issues = runChecks(pages, { ...ctx, thinIgnore: site.thinIgnore });
   const summary = summarize(issues, pages.length);
   const opportunities = linkOpportunities(pages);
   const compact = pages.map((p) => ({ url: p.url, finalUrl: p.finalUrl, status: p.status, title: p.title || "", h1: p.h1s?.[0] || "", description: p.description ?? null, links: internalLinks(p, site), h2Count: p.headings ? p.headings.filter((h) => h.level === 2).length : null, h3Count: p.headings ? p.headings.filter((h) => h.level === 3).length : null, words: p.words || 0, depth: p.depth, inbound: p.inbound, canonical: p.canonical || null, types: p.jsonld?.types || [], inSitemap: p.inSitemap, ttfb: Math.round(p.ttfb || 0) }));

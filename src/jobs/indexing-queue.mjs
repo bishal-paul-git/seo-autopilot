@@ -4,6 +4,7 @@
 // opens ONE issue a week with the checklist. About ten manual requests a day is Google's practical limit.
 import { readJson, writeText, today } from "../core/util.mjs";
 import { ghAvailable, ensureLabel, existingTitles, openIssue } from "../lib/gh.mjs";
+import { matchesAny } from "../analysis/scope.mjs";
 
 export const description = "Write the weekly list of up to 10 URLs to request indexing for by hand, with Search Console links";
 
@@ -13,8 +14,8 @@ export async function run({ site, flags }) {
   const state = readJson(`${site.paths.state}/inspect-state.json`, { results: {} }).results;
   const hist = readJson(`${site.paths.state}/indexing-requested.json`, {});
   const list = Object.entries(state)
-    .filter(([, v]) => v.coverage && v.coverage !== "Submitted and indexed")
-    .map(([url, v]) => ({ url, coverage: v.coverage, rank: RANK(v.coverage), requested: hist[url] }))
+    .filter(([u, v]) => v.coverage && v.coverage !== "Submitted and indexed" && !matchesAny(u, site.retired))
+    .map(([url, v]) => ({ url, coverage: v.coverage, rank: RANK(v.coverage), requested: hist[url], checked: String(v.checkedAt || "").slice(0, 10) }))
     .filter((x) => x.rank < 3) // redirects and duplicates need a fix, not a request
     .sort((a, b) => a.rank - b.rank || String(a.requested || "").localeCompare(String(b.requested || "")))
     .slice(0, Number(flags.limit ?? 10));
@@ -22,7 +23,7 @@ export async function run({ site, flags }) {
 
   const link = () => `https://search.google.com/search-console?resource_id=${encodeURIComponent(site.searchConsoleProperty)}`;
   const md = `# Request indexing, week of ${today()}\n\nOpen Search Console, paste each URL below into the **Inspect any URL** box at the top, wait for the live test, then press **Request indexing**. About 10 a day is Google's practical limit. (Search Console has no link that opens a given page's inspection, so the URL is shown for copying.)\n\n` +
-    list.map((x) => `- [ ] ${x.url.replace(site.url, "/")} (${x.coverage}${x.requested ? `, last requested ${x.requested}` : ""})\n  [Open Search Console](${link()}), then paste ${x.url}`).join("\n") + "\n";
+    list.map((x) => `- [ ] ${x.url.replace(site.url, "/")} (${x.coverage}${x.checked ? `, inspected ${x.checked}` : ""}${x.requested ? `, last requested ${x.requested}` : ""})\n  [Open Search Console](${link()}), then paste ${x.url}`).join("\n") + "\n";
   writeText(`${site.paths.state}/request-indexing.md`, md);
   console.log(md);
 
