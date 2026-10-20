@@ -36,9 +36,10 @@ export const SCOPES = {
 /** Search Console searchAnalytics.query helper bound to one site. */
 export function searchAnalytics(site, token) {
   const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
-  return async (startDate, endDate, dimensions, rowLimit) => {
+  // `extra` adds request fields such as startRow (paging) or dimensionFilterGroups.
+  return async (startDate, endDate, dimensions, rowLimit, extra = {}) => {
     const r = await fetch(`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(site.searchConsoleProperty)}/searchAnalytics/query`, {
-      method: "POST", headers, body: JSON.stringify({ startDate, endDate, dimensions, rowLimit }),
+      method: "POST", headers, body: JSON.stringify({ startDate, endDate, dimensions, rowLimit, ...extra }),
     });
     const j = await r.json();
     if (j.error) throw new Error(`Search Console: ${j.error.message}`);

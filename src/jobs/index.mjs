@@ -44,6 +44,7 @@ export const JOBS = {
   watch: () => import("./watch.mjs"),
   monthly: () => import("./monthly.mjs"),
   keywords: () => import("./keywords.mjs"),
+  rank: () => import("./rank.mjs"),
 };
 
 export async function describeJobs() {
