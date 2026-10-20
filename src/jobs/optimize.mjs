@@ -35,7 +35,7 @@ export function fromMarkdown(src, url = "") {
   return { url, title: field("title"), h1: headings.find((h) => h.level === 1)?.text || field("title"), description: field("description"), headings, text };
 }
 
-async function politeFetch(url, f) {
+export async function politeFetch(url, f) {
   const u = new URL(url);
   try {
     const robots = await f(`${u.origin}/robots.txt`, { headers: { "user-agent": UA }, signal: AbortSignal.timeout(10000) });
