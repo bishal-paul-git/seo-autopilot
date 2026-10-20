@@ -50,5 +50,14 @@
     "./departments/quality/agents/seo-compliance-auditor.md",
     "./departments/quality/agents/seo-editor.md",
     "./departments/quality/agents/seo-fact-checker.md"
-  ]
+  ],
+  "mcpServers": {
+    "seo-autopilot": {
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/bin/seo-autopilot.mjs",
+        "mcp"
+      ]
+    }
+  }
 }
