@@ -51,6 +51,7 @@ export const JOBS = {
   authority: () => import("./authority.mjs"),
   forecast: () => import("./forecast.mjs"),
   linkgraph: () => import("./linkgraph.mjs"),
+  vitals: () => import("./vitals.mjs"),
 };
 
 export async function describeJobs() {
