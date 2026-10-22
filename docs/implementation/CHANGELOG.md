@@ -169,6 +169,12 @@ Dated session entries; history is preserved. Product release notes are in the ro
   - A proposed manual-run release workflow was therefore not pushed.
 - **Documentation:** STATUS updated.
 
+## 2026-10-20 (v2.15.0 prepared on branch `feat/refinements-pace-thin-lang`)
+- **Code changes:** `src/analysis/scope.mjs` (thinIgnore/retired path patterns, trailing-slash check, small language filter), `applyDates` in `src/adapters/index.mjs` and `run pace --apply`, `metaChanges` and `run experiments log-git <ref>`, wiring in `audit`, `daily`, `digest`, `indexing-queue`, `research`; config validation and schema for `thinIgnore`, `retired`, `language`.
+- **Documentation:** root `CHANGELOG.md` 2.15.0, `docs/configuration.md`, roadmap brief 09 statuses.
+- **Checks:** `npm test`: 265 pass, 0 fail (new `test/scope.test.mjs`, 9 offline tests). Not run: live Search Console, a real `pace --apply` on a production content repository, `log-git` against a real history. These need a real site checkout.
+- **Deployment:** not released yet. v2.14.0 tags are also still unpushed (see the entry below), so the release must push `v2.15.0`, `v2` and `v2-stable` together once this branch is merged.
+
 ## 2026-10-18, later (release v2.14.0, partial)
 - **Deployment actions:**
   - Version bumped to 2.14.0; `CHANGELOG.md` section added; site regenerated (commit `e7668d9`).

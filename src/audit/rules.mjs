@@ -2,6 +2,7 @@
 // reports. Thresholds are practical guidelines, not search-engine limits: titles and descriptions are truncated by pixel
 // width, not characters, and nothing here promises a ranking effect.
 
+import { matchesAny } from "../analysis/scope.mjs";
 /** Properties Google lists as required (or the minimum that makes the markup meaningful) per structured-data type. */
 export const SCHEMA_REQUIRED = {
   Organization: ["name"], LocalBusiness: ["name", "address"], ProfessionalService: ["name", "address"], Person: ["name"], WebSite: ["url"],
@@ -157,7 +158,7 @@ export function runChecks(pages, ctx = {}) {
     }
     if (p.h1s[0] && p.h1s[0].length > 70) add("h1-long", p.url, `${p.h1s[0].length} characters`);
     if (Array.isArray(p.headings)) headingChecks(p, add);
-    if (p.words < 250 && p.inSitemap && !noindex) add("thin-content", p.url, `${p.words} words`);
+    if (p.words < 250 && p.inSitemap && !noindex && !matchesAny(p.url, ctx.thinIgnore)) add("thin-content", p.url, `${p.words} words`);
     if (p.jsonld.invalid) add("jsonld-invalid", p.url, `${p.jsonld.invalid} unparsable block(s)`);
     if (p.jsonld.articleFields) { const miss = Object.entries(p.jsonld.articleFields).filter(([, v]) => !v).map(([k]) => k); if (miss.length) add("jsonld-article-incomplete", p.url, `missing ${miss.join(", ")}`); }
     for (const n of p.jsonld.nodes || []) {

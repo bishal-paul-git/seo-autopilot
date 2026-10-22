@@ -55,3 +55,24 @@ export function evaluate(exp, series, today, { span = 14, lag = 3, controls = nu
   } else res.note = "Directional only: too few untouched pages for a control group, so seasonality or other changes may explain it.";
   return res;
 }
+
+const META_FIELDS = { metaTitle: "title", metaDescription: "description", h1: "H1", title: "title" };
+
+/**
+ * Which pages had their title, description or H1 changed between two versions of a content list (arrays of page objects).
+ * Returns [{ id, fields: ["title", "description"], change }] so each can be logged as an experiment. Pure: pass the parsed
+ * lists, no git or file access here. New pages are not experiments (nothing to compare against).
+ */
+export function metaChanges(before = [], after = []) {
+  const prev = new Map((Array.isArray(before) ? before : []).filter((x) => x && typeof x === "object").map((x) => [String(x.slug ?? x.id ?? ""), x]));
+  const out = [];
+  for (const it of Array.isArray(after) ? after : []) {
+    if (!it || typeof it !== "object") continue;
+    const id = String(it.slug ?? it.id ?? "");
+    const old = prev.get(id);
+    if (!id || !old) continue;
+    const fields = [...new Set(Object.entries(META_FIELDS).filter(([k]) => old[k] != null && it[k] != null && old[k] !== it[k]).map(([, label]) => label))];
+    if (fields.length) out.push({ id, fields, change: `${fields.join(", ")} rewritten` });
+  }
+  return out;
+}

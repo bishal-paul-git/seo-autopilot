@@ -10,6 +10,7 @@ import { ask, NO_FAKE_RULES } from "../lib/llm.mjs";
 import { ingest } from "../lib/ingest.mjs";
 import { loadPages, pipeline } from "../adapters/index.mjs";
 import { existsSync, readFileSync } from "node:fs";
+import { matchesAny } from "../analysis/scope.mjs";
 
 export const description = "Weekly digest: search changes, index status, pipeline, backlinks, GA4 and next actions";
 
@@ -32,7 +33,7 @@ export async function run({ site }) {
   const pagesUp = movers(pNow, pPrev, "clicks").sort((x, y) => y.d - x.d).slice(0, 5).filter((x) => x.d > 0);
 
   const insp = readJson(`${dir}/inspect-state.json`, { results: {} }).results;
-  const urls = Object.entries(insp);
+  const urls = Object.entries(insp).filter(([u]) => !matchesAny(u, site.retired));
   const indexed = urls.filter(([, v]) => v.coverage === "Submitted and indexed").length;
   const notIndexed = urls.filter(([, v]) => v.coverage !== "Submitted and indexed");
   const prevSnap = readJson(`${dir}/digest-state.json`, { indexed: 0, inspected: 0 });

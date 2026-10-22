@@ -54,6 +54,9 @@ One file, `seo-autopilot.config.json`, in the root of your repository. Paths are
 | `feeds`, `topicsConfig`, `backlinksDir` | override the default file locations under `dataDir` |
 | `limits` | caps on proposals and topics, plus the content-pace limits `pagesPerDay` (2), `pagesPerWeek` (8) and `perTemplatePerDay` (off) |
 | `review` | sensitive-topic gate: `topics` (keyword lists) and `requireFields` (default `author`, `reviewedBy`) |
+| `thinIgnore` | URL path patterns (`*` wildcard) of pages that are meant to be short; the thin-content rule skips them. Example: `["/contact", "/book", "/tools/*"]` |
+| `retired` | URL path patterns of pages removed or redirected on purpose; left out of not-indexed counts and request lists |
+| `language` | language the site publishes in (`en`, `en-GB`, `es`...); queries clearly in another language are not proposed as topics |
 | `citations` | `market`: default country for tracked questions (default `GB`) |
 | `ingest` | optional dashboard sync, see [dashboard.md](dashboard.md) |
 

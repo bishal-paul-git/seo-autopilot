@@ -187,3 +187,43 @@ export function scheduleQueued(site, { perDay = 3, start, dry = false } = {}) {
   }
   return touched;
 }
+
+/**
+ * Set new publishAt dates on existing pages (used by `pace --apply`). `moves` = [{ id, file, to }] from analysePace().
+ * Safe by design: a JSON file is rewritten only when it is exactly what JSON.stringify(list, null, 2) would write (so no
+ * formatting is lost), line endings are kept, and a page that is not found or whose file cannot be rewritten safely is
+ * reported in `skipped` rather than guessed at. With dry: true nothing is written.
+ */
+export function applyDates(site, moves, { dry = false } = {}) {
+  const applied = [];
+  const skipped = [];
+  const byFile = new Map();
+  for (const m of moves) { if (!m.file) { skipped.push({ ...m, reason: "no source file" }); continue; } (byFile.get(m.file) || byFile.set(m.file, []).get(m.file)).push(m); }
+  for (const [rel, list] of byFile) {
+    const abs = site.paths.root + "/" + rel;
+    let raw;
+    try { raw = readFileSync(abs, "utf8"); } catch { for (const m of list) skipped.push({ ...m, reason: "file not readable" }); continue; }
+    const eol = raw.includes("\r\n") ? "\r\n" : "\n";
+    const norm = raw.replace(/\r\n/g, "\n");
+    if (rel.endsWith(".json")) {
+      let data; try { data = JSON.parse(norm); } catch { data = null; }
+      const same = Array.isArray(data) && [JSON.stringify(data, null, 2) + "\n", JSON.stringify(data, null, 2)].includes(norm);
+      if (!same) { for (const m of list) skipped.push({ ...m, reason: "JSON formatting would change; edit publishAt by hand" }); continue; }
+      let changed = false;
+      for (const m of list) {
+        const it = data.find((x) => x && String(x.slug ?? x.id ?? x.h1 ?? x.title ?? x.name) === String(m.id));
+        if (!it) { skipped.push({ ...m, reason: "page not found in file" }); continue; }
+        if (String(it.publishAt || "").slice(0, 10) === m.to) continue;
+        it.publishAt = m.to; changed = true; applied.push({ id: m.id, file: rel, from: m.from, to: m.to });
+      }
+      if (changed && !dry) writeFileSync(abs, (JSON.stringify(data, null, 2) + (norm.endsWith("\n") ? "\n" : "")).replace(/\n/g, eol));
+    } else {
+      // Markdown: replace the publishAt line in the front matter (one page per file).
+      const m = list[0];
+      if (!/^publishAt:.*$/m.test(norm)) { skipped.push({ ...m, reason: "no publishAt line in front matter" }); continue; }
+      applied.push({ id: m.id, file: rel, from: m.from, to: m.to });
+      if (!dry) writeFileSync(abs, norm.replace(/^publishAt:.*$/m, `publishAt: ${m.to}`).replace(/\n/g, eol));
+    }
+  }
+  return { applied, skipped };
+}

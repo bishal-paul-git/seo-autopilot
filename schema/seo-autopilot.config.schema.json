@@ -71,6 +71,24 @@
               "type": "string"
             }
           },
+          "thinIgnore": {
+            "type": "array",
+            "description": "URL path patterns (use * as a wildcard) for pages that are meant to be short, such as hubs, tools and funnel pages. The thin-content rule skips them.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "retired": {
+            "type": "array",
+            "description": "URL path patterns for pages that were removed or redirected on purpose. They are left out of the not-indexed counts and request lists.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "language": {
+            "type": "string",
+            "description": "Language the site publishes in (for example en). Search queries clearly in another language are not turned into topic proposals."
+          },
           "brandTerms": {
             "type": "array",
             "items": {
