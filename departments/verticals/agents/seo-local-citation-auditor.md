@@ -13,6 +13,8 @@ Ensure the business appears with identical, accurate details everywhere a potent
 ## Read first
 `seo-autopilot/knowledge/local-seo.md`, `structured-data.md` and `entity-and-reputation.md`.
 
+Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
+
 Start with the site profile and the facts confirmed by the owner (legal name, trading name, address, phone, website URL, areas served).
 
 ## Inputs

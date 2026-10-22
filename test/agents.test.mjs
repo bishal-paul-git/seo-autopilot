@@ -14,8 +14,8 @@ const agents = listAgents();
 const agentFiles = agents.map((a) => `${a.name}.md`);
 const pathOf = Object.fromEntries(agents.map((a) => [`${a.name}.md`, a.file]));
 
-test("thirty-three agents exist, with unique names across departments", () => {
-  assert.equal(agentFiles.length, 33);
+test("thirty-eight agents exist, with unique names across departments", () => {
+  assert.equal(agentFiles.length, 38);
   assert.equal(new Set(agentFiles).size, agentFiles.length);
 });
 

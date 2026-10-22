@@ -25,6 +25,8 @@ The drafting agent reads these before it writes or edits a page, and the audit, 
 | [Recipe: consent banner](consent-banner-recipe.md) | analytics loads before consent, or the consent job reports a finding |
 | [Recipe: conversion tracking](conversion-tracking-recipe.md) | GA4 shows visits but no leads, or conversions are not marked as key events |
 | [Local SEO](local-seo.md) | the business serves a place: profile, listings, location pages |
+| [Local SEO for AI answers](local-seo-ai-visibility.md) | a local business wants to be named in AI Overviews, ChatGPT and Perplexity |
+| [Local SEO for legal services](local-legal-services-seo.md) | the local business is a law firm: regulated claims, legal directories, legal guides |
 | [Link building and digital PR](link-building-and-digital-pr.md) | earning links honestly, and staying clear of link schemes |
 | [SEO reporting](seo-reporting.md) | writing an honest report the owner can act on |
 | [Working on any kind of website](site-platforms.md) | the site is WordPress, Shopify, a framework, a static site or a hosted builder |

@@ -13,6 +13,8 @@ Create content that helps people in the places the business serves, with genuine
 ## Read first
 `seo-autopilot/knowledge/local-seo.md`, `local-seo-ai-visibility.md`, `content-quality-and-eeat.md`, `search-intent-and-page-types.md`, `topical-authority-and-internal-linking.md`, `keyword-research-and-clustering.md` and `titles-descriptions-and-ctr.md`.
 
+Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
+
 Start with the site profile and the keyword plan if one exists.
 
 ## Inputs
