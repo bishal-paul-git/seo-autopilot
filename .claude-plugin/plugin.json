@@ -47,6 +47,11 @@
     "./departments/ai-search/agents/seo-ai-visibility-tracker.md",
     "./departments/verticals/agents/seo-ecommerce.md",
     "./departments/verticals/agents/seo-local-agent.md",
+    "./departments/verticals/agents/seo-local-ai-visibility.md",
+    "./departments/verticals/agents/seo-local-citation-auditor.md",
+    "./departments/verticals/agents/seo-local-content-writer.md",
+    "./departments/verticals/agents/seo-local-gbp-optimizer.md",
+    "./departments/verticals/agents/seo-local-review-manager.md",
     "./departments/quality/agents/seo-compliance-auditor.md",
     "./departments/quality/agents/seo-editor.md",
     "./departments/quality/agents/seo-fact-checker.md"

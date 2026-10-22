@@ -6,7 +6,7 @@ How local businesses appear in AI-generated answers: Google AI Overviews, ChatGP
 
 AI search systems build local answers from multiple sources simultaneously:
 - **Google AI Overviews / Gemini:** website content, Google Business Profile (categories, services, reviews, posts, Q&A), Maps data, structured data, third-party reviews.
-- **ChatGPT (SearchGPT):** website content (58% of local recommendations), directory listings (15%), review sites, news, social media. Uses OAI-SearchBot and GPTBot crawlers.
+- **ChatGPT (SearchGPT):** website content, directory listings, review sites, news, social media. Uses OAI-SearchBot and GPTBot crawlers.
 - **Perplexity:** strongly favours fresh content (published within 3 months), community content (Reddit, forums), and pages with specific data points and clear source attribution.
 - **Claude:** training data plus web search results. Entity presence across authoritative sources matters.
 

@@ -1,0 +1,18 @@
+# seo-autopilot hosted connector (Cloudflare Worker). Setup and deploy steps: README.md in this folder.
+# Secrets are never written here: set them with `npx wrangler secret put <NAME>`
+# (GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, TOKEN_KEY).
+name = "seo-autopilot-connector"
+main = "src/worker.mjs"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[vars]
+# The GitHub App's URL name, for the "install the app" link on the home page (optional).
+GITHUB_APP_SLUG = ""
+# Set when the Worker is served on a custom domain behind a proxy that changes the host (optional).
+PUBLIC_URL = ""
+
+# The maintainer's instance. For your own copy, create one with `npx wrangler kv namespace create OAUTH_KV` and put its id here.
+[[kv_namespaces]]
+binding = "OAUTH_KV"
+id = "27fd7750abf34014a04036e6f36b827c"

@@ -2,6 +2,23 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-22 (Erudience upgrade; hosted connector started)
+- **Erudience (site repository, deployment action):**
+  - Opened, then squash-merged at the owner's request, https://github.com/bishal-paul-git/erudience-flow-engine/pull/91 (`ce934ba`): the seo-autopilot 2.16 upgrade.
+  - Workflows were taken from the templates, and the site's ingest URL, IndexNow key name, report folder and implementer rules were put back. `seo-implement` gained `workflow_call`, which the new `seo-autopilot` workflow needs.
+  - Checks: the YAML parses, `doctor` loads the config (92 pages), and the Hostinger preview built. PR checks were skipped because they run only on `seo/*` branches.
+  - No scheduled run with 2.16 has been observed yet.
+- **Code (branch `claude/hopeful-euler-662mu5`, not merged):**
+  - `src/mcp/core.mjs` (new): protocol and read tools over a store. `src/mcp/server.mjs` now uses it, with a file store; the exported API is unchanged. Also fixed the "ready" log line, which was unreachable.
+  - `cloud/connector/` (new): `src/worker.mjs` (OAuth 2.1 and `/mcp`), `src/github.mjs` (state-branch store), `src/crypto.mjs`, `wrangler.toml`, `README.md`.
+  - `test/connector.test.mjs` (new, 5 tests).
+- **Docs:** `docs/mcp.md` (hosted section), DECISIONS D20, root `CHANGELOG.md` Unreleased.
+- **Checks:**
+  - `npm test` 402/402.
+  - `npx wrangler@4.45.0 deploy --dry-run`: bundled, 30.25 KiB.
+  - `wrangler dev`, then curl: the discovery endpoints answered; `/mcp` returned 401 with `WWW-Authenticate`; registration returned 201; the consent page set its cookie; a POST without the cookie got 400; a POST with it got 302 to GitHub; a made-up code got `invalid_grant`.
+  - **Not run:** real GitHub sign-in, real Claude or ChatGPT clients, any deployment.
+
 ## 2026-10-22 (release v2.16.0)
 - **Code/CI:** added `.github/workflows/tag-release.yml` (`de4c8e8`): a manual workflow that checks the version against `package.json`, runs `npm test`, tags `main`, moves `v2` (and `v2-stable` if ticked) and creates the GitHub Release from `CHANGELOG.md`. Added because tag pushes from this session are refused (403).
 - **Integration:** merged PR #12 (`1d94490`) and Dependabot #6 and #7; committed v2.16.0 (`ffb993b`).

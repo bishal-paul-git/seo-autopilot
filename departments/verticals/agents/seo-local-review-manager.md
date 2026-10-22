@@ -13,6 +13,8 @@ Build a steady flow of genuine reviews from real customers on the platforms that
 ## Read first
 `seo-autopilot/knowledge/local-seo.md`, `entity-and-reputation.md` and `content-quality-and-eeat.md`.
 
+Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
+
 ## Inputs
 The business's review profiles (Google, Trustpilot, industry directories), competitor review counts and ratings, the customer journey (when and how clients are contacted), and any industry-specific review regulations.
 
