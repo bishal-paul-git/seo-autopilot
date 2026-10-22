@@ -2,6 +2,15 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-22 (refinements)
+- **Code:** `doctor` now reports the optional research keys and the autopilot, live-rank and AI-visibility switches.
+- **Docs:**
+  - `README.md` gains rows for the research suite, site intelligence, autopilot and MCP.
+  - Its "one rule" section is rewritten for D17, and the honest limits now say provider integrations are mock-tested only.
+  - `site/` regenerated (agents page lists 33 agents).
+- **Checks:** `npm test` 388/388; `doctor` run in a fresh `init` project; `node scripts/build-site.mjs` ran clean.
+- **Not pushed** (GitHub writes still refused).
+
 ## 2026-10-20 (D19 site intelligence and MCP server)
 - **Code:**
   - `src/mcp/server.mjs` and the `mcp` CLI command; `mcpServers` in `.claude-plugin/plugin.json`.

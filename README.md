@@ -27,13 +27,26 @@ That creates a config file, a few editable data files and the GitHub workflows. 
 | Links | `backlinks`, `backlinks-queue`, `mentions` | daily / weekly | capped, careful submissions; a hand-done checklist; unlinked brand mentions with a drafted request |
 | See | `dashboard` | every day | one HTML file with charts, index status, the schedule, keywords and backlinks |
 | Manage | `ui` (local app) | on demand | one app on your computer for every project: dashboard, approvals from GitHub, sync, dry runs |
+| Keywords | `keywords` | weekly, or on request | keyword explorer: topics, intent, demand, difficulty, gaps no page owns, questions |
+| Rankings | `rank` | every day | tracked positions from Search Console, movers, visibility; with `--serp`, search features and share of voice |
+| Competitors | `gap`, `changes` | weekly | queries competitors win and you do not; what they changed on their winning pages |
+| Content | `optimize` | on request | a page or draft scored against the top results: terms, sections, questions, length, readability |
+| AI search | `ai-visibility` | monthly (opt-in) | how ChatGPT, Claude, Gemini and Perplexity mention and cite you |
+| Authority | `authority`, `entity` | weekly / monthly | referring domains with authority, link intersect; Knowledge Graph and Wikidata check |
+| Site | `linkgraph`, `vitals`, `schema` | daily / weekly | internal PageRank and orphans; real-user Core Web Vitals; structured data checks and drafts |
+| Trend | `forecast` | monthly | whether traffic is inside its normal range (Python) |
+| Autopilot | `seo-autopilot`, `seo-watch`, `monthly` | twice a day / daily / monthly | routine changes drafted, checked and merged within limits; watched and undone if they hurt; a monthly report |
+| Assistants | `seo-autopilot mcp` | on demand | Claude, ChatGPT or any MCP client reads the reports and runs analysis jobs |
 
-## The one rule: nothing is published without a human step
+All of the research and site tools run on your own Search Console data first. Each key you add (most are free) switches on more: see [docs/research-suite.md](docs/research-suite.md).
 
-- The autopilot **never creates a page by itself**. It opens an issue ("Topic: …") with the evidence. You add the label `approved`.
-- Only then does the implementer draft the page, on a branch, as a **pull request**. Nothing is live until you **merge** it.
+## The one rule: checks approve routine work, a person approves risky work
+
+- **By default nothing publishes without you.** The tool opens an issue ("Topic: …") with the evidence. When you add the label `approved`, the implementer drafts the change on a branch as a **pull request**. Nothing is live until it is merged.
+- **Autopilot is opt-in** (repository variable `SEO_AUTOPILOT=true`, decision D17). Routine changes are merged automatically, but only after every automated check (build, facts, reviewer) has passed on that exact commit. Routine means fixes, titles and descriptions, internal links, refreshes, and a few new pages a week. The pace limits apply, and the `seo-watch` job undoes a change that makes things worse.
+- **Always a person:** sensitive topics (health, money, legal), site-wide indexing changes, migrations, deletions, outreach, and changes to workflows or dependencies. `SEO_AUTOPILOT_PAUSED=true` stops everything.
 - A merged page is marked *queued*. The scheduler dates it (default 3 a day), and the site goes live with it on that day.
-- Hard rules baked into every prompt: no invented numbers, clients, quotes, prices or results; cite real sources; keep a human in the loop.
+- Hard rules baked into every prompt: no invented numbers, clients, quotes, prices or results; cite real sources.
 
 Read [docs/content-automation.md](docs/content-automation.md) for the full picture.
 
@@ -41,7 +54,8 @@ Read [docs/content-automation.md](docs/content-automation.md) for the full pictu
 
 - **Google indexing cannot be automated.** The Indexing API is only for job and livestream pages. The tool prepares the list; you press the button (about 10 a day).
 - IndexNow reaches Bing, Yandex, Seznam and Naver, not Google.
-- There is **no keyword-volume data**. Research uses your own Search Console impressions. AI "ideas" are flagged as unverified.
+- **Keyword volumes are not included by default.** Research uses your own Search Console impressions. Estimated volumes and competitors' rankings need your own DataForSEO key, and are labelled as estimates. AI "ideas" are flagged as unverified.
+- **The paid-provider integrations (DataForSEO, SERP providers, AI engines) and the free Google APIs have been tested with recorded responses, not yet against the live services.** Check a report against the provider's own dashboard the first time you use a key.
 - **Backlinks cannot be fully automated.** Most free directories need an account or show a CAPTCHA, and this tool never solves CAPTCHAs, never creates accounts, never pays and never swaps links. See [docs/backlinks.md](docs/backlinks.md).
 - Nothing here guarantees rankings or indexing.
 
@@ -58,6 +72,7 @@ seo-autopilot init --url https://example.com/   scaffold config, data files and 
 seo-autopilot doctor                             check the setup and say what to fix
 seo-autopilot run <job> [--site id] [--dry]      run one job
 seo-autopilot ui [--open]                        local app to manage every project on this computer
+seo-autopilot mcp [--project folder]             MCP server for Claude, ChatGPT and other AI assistants
 seo-autopilot projects add|list|remove [folder]  choose which website folders the app shows
 seo-autopilot state restore|save                 load or save memory on the "seo-data" branch
 ```
@@ -70,6 +85,8 @@ seo-autopilot state restore|save                 load or save memory on the "seo
 - [Dashboard](docs/dashboard.md)
 - [The local app](docs/ui.md)
 - [The expert layer: audit, insights, priorities, experiments](docs/expert.md)
+- [Research suite and site intelligence: keywords, rank, gap, optimiser, AI visibility, authority, link graph, vitals, schema, entity](docs/research-suite.md)
+- [Use it from Claude or ChatGPT (MCP)](docs/mcp.md)
 - [Backlinks](docs/backlinks.md)
 - [Configuration reference](docs/configuration.md)
 - [Jobs and secrets](docs/jobs.md)

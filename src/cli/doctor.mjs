@@ -22,6 +22,16 @@ export function githubSetup(cwd) {
   return { secrets: new Set((secrets || []).map((s) => s.name)), vars: new Map((vars || []).map((v) => [v.name, v.value])) };
 }
 
+export const OPTIONAL_KEYS = [
+  [["DATAFORSEO_LOGIN", "DATAFORSEO_PASSWORD"], "keyword volumes, competitor rankings and backlinks (paid)"],
+  [["BRAVE_API_KEY", "SERPAPI_KEY"], "live search results: rank --serp, keywords --serp, optimize"],
+  [["BING_WEBMASTER_API_KEY"], "Bing related queries for keywords (free)"],
+  [["OPENPAGERANK_API_KEY"], "domain authority for difficulty and the authority report (free)"],
+  [["CRUX_API_KEY"], "real-user Core Web Vitals for vitals (free)"],
+  [["GOOGLE_KG_API_KEY"], "Google Knowledge Graph for entity (free)"],
+  [["PERPLEXITY_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY"], "AI engines for ai-visibility (paid; ANTHROPIC_API_KEY counts too)"],
+];
+
 export async function doctor({ cwd = process.cwd() } = {}) {
   let failed = 0;
   const ok = (m) => console.log(`  ok    ${m}`);
@@ -102,7 +112,12 @@ export async function doctor({ cwd = process.cwd() } = {}) {
     gh.secrets.has("GOOGLE_KEY_JSON") ? ok("GOOGLE_KEY_JSON secret set") : bad("GOOGLE_KEY_JSON secret is missing (the daily job cannot read Search Console)");
     gh.secrets.has("CLAUDE_CODE_OAUTH_TOKEN") || gh.secrets.has("ANTHROPIC_API_KEY") ? ok("drafting login secret set (pages can be drafted)") : warn("no drafting secret (CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY): everything works except AI drafting, which is optional");
     gh.secrets.has("PAGESPEED_API_KEY") ? ok("PAGESPEED_API_KEY set") : warn("no PAGESPEED_API_KEY: the speed job may hit Google's shared quota (free key, optional)");
-    for (const [name, what] of [["SEO_AUTOMERGE", "auto-merge of passing drafts"], ["SEO_REVIEW", "reviewer agent"], ["SEO_REQUIRE_REVIEW", "auto-merge waits for the reviewer"], ["BACKLINKS_LIVE", "real backlink submissions"]]) {
+    // Optional keys: each one switches on more of the research suite. Missing is fine.
+    for (const [names, what] of OPTIONAL_KEYS) {
+      const set = names.filter((n) => gh.secrets.has(n));
+      console.log(`  info  ${set.length ? `set: ${set.join(", ")}` : `not set: ${names.join(" or ")}`} (${what})`);
+    }
+    for (const [name, what] of [["SEO_AUTOMERGE", "auto-merge of passing drafts"], ["SEO_REVIEW", "reviewer agent"], ["SEO_REQUIRE_REVIEW", "auto-merge waits for the reviewer"], ["SEO_AUTOPILOT", "autopilot loop, watch and work orders"], ["SEO_AUTOPILOT_PAUSED", "kill switch"], ["SEO_RANK_LIVE", "weekly live rank check (SERP credits)"], ["SEO_AI_VISIBILITY", "monthly AI visibility (paid AI calls)"], ["BACKLINKS_LIVE", "real backlink submissions"]]) {
       console.log(`  info  ${name} = ${gh.vars.get(name) ?? "not set"} (${what})`);
     }
   }
