@@ -34,3 +34,11 @@ Track new referring domains (Search Console links report), referral traffic and 
 
 ## Anchor text
 Natural wording is best: the page's name, the brand, a plain description. Do not try to force exact-match keyword anchors.
+
+## Auditing the links you already have
+Start from the links you have earned before chasing new ones. Export them from Search Console (Links, then "Export external links") into `seo-autopilot/inbound-links/` and run `seo-autopilot run inbound`.
+- **Reclaim first.** A link that points at a page that now returns 404 or 410 is value you earned and are losing. Redirect it to the closest live page on the same topic, not the home page by default.
+- **Redirected links are fine.** For the few most valuable linkers, it is worth asking them to point at the final URL.
+- **Compare exports over time.** Gains and losses show what is working. One export is a sample, so a site missing from it may still link to you.
+- **Look before you clean up.** A sitewide link from a real partner is normal. A keyword anchor on most links, or many links from unrelated low-quality sites, deserves a look and a question to the owner: were links bought or arranged?
+- **Disavow is rarely needed.** Google says it mostly ignores spammy links. Consider a disavow file only when you have a manual action for unnatural links, or you know of paid or arranged links you cannot get removed. Disavowing good links by mistake can cost you. A "toxic score" from a tool is not evidence on its own.

@@ -6,30 +6,75 @@ import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { RULES } from "../src/audit/rules.mjs";
 
-const root = fileURLToPath(new URL("..", import.meta.url));
-const agentsDir = join(root, "agents"), knowledgeDir = join(root, "knowledge");
-const agentFiles = readdirSync(agentsDir).filter((f) => f.startsWith("seo-") && f.endsWith(".md"));
+import { listAgents, listSkills, DEPARTMENTS } from "../src/core/agents.mjs";
 
-test("twenty-seven agents exist", () => assert.equal(agentFiles.length, 27));
+const root = fileURLToPath(new URL("..", import.meta.url));
+const departmentsDir = join(root, "departments"), knowledgeDir = join(root, "knowledge");
+const agents = listAgents();
+const agentFiles = agents.map((a) => `${a.name}.md`);
+const pathOf = Object.fromEntries(agents.map((a) => [`${a.name}.md`, a.file]));
+
+test("thirty-three agents exist, with unique names across departments", () => {
+  assert.equal(agentFiles.length, 33);
+  assert.equal(new Set(agentFiles).size, agentFiles.length);
+});
+
+test("every department folder is a known department with a charter, and holds only agents", () => {
+  const dirs = readdirSync(departmentsDir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
+  assert.deepEqual([...dirs].sort(), [...DEPARTMENTS, "skills"].sort(), "departments/ holds the departments and the shared skills folder");
+  for (const d of DEPARTMENTS) {
+    assert.ok(existsSync(join(departmentsDir, d, "README.md")), `${d} has no README.md`);
+    for (const f of readdirSync(join(departmentsDir, d, "agents"))) assert.match(f, /^seo-[a-z-]+\.md$/, `${d}/agents/${f}`);
+  }
+});
+
+test("skills: each has front matter naming its folder, the agents in used-by exist and name it, and every skill an agent names exists", () => {
+  const skills = listSkills();
+  assert.ok(skills.length >= 2);
+  const byName = new Map(skills.map((x) => [x.name, x]));
+  for (const sk of skills) {
+    const text = readFileSync(sk.file, "utf8").replace(/\r\n/g, "\n");
+    assert.equal((text.match(/^name:\s*(.+)$/m) || [])[1], sk.name, `${sk.name}: name`);
+    assert.ok(/^description:\s*\S/m.test(text), `${sk.name}: description`);
+    for (const h of ["## When to use", "## Never"]) assert.ok(text.includes(h), `${sk.name}: missing ${h}`);
+    assert.ok(sk.usedBy.length, `${sk.name}: used by no agent`);
+    for (const a of sk.usedBy) {
+      assert.ok(pathOf[`${a}.md`], `${sk.name}: unknown agent ${a}`);
+      assert.ok(readFileSync(pathOf[`${a}.md`], "utf8").includes(`seo-autopilot/skills/${sk.name}/SKILL.md`), `${a} does not name the ${sk.name} skill`);
+    }
+  }
+  for (const f of agentFiles) {
+    for (const m of readFileSync(pathOf[f], "utf8").matchAll(/seo-autopilot\/skills\/([a-z0-9-]+)\/SKILL\.md/g)) {
+      assert.ok(byName.has(m[1]), `${f} names a missing skill ${m[1]}`);
+      assert.ok(byName.get(m[1]).usedBy.includes(f.slice(0, -3)), `${m[1]} used-by does not list ${f}`);
+    }
+  }
+});
+
+test("the Claude Code plugin lists every agent (plugins only find agents/ by default, and ours live in departments/)", () => {
+  const plugin = JSON.parse(readFileSync(join(root, ".claude-plugin", "plugin.json"), "utf8"));
+  assert.deepEqual(plugin.agents, agents.map((a) => "./" + a.file.slice(root.length).replace(/\\/g, "/").replace(/^\//, "")));
+});
 
 for (const f of agentFiles) {
-  const text = readFileSync(join(agentsDir, f), "utf8");
+  const text = readFileSync(pathOf[f], "utf8");
   test(`${f}: front matter, required sections, and real playbook references`, () => {
     const fm = text.match(/^---\n([\s\S]*?)\n---/);
     assert.ok(fm, "front matter");
     assert.equal((fm[1].match(/^name:\s*(.+)$/m) || [])[1], f.replace(/\.md$/, ""));
     assert.ok(/^description:\s*\S/m.test(fm[1]) && /^tools:\s*\S/m.test(fm[1]));
+    assert.equal((fm[1].match(/^department:\s*(.+)$/m) || [])[1], agents.find((a) => `${a.name}.md` === f).department, "department in front matter matches its folder");
     for (const h of ["## Mission", "## Read first", "## Method", "## Quality bar", "## Never", "## Output"]) assert.ok(text.includes(h), `missing ${h}`);
     for (const m of text.matchAll(/`([a-z0-9-]+\.md)`/g)) {
       const name = m[1];
       if (name === "README.md" || name.startsWith("seo-")) continue;
-      assert.ok(existsSync(join(knowledgeDir, name)) || ["priorities.md", "audit.md", "geo.md", "speed.md", "experiments.md", "weekly-digest.md", "daily-summary.md", "news-digest.md", "agent-plan.md", "site-profile.md"].includes(name), `unknown file referenced: ${name}`);
+      assert.ok(existsSync(join(knowledgeDir, name)) || ["priorities.md", "audit.md", "geo.md", "speed.md", "experiments.md", "weekly-digest.md", "daily-summary.md", "news-digest.md", "agent-plan.md", "site-profile.md", "inbound.md", "logs.md"].includes(name), `unknown file referenced: ${name}`);
     }
   });
 }
 
 test("every agent starts from the site profile, so none assumes one stack", () => {
-  for (const f of agentFiles) assert.ok(readFileSync(join(agentsDir, f), "utf8").includes("site-profile.json"), f);
+  for (const f of agentFiles) assert.ok(readFileSync(pathOf[f], "utf8").includes("site-profile.json"), f);
 });
 
 test("every agent the router can recommend exists", async () => {
@@ -38,9 +83,49 @@ test("every agent the router can recommend exists", async () => {
   for (const s of plan.steps) assert.ok(agentFiles.includes(s.agent + ".md"), "router names a missing agent: " + s.agent);
 });
 
+test("every report the router tells an agent to use is named in that agent's Inputs", async () => {
+  const { routeAgents } = await import("../src/analysis/agent-router.mjs");
+  const plan = routeAgents({
+    profile: { mode: "edit", signals: { structuredData: [] } },
+    audit: { issues: Object.keys(RULES).map((rule) => ({ rule, url: "https://a.test/" })) },
+    priorities: { items: [{ type: "structure", title: "x" }, { type: "snippet", title: "y" }, { type: "refresh", title: "z" }, { type: "content", id: "strike:q", title: "w" }, { type: "ai-search", title: "v" }, { type: "indexing", title: "i" }] },
+    consent: { findings: [{ id: "c", severity: "high", title: "c" }] },
+    ymyl: { pages: [{ url: "https://a.test/m", status: "needs reviewer", topics: ["health"], missing: ["reviewer"] }] },
+    pace: { overLimit: true, overDays: [], overWeeks: [], moves: [] },
+    citations: { mostlyAbsent: true, appears: 0, asked: 5, absent: ["q"], topCited: [] },
+    quality: { alignment: [{ url: "https://a.test/b", query: "q", weak: ["title"] }] },
+    redirects: { check: { errors: ["loop"] } },
+    facts: { unverified: [{ where: "a", claim: "47%" }] },
+    links: { items: [{ from: "https://a.test/x", to: "https://a.test/y", reason: "mention" }] },
+    render: { results: [{ url: "https://a.test/r", findings: [{ id: "prerender-text-not-on-page", severity: "high" }] }] },
+    inbound: { reclaim: [{ target: "/old", status: 404, links: 3 }], review: [{ kind: "sitewide", note: "n. x" }] },
+    logs: { findings: [{ id: "crawl-waste", severity: "medium", title: "waste" }], googlebot: { errors: [{ path: "/e" }], redirects: [] } },
+    rank: { summary: { losers: [1, 2, 3].map((i) => ({ query: `q${i}`, previous: 3, position: 9 })), lost: ["gone"] } },
+    forecast: { site: { clicks: { verdict: "below the normal range", actual: 50, expected: 90 } } },
+    keywords: { gaps: [{ parent: "topic", demand: { value: 40, basis: "b" } }] },
+    gap: { topics: [{ topic: "t", competitors: ["r.test"] }], gap: { missing: [1], weak: [] } },
+    aiVisibility: { asked: 10, totals: { citationShare: 0.1 }, gaps: [{ q: "q", citedInstead: ["r.test"] }] },
+    authority: { intersect: [{ domain: "d.test", linksTo: ["a", "b"] }], profile: { lostDomains: ["x", "y", "z"] } },
+    linkgraph: { underLinked: [{ url: "https://a.test/u", impressions: 50, score: 3, donors: [{ url: "https://a.test/" }] }], orphans: [{ url: "https://a.test/o" }] },
+    vitals: { origin: { current: { passes: false }, regressions: [] }, pages: [] },
+    changes: { results: [{ kind: "yours", url: "https://a.test/k", changes: [{ field: "noindex", important: true }] }, { kind: "competitor", url: "https://c.test/x", changes: [{ field: "title", important: true }] }] },
+    schema: { results: [{ url: "https://a.test/", checks: [{ problems: [{ level: "error", note: "x" }] }], suggestions: [{ type: "Organization" }] }] },
+    entity: { knowledgeGraph: { found: false }, wikidata: { found: false }, actions: ["Google: x"] },
+  });
+  const inputs = (name) => (readFileSync(pathOf[`${name}.md`], "utf8").match(/## Inputs\n([\s\S]*?)\n## /) || [])[1] || "";
+  let checked = 0;
+  for (const s of plan.steps) {
+    for (const m of s.prompt.matchAll(/\b([a-z][a-z-]*\.json)\b/g)) {
+      checked++;
+      assert.ok(inputs(s.agent).includes(m[1]), `${s.agent} is sent ${m[1]} but its Inputs do not mention it`);
+    }
+  }
+  assert.ok(checked >= 22, `only ${checked} report references checked`);
+});
+
 test("only the technical fixer may run arbitrary shell; the others are scoped", () => {
   for (const f of agentFiles) {
-    const tools = (readFileSync(join(agentsDir, f), "utf8").match(/^tools:\s*(.+)$/m) || [])[1];
+    const tools = (readFileSync(pathOf[f], "utf8").match(/^tools:\s*(.+)$/m) || [])[1];
     const bare = /(^|,\s*)Bash(\s*,|\s*$)/.test(tools);
     assert.equal(bare, f === "seo-technical-fixer.md", `${f} tools: ${tools}`);
   }
@@ -56,9 +141,12 @@ test("every audit rule has a fix recipe", () => {
   for (const rule of Object.keys(RULES)) assert.ok(recipes.includes(`**${rule}`) || recipes.includes(`/ ${rule}`) || recipes.includes(`${rule}:`) || recipes.includes(`${rule} /`), `no recipe for ${rule}`);
 });
 
-test("every agent is described in the agents README", () => {
-  const readme = readFileSync(join(agentsDir, "README.md"), "utf8");
-  for (const f of agentFiles) assert.ok(readme.includes(`(${f})`));
+test("every agent is listed in the org chart and in its department's charter", () => {
+  const readme = readFileSync(join(departmentsDir, "README.md"), "utf8");
+  for (const a of agents) {
+    assert.ok(readme.includes(`(${a.department}/agents/${a.name}.md)`), `${a.name} not in departments/README.md`);
+    assert.ok(readFileSync(join(departmentsDir, a.department, "README.md"), "utf8").includes(`(agents/${a.name}.md)`), `${a.name} not in ${a.department}/README.md`);
+  }
 });
 
 test("upgrading agents keeps the user's own Project rules and refreshes the rest", async () => {

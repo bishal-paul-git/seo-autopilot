@@ -253,6 +253,55 @@
               }
             }
           },
+          "autopilot": {
+            "type": "object",
+            "description": "What publishes by itself (D17). Levels: watch < prepare < autopilot < undo. Sensitive topics, site-wide indexing, migrations, deletions and outreach never go above prepare.",
+            "properties": {
+              "enabled": { "type": "boolean" },
+              "paused": { "type": "boolean", "description": "Kill switch: nothing merges or publishes automatically. The repository variable SEO_AUTOPILOT_PAUSED=true does the same." },
+              "levels": { "type": "object", "additionalProperties": { "enum": ["watch", "prepare", "autopilot", "undo"] } },
+              "limits": {
+                "type": "object",
+                "properties": {
+                  "newPagesPerWeek": { "type": "integer", "minimum": 0 },
+                  "changesPerDay": { "type": "integer", "minimum": 0 }
+                }
+              }
+            }
+          },
+          "logs": {
+            "type": "object",
+            "description": "Crawler log analysis. Folder of server access logs (plain or .gz). Default: <dataDir>/logs. Keep logs out of git: they contain visitors' IP addresses.",
+            "properties": {
+              "dir": {
+                "type": "string"
+              }
+            }
+          },
+          "research": {
+            "type": "object",
+            "description": "Research suite: keyword explorer, rank tracker, gap, optimiser, AI visibility and authority. All optional.",
+            "properties": {
+              "market": { "type": "string", "pattern": "^[A-Za-z]{2}$", "description": "Country for live results and provider data (default: citations.market, else GB)." },
+              "competitors": { "type": "array", "items": { "type": "string" }, "description": "Competitor domains, for example [\"rival.com\"]. Otherwise found from share of voice." },
+              "competitorNames": { "type": "array", "items": { "type": "string" }, "description": "Competitor names to look for in AI answers." },
+              "aliases": { "type": "array", "items": { "type": "string" }, "description": "Other names of the business to detect in AI answers (short forms, misspellings)." },
+              "engines": { "type": "array", "items": { "enum": ["perplexity", "openai", "anthropic", "gemini"] }, "description": "AI engines to ask (default: every engine with a key)." },
+              "aiRuns": { "type": "integer", "minimum": 1, "maximum": 5, "description": "Times each question is asked per engine (default 2)." },
+              "logo": { "type": "string", "description": "Full URL of the logo image, used in suggested Organization markup." },
+              "sameAs": { "type": "array", "items": { "type": "string" }, "description": "Your official profile URLs (social, Wikipedia, Wikidata, directories), used in suggested Organization markup and the entity check." },
+              "serpLimit": { "type": "integer", "minimum": 1, "maximum": 200, "description": "Tracked queries checked live by rank --serp (default 50)." }
+            }
+          },
+          "inbound": {
+            "type": "object",
+            "description": "Inbound links audit. Folder of Search Console or backlink-tool CSV exports. Default: <dataDir>/inbound-links.",
+            "properties": {
+              "dir": {
+                "type": "string"
+              }
+            }
+          },
           "facts": {
             "type": "object",
             "description": "Facts guard. Default file: <dataDir>/verified-facts.json.",

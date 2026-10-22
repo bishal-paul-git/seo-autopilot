@@ -13,7 +13,7 @@ import { listFiles } from "../jobs/profile.mjs";
 
 const TEMPLATES = fileURLToPath(new URL("../../templates/", import.meta.url));
 const KNOWLEDGE = fileURLToPath(new URL("../../knowledge/", import.meta.url));
-const AGENTS = fileURLToPath(new URL("../../agents/", import.meta.url));
+import { listAgents, listSkills } from "../core/agents.mjs";
 export const DEFAULT_SPEC = "github:bishal-paul-git/seo-autopilot#v2";
 
 /** The content paths drafts may touch, as globs. */
@@ -33,14 +33,22 @@ export function editTools(content = {}) {
 export function exportKnowledge({ cwd = process.cwd(), dataDir = "seo-autopilot" } = {}) {
   const report = [];
   copyTree(KNOWLEDGE, join(cwd, dataDir, "knowledge"), { force: true, report });
-  // Agents are refreshed too, but your own "## Project rules" section is kept.
+  // Agents are refreshed too, but your own "## Project rules" section is kept. They are copied flat (one folder, found by name);
+  // each file's front matter still says which department it belongs to.
   const dstDir = join(cwd, dataDir, "agents");
   mkdirSync(dstDir, { recursive: true });
-  for (const f of readdirSync(AGENTS).filter((x) => x.endsWith(".md"))) {
-    const dst = join(dstDir, f);
-    const fresh = readFileSync(join(AGENTS, f), "utf8");
+  for (const { name, file } of listAgents()) {
+    const dst = join(dstDir, `${name}.md`);
+    const fresh = readFileSync(file, "utf8");
     const text = existsSync(dst) ? keepProjectRules(fresh, readFileSync(dst, "utf8")) : fresh;
     writeFileSync(dst, text);
+    report.push(`created  ${dst}`);
+  }
+  // Shared skills: procedures several agents follow, at <dataDir>/skills/<name>/SKILL.md (agents name them in "Read first").
+  for (const { name, file } of listSkills()) {
+    const dst = join(cwd, dataDir, "skills", name, "SKILL.md");
+    mkdirSync(dirname(dst), { recursive: true });
+    writeFileSync(dst, readFileSync(file, "utf8"));
     report.push(`created  ${dst}`);
   }
   return report;
@@ -138,6 +146,10 @@ export async function init({ cwd = process.cwd(), flags = {}, interactive = proc
   const line = ".seo-autopilot/";
   const current = existsSync(ignore) ? readFileSync(ignore, "utf8") : "";
   if (!current.split(/\r?\n/).includes(line)) { appendFileSync(ignore, (current && !current.endsWith("\n") ? "\n" : "") + `${line}\n*service-account*.json\n.env\n`); report.push(`updated  ${ignore}`); }
+  // Server access logs for the logs job contain visitors' IP addresses: never commit them.
+  const logsLine = `${config.dataDir}/logs/`;
+  const now = existsSync(ignore) ? readFileSync(ignore, "utf8") : "";
+  if (!now.split(/\r?\n/).includes(logsLine)) { appendFileSync(ignore, (now && !now.endsWith("\n") ? "\n" : "") + `${logsLine}\n`); report.push(`updated  ${ignore} (access logs stay out of git)`); }
 
   console.log(report.join("\n"));
   const detected = detectLocal(cwd);

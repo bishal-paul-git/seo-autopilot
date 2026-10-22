@@ -43,6 +43,7 @@ for (const f of files) {
     for (const m of t.matchAll(/uses:\s*([^\s#]+)/g)) {
       const ref = m[1];
       if (/^(actions|github)\//.test(ref)) continue;
+      if (/^\.\/\.github\/workflows\/seo-[a-z-]+\.yml$/.test(ref)) continue; // our own workflows, in the same repository
       assert.match(ref, /@[0-9a-f]{40}$/, `unpinned third-party action ${ref}`);
     }
   });
@@ -60,9 +61,72 @@ test("auto-merge and review are opt-in by repository variable and restricted to 
   assert.match(am, /vars\.SEO_AUTOMERGE == 'true'/);
   assert.match(am, /startsWith\(github\.event\.workflow_run\.head_branch, 'seo\/'\)/);
   assert.match(am, /head_repository\.full_name == github\.repository/);
-  assert.match(am, /\{\{CONTENT_GLOBS\}\}/);
+  assert.match(am, /vars\.SEO_AUTOPILOT_PAUSED != 'true'/, "the kill switch stops auto-merge");
+  assert.match(am, /run autopilot --decide/, "the policy decides, in tested code");
+  assert.match(am, /check review\)" != "success"/, "the reviewer must have passed on this exact commit, not an earlier one");
+  assert.match(am, /--match-head-commit "\$SHA"/, "the merge is pinned to the checked commit");
+  assert.match(text("seo-release.yml"), /vars\.SEO_AUTOPILOT_PAUSED != 'true'/, "the kill switch stops publishing");
   assert.match(rv, /vars\.SEO_REVIEW == 'true'/);
   assert.match(rv, /startsWith\(github\.head_ref, 'seo\/'\)/);
+});
+
+test("the autopilot loop is opt-in and pausable, and the build check it calls never receives secrets", () => {
+  const t = text("seo-autopilot.yml");
+  assert.match(t, /vars\.SEO_AUTOPILOT == 'true' && vars\.SEO_AUTOPILOT_PAUSED != 'true'/);
+  assert.match(t, /run autopilot --pick/, "the policy picks the work, in tested code");
+  const check = t.slice(t.indexOf("\n  check:"), t.indexOf("\n  review:"));
+  assert.match(check, /uses: \.\/\.github\/workflows\/seo-check\.yml/);
+  assert.ok(!/secrets/.test(check), "seo-check is called without secrets");
+  assert.match(check, /contents: read/);
+  for (const job of ["draft", "review"]) assert.match(t.slice(t.indexOf(`\n  ${job}:`)), /secrets: inherit/, job);
+  for (const f of ["seo-implement.yml", "seo-check.yml", "seo-review.yml", "seo-automerge.yml"]) assert.match(text(f), /workflow_call:/, `${f} can be called by the autopilot`);
+  assert.match(text("seo-implement.yml"), /if: \$\{\{ !inputs\.issue \}\}/, "the approver check is skipped only when the autopilot calls it");
+});
+
+test("watch and undo: reverts go through a pull request and a no-secrets build, the pause leaves the merge to a person", () => {
+  const t = text("seo-watch.yml");
+  assert.match(t, /vars\.SEO_AUTOPILOT == 'true'/);
+  assert.match(t, /git revert --no-edit/);
+  assert.ok(!/git push origin (main|master|HEAD)\b/.test(t) && !/git push\s*$/m.test(t), "never pushes to the default branch");
+  const check = t.slice(t.indexOf("\n  check:"), t.indexOf("\n  merge:"));
+  assert.match(check, /seo-check\.yml/); assert.ok(!/secrets/.test(check));
+  assert.match(t.slice(t.indexOf("\n  merge:")), /vars\.SEO_AUTOPILOT_PAUSED != 'true'/);
+  assert.match(t, /--match-head-commit/);
+  assert.match(text("seo-automerge.yml"), /--add-label seo-watch/, "auto-merge marks undo-level changes for the watch");
+});
+
+test("monthly report: runs on the 1st, reads merged pull requests and opens one report issue without touching the site", () => {
+  const t = text("seo-monthly.yml");
+  assert.match(t, /cron: "\d+ \d+ 1 \* \*"/);
+  assert.match(t, /run monthly --prs/);
+  assert.match(t, /pull-requests: read/);
+  assert.ok(!/gh pr merge|git push/.test(t), "report only");
+});
+
+test("work orders: the weekly team step gets the autopilot switch, the implementer only follows the three content agents", () => {
+  assert.match(text("seo-weekly.yml"), /SEO_AUTOPILOT: \$\{\{ vars\.SEO_AUTOPILOT \}\}/);
+  const t = text("seo-implement.yml");
+  assert.match(t, /seo-work-order/);
+  for (const a of ["seo-snippet-optimizer", "seo-internal-linker", "seo-refresher"]) assert.match(t, new RegExp(`agents/${a}\\.md`));
+  assert.match(t, /any other agent label means: comment that it needs a person/);
+});
+
+test("research suite: free Search Console steps always run; steps that spend credits only when their switch is on", () => {
+  assert.match(text("seo-daily.yml"), /run rank\n/);
+  const w = text("seo-weekly.yml"), m = text("seo-monthly.yml");
+  for (const job of ["keywords", "gap", "authority"]) assert.match(w, new RegExp(`run ${job}\\n`), job);
+  assert.match(w.slice(w.lastIndexOf("\n", w.indexOf("run rank --serp") - 1) - 900, w.indexOf("run rank --serp")), /if: vars\.SEO_RANK_LIVE == 'true'/, "live rank checks cost SERP credits");
+  assert.match(m.slice(m.indexOf("AI visibility"), m.indexOf("run ai-visibility")), /if: vars\.SEO_AI_VISIBILITY == 'true'/, "AI answers cost API calls");
+  assert.ok(m.indexOf("run forecast") < m.indexOf("run monthly"), "the forecast feeds the monthly report");
+  assert.ok(w.indexOf("run gap") < w.indexOf("run team"), "the team plan sees the research reports");
+});
+
+test("only people with write access can approve a change for the implementer, and the kill switch stops it", () => {
+  const t = text("seo-implement.yml");
+  assert.match(t, /collaborators\/\$ACTOR\/permission/);
+  assert.match(t, /admin\|maintain\|write\)/);
+  assert.ok(t.indexOf("collaborators/$ACTOR/permission") < t.indexOf("anthropics/claude-code-action"), "the check runs before the agent");
+  assert.match(t, /vars\.SEO_AUTOPILOT_PAUSED != 'true'/);
 });
 
 test("the implementer cannot run build or install commands and may only edit content paths", () => {

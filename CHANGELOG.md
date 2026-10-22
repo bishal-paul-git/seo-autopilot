@@ -1,5 +1,109 @@
 # Changelog
 
+## Unreleased
+
+- **Site intelligence and the MCP server (decision D19).**
+  - `seo-autopilot mcp`: an MCP server, so Claude Desktop, Claude Code and other assistants can read reports, search your queries, inspect a page and run analysis jobs. It is read-only by default, and paid jobs need confirmation. The Claude Code plugin registers it. See `docs/mcp.md`.
+  - `linkgraph`: internal PageRank, click depth, orphans, leaked links, and under-linked pages with search demand, with the related pages to link from.
+  - `vitals`: real-user Core Web Vitals from the Chrome UX Report, with a 25-period history and regressions (free key).
+  - `changes`: weekly change monitor for your key pages and competitors' winning pages.
+  - `schema`: checks JSON-LD against requirements and the visible page; drafts missing markup from page facts, with placeholders.
+  - `entity`: Google Knowledge Graph and Wikidata, matched by official website, plus sameAs actions.
+  - The rank tracker now shows each query's intent.
+  - The router sends these findings to the internal linker, performance fixer, technical fixer, competitor analyst, schema engineer and entity agent.
+  - Workflows: `linkgraph` daily; `schema`, `changes` and `vitals` weekly; `entity` monthly.
+- **Research suite (decision D18): the features of a paid SEO suite, on your own data and keys.** See `docs/research-suite.md`.
+  - `keywords`: keyword explorer. Covers parent topics, intent, demand with its source, difficulty, owner pages, gaps and questions. Sources: Search Console, plus Bing, DataForSEO, live results (topics grouped by shared results), Open PageRank and opt-in autocomplete.
+  - `rank`: daily rank tracker from Search Console. History beyond 16 months, movers, a visibility index and buckets. `--serp` adds search features, competitors and share of voice.
+  - `gap`: competitor and keyword gap (missing, weak, shared) by topic, with the competitor pages behind it and the queries only you hold.
+  - `optimize`: content optimiser for a page or draft against the top results. Covers shared terms with usage ranges, sections, questions, length, readability and basics, scored out of 100 with the evidence. robots.txt is respected.
+  - `ai-visibility`: asks Perplexity, ChatGPT (OpenAI), Claude and Gemini your questions with web search on, repeated runs. Mentions with aliases, citations, competitors, sources, history.
+  - `authority`: referring domains with Open PageRank authority, new and lost, you vs competitors, and the link intersect.
+  - `forecast` (Python, no packages): a Holt-Winters normal range for clicks, impressions and pages. The monthly report uses it.
+  - Search providers now report search features. `team` recommends the SERP analyst, topic mapper, competitor analyst, AI search agent, link builder and backlink auditor from these reports.
+  - Workflows: daily `rank`; weekly `keywords`, `gap`, `authority`, and `rank --serp` when `SEO_RANK_LIVE=true`; monthly `forecast`, and `ai-visibility` when `SEO_AI_VISIBILITY=true`.
+  - New config block `research` and the template `tracked-queries.json`.
+  - Provider calls are tested with mocked responses only.
+
+- **Graduated autopilot (decision D17).** Routine changes now publish without a person once every automated check passes. High-risk changes still wait for one.
+  - New `autopilot` job and policy (`src/analysis/autonomy.mjs`). Levels per kind of change: `watch`, `prepare`, `autopilot`, `undo`.
+    - Fixes, snippets and internal links: `undo`.
+    - Refreshes, new pages and template changes: `autopilot`.
+    - Sensitive topics, robots and sitemap changes, migrations, deletions, outreach, and changes to workflows or dependencies: always a person.
+    - Limits: 10 automatic changes a day and 3 new pages a week by default.
+    - Kill switch: the repository variable `SEO_AUTOPILOT_PAUSED=true`.
+  - **`seo-automerge`** is now policy-driven and safer:
+    - the reviewer must have passed on the exact commit being merged (a pass label left from an earlier commit no longer counts);
+    - any new page file counts as a new page whatever its label;
+    - added text touching health, money or legal topics goes to a person;
+    - the merge is pinned to the checked commit.
+    - **Breaking:** if you use auto-merge without the reviewer, set `SEO_REQUIRE_REVIEW=false`.
+  - **`seo-implement`** only accepts an `approved` label from someone with write access, and labels its pull request with the issue's kind of change.
+  - **`seo-release`** respects the kill switch.
+  - **New `seo-autopilot` workflow:** the autopilot loop. Twice a day it picks one open proposal issue that the policy allows, oldest first; held, approved and already-drafted issues and human-only kinds are skipped, and the limits apply.
+    - It drafts the issue by calling `seo-implement`, builds it by calling `seo-check` (no secrets), reviews it by calling `seo-review`, and merges it by calling `seo-automerge` with the same gates.
+    - It is opt-in with the variable `SEO_AUTOPILOT=true` and needs `SEO_REVIEW=true`. Those four workflows can now be called (`workflow_call`) as well as triggered as before.
+    - Why a single workflow: changes made with the workflow's own token do not start other workflows, so a scheduled job that only added labels would trigger nothing.
+  - **New `seo-watch` workflow and `watch` job: watch and undo.** Every day it checks the changes published at the `undo` level (labelled `seo-watch`) and reverts one that made things worse: a changed page now answers an error, the change added a noindex, or the page lost clearly more clicks than the rest of the site over the 14 days after the change (at least 10 clicks, judged against untouched pages). The revert is a pull request built by `seo-check` with no secrets; with the kill switch on, the merge waits for a person. Indexing status is not judged: there is no per-change snapshot of it.
+  - **New `seo-monthly` workflow and `monthly` job.** On the 1st of each month: re-runs the audit, then reports what the autopilot published (by kind), what the watch rolled back, what a person merged, clicks and impressions over the last 28 days vs the 28 before, audit findings vs last month, and experiment results. Opens one `Monthly SEO report YYYY-MM` issue. It describes what happened and says it is not proof of why.
+  - **Work orders drive agents.** With `SEO_AUTOPILOT=true`, the weekly `team` step turns ready work orders for the snippet optimiser, internal linker and refresher into one issue per page (labels `seo-work-order`, the kind of change, `agent:<name>`), at most 5 a week. Orders on sensitive pages, site-wide orders, sites in advise mode and kinds the policy keeps for a person are skipped. The autopilot loop drafts them like proposals; `seo-implement` reads the named agent file (only those three) and has rules for snippet and link changes. A person can still approve one by hand with `approved`.
+- **Three new agents (33 in all) and five new shared skills (7 in all)**, from a review of what Ahrefs, Semrush and open-source GEO trackers offer, rebuilt on the site's own data and the product's rules (no invented volumes, bring your own keys):
+  - `seo-serp-analyst` (Research): positions, search features and who holds them, share of voice across a tracked query set, from Search Console first.
+  - `seo-topic-mapper` (Research): the whole site's topic map: clusters and parent topics, intent, potential, one owner page per cluster, gaps and overlaps.
+  - `seo-ai-visibility-tracker` (AI search): mentions and citations in AI answers over a fixed, saved question set, with aliases, repeated runs and accuracy.
+  - Skills: `question-mining`, `search-intent-labelling`, `traffic-potential`, `broken-link-reclamation`, `ai-answer-testing`. The researcher, strategist, link builder, backlink auditor, redirect guardian and AI search agent now use them.
+  - All three agents report only and run on request in Claude Code; the team plan does not recommend them yet.
+
+- **Agents are now organised into eight departments (D16, step 1).**
+  - The departments are Command, Research, Technical (audit and monitor), Content, Authority (backlinks), AI search (AEO/GEO), Verticals and Quality (validators).
+  - Each has a charter in `departments/<dept>/README.md`, and the org chart is `departments/README.md`.
+  - Agent files moved to `departments/<dept>/agents/` and gained a `department:` front-matter line.
+- **Behaviour is unchanged.**
+  - Agent names are the same.
+  - Installed projects still get every agent flat in `seo-autopilot/agents/`, so workflows, the Python runtime and `upgrade` work as before.
+  - The Claude Code plugin now lists its agents explicitly in `.claude-plugin/plugin.json`, because plugins only find a top-level `agents/` folder by default. A test keeps the list in step.
+  - The agents page on the site is grouped by department.
+- **One owner per problem (D16, step 2).**
+  - New **seo-internal-linker** (Content) owns orphan pages, deep pages, generic anchors and the `links` job's suggestions. These used to go to the pruner and the refresher.
+  - Heading findings now go to the **seo-snippet-optimizer**, which owns titles, descriptions and the heading outline.
+  - Markup changes have one owner, the schema engineer. Entity-reputation and the AI search agent brief it, and robots changes go to the technical fixer.
+- **Agents now name every report the router sends them** (`consent.json`, `ymyl.json`, `quality.json`, `links.json`, `render.json`, `citations.json`, `pace.json`, `redirects-check.json`). A test enforces it.
+- **Router fix:** when a second finding sent the same agent, its instruction (which names the report to read) was dropped. It is now appended, and the more urgent phase wins.
+- **Work orders: order of work, page locks and the approval gate are now code (D16, step 3).**
+  - `team` also writes `work-orders.json`. Each agent's work has an owner and department, the pages it touches (or the whole site), what must finish first, and the checks it must pass. The orders are grouped into waves that can run in parallel.
+  - Ordering rules: blockers come before later work on the same pages, or before everything when site-wide. Two edits to the same page never overlap. The report comes last. Advisory agents never take locks.
+  - Checks before approval:
+    - content changes: build, `facts`, fact-checker and editor, plus the compliance auditor on sensitive pages;
+    - redirects: build and `redirects`;
+    - markup and templates: build and `audit`.
+  - New `work` job: `--start` refuses while dependencies are unfinished or the pages are held; `--check name=pass|fail`, `--done`/`--fail`, and `--ready`, which exits 1 until every check has passed.
+  - Pure logic in `src/analysis/work-orders.mjs`, with tests.
+- **`seo-check` now runs the facts guard on the changed content files** of every `seo/*` pull request. It needs no secrets. It warns by default, and fails the check when `"facts": { "strict": true }` is set.
+- **New `inbound` job and seo-backlink-auditor agent (Authority, D16 step 5).** They audit the links pointing at your site from a Search Console Links export (or a backlink-tool CSV) saved in `seo-autopilot/inbound-links/`. No API key is needed.
+  - The report covers:
+    - links into pages that now error (reclaim them with a redirect);
+    - links through redirects;
+    - top linking sites and pages;
+    - new and lost sites since the last export;
+    - sitewide or one-anchor patterns for a person to review.
+  - It never contacts anyone and never writes a disavow file. The agent recommends a disavow only with a manual action or confirmed arranged links.
+  - Reclaimable links route the agent in the fix phase. The weekly workflow runs `inbound` when an export is present.
+  - New playbook section: "Auditing the links you already have".
+  - The parser matches export columns by name and is tested on sample files shaped like the exports; **it has not yet been run on a real Search Console download.**
+- **New `logs` job and seo-log-analyst agent (Technical, D16 step 5).** They show what Googlebot, Bingbot and AI crawlers really requested, from your own server or CDN access logs (plain or .gz) in `seo-autopilot/logs/`.
+  - It tells the three kinds of AI crawler apart: AI search, fetches a person asked for, and training.
+  - It reports crawl spent on errors, redirects and parameter URLs, sitemap pages not requested, and noindex pages crawled repeatedly.
+  - `--verify` checks Googlebot and Bingbot by reverse and forward DNS and leaves fakes out.
+  - **Only totals are stored, never an IP address**, and `init` now adds `seo-autopilot/logs/` to `.gitignore`. The audit also records `noindex` per page.
+  - Parsing is tested on sample lines (combined and common formats, JSON lines); **not yet on a real host's logs.**
+  - New playbook section: "Reading your server logs".
+- **Shared skills: the third level of the department design (D16).**
+  - A skill is a procedure several agents follow, kept in one place.
+  - **answer-first-copy** is used by the drafter, refresher, snippet optimizer, AI search agent and editor; it consolidates the answer-first guidance they each repeated.
+  - **digital-pr** is used by the link builder and entity-reputation agents. It covers first-hand data, expert comment, timely angles and reclaimed mentions, in small honest campaigns where a person sends every pitch.
+  - Skills live in `departments/skills/<name>/SKILL.md`, and installs get them in `seo-autopilot/skills/`. A test checks that every agent's skills exist and that every skill lists the agents that use it.
+- Design and roadmap: `docs/architecture/DEPARTMENTS.md`. Research library (links still to be verified): `docs/research/REFERENCES.md`.
+
 ## 2.15.0
 
 Fixes for gaps found running the product on a real production site (roadmap brief 09, items 2 to 5, plus pace and experiments from brief 11).

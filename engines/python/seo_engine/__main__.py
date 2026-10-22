@@ -1,4 +1,4 @@
-"""Command line: python -m seo_engine <deepdive|agent|doctor> ..."""
+"""Command line: python -m seo_engine <deepdive|forecast|agent|doctor> ..."""
 from __future__ import annotations
 
 import argparse
@@ -9,7 +9,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from . import __version__, anomaly, cluster, runner, tools
+from . import __version__, anomaly, cluster, forecast, runner, tools
 from .state import State, utc_today
 
 
@@ -44,6 +44,31 @@ def _deepdive(a) -> int:
     return 0
 
 
+def _forecast(a) -> int:
+    state = State(a.state_dir, a.data_dir)
+    daily = state.json("page-daily.json", {}) or {}
+    totals = anomaly.site_totals(daily) if daily else {}
+    result = {"generatedAt": utc_today(), "engine": f"python {sys.version.split()[0]} / seo-engine {__version__}",
+              "site": {m: forecast.expected_vs_actual(totals, m) for m in ("clicks", "impressions")} if totals else {},
+              "pages": forecast.pages_off_course(daily) if daily else []}
+    out = Path(a.state_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "forecast.json").write_text(json.dumps(result, indent=1), encoding="utf-8")
+    lines = [f"# Traffic against its normal range {result['generatedAt']}", "",
+             "Holt-Winters baseline (level, trend and weekly pattern) fitted on your own Search Console history, excluding the last 28 days, then compared with what happened. Outside the range means a real change worth explaining; the range is approximate (about 95%, on the narrow side).", ""]
+    site = result["site"]
+    if not any(site.values()):
+        lines.append("Not enough daily history yet: the comparison needs about 12 weeks (the daily job builds it up).")
+    for m, r in site.items():
+        if r:
+            lines.append(f"- **{m}** {r['from']} to {r['to']}: {r['actual']} actual vs {r['expected']} expected (normal range {r['low']} to {r['high']}): **{r['verdict']}**. Next 28 days at this pace: about {r['next28']}.")
+    if result["pages"]:
+        lines += ["", "## Pages outside their own normal range", ""] + [f"- {p['page']}: {p['actual']} vs {p['expected']} expected ({p['verdict']})" for p in result["pages"]]
+    (out / "forecast.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print("\n".join(lines))
+    return 0
+
+
 def _agent(a) -> int:
     state = State(a.state_dir, a.data_dir)
     root = Path(a.project_root)
@@ -74,7 +99,7 @@ def _doctor(_a) -> int:
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="seo_engine")
     sub = p.add_subparsers(dest="cmd", required=True)
-    for name in ("deepdive", "agent"):
+    for name in ("deepdive", "forecast", "agent"):
         s = sub.add_parser(name)
         s.add_argument("--state-dir", required=True)
         s.add_argument("--data-dir", required=True)
@@ -88,7 +113,7 @@ def main(argv=None) -> int:
             s.add_argument("--max-turns", type=int, default=24)
     sub.add_parser("doctor")
     a = p.parse_args(argv)
-    return {"deepdive": _deepdive, "agent": _agent, "doctor": _doctor}[a.cmd](a)
+    return {"deepdive": _deepdive, "forecast": _forecast, "agent": _agent, "doctor": _doctor}[a.cmd](a)
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { detectProfile, renderingOf, structuredDataTypes } from "../src/analysis/site-profile.mjs";
 import { routeAgents, planMarkdown } from "../src/analysis/agent-router.mjs";
+import { listAgents, listSkills } from "../src/core/agents.mjs";
 
 const page = (body, head = "") => `<!doctype html><html><head><title>t</title>${head}</head><body>${body}</body></html>`;
 const prose = "word ".repeat(200);
@@ -99,7 +100,7 @@ test("when nothing blocks, authority building is recommended; local, ecommerce a
 });
 
 test("any project that connects the repo gets every agent, every playbook and the profile and team steps in its weekly workflow", async () => {
-  const { mkdtempSync, mkdirSync, writeFileSync, readdirSync, readFileSync } = await import("node:fs");
+  const { mkdtempSync, mkdirSync, writeFileSync, readdirSync, readFileSync, existsSync } = await import("node:fs");
   const { tmpdir } = await import("node:os");
   const { join } = await import("node:path");
   const { init, detectLocal } = await import("../src/cli/init.mjs");
@@ -114,7 +115,8 @@ test("any project that connects the repo gets every agent, every playbook and th
     const log = console.log, cwd = process.cwd(); console.log = () => {}; process.chdir(dir);
     try { await init({ flags: { url: "https://example.test/", name: name } }); } finally { process.chdir(cwd); console.log = log; }
     const agents = readdirSync(join(dir, "seo-autopilot", "agents")).filter((f) => /^seo-.*\.md$/.test(f));
-    assert.equal(agents.length, 27, `${name}: agents`);
+    assert.equal(agents.length, listAgents().length, `${name}: agents`);
+    for (const sk of listSkills()) assert.ok(existsSync(join(dir, "seo-autopilot", "skills", sk.name, "SKILL.md")), `${name}: skill ${sk.name}`);
     assert.ok(readdirSync(join(dir, "seo-autopilot", "knowledge")).includes("site-platforms.md"), `${name}: playbooks`);
     const weekly = readFileSync(join(dir, ".github", "workflows", "seo-weekly.yml"), "utf8");
     assert.match(weekly, /run profile/); assert.match(weekly, /run team/);

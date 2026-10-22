@@ -83,6 +83,79 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-10-20 D19 Site intelligence and the MCP server (owner: "more real capabilities")
+- **Decision:** add capabilities that need no paid provider. These are:
+  - internal PageRank and link-graph analysis;
+  - real-user Core Web Vitals history (Chrome UX Report);
+  - a page change monitor;
+  - a structured data checker and generator;
+  - an entity check (Google Knowledge Graph, Wikidata).
+  Also an MCP server, so AI assistants can use the reports and jobs.
+- **Tradeoffs and rules:**
+  - **Internal PageRank** measures the site's own linking, not Google's view, and the report says so.
+  - **Structured data drafts** use only facts from the page, the config and the URL. Unknowns stay as `<fill: ...>` placeholders, so no fact is invented. Markup that claims what the page does not show is flagged as an error, after Google's structured data policies.
+  - **The change monitor** keeps sentence fingerprints, not copies of competitors' text.
+  - **The entity check** treats creating a Wikidata item as a person's decision, and only for genuinely notable businesses.
+  - **The MCP server** is read-only by default:
+    - files are limited to the state folder;
+    - `run_job` has a fixed allowlist with no publishing, issue, merge or submit jobs;
+    - `team` and `priorities` are forced to run dry;
+    - paid jobs need `confirm_cost`;
+    - it uses no shell, and has no dependencies (newline-delimited JSON-RPC over stdio).
+- **Status:** unit and fixture tested; the MCP server was also tested through a real stdio session. The Chrome UX Report, Knowledge Graph and Wikidata APIs have not been called live.
+
+## 2026-10-20 D18 Research suite instead of a paid SEO suite (owner request: "those features or better, real solutions")
+- **Decision:** build keyword research, rank tracking, competitor gap, content optimisation, AI visibility, backlink authority and a traffic forecast into the product. Run them on the site's own data (Search Console) plus keys the user brings. No Ahrefs or Semrush subscription, and no maintainer keys.
+- **Choices and tradeoffs:**
+  - **Search Console first.** Positions and demand come from the site's own first-party data and are free. The cost is no data for queries the site was never shown for. A provider key (DataForSEO) fills that, labelled as an estimate.
+  - **Grouping by shared results.** When live results are available, 3 or more shared top-10 URLs define a topic, the method the big suites use. Without live results, grouping falls back to same-words, and the report says which method was used.
+  - **Difficulty without a link index.** Difficulty is the average Open PageRank (from the open Common Crawl graph) of the top-10 domains. It is cruder than a suite's own index, so it is labelled with its basis.
+  - **Autocomplete is off by default** (`--suggest`). Google's endpoint is public but unofficial, and its terms restrict automated queries. When on, it is capped, spaced out, and used only for wording, never as volume.
+  - **AI visibility uses the engines' official APIs with web search on.** That covers Perplexity, OpenAI Responses with `web_search`, Claude with `web_search_20260209` and server-side fallback, and Gemini with `google_search`. Results are compared only within the same question set, repeated runs measure variance, and raw answers are kept as evidence. Consumer apps can answer differently from the APIs; the report says so.
+  - **Paid steps are opt-in per schedule.** They are switched on by `SEO_RANK_LIVE` and `SEO_AI_VISIBILITY`, and free steps always run.
+  - **Forecast in Python, standard library only** (Holt-Winters with a weekly season, grid-searched). It runs in the optional engine, so the Node core stays dependency-free. The range assumes independent errors and is on the narrow side; it prompts a look, not a conclusion.
+- **Not built:** paid-ads intelligence and social tools (different products), and a web-scale crawl of our own (that would need infrastructure the product does not run).
+- **Status:** all mocked or fixture tested. No provider has been called live from this project yet.
+
+## 2026-10-20 D17 Graduated autopilot (APPROVED by the owner)
+The owner decided that a person should not approve every change: routine work runs and publishes on a schedule, and a person is asked only about high-risk changes. This replaces the earlier rule "a human approves what goes live".
+- **Levels per kind of change** (`src/analysis/autonomy.mjs`, shown by `run autopilot`):
+  - `watch` reports only;
+  - `prepare` opens a PR for a person;
+  - `autopilot` merges and publishes after every check;
+  - `undo` does the same and then watches the live result and reverts on regression.
+- **Defaults:**
+  - fixes, snippets and internal links publish at `undo`;
+  - refreshes, new pages and template changes publish at `autopilot`;
+  - sensitive topics, site-wide indexing (robots, sitemaps, headers, redirect rules), migrations, deletions, outreach and infrastructure (workflows, dependencies, the autopilot's config and agents) stay at `prepare`, and a site cannot raise them.
+- **Checks before an automatic merge**, all on the exact commit:
+  - seo-check build;
+  - the reviewer agent's check and pass label;
+  - the policy decision, which includes sensitive-topic detection in the added text and treating any new page file as a new page whatever its label;
+  - daily and weekly limits (10 changes a day, 3 new pages a week by default, to stay clear of scaled-content patterns);
+  - a merge pinned to that commit.
+- **Kill switch:** the repository variable `SEO_AUTOPILOT_PAUSED=true`, or `autopilot.paused` in the config, stops implementing, merging and releasing.
+- **Fixes to the gaps found in the Phase 0 audit:**
+  - F1: auto-merge accepted a reviewer label left from an earlier commit and had no policy; now the reviewer check must pass on the same commit, and the merge is pinned.
+  - F2: the implementer did not check who added `approved`; now only write, maintain or admin can trigger it.
+  - F3: release pushed to the default branch with no pause; it is now behind the kill switch and only dates pages already merged.
+- **Still to build (D17 roadmap):**
+  - running the agents automatically on a schedule: DONE for proposal issues (`seo-autopilot` workflow, which calls implement, check, review and merge in one run, because changes made with the workflow token do not trigger other workflows). DONE for work orders from `team` too: with `SEO_AUTOPILOT=true` the weekly `team` step opens one `seo-work-order` issue per page for ready, page-scoped orders of the snippet optimiser, internal linker or refresher (never sensitive pages, site-wide orders, advise mode, or kinds the policy keeps for a person; at most 5 a week), and the implementer follows that agent's file;
+  - a monthly workflow: DONE (`seo-monthly`, `monthly` job: autopilot ledger, rollbacks, 28-day traffic, audit findings vs last month, experiments);
+  - post-publish monitoring with automatic revert for `undo` changes: DONE (`seo-watch`, `watch` job: reverts through a pull request when a changed page errors, the change added a noindex, or clicks fell clearly more than the rest of the site over 14 days; indexing status is not judged because no per-change snapshot exists);
+  - the AI reviewer as a required check in more repositories (it needs the site owner's Claude key).
+- **Risks:** Google's spam policies on scaled content, and wrong facts on sensitive topics. They are mitigated by the pace limits, the facts guard, the reviewer, and the human-only classes. Default behaviour for existing installs is unchanged until they set `SEO_AUTOMERGE=true`. Breaking change for those who already use auto-merge without the reviewer: they must now set `SEO_REQUIRE_REVIEW=false` explicitly, or enable the reviewer.
+
+## 2026-10-18 D16 Departments, work orders and validation (PROPOSED, owner to confirm)
+Proposal: group agents into departments, each a folder. The departments are command, research, technical, content, authority, ai-search, verticals and quality. Each has a charter, one owner per problem type and shared skills. The router produces dependency-ordered work orders with file/URL locks so independent work can run in parallel, and nothing reaches approval until its validators pass.
+
+The full design is in `docs/architecture/DEPARTMENTS.md`, with evidence in `docs/research/AGENT-AUDIT-2026-10-18.md`.
+
+- **Rationale:** today ownership overlaps and sequencing rules are prompt-only. Several SEO areas also have agents without any data behind them.
+- **Tradeoffs:** moving files touches every loader (init/upgrade, Python runtime, site build, tests), and existing installs must be upgraded. New agents add maintenance, so each must come with a data source and eval cases.
+- **Smaller alternative:** keep the flat folder and add a `departments.json` registry. That gives the same ownership and routing benefits with no file moves, but it doesn't give the folder layout the owner asked for.
+- **Naming:** keep "SEO Autopilot" and call the organisation "the Search Desk" (recommended), or rename after a trademark check.
+
 ## 2026-10-18 Business model: open core, service first (proposed, owner to confirm)
 Keep the engine MIT; sell hosting, multi-client operations, approvals, scheduled runs, reporting and support; start with a done-for-you service through Erudience to validate demand. Alternatives and risks: `docs/strategy.md`. Consistent with the agency-first hypothesis in `SEO-PRODUCT-BUILD-BRIEF.md`, which also says prices are unvalidated.
 

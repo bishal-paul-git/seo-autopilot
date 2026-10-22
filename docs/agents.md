@@ -1,6 +1,6 @@
 # The agents
 
-seo-autopilot works as a team of twenty-seven agents. Each is a Markdown file in [`agents/`](../agents) with a mission, required reading, a method, a quality bar, a list of things it must never do and a defined output. The same text is shown on the [agents page](https://bishal-paul-git.github.io/seo-autopilot/agents/).
+seo-autopilot works as a team of thirty-three agents. They are grouped into eight departments ([org chart](../departments/README.md)), and each is a Markdown file in `departments/<department>/agents/` with a mission, required reading, a method, a quality bar, a list of things it must never do and a defined output. The same text is shown on the [agents page](https://bishal-paul-git.github.io/seo-autopilot/agents/).
 
 | Agent | Job | Where it runs |
 |---|---|---|
@@ -44,7 +44,7 @@ Run `seo-autopilot run profile` once (and after a redesign). It detects the plat
 The strategist and researcher can also run unattended in the Python agent runtime, with read-only tools and no ability to change your site. See [engines.md](engines.md).
 
 ## In Claude Code
-Copy any file from `agents/` into `.claude/agents/` (project) or `~/.claude/agents/` (all projects), then ask for it by name, for example "use seo-strategist to plan this week". They use standard subagent front matter (`name`, `description`, `tools`).
+Copy any agent file (from `departments/*/agents/` here, or `seo-autopilot/agents/` in your project) into `.claude/agents/` (project) or `~/.claude/agents/` (all projects), then ask for it by name, for example "use seo-strategist to plan this week". They use standard subagent front matter (`name`, `description`, `tools`).
 
 ## Making them yours
 Edit the **Project rules** section at the bottom of an agent: your voice, banned phrases, required disclaimers, formats, who approves what. Keep the **Never** lists. `upgrade --apply` refreshes the agents from the product but keeps your own **Project rules** section, so edit only that section and your changes survive upgrades.

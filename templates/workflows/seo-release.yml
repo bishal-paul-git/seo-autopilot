@@ -1,6 +1,6 @@
-# seo-autopilot: drip publishing. Pages that YOU approved (merged as "queued") get release dates, a few a day, and the
-# site is rebuilt on the day each one is due. Nothing is written or published here: this job only dates pages that a
-# human already approved, and only pages marked hold: true are skipped.
+# seo-autopilot: drip publishing. Pages merged as "queued" (by a person, or by autopilot after every check passed) get
+# release dates, a few a day, and the site is rebuilt on the day each one is due. Nothing is written here: this job only
+# dates pages already merged, and skips pages marked hold: true. The variable SEO_AUTOPILOT_PAUSED = true stops it.
 #
 # Your site must hide pages whose publishAt is in the future at build time (see docs/content-automation.md).
 # If your host rebuilds on a deploy hook instead of on push, set site.release.deployHookEnv in the config and add the
@@ -18,6 +18,7 @@ env:
   HAS_HOOK: ${{ secrets.DEPLOY_HOOK_URL != '' }}
 jobs:
   release:
+    if: vars.SEO_AUTOPILOT_PAUSED != 'true'   # the kill switch also stops publishing
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

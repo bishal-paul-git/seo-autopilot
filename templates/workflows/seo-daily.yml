@@ -34,6 +34,11 @@ jobs:
           SEO_INGEST_URL: ${{ secrets.SEO_INGEST_URL }}
           SEO_INGEST_TOKEN: ${{ secrets.SEO_INGEST_TOKEN }}
         run: npx --yes "$SEO" run daily
+      - name: Rank tracker (tracked query positions from Search Console; free)
+        continue-on-error: true
+        env:
+          GOOGLE_KEY_JSON: ${{ secrets.GOOGLE_KEY_JSON }}
+        run: npx --yes "$SEO" run rank
       - name: Proposals (GitHub issues awaiting your approval)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -61,6 +66,7 @@ jobs:
           npx --yes "$SEO" run audit
           npx --yes "$SEO" run analyze
           npx --yes "$SEO" run priorities --dry
+          npx --yes "$SEO" run linkgraph
       - name: IndexNow
         continue-on-error: true
         env:

@@ -86,6 +86,49 @@ class Anomaly(unittest.TestCase):
         self.assertAlmostEqual(tot["2026-09-01"][2], (5 * 10 + 9 * 30) / 40)
 
 
+def weekly(weeks, base=100.0, drop_last=0, factor=1.0, noise=True):
+    """Daily [clicks, impressions, pos] with a weekday pattern (weekends low), small deterministic noise, optional drop."""
+    from datetime import date, timedelta
+    pattern = [1.1, 1.15, 1.1, 1.05, 1.0, 0.7, 0.6]
+    out, d0 = {}, date(2026, 1, 5)  # a Monday
+    n = weeks * 7
+    for i in range(n):
+        v = base * pattern[i % 7] * ((1 + (((i * 37) % 11) - 5) / 100) if noise else 1)
+        if i >= n - drop_last:
+            v *= factor
+        out[(d0 + timedelta(days=i)).isoformat()] = [v, v * 20, 8.0]
+    return out
+
+
+class Forecast(unittest.TestCase):
+    def test_normal_weeks_are_within_range_and_a_real_drop_is_not(self):
+        from seo_engine import forecast
+        ok = forecast.expected_vs_actual(weekly(16), "clicks", lag=0)
+        self.assertEqual(ok["verdict"], "within the normal range")
+        self.assertLess(abs(ok["change"]), 0.05)
+        drop = forecast.expected_vs_actual(weekly(16, drop_last=28, factor=0.6), "clicks", lag=0)
+        self.assertEqual(drop["verdict"], "below the normal range")
+        self.assertLess(drop["change"], -0.3)
+        self.assertGreater(drop["expected"], drop["actual"])
+
+    def test_weekly_pattern_is_learnt(self):
+        from seo_engine import forecast
+        m = forecast.fit([v[0] for _, v in sorted(weekly(10, noise=False).items())])
+        nxt = forecast.predict(m, 7)
+        self.assertGreater(min(nxt[:5]), max(nxt[5:]), "weekdays above the weekend")
+
+    def test_too_little_history_claims_nothing(self):
+        from seo_engine import forecast
+        self.assertIsNone(forecast.expected_vs_actual(weekly(9), "clicks"))
+        self.assertIsNone(forecast.fit([1.0] * 20))
+
+    def test_pages_off_course_lists_only_pages_with_enough_traffic(self):
+        from seo_engine import forecast
+        pages = {"https://s/a": weekly(16, drop_last=28, factor=0.4), "https://s/b": weekly(16), "https://s/tiny": weekly(16, base=0.5, drop_last=28, factor=0.1)}
+        off = forecast.pages_off_course(pages)
+        self.assertEqual([p["page"] for p in off], ["https://s/a"])
+
+
 class SafeFetch(unittest.TestCase):
     def test_private_and_odd_targets_are_refused(self):
         for url in ("http://127.0.0.1/", "http://localhost/", "http://169.254.169.254/latest/meta-data/", "http://10.0.0.5/", "http://[::1]/", "file:///etc/passwd", "ftp://example.com/", "http://example.com:22/"):
@@ -113,7 +156,7 @@ class StateAndTools(unittest.TestCase):
         (self.sd / "gsc-rows.json").write_text(json.dumps({"window": {"start": "a", "end": "b"}, "rows": rows()}), encoding="utf-8")
         (self.sd / "secret.key").write_text("nope", encoding="utf-8")
         (self.dd / "knowledge" / "search-intent.md").write_text("# Intent", encoding="utf-8")
-        for f in (ROOT / "agents").glob("seo-*.md"):
+        for f in (ROOT / "departments").glob("*/agents/seo-*.md"):
             (self.dd / "agents" / f.name).write_text(f.read_text(encoding="utf-8"), encoding="utf-8")
         self.ctx = tools.Context(state=State(self.sd, self.dd), site_url="https://s.test/", site_id="s", project_root=base)
 
@@ -216,7 +259,7 @@ class Runner(unittest.TestCase):
             (dd / "agents").mkdir(parents=True)
             sd.mkdir()
             (sd / "priorities.md").write_text("# P\n1. thing", encoding="utf-8")
-            (dd / "agents" / "seo-strategist.md").write_text((ROOT / "agents" / "seo-strategist.md").read_text(encoding="utf-8"), encoding="utf-8")
+            (dd / "agents" / "seo-strategist.md").write_text((ROOT / "departments" / "command" / "agents" / "seo-strategist.md").read_text(encoding="utf-8"), encoding="utf-8")
             ctx = tools.Context(state=State(sd, dd), site_url="https://s.test/", site_id="s", project_root=base)
             seen = {}
 

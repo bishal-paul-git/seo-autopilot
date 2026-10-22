@@ -1,7 +1,7 @@
 # Implementation status
 
-Last updated: 2026-10-18 (UTC).
-- Branch `claude/hopeful-euler-662mu5`, audited base commit `8d7b62c` (v2.13.0 plus docs). Draft PR: https://github.com/bishal-paul-git/seo-autopilot/pull/8.
+Last updated: 2026-10-22 (UTC).
+- Branch `claude/hopeful-euler-662mu5`, **pushed 2026-10-22** and merged with `main` at `57c533c` (v2.15.0). Draft PR: https://github.com/bishal-paul-git/seo-autopilot/pull/12. `npm test` 397/397 on the merged head.
 - Source repos audited (static review):
   - marketingmouse `e115eac`
   - feed-to-site-magic `f72276c`
@@ -50,26 +50,16 @@ Architecture today: dependency-free Node core (`src/jobs`, `src/analysis`, `src/
 | `citations` providers | mocked only; **never run live** | mock |
 
 ## Deployed
-**v2.14.0 is half released (2026-10-18).**
+**v2.14.0 is fully released (checked 2026-10-18 through the GitHub API): Release published, and `v2.14.0`, `v2` and `v2-stable` all point at `f10f3b3`.**
 
 Done:
-- PR https://github.com/bishal-paul-git/seo-autopilot/pull/8 is merged into `main`. Merge commit `f10f3b3`, `package.json` 2.14.0, `CHANGELOG.md` has a `## 2.14.0` section, `site/` is regenerated.
-- `npm test` passes 258 of 258 on `main`; Go and Python pass.
+- PR https://github.com/bishal-paul-git/seo-autopilot/pull/8 is merged into `main` (`f10f3b3`); `npm test` 258 of 258 on `main`; Go and Python pass; `ci` and `pages` succeeded at 16:36 UTC.
+- The owner published the GitHub Release `v2.14.0` from the web UI. The tag points at `f10f3b3`, and it is the latest release.
+- The owner merged https://github.com/bishal-paul-git/seo-autopilot/pull/9 (docs) and https://github.com/bishal-paul-git/erudience-flow-engine/pull/78 (consent fix).
 
-**Not done:** the tags.
-- The session's git proxy refused `git push origin v2.14.0` and `git push -f origin v2 v2-stable` ("remote end hung up"), and the available GitHub tools cannot create tags.
-- So there is no GitHub Release for 2.14.0 yet.
-- `v2` and `v2-stable` still point at v2.13.0 (`8cdf874`). Erudience, which installs `#v2`, still runs 2.13.0.
-- On `main` (`f10f3b3`), the `ci` and `pages` workflows both succeeded at 2026-10-18 16:36 UTC, so the landing site is published from v2.14.0.
-
-To finish, from a machine with push rights:
-```
-git fetch origin && git checkout main && git pull
-git tag v2.14.0 f10f3b3 && git tag -f v2 f10f3b3 && git tag -f v2-stable f10f3b3
-git push origin v2.14.0 && git push -f origin v2 v2-stable
-```
-
-Consider leaving `v2-stable` for `promote-stable.yml` a few days later. That workflow treats `v2-stable` as a delayed tag; CLAUDE.md says to force it with `v2`.
+**Not done:**
+- The owner moved `v2` and `v2-stable` to v2.14.0 from a local terminal; Erudience picks it up on its next scheduled run (not yet observed).
+- The consent fix on erudience.com has not been checked live; the deploy state is unknown.
 
 No npm package, no hosted service.
 
@@ -121,8 +111,92 @@ No npm package, no hosted service.
 ## Usage and cost
 No paid API calls were made this session. Hosted cost model is proposed in D9; no figures exist yet.
 
+## Departments (D16, approved by the owner 2026-10-18)
+- **Step 1, done (local, not pushed):**
+  - 27 agents moved to `departments/<dept>/agents/`, across 8 departments with charters.
+  - `src/core/agents.mjs` lists them, and `init`, `upgrade`, the site build, tests and `.claude-plugin/plugin.json` use it.
+  - Installed projects are unchanged (flat `seo-autopilot/agents/`).
+  - Checks: `npm test` 260/260; Python 23 OK; `init` in a temp repo gave 27 agents with the right `department:` lines; `upgrade --diff` reported up to date.
+  - Not checked: Claude Code actually loading the plugin's explicit `agents` list (only the JSON shape is tested).
+  - Not changed: `.github/workflows/pages.yml` still filters on `agents/**`, because this session cannot push workflow files. The site still rebuilds because `site/**` changes with every release.
+- **Step 2, done (local, not pushed):**
+  - New `seo-internal-linker` (28 agents).
+  - Orphan, deep and anchor findings and `links.json` go to it; heading findings go to the snippet optimizer.
+  - Each agent's Inputs now name every report the router sends (test-enforced).
+  - Fixed the router dropping a second reason's instruction.
+  - Single owners for markup and robots changes.
+  - Checks: `npm test` 262/262; Python 23 OK.
+- **Step 3, done (local, not pushed):**
+  - `src/analysis/work-orders.mjs`: orders, dependencies, page locks, waves, validators and the approval gate.
+  - Router steps now carry every target page; site-wide rules count as the whole site.
+  - `team` writes `work-orders.json`, plus a waves section in `agent-plan.md`.
+  - New `work` job (status file `work-status.json` acts as the lock).
+  - `seo-check` template runs `facts` on changed content.
+  - Checks:
+    - `npm test` 272/272;
+    - a simulated PR branch with a new page claiming "47%" was flagged by the new check step;
+    - `init` substitutes `{{SPEC}}` in `seo-check.yml`.
+  - Not done:
+    - Nothing runs agents from the work orders automatically. A person or the coordinator uses `run work`.
+    - The fact-checker *agent* is not in the PR pipeline; the deterministic `facts` check is. Adding the agent would need a Claude login in `seo-check`, which runs with no secrets by design.
+- **Step 5, first agent done (local, not pushed):**
+  - `inbound` job (`src/analysis/inbound.mjs`, `src/jobs/inbound.mjs`), `seo-backlink-auditor` (29 agents), router rules, weekly step, config `site.inbound.dir`, playbook section.
+  - Checks: `npm test` 280/280, including 6 inbound tests on sample CSVs.
+  - **Not verified on a real Search Console export:** column names are matched flexibly but were not checked against a real download. Next: the owner exports Links from Search Console for Erudience and we run it.
+- **Step 5, second agent done (local, not pushed):**
+  - `logs` job (`src/analysis/logs.mjs`, `src/jobs/logs.mjs`), `seo-log-analyst` (30 agents), router rule, `noindex` in compact audit pages, `.gitignore` line from `init`, playbook section.
+  - Checks: `npm test` 288/288 (6 logs tests, including that no IP reaches a report); Python OK; `go test` ok.
+  - Not checked:
+    - real access logs;
+    - `--verify` DNS against real crawler addresses (no network in tests).
+- **Skills layer done (local, not pushed):**
+  - `departments/skills/` with `answer-first-copy` and `digital-pr`; `listSkills()`; `init`/`upgrade` copy skills.
+  - 7 agents reference skills; a two-way consistency test; skills section in the org chart.
+  - Checks: `npm test` 289/289.
+- **D17 graduated autopilot, first part done (local, not pushed), 2026-10-20:**
+  - Autonomy policy and `autopilot` job.
+  - `seo-automerge`: review on the same commit, policy decision, pinned merge, kill switch.
+  - `seo-implement`: approver must have write access; PR labelled with the kind of change.
+  - `seo-release`: kill switch.
+  - Rule #1 changed in `CLAUDE.md`.
+  - Checks:
+    - `npm test` 298/298, including 7 autonomy tests and the new workflow assertions;
+    - Python OK;
+    - all workflow templates parse as YAML;
+    - `bash -n` on the changed scripts.
+  - **Not tested on GitHub:** the workflows have not run on a real repository; `gh` and GitHub APIs are not exercised by the tests.
+  - Part 2: the scheduled `seo-autopilot` workflow. It picks one allowed proposal issue twice a day, then drafts, checks (no secrets), reviews and merges it through the existing workflows, now callable.
+    - Checks: `npm test` 303/303; YAML parse; `bash -n` on all changed run scripts; `init` installs it with placeholders filled.
+    - **Not run on GitHub.** Reusable-workflow calls, check-run names ("job / build") and permissions are untested live.
+  - Parts 3 to 5 (2026-10-20):
+    - `seo-watch` + `watch` job: reverts an `undo`-level change through a pull request when a changed page errors, the change added a noindex, or clicks fell clearly more than the rest of the site over 14 days. Indexing status is not judged.
+    - `seo-monthly` + `monthly` job: autopilot ledger, rollbacks, 28-day traffic vs the 28 before, audit findings vs last month, experiments; one issue a month.
+    - Work orders drive agents: `team` opens `seo-work-order` issues for ready snippet, link and refresh orders the policy allows; the loop drafts them.
+    - Checks: `npm test` 323/323; YAML parse; `bash -n`; `init` installs 12 workflows.
+    - **Not run on GitHub**, and the watch thresholds are untested on real traffic.
+  - D17 roadmap is code-complete except the AI reviewer as a required check in more repositories (needs each site owner's Claude key).
+- **D19 site intelligence and MCP server (local, not pushed), 2026-10-20:** `mcp`, `linkgraph`, `vitals`, `changes`, `schema` and `entity`, plus intent labels on rank rows.
+  - **Verified:** `npm test` 388/388, including a real stdio MCP session through the CLI.
+  - **Not verified:** the CrUX, Knowledge Graph and Wikidata APIs (mocked); MCP with a real Claude Desktop or Claude Code client.
+  - **Next:** connect the MCP server in Claude Code on a real site and ask for `site_overview`. Run `linkgraph` and `schema` on a real site (free, no key).
+- **D18 research suite (local, not pushed), 2026-10-20:** `keywords`, `rank`, `gap`, `optimize`, `ai-visibility`, `authority` and Python `forecast`. They replace a paid SEO suite with Search Console plus the user's own keys. See `docs/research-suite.md`.
+  - **Implemented:**
+    - the jobs, analysis modules and provider clients;
+    - router rules;
+    - workflow steps (paid steps are opt-in: `SEO_RANK_LIVE`, `SEO_AI_VISIBILITY`);
+    - the config block and agent inputs.
+  - **Verified:**
+    - `npm test` 364/364;
+    - Python 27/27;
+    - Go ok;
+    - forecast CLI run end to end on synthetic data.
+    - Every provider is mocked.
+  - **Not verified:** no live call to Bing, DataForSEO, Open PageRank, autocomplete, Brave, SerpAPI, Perplexity, OpenAI, Anthropic or Gemini; no run on a real site.
+  - **Next:** run `keywords`, `rank` and `optimize` on a real site with Search Console (free). Then one paid key at a time, checking each report against the provider's own dashboard.
+- **Next, step 4:** add sources and "last reviewed" dates to every playbook, from `docs/research/REFERENCES.md`, with a test. It is blocked on verifying the links: page fetches are blocked in this session's network policy.
+
 ## Next milestone
-**Owner review of Phase 0.** Acceptance criterion: the owner approves or amends D1 to D15 and answers D11, D14 and D15. Phase 1 (hosted foundation) starts only after that.
+**Push this branch and run the autopilot on one real site** (blocked: this session's GitHub writes return 403; the owner pushes from their PC per RESTORE.md). Acceptance: on a test repository with `SEO_AUTOPILOT=true` and `SEO_REVIEW=true`, one proposal goes from issue to merged PR with every check green, one deliberate bad change is reverted by `seo-watch`, and `seo-monthly` opens its issue. Then: **owner review of Phase 0.** Acceptance criterion: the owner approves or amends D1 to D15 and answers D11, D14 and D15. Phase 1 (hosted foundation) starts only after that.
 
 Exact next actions, independent of the review:
 1. Brief 01:
@@ -143,4 +217,4 @@ Exact next actions, independent of the review:
 3. Brief 04, next part: record real agent outputs for the four cases and add cases per agent.
 4. Small fixes: F2, F6, F7.
 
-Resume prompt: "Read CLAUDE.md, docs/implementation/STATUS.md, PHASE-0-AUDIT.md and DECISIONS.md. If the owner has approved Phase 0, start Phase 1 per SEO-PRODUCT-BUILD-BRIEF.md and D1-D15; otherwise continue brief 01 (Erudience tooling port) on a feature branch."
+Resume prompt (autopilot): "Read CLAUDE.md and docs/implementation/STATUS.md. Branch claude/hopeful-euler-662mu5 holds D16 and D17 (not yet pushed or run on GitHub). Push it, open a draft PR, then test seo-autopilot, seo-watch and seo-monthly on a test repository and fix what breaks." Older resume prompt: "Read CLAUDE.md, docs/implementation/STATUS.md, PHASE-0-AUDIT.md and DECISIONS.md. If the owner has approved Phase 0, start Phase 1 per SEO-PRODUCT-BUILD-BRIEF.md and D1-D15; otherwise continue brief 01 (Erudience tooling port) on a feature branch."

@@ -38,7 +38,7 @@ A complete open-source SEO team: 12 jobs plus audit and engines, 27 agents, 26 p
 ## Risks to manage
 - **Outcome risk:** SEO results are slow and uncertain. Sell process and transparency, never rankings. The product already reports uncertainty and small-data caveats; keep that.
 - **Platform risk:** Search Console, Google and AI provider terms and APIs change. Keep providers pluggable and say what is verified.
-- **Safety and liability:** agents that edit sites need approval gates, audit logs and rollback. Keep "a human approves what goes live" as a product promise.
+- **Safety and liability:** agents that edit sites need approval gates, audit logs and rollback. The product promise is now "nothing goes live unchecked" (D17): routine changes publish after automated checks, with limits, a kill switch and undo; high-risk changes wait for a person.
 - **Cost of AI runs:** keep bring-your-own-key as the default; offer metered or bundled usage only with clear limits.
 - **Support load:** invest in `doctor`, `upgrade` and docs before growing users.
 

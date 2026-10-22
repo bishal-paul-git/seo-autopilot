@@ -2,6 +2,182 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-22 (pushed; draft PR #12)
+- **Integration only:**
+  - GitHub write access was restored.
+  - Merged the old remote branch: its two docs commits were already in `main` via #9, so I kept this branch's version of STATUS and CHANGELOG.
+  - Merged `origin/main` (v2.15.0, #11); the only conflicts were in the two changelogs, and I kept both sides.
+  - Pushed, and opened draft PR https://github.com/bishal-paul-git/seo-autopilot/pull/12.
+- **Checks:** `npm test` 397/397; Python tests OK; workflow YAML parses.
+- **Deployment:** none (nothing released).
+
+## 2026-10-22 (refinements)
+- **Code:** `doctor` now reports the optional research keys and the autopilot, live-rank and AI-visibility switches.
+- **Docs:**
+  - `README.md` gains rows for the research suite, site intelligence, autopilot and MCP.
+  - Its "one rule" section is rewritten for D17, and the honest limits now say provider integrations are mock-tested only.
+  - `site/` regenerated (agents page lists 33 agents).
+- **Checks:** `npm test` 388/388; `doctor` run in a fresh `init` project; `node scripts/build-site.mjs` ran clean.
+- **Not pushed** (GitHub writes still refused).
+
+## 2026-10-20 (D19 site intelligence and MCP server)
+- **Code:**
+  - `src/mcp/server.mjs` and the `mcp` CLI command; `mcpServers` in `.claude-plugin/plugin.json`.
+  - Analysis modules: `src/analysis/linkgraph.mjs`, `vitals.mjs`, `changes.mjs`, `schema.mjs`, `entity.mjs`.
+  - Jobs: `linkgraph`, `vitals`, `changes`, `schema`, `entity`.
+  - Intent labels on rank rows.
+  - Router rules and team inputs; `research.logo` and `research.sameAs` config; workflow steps.
+- **Docs:** `docs/mcp.md`, the site intelligence section in `docs/research-suite.md`, `docs/jobs.md` rows, D19, and inputs for 6 agents.
+- **Checks:**
+  - `npm test`: 388 pass, including a real stdio MCP session.
+  - All workflow YAML parses.
+  - The Chrome UX Report, Knowledge Graph and Wikidata APIs are mocked; **no live call** was made.
+- **Not pushed** (GitHub writes refused).
+
+## 2026-10-20 (D18 research suite)
+- **Code:**
+  - `src/analysis/text.mjs`, `keywords.mjs`, `rank.mjs`, `gap.mjs`, `optimize.mjs`, `ai-visibility.mjs` and `authority.mjs`.
+  - `src/lib/research-sources.mjs` (Bing, DataForSEO, Open PageRank, autocomplete) and `src/lib/ai-engines.mjs` (Perplexity, OpenAI, Anthropic, Gemini).
+  - Search features added to `src/lib/serp.mjs`, and paging (`extra`) to the Search Console helper.
+  - Jobs: `keywords`, `rank`, `gap`, `optimize`, `ai-visibility`, `authority` and `forecast`.
+  - Python `engines/python/seo_engine/forecast.py` and a `forecast` CLI command.
+  - Router rules and the `team` inputs; the forecast line in the monthly report.
+  - Config `research` validation and schema; `templates/data/tracked-queries.json`.
+  - Workflow steps in `seo-daily`, `seo-weekly` and `seo-monthly`.
+- **Bug found by a test and fixed:** re-fetched Search Console days were added to the saved history instead of replacing it (`mergeSeries`).
+- **Docs:** `docs/research-suite.md`, rows in `docs/jobs.md`, D18 in `DECISIONS.md`, inputs for 13 agents.
+- **Checks:**
+  - `npm test`: 364 pass.
+  - `python3 -m unittest discover -s tests` (engines/python): 27 pass.
+  - The forecast CLI was run end to end on synthetic data.
+  - All workflow YAML parses.
+  - Every provider is mocked. **No live provider call was made.**
+
+## 2026-10-20 (agents and skills from the owner's research notes)
+- **Content (product):** 3 agents (`departments/research/agents/seo-serp-analyst.md`, `seo-topic-mapper.md`, `departments/ai-search/agents/seo-ai-visibility-tracker.md`) and 5 skills (`departments/skills/question-mining`, `search-intent-labelling`, `traffic-potential`, `broken-link-reclamation`, `ai-answer-testing`); skill references added to 6 existing agents; charters, org chart, `.claude-plugin/plugin.json`, `docs/agents.md`, `CLAUDE.md` counts.
+- **Source:** the owner's three research notes (Ahrefs vs Semrush; two architecture blueprints). The GitHub repositories they name could not be opened from this session (403), so no code or licence was checked and nothing was copied.
+- **Checks:** `npm test` 326/326 (agent structure, skill two-way references, plugin list). Agents not evaluated on real outputs.
+
+## 2026-10-20 (D17 parts 3 to 5: watch and undo, monthly report, work orders drive agents)
+- **Code:**
+  - Watch and undo: `src/analysis/watch.mjs`, `src/jobs/watch.mjs`, `templates/workflows/seo-watch.yml`; automerge labels `undo`-level merges `seo-watch`.
+  - Monthly: `src/analysis/monthly.mjs`, `src/jobs/monthly.mjs`, `templates/workflows/seo-monthly.yml`.
+  - Work orders: `workOrderIssues()` and `AUTOPILOT_AGENTS` in `src/analysis/work-orders.mjs`; `team` opens the issues when `SEO_AUTOPILOT=true`; `seo-weekly` passes the switch; `seo-implement` accepts `seo-work-order` and reads `agent:<name>` (three content agents only), with snippet and link rules.
+  - Tests: `test/watch.test.mjs` (5), `test/monthly.test.mjs` (5), one new work-order test, three new workflow assertions.
+- **Docs:** root `CHANGELOG.md`, `docs/jobs.md` (watch, monthly, team), D17 roadmap in `DECISIONS.md`, this file, `STATUS.md`.
+- **Checks:** `npm test` 323/323; every workflow template parses as YAML; `bash -n` on every run script; `init` into an empty repository installs all 12 workflows with placeholders filled.
+- **Not run on GitHub.** Not pushed (GitHub writes refused). No deployment.
+
+## 2026-10-20 (D17: graduated autopilot, part 2: the autopilot loop)
+- **Code:**
+  - `pickWork()` in `src/analysis/autonomy.mjs`, and `run autopilot --pick`.
+  - New `templates/workflows/seo-autopilot.yml`.
+  - `workflow_call` inputs added to `seo-implement` (issue), `seo-check` (ref, base), `seo-review` (pr) and `seo-automerge` (branch).
+  - Automerge finds the head commit itself when called, and matches check runs named either "build" or "<job> / build".
+  - Tests: 2 new autonomy tests; a workflow test that the called build check never receives secrets; local reusable workflows allowed in the pinning rule.
+- **Checks:** `npm test` 303/303; YAML parse; `bash -n`; `init` installs the workflow with placeholders filled.
+- **Not run on GitHub.** Not pushed (GitHub writes refused).
+
+## 2026-10-20 (D17: graduated autopilot, part 1)
+- **Owner decision:** routine changes publish without a person after automated checks. Recorded as D17; `CLAUDE.md` rule #1 rewritten.
+- **Code:**
+  - New `src/analysis/autonomy.mjs` and `src/jobs/autopilot.mjs` (registered as `autopilot`).
+  - Config validation and schema for `site.autopilot`.
+  - `templates/workflows/seo-automerge.yml` rewritten (fixes F1).
+  - `seo-implement.yml`: approver permission check (fixes F2), kill switch, PR labelled with the kind of change.
+  - `seo-release.yml`: kill switch (F3).
+  - Tests: `test/autonomy.test.mjs` (7) and new assertions in `test/workflows.test.mjs`.
+- **Documentation:** D17 in DECISIONS; `CLAUDE.md`; `departments/README.md`; `docs/strategy.md`; `docs/jobs.md`; root `CHANGELOG.md`.
+- **Checks:** `npm test` 298/298; Python OK; YAML parse of all templates; `bash -n` on the changed run scripts.
+- **Not run on GitHub.** Not pushed (GitHub writes refused in this environment).
+
+## 2026-10-19 (D16: shared skills)
+- **Code:**
+  - `src/core/agents.mjs` gains `listSkills()`.
+  - `src/cli/init.mjs` copies skills to `<dataDir>/skills/<name>/SKILL.md`.
+  - `scripts/build-site.mjs` links skill pages to GitHub.
+  - Tests: two-way skills consistency (`test/agents.test.mjs`) and skills present after `init` (`test/site-profile.test.mjs`).
+- **Product content:**
+  - `departments/skills/answer-first-copy/SKILL.md` and `departments/skills/digital-pr/SKILL.md`.
+  - "Read first" skill references in the drafter, refresher, snippet-optimizer, ai-search-agent, editor, link-builder and entity-reputation; small method wording changes pointing to the skills.
+  - Org chart skills section; `CLAUDE.md` layout line.
+- **Checks:** `npm test` 289/289. Not pushed (GitHub 403 again at session start).
+
+## 2026-10-18, night (D16 step 5: log analyst)
+- **Code:**
+  - New `src/analysis/logs.mjs` and `src/jobs/logs.mjs` (registered as `logs`; DNS verify uses `node:dns`, gz via `node:zlib`, no dependencies).
+  - New `departments/technical/agents/seo-log-analyst.md`.
+  - Router rule (medium crawl findings, fix phase); `team` passes `logs.json`.
+  - `src/jobs/audit.mjs` compact pages gain `noindex`.
+  - `src/cli/init.mjs` adds `seo-autopilot/logs/` to `.gitignore` (idempotent, checked by running init twice).
+  - Config validation and schema for `site.logs.dir`.
+  - Tests: `test/logs.test.mjs` (6); agent count 30.
+- **Documentation:** a "Reading your server logs" section in `knowledge/indexing-and-crawl-diagnosis.md`; `docs/jobs.md` row; org chart; Technical charter; root `CHANGELOG.md`.
+- **Checks:** `npm test` 288/288; Python OK; `go test ./...` ok.
+- **Not checked:** real logs, live DNS verification. Not pushed (GitHub 403).
+
+## 2026-10-18, night (D16 step 5: backlink auditor)
+- **Code:**
+  - New `src/analysis/inbound.mjs` and `src/jobs/inbound.mjs` (registered as `inbound`).
+  - New `departments/authority/agents/seo-backlink-auditor.md`.
+  - Router rules for reclaim (fix phase) and review (grow phase), with targets.
+  - `team` passes `inbound.json`.
+  - Config validation and schema for `site.inbound.dir`.
+  - `seo-weekly.yml` gets a `run inbound` step.
+  - Tests: `test/inbound.test.mjs` (6); agent count 29; coverage test includes inbound.
+- **Documentation:**
+  - `knowledge/link-building-and-digital-pr.md` gets an "Auditing the links you already have" section.
+  - `docs/jobs.md` row, org chart, Authority charter, root `CHANGELOG.md`.
+- **Checks:** `npm test` 280/280; Python 23 OK.
+- **Not checked:** a real Search Console export. Not pushed (GitHub 403).
+
+## 2026-10-18, night (D16 step 3: work orders)
+- **Code:**
+  - New `src/analysis/work-orders.mjs`, `src/jobs/work.mjs` (registered as `work`) and `agentFacts()` in `src/core/agents.mjs`.
+  - `src/analysis/agent-router.mjs`: steps carry all target paths; `SITE_WIDE_RULES` are whole-site.
+  - `src/jobs/team.mjs` writes `work-orders.json` and validates it (throws on inconsistency).
+  - `templates/workflows/seo-check.yml`: full-history checkout, plus a facts step on changed `.json`/`.md`/`.mdx` files outside `seo-autopilot/`, made pipefail-safe.
+  - Tests: `test/work-orders.test.mjs` (9).
+- **Documentation:** `docs/jobs.md` rows for `team` and `work`; root `CHANGELOG.md`.
+- **Checks:**
+  - `npm test` 272/272;
+  - a manual simulation of the facts step on a temp repo flagged "47%";
+  - `init` SPEC substitution.
+- Not pushed (GitHub 403).
+
+## 2026-10-18, night (D16 step 2: ownership and inputs)
+- **Code:**
+  - New `departments/content/agents/seo-internal-linker.md`.
+  - `src/analysis/agent-router.mjs`:
+    - orphan, deep and generic-anchor findings and `links.json` go to the internal-linker;
+    - heading rules go to the snippet-optimizer;
+    - merged steps keep every instruction;
+    - entity prompt briefs the schema engineer.
+  - Inputs updated in snippet-optimizer (also the heading method step), compliance-auditor, technical-fixer, ai-search-agent, strategist and redirect-guardian. Ownership lines added to entity-reputation and ai-search-agent.
+  - Tests: router-to-Inputs coverage test; counts now 28; `test/quality.test.mjs` heading-routing test updated.
+- **Checks:** `npm test` 262/262; Python 23 OK. Not pushed (GitHub 403).
+
+## 2026-10-18, night (D16 step 1: departments)
+- **Code:**
+  - Agents moved with `git mv` into `departments/{command,research,technical,content,authority,ai-search,verticals,quality}/agents/`, plus a `department:` front-matter line.
+  - New `src/core/agents.mjs`. Updated `src/cli/init.mjs`, `scripts/build-site.mjs` (site grouped by department; `../docs` links go to GitHub), `test/agents.test.mjs` (department, uniqueness, charter and plugin-list tests), the Python test fixtures, `package.json` files and `.claude-plugin/plugin.json` (explicit agents list).
+- **Documentation:**
+  - `departments/README.md` (org chart) and 8 charters.
+  - `CLAUDE.md` layout lines, `docs/agents.md`, `docs/content-automation.md`, and the root `CHANGELOG.md` Unreleased entry.
+  - Earlier the same evening: `docs/research/AGENT-AUDIT-2026-10-18.md`, `docs/research/REFERENCES.md` (108 links, all search-result-only because page fetches were blocked), `docs/architecture/DEPARTMENTS.md` and D16.
+- **Checks:** `npm test` 260/260; `python3 -m unittest discover -s tests` 23 OK; `init` and `upgrade --diff` in a temp repo.
+- **Not pushed:** GitHub writes return 403 in this session.
+
+## 2026-10-18, evening (release finished by the owner)
+- **Deployment actions (by the owner, in the GitHub web UI):**
+  - Published the Release `v2.14.0` (tag at `f10f3b3`).
+  - Merged seo-autopilot#9 and erudience-flow-engine#78.
+- **Verified by this session:** latest release `v2.14.0`. Later, after the owner moved them from a terminal: `v2.14.0`, `v2` and `v2-stable` all at `f10f3b3` (GitHub API reads).
+- **Failed (session access):**
+  - Merging, marking ready, pushing workflow files and creating refs all returned 403.
+  - A proposed manual-run release workflow was therefore not pushed.
+- **Documentation:** STATUS updated.
+
 ## 2026-10-20 (v2.15.0 prepared on branch `feat/refinements-pace-thin-lang`)
 - **Code changes:** `src/analysis/scope.mjs` (thinIgnore/retired path patterns, trailing-slash check, small language filter), `applyDates` in `src/adapters/index.mjs` and `run pace --apply`, `metaChanges` and `run experiments log-git <ref>`, wiring in `audit`, `daily`, `digest`, `indexing-queue`, `research`; config validation and schema for `thinIgnore`, `retired`, `language`.
 - **Documentation:** root `CHANGELOG.md` 2.15.0, `docs/configuration.md`, roadmap brief 09 statuses.

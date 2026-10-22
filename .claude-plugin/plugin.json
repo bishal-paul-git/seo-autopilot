@@ -15,5 +15,49 @@
     "automation",
     "github-actions",
     "backlinks"
-  ]
+  ],
+  "agents": [
+    "./departments/command/agents/seo-coordinator.md",
+    "./departments/command/agents/seo-onboarder.md",
+    "./departments/command/agents/seo-reporter.md",
+    "./departments/command/agents/seo-strategist.md",
+    "./departments/research/agents/seo-competitor-analyst.md",
+    "./departments/research/agents/seo-researcher.md",
+    "./departments/research/agents/seo-serp-analyst.md",
+    "./departments/research/agents/seo-topic-mapper.md",
+    "./departments/technical/agents/seo-indexing-monitor.md",
+    "./departments/technical/agents/seo-international.md",
+    "./departments/technical/agents/seo-log-analyst.md",
+    "./departments/technical/agents/seo-media-optimizer.md",
+    "./departments/technical/agents/seo-migration-planner.md",
+    "./departments/technical/agents/seo-performance-fixer.md",
+    "./departments/technical/agents/seo-redirect-guardian.md",
+    "./departments/technical/agents/seo-schema-engineer.md",
+    "./departments/technical/agents/seo-technical-fixer.md",
+    "./departments/content/agents/seo-cannibalization-resolver.md",
+    "./departments/content/agents/seo-content-pruner.md",
+    "./departments/content/agents/seo-drafter.md",
+    "./departments/content/agents/seo-internal-linker.md",
+    "./departments/content/agents/seo-refresher.md",
+    "./departments/content/agents/seo-snippet-optimizer.md",
+    "./departments/authority/agents/seo-backlink-auditor.md",
+    "./departments/authority/agents/seo-entity-reputation.md",
+    "./departments/authority/agents/seo-link-builder.md",
+    "./departments/ai-search/agents/seo-ai-search-agent.md",
+    "./departments/ai-search/agents/seo-ai-visibility-tracker.md",
+    "./departments/verticals/agents/seo-ecommerce.md",
+    "./departments/verticals/agents/seo-local-agent.md",
+    "./departments/quality/agents/seo-compliance-auditor.md",
+    "./departments/quality/agents/seo-editor.md",
+    "./departments/quality/agents/seo-fact-checker.md"
+  ],
+  "mcpServers": {
+    "seo-autopilot": {
+      "command": "node",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/bin/seo-autopilot.mjs",
+        "mcp"
+      ]
+    }
+  }
 }

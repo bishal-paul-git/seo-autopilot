@@ -87,3 +87,12 @@ test("the drafting agent is scoped to the content paths and cannot run builds", 
   assert.match(wf, /claude-code-action@[0-9a-f]{40}/, "third-party action is pinned to a commit");
   assert.ok(readFileSync(join(d, ".github/workflows/seo-check.yml"), "utf8").includes("contents: read"));
 });
+
+test("config: the research block is checked (lists of strings, known AI engines, a two-letter market, sane limits)", () => {
+  const base = { sites: [{ id: "s", url: "https://s.test/", searchConsoleProperty: "sc-domain:s.test", sitemap: "https://s.test/sitemap.xml" }] };
+  const withR = (research) => validate({ sites: [{ ...base.sites[0], research }] });
+  assert.deepEqual(withR({ market: "us", competitors: ["a.test"], aliases: ["Acme"], engines: ["perplexity", "gemini"], aiRuns: 2, serpLimit: 50 }), []);
+  const errs = [withR({ competitors: "a.test" }), withR({ engines: ["bard"] }), withR({ market: "USA" }), withR({ aiRuns: 9 }), withR({ serpLimit: 0 }), withR([])].map((e) => e.join(" "));
+  assert.match(errs[0], /competitors must be a list/); assert.match(errs[1], /engines may list/); assert.match(errs[2], /two-letter/);
+  assert.match(errs[3], /aiRuns/); assert.match(errs[4], /serpLimit/); assert.match(errs[5], /research must be an object/);
+});

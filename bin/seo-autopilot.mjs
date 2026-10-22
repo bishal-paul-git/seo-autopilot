@@ -23,6 +23,7 @@ Usage
   seo-autopilot run <job> [--site id] [--dry]       run one job
   seo-autopilot knowledge                           copy/refresh the SEO playbooks into your project (the drafting agent reads them)
   seo-autopilot ui [--port 4747] [--open]           local app to manage every project on this computer
+  seo-autopilot mcp [--project <folder>]            MCP server: let Claude or another AI assistant read reports and run analysis jobs
   seo-autopilot projects add|list|remove [path]     choose which website folders the app shows
   seo-autopilot state restore|save                  load/save memory on the "seo-data" branch (used by the workflows)
   seo-autopilot redirects [check|generate|smoke]    the redirect map: check it, write server rules, test the live site
@@ -41,6 +42,7 @@ try {
   else if (cmd === "init") await init({ flags });
   else if (cmd === "upgrade") console.log(upgrade({ flags }));
   else if (cmd === "doctor") process.exitCode = await doctor();
+  else if (cmd === "mcp") (await import("../src/mcp/server.mjs")).serve({ cwd: flags.project ? (await import("node:path")).resolve(String(flags.project)) : process.cwd() });
   else if (cmd === "state") {
     const sub = positional[0];
     if (sub === "restore") restore(); else if (sub === "save") save(); else throw new Error("usage: state restore|save");

@@ -1,0 +1,128 @@
+# seo-autopilot: watch and undo (decision D17). Every day it checks the changes the autopilot published at the "undo" level
+# (pull requests labelled seo-watch) and reverts one that made things worse: a changed page now answers an error, the change
+# added a noindex, or the page lost clearly more clicks than the rest of the site over the 14 days after the change.
+# A revert is opened as a pull request, built by seo-check with no secrets, then merged; the original pull request gets a
+# comment saying why. Changes that passed their watch lose the seo-watch label.
+#
+# Runs when SEO_AUTOPILOT = true. With the kill switch SEO_AUTOPILOT_PAUSED = true it still checks and opens the revert
+# pull request, but leaves the merge to a person.
+name: seo-watch
+on:
+  schedule: [{ cron: "47 8 * * *" }]   # 08:47 UTC daily, after seo-daily has refreshed the click data
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seo-watch
+  cancel-in-progress: false
+
+env:
+  SEO: "{{SPEC}}"
+
+jobs:
+  judge:
+    if: vars.SEO_AUTOPILOT == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    outputs:
+      revert: ${{ steps.watch.outputs.revert }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Restore saved data (click history from seo-daily)
+        run: npx --yes "$SEO" state restore
+      - name: Check the watched changes
+        id: watch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eu
+          since=$(date -u -d '30 days ago' +%Y-%m-%d)
+          gh pr list --state merged --label seo-watch --search "merged:>=$since" --limit 50 --json number,mergedAt,mergeCommit,files > "$RUNNER_TEMP/raw.json"
+          echo "[]" > "$RUNNER_TEMP/prs.json"
+          for n in $(jq -r '.[].number' "$RUNNER_TEMP/raw.json"); do
+            if gh pr diff "$n" | grep '^+' | grep -v '^+++' | grep -qi 'noindex'; then added=true; else added=false; fi
+            jq --argjson n "$n" --argjson a "$added" '[.[] | select(.number == $n) | . + {addedNoindex: $a}]' "$RUNNER_TEMP/raw.json" > "$RUNNER_TEMP/one.json"
+            jq -s 'add' "$RUNNER_TEMP/prs.json" "$RUNNER_TEMP/one.json" > "$RUNNER_TEMP/next.json" && mv "$RUNNER_TEMP/next.json" "$RUNNER_TEMP/prs.json"
+          done
+          npx --yes "$SEO" run watch --prs "$RUNNER_TEMP/prs.json"
+      - name: Stop watching changes that passed
+        if: steps.watch.outputs.done != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DONE: ${{ steps.watch.outputs.done }}
+        run: for n in $DONE; do gh pr edit "$n" --remove-label seo-watch || true; done
+
+  revert:
+    needs: judge
+    if: needs.judge.outputs.revert != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    outputs:
+      branch: ${{ steps.revert.outputs.branch }}
+      base: ${{ steps.revert.outputs.base }}
+      pr: ${{ steps.revert.outputs.pr }}
+      original: ${{ steps.revert.outputs.original }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Open a pull request that reverts the change
+        id: revert
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REVERT: ${{ needs.judge.outputs.revert }}
+        run: |
+          set -eu
+          read -r n sha <<< "$REVERT"
+          base=$(git rev-parse --abbrev-ref HEAD); branch="seo/revert-$n"
+          git config user.name "seo-autopilot"; git config user.email "seo-autopilot@users.noreply.github.com"
+          git checkout -b "$branch"
+          if ! git revert --no-edit "$sha"; then
+            git revert --abort || true
+            gh issue create --title "Autopilot could not revert PR #$n" --body "The watch found a regression after PR #$n (see the seo-watch run and the watch.md report), but the revert does not apply cleanly because later changes touched the same lines. A person needs to undo it." || true
+            exit 0
+          fi
+          git push -u origin "$branch"
+          gh label create seo-revert --color B60205 --description "Reverts an autopilot change that made things worse" 2>/dev/null || true
+          pr=$(gh pr create --base "$base" --head "$branch" --label seo-revert --title "Revert autopilot change #$n" --body "The seo-watch job found that PR #$n made things worse (details in the seo-watch run and watch.md). This restores the previous version." | grep -o '[0-9]*$')
+          { echo "branch=$branch"; echo "base=$base"; echo "pr=$pr"; echo "original=$n"; } >> "$GITHUB_OUTPUT"
+
+  check:
+    needs: revert
+    if: needs.revert.outputs.pr != ''
+    permissions:
+      contents: read
+    uses: ./.github/workflows/seo-check.yml
+    with:
+      ref: ${{ needs.revert.outputs.branch }}
+      base: ${{ needs.revert.outputs.base }}
+
+  merge:
+    needs: [revert, check]
+    if: needs.revert.outputs.pr != '' && vars.SEO_AUTOPILOT_PAUSED != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Merge the revert (it passed the build) and explain on the original pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ needs.revert.outputs.pr }}
+          ORIGINAL: ${{ needs.revert.outputs.original }}
+        run: |
+          set -eu
+          sha=$(gh pr view "$PR" --json headRefOid --jq .headRefOid)
+          gh pr merge "$PR" --squash --delete-branch --match-head-commit "$sha"
+          gh label create seo-reverted --color 5319E7 --description "Reverted by the autopilot watch" 2>/dev/null || true
+          gh pr edit "$ORIGINAL" --remove-label seo-watch --add-label seo-reverted || true
+          gh pr comment "$ORIGINAL" --body "The autopilot reverted this change in #$PR because the watch found a regression (see watch.md in the saved reports)." || true

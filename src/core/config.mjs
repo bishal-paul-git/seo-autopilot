@@ -72,6 +72,29 @@ export function validate(raw) {
     if (s.language != null && (typeof s.language !== "string" || !/^[a-z]{2}(-[A-Za-z]{2,4})?$/.test(s.language))) errors.push(`${w}.language must be a language code such as "en" or "en-GB"`);
     if (s.conversions != null && (typeof s.conversions !== "object" || (s.conversions.events != null && (!Array.isArray(s.conversions.events) || s.conversions.events.some((e) => typeof e !== "string"))))) errors.push(`${w}.conversions.events must be a list of GA4 event names`);
     if (s.facts != null && (typeof s.facts !== "object" || Array.isArray(s.facts) || (s.facts.strict != null && typeof s.facts.strict !== "boolean"))) errors.push(`${w}.facts must be an object; facts.strict must be true or false`);
+    if (s.autopilot != null) {
+      const a = s.autopilot;
+      if (typeof a !== "object" || Array.isArray(a)) errors.push(`${w}.autopilot must be an object`);
+      else {
+        if (a.levels != null && (typeof a.levels !== "object" || Array.isArray(a.levels) || Object.values(a.levels).some((v) => !["watch", "prepare", "autopilot", "undo"].includes(v)))) errors.push(`${w}.autopilot.levels values must be watch, prepare, autopilot or undo`);
+        if (a.limits != null && (typeof a.limits !== "object" || Object.values(a.limits).some((v) => !Number.isInteger(v) || v < 0))) errors.push(`${w}.autopilot.limits must be whole numbers`);
+        for (const k of ["enabled", "paused"]) if (a[k] != null && typeof a[k] !== "boolean") errors.push(`${w}.autopilot.${k} must be true or false`);
+      }
+    }
+    if (s.logs != null && (typeof s.logs !== "object" || Array.isArray(s.logs) || (s.logs.dir != null && typeof s.logs.dir !== "string"))) errors.push(`${w}.logs must be an object; logs.dir must be a folder path`);
+    if (s.inbound != null && (typeof s.inbound !== "object" || Array.isArray(s.inbound) || (s.inbound.dir != null && typeof s.inbound.dir !== "string"))) errors.push(`${w}.inbound must be an object; inbound.dir must be a folder path`);
+    if (s.research != null) {
+      const r = s.research;
+      if (typeof r !== "object" || Array.isArray(r)) errors.push(`${w}.research must be an object`);
+      else {
+        if (r.logo != null && (typeof r.logo !== "string" || !/^https:\/\//.test(r.logo))) errors.push(`${w}.research.logo must be a full https URL of your logo image`);
+        for (const k of ["competitors", "competitorNames", "aliases", "engines", "sameAs"]) if (r[k] != null && (!Array.isArray(r[k]) || r[k].some((x) => typeof x !== "string"))) errors.push(`${w}.research.${k} must be a list of strings`);
+        if (Array.isArray(r.engines) && r.engines.some((e) => !["perplexity", "openai", "anthropic", "gemini"].includes(e))) errors.push(`${w}.research.engines may list perplexity, openai, anthropic and gemini`);
+        if (r.market != null && (typeof r.market !== "string" || !/^[A-Za-z]{2}$/.test(r.market))) errors.push(`${w}.research.market must be a two-letter country code, for example "GB" or "US"`);
+        if (r.aiRuns != null && (!Number.isInteger(r.aiRuns) || r.aiRuns < 1 || r.aiRuns > 5)) errors.push(`${w}.research.aiRuns must be a whole number from 1 to 5`);
+        if (r.serpLimit != null && (!Number.isInteger(r.serpLimit) || r.serpLimit < 1 || r.serpLimit > 200)) errors.push(`${w}.research.serpLimit must be a whole number from 1 to 200`);
+      }
+    }
     if (s.redirects != null) {
       if (typeof s.redirects !== "object" || Array.isArray(s.redirects)) errors.push(`${w}.redirects must be an object`);
       else if (s.redirects.format != null && !["apache", "nginx", "netlify", "vercel"].includes(s.redirects.format)) errors.push(`${w}.redirects.format must be apache, nginx, netlify or vercel`);

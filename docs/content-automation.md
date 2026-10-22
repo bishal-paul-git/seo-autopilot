@@ -28,7 +28,7 @@ Note: pull requests opened with the default `GITHUB_TOKEN` do not trigger other 
 
 ## The agent team
 
-Each agent is a Markdown file with a mission, the playbooks it reads first, a method, a quality bar, a "never" list and an output format. They live in `agents/` (copied into your project's data folder by `init` and `seo-autopilot knowledge`). See `agents/README.md` for the full flow, and copy any of them into `.claude/agents/` to use them in Claude Code.
+Each agent is a Markdown file with a mission, the playbooks it reads first, a method, a quality bar, a "never" list and an output format. They live in `departments/<department>/agents/` (copied flat into your project's data folder by `init` and `seo-autopilot knowledge`). See `departments/README.md` for the org chart and the full flow, and copy any of them into `.claude/agents/` to use them in Claude Code.
 
 ## Reviewer agent (optional)
 

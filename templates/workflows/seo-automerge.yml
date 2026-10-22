@@ -1,55 +1,96 @@
-# seo-autopilot: optional one-approval mode. When a drafted page has passed the seo-check build, this merges it for you, so
-# the only thing you do is approve the topic. It is OFF until you create the repository VARIABLE  SEO_AUTOMERGE = true
-# (Settings > Secrets and variables > Actions > Variables). Delete this file, or unset the variable, to go back to merging by hand.
+# seo-autopilot: autopilot merging (decision D17). When a drafted change has passed every automated check, this merges it
+# without waiting for a person, if the site's autopilot policy allows that kind of change. OFF until you create the
+# repository VARIABLE  SEO_AUTOMERGE = true (Settings > Secrets and variables > Actions > Variables).
+# Kill switch: the variable SEO_AUTOPILOT_PAUSED = true stops all automatic merging and publishing at once.
 #
-# It runs when seo-check finishes and again when the optional reviewer (seo-review) finishes.
+# It runs when seo-check finishes and again when the reviewer agent (seo-review) finishes.
 #
-# Safety: it never runs pull-request code and uses no secrets. It merges only when ALL of these hold: the seo-check run
-# succeeded, the branch is seo/* in THIS repository (not a fork), and every changed file sits inside your content folders.
-# Pages are still marked queued, so merging does not publish anything: the scheduler releases them a few per day.
+# It merges only when ALL of these hold, checked on the exact commit being merged:
+#  - the branch is seo/* in THIS repository (not a fork), and autopilot is not paused;
+#  - the seo-check build passed on this commit;
+#  - the reviewer agent's check passed on this commit AND it labelled the pull request seo-review-passed (the reviewer
+#    clears that label whenever a new commit arrives). Set SEO_REQUIRE_REVIEW = false only if you run no reviewer;
+#  - `seo-autopilot run autopilot --decide` allows this kind of change: sensitive topics, robots and sitemap changes,
+#    migrations and deletions always wait for a person, and new pages stay within the weekly limit;
+#  - the merge itself is pinned to that commit, so a later push cannot slip in unseen.
+# It never runs pull-request code: it reads the changed file names and added lines as data.
 name: seo-automerge
 on:
   workflow_run:
     workflows: [seo-check, seo-review]
     types: [completed]
+  # Called by the scheduled seo-autopilot workflow after its own check and review jobs (then SEO_AUTOMERGE is not needed:
+  # turning on SEO_AUTOPILOT is the opt-in). The same gates apply.
+  workflow_call:
+    inputs:
+      branch:
+        type: string
+        required: true
 
 permissions:
   contents: write
   pull-requests: write
-  checks: read      # to confirm seo-check passed on the exact commit
+  checks: read      # to confirm seo-check and the reviewer passed on the exact commit
+
+concurrency:
+  group: seo-automerge
+  cancel-in-progress: false
+
+env:
+  SEO: "{{SPEC}}"
 
 jobs:
   merge:
     if: >-
+      vars.SEO_AUTOPILOT_PAUSED != 'true' && (startsWith(inputs.branch, 'seo/') || (
       vars.SEO_AUTOMERGE == 'true' &&
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.event == 'pull_request' &&
       startsWith(github.event.workflow_run.head_branch, 'seo/') &&
-      github.event.workflow_run.head_repository.full_name == github.repository
+      github.event.workflow_run.head_repository.full_name == github.repository))
     runs-on: ubuntu-latest
     steps:
-      - name: Merge when every changed file is a content file
+      # The default branch, for the config and policy only. The pull request's code is never checked out or run.
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Merge when every check passed on this commit and the policy allows it
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
-          BRANCH: ${{ github.event.workflow_run.head_branch }}
-          SHA: ${{ github.event.workflow_run.head_sha }}
+          BRANCH: ${{ inputs.branch || github.event.workflow_run.head_branch }}
+          SHA: ${{ github.event.workflow_run.head_sha || '' }}
           REQUIRE_REVIEW: ${{ vars.SEO_REQUIRE_REVIEW }}
         run: |
           set -eu
+          if [ -z "$SHA" ]; then SHA=$(gh pr list --head "$BRANCH" --state open --json headRefOid --jq '.[0].headRefOid // empty'); fi
+          if [ -z "$SHA" ]; then echo "No open pull request for $BRANCH; nothing to merge."; exit 0; fi
           pr=$(gh pr list --head "$BRANCH" --state open --json number,headRefOid --jq ".[] | select(.headRefOid==\"$SHA\") | .number" | head -1)
           if [ -z "$pr" ]; then echo "No open pull request at the checked commit; nothing to merge."; exit 0; fi
-          # seo-check must have passed on this exact commit (this workflow also fires when the reviewer finishes).
-          build=$(gh api "repos/$GH_REPO/commits/$SHA/check-runs" --jq "[.check_runs[] | select(.name==\"build\") | .conclusion] | first")
-          if [ "$build" != "success" ]; then echo "seo-check has not passed on this commit ($build); not merging."; exit 0; fi
-          ok=1
-          if [ "${REQUIRE_REVIEW:-}" = "true" ]; then
-            if ! gh pr view "$pr" --json labels --jq '.labels[].name' | grep -qx 'seo-review-passed'; then echo "Waiting for the reviewer agent (label seo-review-passed); not merging."; exit 0; fi
+          # "build" / "review" when run on their own; "<caller job> / build" when called by the seo-autopilot workflow.
+          check() { gh api "repos/$GH_REPO/commits/$SHA/check-runs" --jq "[.check_runs[] | select(.name==\"$1\" or (.name | endswith(\" / $1\"))) | .conclusion] | first"; }
+          if [ "$(check build)" != "success" ]; then echo "seo-check has not passed on this commit; not merging."; exit 0; fi
+          if [ "${REQUIRE_REVIEW:-}" != "false" ]; then
+            if [ "$(check review)" != "success" ]; then echo "The reviewer has not finished on this commit; not merging yet."; exit 0; fi
+            if ! gh pr view "$pr" --json labels --jq '.labels[].name' | grep -qx 'seo-review-passed'; then echo "The reviewer did not pass this commit; leaving it for a person."; exit 0; fi
           fi
-          for f in $(gh pr diff "$pr" --name-only); do
-            case "$f" in
-              {{CONTENT_GLOBS}}) ;;
-              *) echo "Outside the content folders, leaving for a human: $f"; ok=0 ;;
-            esac
-          done
-          if [ "$ok" = 1 ]; then gh pr merge "$pr" --squash --delete-branch; fi
+          files=$(gh pr diff "$pr" --name-only | paste -sd, -)
+          added=$(gh api "repos/$GH_REPO/pulls/$pr/files" --paginate --jq '.[] | select(.status=="added") | .filename' | paste -sd, -)
+          labels=$(gh pr view "$pr" --json labels --jq '[.labels[].name] | join(",")')
+          gh pr diff "$pr" | grep '^+' | grep -v '^+++' > "$RUNNER_TEMP/added.txt" || true
+          since_day=$(date -u +%Y-%m-%d); since_week=$(date -u -d '7 days ago' +%Y-%m-%d)
+          merged() { gh pr list --state merged --search "merged:>=$1" --limit 200 --json headRefName,labels --jq "[.[] | select(.headRefName | startswith(\"seo/\")) $2] | length"; }
+          today=$(merged "$since_day" "")
+          week=$(merged "$since_week" '| select([.labels[].name] | index("seo-topic"))')
+          if ! GITHUB_OUTPUT="$RUNNER_TEMP/decision" npx --yes "$SEO" run autopilot --decide --files "$files" --added-files "$added" --labels "$labels" --added-file "$RUNNER_TEMP/added.txt" --today "$today" --new-this-week "$week"; then
+            gh pr comment "$pr" --body "Autopilot held this change for a person to merge (see the seo-automerge run for the reason)." || true
+            exit 0
+          fi
+          gh pr merge "$pr" --squash --delete-branch --match-head-commit "$SHA"
+          # The record of what the autopilot published, and which changes seo-watch must check and may revert.
+          gh label create seo-autopilot-merged --color 1D76DB --description "Merged by the autopilot after every check" 2>/dev/null || true
+          gh pr edit "$pr" --add-label seo-autopilot-merged || true
+          if grep -qx 'watch=true' "$RUNNER_TEMP/decision" 2>/dev/null; then
+            gh label create seo-watch --color FBCA04 --description "Published by the autopilot; watched and reverted on regression" 2>/dev/null || true
+            gh pr edit "$pr" --add-label seo-watch || true
+          fi
