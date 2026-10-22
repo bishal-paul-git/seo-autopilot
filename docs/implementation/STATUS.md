@@ -1,6 +1,7 @@
 # Implementation status
 
-Last updated: 2026-10-22 (UTC).
+Last updated: 2026-10-22 18:15 UTC.
+- **Now:** branch `claude/hopeful-euler-662mu5` (restarted from `main` at `8406e56`) holds the hosted connector, which is unmerged and not deployed. Erudience was upgraded to 2.16 by https://github.com/bishal-paul-git/erudience-flow-engine/pull/91 (merged, `ce934ba`).
 - Branch `claude/hopeful-euler-662mu5`, **pushed 2026-10-22** and merged with `main` at `57c533c` (v2.15.0). Draft PR: https://github.com/bishal-paul-git/seo-autopilot/pull/12. `npm test` 397/397 on the merged head.
 - **Release 2026-10-22:** PR #12 merged into `main` (`1d94490`), plus Dependabot #6 and #7. `v2.16.0` committed on `main` (`ffb993b`, `npm test` 397/397). This session's proxy refuses tag writes (git and API both 403), so a new `tag-release` workflow (`.github/workflows/tag-release.yml`, `de4c8e8`) was added and run from GitHub (run 39817957254, success): it ran `npm test`, then tagged `v2.16.0` and moved `v2` and `v2-stable`, all at `de4c8e8` (checked with `git ls-remote`), and published the [GitHub Release v2.16.0](https://github.com/bishal-paul-git/seo-autopilot/releases/tag/v2.16.0). Future releases: Actions > tag-release > Run workflow. Installed sites still need `seo-autopilot upgrade --apply` to get the new workflows; none has been upgraded or run on a real site yet.
 - Source repos audited (static review):
@@ -33,6 +34,7 @@ Architecture today: dependency-free Node core (`src/jobs`, `src/analysis`, `src/
 | **New this session (brief 01, item 3):** `facts` job (claims need a verified fact or a source; strict mode for builds) | `src/analysis/facts.mjs`, `src/jobs/facts.mjs` |
 | **New this session (brief 01, item 2):** `redirects` job: check, generate (Apache, nginx, Netlify, Vercel) and smoke | `src/analysis/redirects.mjs`, `src/jobs/redirects.mjs` |
 | **New this session (brief 01, item 1):** heading outline in both crawlers, five heading rules, `quality` job (top query vs title, H1 and description; headings per section), router duplicate fix | `src/audit/extract.mjs`, `engines/go/extract.go`, `src/audit/rules.mjs`, `src/analysis/quality.mjs`, `src/jobs/quality.mjs`, `src/analysis/agent-router.mjs` |
+| **Hosted connector (D20):** remote MCP server for Claude and ChatGPT; OAuth 2.1 with GitHub sign-in; reads the `seo-data` branch through a GitHub App (Contents: read) | `cloud/connector/`, `src/mcp/core.mjs` |
 | Not implemented: hosted app, tenancy, billing, CMS connectors, npm package, Marketplace Action, plugin | n/a |
 
 ## Verified (evidence, not just source)
@@ -48,6 +50,7 @@ Architecture today: dependency-free Node core (`src/jobs`, `src/analysis`, `src/
 | Recipes and `conversions` | 6 tests: the recipe code runs in a fake browser, and the product's consent check recognises it; GA4 calls mocked | unit only. **GA4 Admin API key events never called live** |
 | `facts` job | 8 tests. On Erudience's real content it finds 4 unverified claims (2 prices, 2 percentages) that Erudience's own check passes through a loophole; 0 false positives after the fixes | unit, plus a real-content comparison |
 | `redirects` job | 11 tests, including smoke and check against local HTTP servers. On Erudience's real redirect files: Apache rules identical to Erudience's generator (105 of 105); same 2 problem targets flagged | unit, plus a real-data comparison. **Live smoke against a real host not run** |
+| Hosted connector | `test/connector.test.mjs` (5 tests, GitHub and KV faked); `wrangler deploy --dry-run` bundles it; under `wrangler dev`, curl checks of discovery, registration, consent, the refused cross-site consent and the redirect to GitHub. **Never used with real GitHub, Claude or ChatGPT** | unit, plus the local Workers runtime |
 | `citations` providers | mocked only; **never run live** | mock |
 
 ## Deployed
@@ -62,29 +65,28 @@ Done:
 - The owner moved `v2` and `v2-stable` to v2.14.0 from a local terminal; Erudience picks it up on its next scheduled run (not yet observed).
 - The consent fix on erudience.com has not been checked live; the deploy state is unknown.
 
-No npm package, no hosted service.
+- Erudience: PR #91 merged into `main` (`ce934ba`, 2026-10-22 17:17 UTC). The 2.16 workflows take effect on the next scheduled run, which has **not been observed yet**.
+- Hosted connector: **not deployed**. Deploying it needs the owner's GitHub App, Cloudflare KV namespace and secrets (`cloud/connector/README.md`).
+
+No npm package. No hosted service is running.
 
 ## This session's changes
-- Documentation:
-  - `docs/implementation/PHASE-0-AUDIT.md` (new): baseline, data-flow map, ten findings, reuse matrix, access blockers.
-  - `DECISIONS.md`: proposed D1 to D11.
-  - This file and `CHANGELOG.md` in this folder.
-  - `docs/evals.md` (new).
-- Code:
-  - `src/analysis/evals.mjs`, `scripts/evals.mjs`, `test/evals.test.mjs`, `test/evals/cases.json`.
-  - Root `CHANGELOG.md` gets an `## Unreleased` entry.
-  - No dependency, migration, config or workflow changes.
+- **Erudience (site repository):** the 2.16 upgrade, PR #91, merged. Details in `CHANGELOG.md` in this folder.
+- **Code (this branch):**
+  - `src/mcp/core.mjs` (new): the shared protocol and read tools. `src/mcp/server.mjs` now runs on it, with a file store; its API is unchanged.
+  - `cloud/connector/` (new): Worker, GitHub state-branch store, crypto helpers, `wrangler.toml`, README.
+  - `test/connector.test.mjs` (new).
+  - No dependency, migration, config-schema or workflow changes. `cloud/` is outside the npm `files` list.
+- **Docs:** `docs/mcp.md`, DECISIONS D20, the root `CHANGELOG.md` (Unreleased), and the CHANGELOG in this folder.
 
 ## Checks run this session
 | Command | Result |
 |---|---|
-| clean clone of `8d7b62c`: `npm test` | pass, 197 |
-| `go test ./...` (engines/go) | pass |
-| `python3 -m unittest discover -s tests` (engines/python) | pass, 23 |
-| `npm test` on this branch | pass, 206 |
-| `node scripts/evals.mjs <dir>` with one good and one bad sample | graded both correctly, exit 1 as designed |
-| `node scripts/build-site.mjs` | ran clean. It regenerates `site/agents/index.html` with a paragraph already in `agents/README.md` since v2.13.0 (pre-existing drift, not committed here; regenerate at the next release) |
-| Live provider calls, Erudience runs | **not run** |
+| `npm test` | pass, 402 of 402 (397 before, plus 5 connector tests) |
+| `npx wrangler@4.45.0 deploy --dry-run` (cloud/connector) | bundled, 30.25 KiB, no dependencies |
+| `wrangler dev`, then curl | discovery OK; `/mcp` returned 401 with `WWW-Authenticate`; `/register` returned 201; the consent page set its cookie; POST without the cookie returned 400, with it 302 to GitHub; a made-up code got `invalid_grant` |
+| Erudience: workflow YAML parses; `seo-autopilot doctor` | OK, 92 pages. The sitemap was unreachable from this sandbox (environment limit) |
+| Real GitHub sign-in, Claude or ChatGPT as clients, deployment, live jobs on Erudience | **not run** |
 
 ## Known issues, risks, missing access
 - **Security issues in the source apps (outside this repository):**
@@ -99,6 +101,10 @@ No npm package, no hosted service.
 - Access was resolved during this session: all four source repositories were readable after the owner granted access.
 - **Provider keys needed for brief 03:** a Brave Search API key, a SerpAPI key or a DataForSEO login. The owner sets them locally or as repository secrets; never paste them into chat or commit them.
 - Audit findings F1 to F10 (`PHASE-0-AUDIT.md` section 4). Highest: auto-merge publishes an unseen draft (F1); the approval actor is not checked (F2); release writes to the default branch (F3); live backlink submission exists, opt-in (F4); the Supabase template is single-tenant with a replayable token (F5); large-site Search Console truncation (F6).
+- **Hosted connector (D20):**
+  - It needs the owner's GitHub App and a deployment go-ahead.
+  - Known limits: KV makes single use near-exact, not exact; `/register` has no rate limit yet; there is no privacy note yet.
+  - Before customers use it, the operator of a public instance holds encrypted GitHub tokens, which needs a privacy policy.
 - Owner decisions pending:
   - Approve or amend D1 to D15, especially:
     - D13: hosted UI on TanStack Start, with engine jobs in a separate Node worker.
@@ -197,25 +203,18 @@ No paid API calls were made this session. Hosted cost model is proposed in D9; n
 - **Next, step 4:** add sources and "last reviewed" dates to every playbook, from `docs/research/REFERENCES.md`, with a test. It is blocked on verifying the links: page fetches are blocked in this session's network policy.
 
 ## Next milestone
-**Push this branch and run the autopilot on one real site** (blocked: this session's GitHub writes return 403; the owner pushes from their PC per RESTORE.md). Acceptance: on a test repository with `SEO_AUTOPILOT=true` and `SEO_REVIEW=true`, one proposal goes from issue to merged PR with every check green, one deliberate bad change is reverted by `seo-watch`, and `seo-monthly` opens its issue. Then: **owner review of Phase 0.** Acceptance criterion: the owner approves or amends D1 to D15 and answers D11, D14 and D15. Phase 1 (hosted foundation) starts only after that.
+**Deploy the hosted connector and use it from Claude on Erudience's reports.** Acceptance:
+- Claude (claude.ai) adds `https://<worker>/mcp`, signs in with GitHub, and `site_overview` returns Erudience's real reports;
+- a repository without the app installed stays invisible;
+- reconnecting after an hour works through refresh.
 
-Exact next actions, independent of the review:
-1. Brief 01:
-   - Items 1 to 7 are done (brief 01 complete, not yet released):
-     - heading and meta audits;
-     - redirect tooling;
-     - facts guard;
-     - consent recipe;
-     - conversion recipe and the `conversions` job;
-     - links job;
-     - render job.
-   - Remaining:
-     - the release;
-     - the Erudience PR.
-   - Then the recipe items (4 and 5), item 6 (links job) and item 7 (static-content rule).
-   - Release, then open the Erudience PR that swaps its scripts for the product jobs.
-2. Brief 03, once keys exist: live `citations` with one provider and sanitised fixtures.
-3. Brief 04, next part: record real agent outputs for the four cases and add cases per agent.
-4. Small fixes: F2, F6, F7.
+Then the same in ChatGPT.
 
-Resume prompt (autopilot): "Read CLAUDE.md and docs/implementation/STATUS.md. Branch claude/hopeful-euler-662mu5 holds D16 and D17 (not yet pushed or run on GitHub). Push it, open a draft PR, then test seo-autopilot, seo-watch and seo-monthly on a test repository and fix what breaks." Older resume prompt: "Read CLAUDE.md, docs/implementation/STATUS.md, PHASE-0-AUDIT.md and DECISIONS.md. If the owner has approved Phase 0, start Phase 1 per SEO-PRODUCT-BUILD-BRIEF.md and D1-D15; otherwise continue brief 01 (Erudience tooling port) on a feature branch."
+Exact next actions:
+1. **Owner:** create the GitHub App (Contents: read; callback `https://<worker>/callback`) and note its client ID, secret and slug. Then confirm the Cloudflare account and worker name.
+2. Create the KV namespace, set the three secrets, and deploy with `npx wrangler deploy` in `cloud/connector`. This session has a Cloudflare deploy token, but deploying needs the owner's go-ahead.
+3. Install the app on erudience-flow-engine, add the connector in Claude, and run the acceptance checks. Record the evidence here.
+4. Watch Erudience's first scheduled 2.16 runs (daily, weekly) and fix what breaks.
+5. Before offering the connector to others: add a rate-limiting rule for `/register`, and write a privacy note.
+
+Resume prompt: "Read CLAUDE.md and docs/implementation/STATUS.md. The hosted connector (cloud/connector, D20) is on branch claude/hopeful-euler-662mu5 with a draft PR. Check Erudience's latest seo-daily run, then deploy the connector once the owner has created the GitHub App, and verify it from Claude on Erudience's reports."

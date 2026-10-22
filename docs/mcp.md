@@ -35,3 +35,12 @@ claude mcp add seo-autopilot -- npx -y github:bishal-paul-git/seo-autopilot#v2 m
 **Other clients:** run `seo-autopilot mcp --project <folder>` as a stdio server.
 
 Keys stay in your environment, exactly as for the CLI: the server passes them to the jobs it runs and never shows them.
+
+## Hosted connector: Claude and ChatGPT on the web
+Claude (claude.ai and the desktop app) and ChatGPT can add a **remote** MCP server as a custom connector. They cannot start a local command, so `seo-autopilot mcp` cannot be used there. `cloud/connector` is the remote version:
+- it runs as a Cloudflare Worker, and people sign in with GitHub;
+- it reads the reports that the site's scheduled workflows already save on the repository's `seo-data` branch;
+- it has the same tools as above, apart from `run_job`: it is read-only and runs nothing;
+- it sees only the repositories where the user installed its GitHub App, which needs *Contents: read* only.
+
+Setup, deployment and limits: [cloud/connector/README.md](../cloud/connector/README.md). Decision D20 explains the design.

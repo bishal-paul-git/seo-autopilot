@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- **Hosted connector for Claude and ChatGPT (decision D20).** `cloud/connector` is a remote MCP server (a Cloudflare Worker, no dependencies) that you add as a custom connector in Claude or ChatGPT.
+  - People sign in with GitHub. It reads the reports your scheduled workflows already save on the `seo-data` branch, through a GitHub App with *Contents: read* only.
+  - It is read-only: the same tools as `seo-autopilot mcp`, apart from `run_job`.
+  - It is its own OAuth 2.1 server: dynamic client registration, PKCE S256, a consent page, rotating refresh tokens, and GitHub tokens stored encrypted.
+  - Setup: `cloud/connector/README.md`. It is not deployed anywhere yet, and has not been used with a real Claude or ChatGPT client.
+- The MCP tools now live in `src/mcp/core.mjs`, shared by the local server and the connector.
+- Fix: `seo-autopilot mcp` now prints its "ready" line on stderr. That line was unreachable before.
+
 ## 2.16.0
 
 Departments and shared skills, graduated autopilot (D17), research suite (D18), site intelligence and the MCP server (D19). Provider integrations are tested with recorded responses only; check each report against the provider the first time you add its key.

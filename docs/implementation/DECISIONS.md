@@ -83,6 +83,25 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-10-22 D20 Hosted connector for Claude and ChatGPT (owner: "start the hosted connector")
+- **Decision:** the first hosted piece is a read-only remote MCP server (`cloud/connector`, a Cloudflare Worker). Claude and ChatGPT can then use a site's reports with no local install. It reads what the site's own workflows already save, which is the GitHub-App distribution mode in D1(b), and adds no database, tenancy or job runner. D1 to D15 stay proposals; this decision is limited to the connector.
+- **Choices and tradeoffs:**
+  - **Data source: the site repository's state branch** (`seo-data`) and its config, read with the user's own GitHub token. The cost is that reports are only as fresh as the last scheduled run. In exchange there is no copy of anyone's data on our side, and nothing to keep in step.
+  - **GitHub App, not an OAuth App.** The user picks the repositories, and the only permission is *Contents: read*. An OAuth App's `repo` scope would grant write access to every repository.
+  - **The connector is its own OAuth 2.1 server, with GitHub as the sign-in.** MCP clients need dynamic registration, PKCE and the metadata documents. GitHub supports none of them for this use, so the connector cannot simply be GitHub's OAuth.
+    - Our own consent page names the requesting client before GitHub is asked, so a registered client cannot get a token silently. A SameSite cookie stops another site approving on the user's behalf.
+    - Redirect URIs must match exactly: https, or loopback http.
+  - **Storage in Workers KV:**
+    - only hashes of our tokens and codes;
+    - the GitHub token encrypted with AES-GCM;
+    - an expiry inside every record as well as the KV TTL.
+
+    KV is eventually consistent, so single use is near-exact, not exact. A Durable Object would fix that if it ever matters.
+  - **No `run_job`.** Jobs need git, Python and Go (see D13), and a hosted runner is a separate step.
+  - **Shared code.** The tools moved to `src/mcp/core.mjs`, which has no Node imports, so the local server and the Worker run the same code.
+- **Who runs it:** anyone can deploy their own copy with their own GitHub App and Cloudflare account; nothing needs the maintainer's keys. A public instance for customers would be run by the product owner, with their own GitHub App.
+- **Status:** 5 tests with GitHub and KV faked; bundled with `wrangler deploy --dry-run` (30 KiB); run in the local Workers runtime (`wrangler dev`), where discovery, registration, consent, the refused cross-site consent and the redirect to GitHub all behaved as designed. **Not deployed. Never used with real GitHub or a real Claude or ChatGPT client.**
+
 ## 2026-10-20 D19 Site intelligence and the MCP server (owner: "more real capabilities")
 - **Decision:** add capabilities that need no paid provider. These are:
   - internal PageRank and link-graph analysis;
