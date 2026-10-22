@@ -2,6 +2,12 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-22 (release v2.16.0)
+- **Code/CI:** added `.github/workflows/tag-release.yml` (`de4c8e8`): a manual workflow that checks the version against `package.json`, runs `npm test`, tags `main`, moves `v2` (and `v2-stable` if ticked) and creates the GitHub Release from `CHANGELOG.md`. Added because tag pushes from this session are refused (403).
+- **Integration:** merged PR #12 (`1d94490`) and Dependabot #6 and #7; committed v2.16.0 (`ffb993b`).
+- **Deployment (release):** tag-release run 39817957254 succeeded. `v2.16.0`, `v2` and `v2-stable` point at `de4c8e8` (`git ls-remote`). GitHub Release v2.16.0 published by github-actions. No site upgraded or run yet.
+- **Checks:** `npm test` 397/397 locally and inside the workflow run.
+
 ## 2026-10-22 (pushed; draft PR #12)
 - **Integration only:**
   - GitHub write access was restored.

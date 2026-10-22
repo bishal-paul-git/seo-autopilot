@@ -2,7 +2,7 @@
 
 Last updated: 2026-10-22 (UTC).
 - Branch `claude/hopeful-euler-662mu5`, **pushed 2026-10-22** and merged with `main` at `57c533c` (v2.15.0). Draft PR: https://github.com/bishal-paul-git/seo-autopilot/pull/12. `npm test` 397/397 on the merged head.
-- **Release 2026-10-22:** PR #12 merged into `main` (`1d94490`), plus Dependabot #6 and #7. `v2.16.0` committed on `main` (`ffb993b`, `npm test` 397/397). **Tags not pushed:** this session's proxy refuses tag writes (git and API both return 403). The owner must push `v2.16.0` and move `v2` and `v2-stable` to `ffb993b`; until then, installs on `#v2` stay on v2.15.0.
+- **Release 2026-10-22:** PR #12 merged into `main` (`1d94490`), plus Dependabot #6 and #7. `v2.16.0` committed on `main` (`ffb993b`, `npm test` 397/397). This session's proxy refuses tag writes (git and API both 403), so a new `tag-release` workflow (`.github/workflows/tag-release.yml`, `de4c8e8`) was added and run from GitHub (run 39817957254, success): it ran `npm test`, then tagged `v2.16.0` and moved `v2` and `v2-stable`, all at `de4c8e8` (checked with `git ls-remote`), and published the [GitHub Release v2.16.0](https://github.com/bishal-paul-git/seo-autopilot/releases/tag/v2.16.0). Future releases: Actions > tag-release > Run workflow. Installed sites still need `seo-autopilot upgrade --apply` to get the new workflows; none has been upgraded or run on a real site yet.
 - Source repos audited (static review):
   - marketingmouse `e115eac`
   - feed-to-site-magic `f72276c`
