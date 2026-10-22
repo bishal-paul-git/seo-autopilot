@@ -1,7 +1,9 @@
 # Implementation status
 
-Last updated: 2026-10-22 18:15 UTC.
-- **Now:** branch `claude/hopeful-euler-662mu5` (restarted from `main` at `8406e56`) holds the hosted connector, which is unmerged and not deployed. Erudience was upgraded to 2.16 by https://github.com/bishal-paul-git/erudience-flow-engine/pull/91 (merged, `ce934ba`).
+Last updated: 2026-10-22 22:10 UTC.
+- **Now:** `main` at `3b8881a`. PR https://github.com/bishal-paul-git/seo-autopilot/pull/13 merged: the hosted connector (D20), plus a fix for 4 agent tests that `54595d8` (local SEO agents, pushed straight to `main`) broke. `npm test` 407/407; CI green on both Node versions. The connector is **not deployed**.
+- Erudience was upgraded to 2.16 by https://github.com/bishal-paul-git/erudience-flow-engine/pull/91 (merged, `ce934ba`). No scheduled run with 2.16 has been observed yet.
+- Cloudflare: the owner's account is `8566…5c39`. KV namespace `OAUTH_KV` (`27fd7750abf34014a04036e6f36b827c`) exists there and is bound in `cloud/connector/wrangler.toml`. An unused KV namespace, `seo-autopilot-connector-OAUTH_KV`, sits in account `0342…476d` and can be deleted. A Pages project, `seo-autopilot-gls`, publishes a static copy of the repository and is not the connector. This session could not deploy: the injected Cloudflare token never reached it, and Claude in Chrome is not available in cloud sessions.
 - Branch `claude/hopeful-euler-662mu5`, **pushed 2026-10-22** and merged with `main` at `57c533c` (v2.15.0). Draft PR: https://github.com/bishal-paul-git/seo-autopilot/pull/12. `npm test` 397/397 on the merged head.
 - **Release 2026-10-22:** PR #12 merged into `main` (`1d94490`), plus Dependabot #6 and #7. `v2.16.0` committed on `main` (`ffb993b`, `npm test` 397/397). This session's proxy refuses tag writes (git and API both 403), so a new `tag-release` workflow (`.github/workflows/tag-release.yml`, `de4c8e8`) was added and run from GitHub (run 39817957254, success): it ran `npm test`, then tagged `v2.16.0` and moved `v2` and `v2-stable`, all at `de4c8e8` (checked with `git ls-remote`), and published the [GitHub Release v2.16.0](https://github.com/bishal-paul-git/seo-autopilot/releases/tag/v2.16.0). Future releases: Actions > tag-release > Run workflow. Installed sites still need `seo-autopilot upgrade --apply` to get the new workflows; none has been upgraded or run on a real site yet.
 - Source repos audited (static review):
@@ -203,18 +205,21 @@ No paid API calls were made this session. Hosted cost model is proposed in D9; n
 - **Next, step 4:** add sources and "last reviewed" dates to every playbook, from `docs/research/REFERENCES.md`, with a test. It is blocked on verifying the links: page fetches are blocked in this session's network policy.
 
 ## Next milestone
-**Deploy the hosted connector and use it from Claude on Erudience's reports.** Acceptance:
-- Claude (claude.ai) adds `https://<worker>/mcp`, signs in with GitHub, and `site_overview` returns Erudience's real reports;
+**Deploy the hosted connector in Cloudflare account 8566 and use it from Claude on Erudience's reports.** Acceptance:
+- Claude adds `https://<worker>/mcp`, signs in with GitHub, and `site_overview` returns Erudience's real reports;
 - a repository without the app installed stays invisible;
-- reconnecting after an hour works through refresh.
+- reconnecting after an hour works.
 
-Then the same in ChatGPT.
+Then repeat in ChatGPT.
 
-Exact next actions:
-1. **Owner:** create the GitHub App (Contents: read; callback `https://<worker>/callback`) and note its client ID, secret and slug. Then confirm the Cloudflare account and worker name.
-2. Create the KV namespace, set the three secrets, and deploy with `npx wrangler deploy` in `cloud/connector`. This session has a Cloudflare deploy token, but deploying needs the owner's go-ahead.
-3. Install the app on erudience-flow-engine, add the connector in Claude, and run the acceptance checks. Record the evidence here.
-4. Watch Erudience's first scheduled 2.16 runs (daily, weekly) and fix what breaks.
-5. Before offering the connector to others: add a rate-limiting rule for `/register`, and write a privacy note.
+Next actions, in order:
+1. **Owner, Cloudflare (account 8566):** Workers & Pages → Create → **Workers** tab → Import a repository → `seo-autopilot`, branch `main`, root directory `cloud/connector` → Deploy. Note the `….workers.dev` address.
+2. **Owner, GitHub:** create the GitHub App with callback `https://<worker>/callback`, Contents read-only, webhook off, installable only on this account. Then generate a client secret. Claude can prepare a pre-filled creation link once the address is known.
+3. **Owner, Cloudflare:** Worker → Settings → Variables and Secrets. Add `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, and `TOKEN_KEY` (32 random bytes, base64). Set `GITHUB_APP_SLUG` in `wrangler.toml`.
+4. Install the app on `erudience-flow-engine`. In Claude: Settings → Connectors → Add custom connector → `https://<worker>/mcp`. Run the acceptance checks and record the evidence here.
+5. **Erudience:** check that the first 2.16 `seo-daily` and `seo-weekly` runs succeed. Then add the free keys as repository secrets: `CRUX_API_KEY`, `GOOGLE_KG_API_KEY`, `OPENPAGERANK_API_KEY`, `BING_WEBMASTER_API_KEY`.
+6. **Owner decision:** the local SEO playbooks from `54595d8` are written around UK housing-disrepair legal work. Keep them as a general vertical, or move the client-specific parts to that client's repository (rule: no site-specific content here).
+7. Before others use the connector: a rate-limiting rule for `/register`, and a privacy note. Next build, after real use: a hosted job runner, so `run_job` works from Claude.
+8. Release v2.17.0 (connector, local agents) with Actions → tag-release, once the connector has been tested live.
 
-Resume prompt: "Read CLAUDE.md and docs/implementation/STATUS.md. The hosted connector (cloud/connector, D20) is on branch claude/hopeful-euler-662mu5 with a draft PR. Check Erudience's latest seo-daily run, then deploy the connector once the owner has created the GitHub App, and verify it from Claude on Erudience's reports."
+Resume prompt: "Read CLAUDE.md and docs/implementation/STATUS.md in seo-autopilot. Continue the Next milestone: deploy cloud/connector in Cloudflare account 8566, then verify it from Claude on Erudience's reports, and record the evidence."

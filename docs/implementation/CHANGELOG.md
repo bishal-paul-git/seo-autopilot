@@ -2,6 +2,13 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-22 (PR #13 merged)
+- **Integration:**
+  - Merged https://github.com/bishal-paul-git/seo-autopilot/pull/13 (`3b8881a`): the hosted connector, and the KV binding for Cloudflare account 8566.
+  - The PR also fixes `main`. `54595d8` (local SEO agents, pushed straight to `main`) had broken 4 agent tests. The fix sets the count to 38, lists the new agents in the plugin, adds the site-profile line to 4 agents, and adds 2 playbooks to the index. It also removes two unsourced percentages.
+- **Checks:** `npm test` 407/407 locally; CI green on Node 20 and 22.
+- **Deployment:** none. The connector is still to be deployed by the owner; steps are in STATUS.
+
 ## 2026-10-22 (Erudience upgrade; hosted connector started)
 - **Erudience (site repository, deployment action):**
   - Opened, then squash-merged at the owner's request, https://github.com/bishal-paul-git/erudience-flow-engine/pull/91 (`ce934ba`): the seo-autopilot 2.16 upgrade.
