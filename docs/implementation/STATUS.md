@@ -1,7 +1,7 @@
 # Implementation status
 
-Last updated: 2026-10-20 (UTC).
-- Branch `claude/hopeful-euler-662mu5`, based on `main` at `f205108` (v2.14.0 plus docs). Its work is **committed locally but not pushed**: the session's GitHub access returns 403 for every write. There is no PR yet.
+Last updated: 2026-10-22 (UTC).
+- Branch `claude/hopeful-euler-662mu5`, **pushed 2026-10-22** and merged with `main` at `57c533c` (v2.15.0). Draft PR: https://github.com/bishal-paul-git/seo-autopilot/pull/12. `npm test` 397/397 on the merged head.
 - Source repos audited (static review):
   - marketingmouse `e115eac`
   - feed-to-site-magic `f72276c`

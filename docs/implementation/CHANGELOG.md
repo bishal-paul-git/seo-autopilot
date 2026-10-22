@@ -2,6 +2,15 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-22 (pushed; draft PR #12)
+- **Integration only:**
+  - GitHub write access was restored.
+  - Merged the old remote branch: its two docs commits were already in `main` via #9, so I kept this branch's version of STATUS and CHANGELOG.
+  - Merged `origin/main` (v2.15.0, #11); the only conflicts were in the two changelogs, and I kept both sides.
+  - Pushed, and opened draft PR https://github.com/bishal-paul-git/seo-autopilot/pull/12.
+- **Checks:** `npm test` 397/397; Python tests OK; workflow YAML parses.
+- **Deployment:** none (nothing released).
+
 ## 2026-10-22 (refinements)
 - **Code:** `doctor` now reports the optional research keys and the autopilot, live-rank and AI-visibility switches.
 - **Docs:**
