@@ -29,6 +29,28 @@ If you serve customers remotely or across a country, a local profile may not app
 ## Measuring
 Track profile views, calls and direction requests in the profile itself, local queries in Search Console, and calls or form submissions in analytics. Judge changes over weeks, not days.
 
+## AI search visibility
+Local businesses now appear in AI-generated answers (Google AI Overviews, ChatGPT, Perplexity, Gemini). The fundamentals that help:
+- Allow AI crawlers in `robots.txt` (GPTBot, OAI-SearchBot, ClaudeBot, PerplexityBot).
+- Structure content with direct answers first, question headings, comparison tables and FAQ sections.
+- Build entity consistency across site, GBP, directories and professional registers.
+- Keep content fresh — AI systems favour recently published or updated content.
+- See `local-seo-ai-visibility.md` for the full playbook.
+
+## Review strategy
+Reviews influence both local pack rankings and AI-generated answers:
+- Ask at the natural moment (case resolution, project completion), not under pressure.
+- A steady flow (2-4 per month for a small firm) beats bulk bursts.
+- Respond to every review within 24-48 hours, positive and negative.
+- Diversify across platforms: Google (local pack), Trustpilot (UK consumers), industry directories.
+- AI Overviews synthesise sentiment from reviews — the words customers use in reviews matter, not just star ratings.
+- Never buy, trade for, gate or incentivise reviews.
+
+## Industry-specific playbooks
+For sector-specific guidance that builds on these foundations:
+- Legal services: `local-legal-services-seo.md`
+- Ecommerce: `ecommerce-seo.md`
+
 ## Things to avoid
 - Virtual offices, mail drops or fake addresses presented as premises.
 - Keyword-stuffed business names, fake reviews, review gating.
