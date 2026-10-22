@@ -2,6 +2,7 @@
 
 Last updated: 2026-10-22 (UTC).
 - Branch `claude/hopeful-euler-662mu5`, **pushed 2026-10-22** and merged with `main` at `57c533c` (v2.15.0). Draft PR: https://github.com/bishal-paul-git/seo-autopilot/pull/12. `npm test` 397/397 on the merged head.
+- **Release 2026-10-22:** PR #12 merged into `main` (`1d94490`), plus Dependabot #6 and #7. `v2.16.0` committed on `main` (`ffb993b`, `npm test` 397/397). **Tags not pushed:** this session's proxy refuses tag writes (git and API both return 403). The owner must push `v2.16.0` and move `v2` and `v2-stable` to `ffb993b`; until then, installs on `#v2` stay on v2.15.0.
 - Source repos audited (static review):
   - marketingmouse `e115eac`
   - feed-to-site-magic `f72276c`
