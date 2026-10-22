@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 2.16.0
+
+Departments and shared skills, graduated autopilot (D17), research suite (D18), site intelligence and the MCP server (D19). Provider integrations are tested with recorded responses only; check each report against the provider the first time you add its key.
 
 - **Site intelligence and the MCP server (decision D19).**
   - `seo-autopilot mcp`: an MCP server, so Claude Desktop, Claude Code and other assistants can read reports, search your queries, inspect a page and run analysis jobs. It is read-only by default, and paid jobs need confirmation. The Claude Code plugin registers it. See `docs/mcp.md`.
