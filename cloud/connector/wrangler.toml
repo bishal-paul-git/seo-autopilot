@@ -15,4 +15,4 @@ PUBLIC_URL = ""
 # The maintainer's instance. For your own copy, create one with `npx wrangler kv namespace create OAUTH_KV` and put its id here.
 [[kv_namespaces]]
 binding = "OAUTH_KV"
-id = "307615479f6442498e1804f2635c4f59"
+id = "27fd7750abf34014a04036e6f36b827c"
