@@ -1,6 +1,6 @@
 # The departments
 
-seo-autopilot works as a team of thirty-three specialist agents grouped into eight departments, like a small agency: Command plans, Research finds, Technical, Content, Authority, AI search and Verticals do the work, and Quality checks it. Each agent has one job, a fixed set of tools, the playbooks it must read first, a quality bar and a defined hand-off. One rule holds for all of them: **nothing goes live unchecked**. Routine changes publish on autopilot once every automated check passes (and are watched and reverted if they make things worse); sensitive topics, site-wide indexing changes, migrations, deletions and outreach always wait for a person (decision D17, `seo-autopilot run autopilot`).
+seo-autopilot works as a team of thirty-eight specialist agents grouped into eight departments, like a small agency: Command plans, Research finds, Technical, Content, Authority, AI search and Verticals do the work, and Quality checks it. Each agent has one job, a fixed set of tools, the playbooks it must read first, a quality bar and a defined hand-off. One rule holds for all of them: **nothing goes live unchecked**. Routine changes publish on autopilot once every automated check passes (and are watched and reverted if they make things worse); sensitive topics, site-wide indexing changes, migrations, deletions and outreach always wait for a person (decision D17, `seo-autopilot run autopilot`).
 
 Each department folder has a charter (`README.md`) and its agents (`agents/`). Installed projects get the agents in one flat folder (`seo-autopilot/agents/`) so workflows can find any agent by name; each file's front matter still names its department. The design and roadmap are in [docs/architecture/DEPARTMENTS.md](../docs/architecture/DEPARTMENTS.md).
 
@@ -74,7 +74,12 @@ Specialist rules for local businesses and online shops.
 | Agent | Job | Runs | Can change files? |
 |---|---|---|---|
 | [seo-ecommerce](verticals/agents/seo-ecommerce.md) | Category, product and faceted-navigation pages, product markup, stock handling | on request | templates, on a branch (edit mode) |
-| [seo-local-agent](verticals/agents/seo-local-agent.md) | Business profile, listings consistency, local markup and location pages | on request | no |
+| [seo-local-agent](verticals/agents/seo-local-agent.md) | Business profile, listings consistency, local markup and location pages | on request | yes, on a branch |
+| [seo-local-gbp-optimizer](verticals/agents/seo-local-gbp-optimizer.md) | Google Business Profile completeness, categories, posts, Q&A, photo audit | on request | no (produces action plan) |
+| [seo-local-citation-auditor](verticals/agents/seo-local-citation-auditor.md) | NAP consistency across directories, citation gaps, data aggregators | on request | no (produces fix list) |
+| [seo-local-content-writer](verticals/agents/seo-local-content-writer.md) | Location pages, local blog content, internal linking, AI-extractable content | on request | yes, on a branch |
+| [seo-local-ai-visibility](verticals/agents/seo-local-ai-visibility.md) | AI Overview, ChatGPT, Perplexity optimisation, entity building, GEO | on request | yes, on a branch |
+| [seo-local-review-manager](verticals/agents/seo-local-review-manager.md) | Review acquisition strategy, response templates, competitor benchmarking | on request | no (produces templates) |
 
 ## [Quality (validators)](quality/README.md)
 Nothing reaches a person for approval until it passes here: facts, policy and editorial checks.
