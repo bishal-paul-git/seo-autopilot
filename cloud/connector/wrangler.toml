@@ -12,7 +12,7 @@ GITHUB_APP_SLUG = ""
 # Set when the Worker is served on a custom domain behind a proxy that changes the host (optional).
 PUBLIC_URL = ""
 
-# Create it once with `npx wrangler kv namespace create OAUTH_KV`, then paste the id it prints.
+# The maintainer's instance. For your own copy, create one with `npx wrangler kv namespace create OAUTH_KV` and put its id here.
 [[kv_namespaces]]
 binding = "OAUTH_KV"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "307615479f6442498e1804f2635c4f59"
