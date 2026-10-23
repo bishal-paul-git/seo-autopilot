@@ -28,6 +28,9 @@ Owner request (2026-10-23): "I need free APIs, or to build them. Search Console 
    - YouTube Data API: video results for video-intent queries;
    - Google Cloud Natural Language: entity extraction for content gaps (free tier, then paid; opt-in).
 
+## Status
+- Step 1 is done (Unreleased): the `gsc` job. Next: Keyword Planner (the owner applies for a Google Ads developer token meanwhile).
+
 ## Not doing
 - Scraping Google Trends or Google results without an API: against Google's terms. The opt-in autocomplete source stays capped as it is (D18).
 - Third-party "free SEO APIs" with unclear data origin or terms.

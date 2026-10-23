@@ -38,6 +38,7 @@ export const SAFE_JOBS = {
   changes: "What changed on watched pages since last time",
   entity: "How Google's Knowledge Graph and Wikidata see the business",
   local: "Local business: name, address and phone consistency, location pages (local pack)",
+  gsc: "Search Console beyond web search: sitemaps, Discover, News, image and video clicks, appearance, countries, devices",
   shop: "Online shop: Product markup and prices, stock, categories, filter-parameter crawl traps (e-commerce pack)",
   speed: "PageSpeed Insights for top pages",
   consent: "Consent and measurement check",

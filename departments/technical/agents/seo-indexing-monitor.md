@@ -16,7 +16,7 @@ Know the real state of the site in the index, explain it, and stop effort being 
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
 ## Inputs
-The sitemap, `audit.md`, the request-indexing list and state files in the project's state folder, Search Console's indexing report and URL Inspection results where available, internal link counts, and rendered HTML for sample pages.
+The sitemap, `audit.md`, the request-indexing list and state files in the project's state folder, Search Console's indexing report and URL Inspection results where available, `gsc.json` from the `gsc` job (sitemap errors, warnings and last read), internal link counts, and rendered HTML for sample pages.
 
 ## Method
 1. **Count honestly.** Pages in the sitemap, indexed, not indexed, excluded by design. Record the date; the indexing report lags.

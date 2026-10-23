@@ -47,6 +47,7 @@ export async function run({ site, flags = {} }) {
     entity: readJson(`${s}/entity.json`, null),
     local: readJson(`${s}/local.json`, null),
     shop: readJson(`${s}/shop.json`, null),
+    gsc: readJson(`${s}/gsc.json`, null),
     redirects: { check: readJson(`${s}/redirects-check.json`, null), smoke: readJson(`${s}/redirects-smoke.json`, null) },
     pipeline: pipe,
     site,

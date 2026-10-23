@@ -2,6 +2,18 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-23 (brief 14 step 1: gsc job)
+- **Research (docs):**
+  - the GitHub topic `seo-free` (5 small tools; nothing to reuse);
+  - Wizible (a competitor built on Search Console; third-party listings only, the site did not resolve from the sandbox);
+  - Google Ads Keyword Planner access rules.
+
+  Logged as `docs/roadmap/14-free-data-sources.md`.
+- **Code (branch `claude/hopeful-euler-662mu5`):**
+  - new: `src/analysis/gsc.mjs`, `src/jobs/gsc.mjs` (registered; MCP allowlist), `test/gsc.test.mjs` (6 tests);
+  - changed: router (sitemap findings → seo-indexing-monitor; Discover and News drops → seo-strategist), `team` reads `gsc.json`, the weekly template gets a `gsc` step, the seo-indexing-monitor's Inputs, `docs/jobs.md`.
+- **Checks:** `npm test` 438/438. **Not run against a live Search Console property.**
+
 ## 2026-10-23 (v2.18.0 released)
 - **Deployment (release):**
   - Merged https://github.com/bishal-paul-git/seo-autopilot/pull/17 (`b601534`).
