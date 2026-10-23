@@ -2,6 +2,16 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-23 (PR #16 merged; packs step 3: shop job; v2.18.0 prepared)
+- **Integration:** PR https://github.com/bishal-paul-git/seo-autopilot/pull/16 merged (`a47c055`).
+- **Code (branch `claude/hopeful-euler-662mu5`):**
+  - new: `src/analysis/shop.mjs`, `src/jobs/shop.mjs` (registered; MCP allowlist), `test/shop.test.mjs` (6 tests);
+  - changed: router (`shop.json` → seo-ecommerce, low-only findings not routed), `team` reads `shop.json`, the weekly template gets a `shop` step;
+  - the seo-ecommerce agent's Inputs name `shop.json`; `docs/jobs.md` updated;
+  - version 2.18.0 (CHANGELOG, `package.json`, `plugin.json`).
+- **Known limit, documented in code:** the price check accepts any price shown on the page, so a stale markup price equal to a shown "was" price is not caught.
+- **Checks:** `npm test` 431/431. The local and shop jobs have run only against fake sites.
+
 ## 2026-10-23 (PR #15 merged; vertical packs step 2: local job)
 - **Integration:** PR https://github.com/bishal-paul-git/seo-autopilot/pull/15 merged (`48bfeb7`).
 - **Code (branch `claude/hopeful-euler-662mu5`):**

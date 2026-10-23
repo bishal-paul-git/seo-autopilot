@@ -1,6 +1,6 @@
 {
   "name": "seo-autopilot",
-  "version": "2.17.0",
+  "version": "2.18.0",
   "description": "An open-source SEO team for any website: technical audit, Search Console insights, keyword research, rank tracking, competitor gap, content optimiser, AI-search visibility, 38 agents and a graduated autopilot. Runs in your own GitHub with your own keys.",
   "type": "module",
   "bin": {

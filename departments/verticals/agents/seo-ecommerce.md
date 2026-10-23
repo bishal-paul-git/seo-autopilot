@@ -16,7 +16,7 @@ Make products and categories findable and trustworthy, without letting filters a
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
 ## Inputs
-The site profile (platform and mode), the sitemap, a sample of category, product, variant and filtered URLs rendered, `audit.md`, `insights.json`, and the product or merchant feed if there is one.
+`shop.json` from the `shop` job (Product markup gaps, price mismatches, stock, thin categories, parameter URLs), when it exists. The site profile (platform and mode), the sitemap, a sample of category, product, variant and filtered URLs rendered, `audit.md`, `insights.json`, and the product or merchant feed if there is one.
 
 ## Method
 1. **Map the page types** and which queries each should serve. Mark which filtered or variant URLs deserve to be indexable (real demand) and which do not.

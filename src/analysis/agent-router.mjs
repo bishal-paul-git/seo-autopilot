@@ -28,7 +28,7 @@ function countBy(issues) {
   return m;
 }
 
-export function routeAgents({ profile = null, audit = null, priorities = null, inspect = {}, speed = null, geo = null, pipeline = null, consent = null, ymyl = null, pace = null, citations = null, quality = null, redirects = null, facts = null, links = null, render = null, inbound = null, logs = null, rank = null, keywords = null, gap = null, aiVisibility = null, authority = null, forecast = null, linkgraph = null, vitals = null, changes = null, schema = null, entity = null, local = null, site = {}, today = "" } = {}) {
+export function routeAgents({ profile = null, audit = null, priorities = null, inspect = {}, speed = null, geo = null, pipeline = null, consent = null, ymyl = null, pace = null, citations = null, quality = null, redirects = null, facts = null, links = null, render = null, inbound = null, logs = null, rank = null, keywords = null, gap = null, aiVisibility = null, authority = null, forecast = null, linkgraph = null, vitals = null, changes = null, schema = null, entity = null, local = null, shop = null, site = {}, today = "" } = {}) {
   const plan = [];
   const advise = profile && profile.mode === "advise";
   const how = advise ? " This site is in advise mode: recommend exact changes for a person to make; do not try to edit files." : "";
@@ -113,6 +113,9 @@ export function routeAgents({ profile = null, audit = null, priorities = null, i
   if (napF.length) add("local-citation-auditor", napF.some((f) => f.severity === "high") ? PHASES.fix : PHASES.grow, `The local check found ${napF.length} problem(s) with the business name, address or phone.`, napF.map((f) => f.title), "Use the seo-local-citation-auditor on local.json: confirm the true name, address and phone with the owner, list every page and listing to correct, and hand markup fixes to the seo-schema-engineer." + how, [...new Set(napF.flatMap((f) => f.pages || []))].map(short));
   const locF = lf.filter((f) => /^location-/.test(f.id));
   if (locF.length) add("local-content-writer", locF.some((f) => f.severity === "high") ? PHASES.fix : PHASES.content, `The local check found ${locF.length} problem(s) with location pages.`, locF.map((f) => f.title), "Use the seo-local-content-writer on the location pages in local.json: merge near-identical pages or give each one real local substance the owner can confirm. Never swap the town name in a template." + how, [...new Set(locF.flatMap((f) => f.pages || []))].map(short));
+  // E-commerce pack data (shop.json): markup, price, stock, category and crawl-trap findings go to the e-commerce agent.
+  const sf = (shop?.findings || []).filter((f) => f.severity !== "low");
+  if (sf.length) add("ecommerce", sf.some((f) => f.severity === "high") ? PHASES.fix : PHASES.content, `The shop check found ${sf.length} problem(s): ${sf.map((f) => f.id).join(", ")}.`, sf.map((f) => f.title), "Use the seo-ecommerce agent on shop.json: fix Product markup and price mismatches first, then canonicals or noindex for parameter URLs, then category introductions. Stock decisions (redirect, keep, remove) go to the owner." + how, [...new Set(sf.flatMap((f) => f.pages || []))].filter((u) => !u.includes("?")).map(short));
   // Vertical packs: every specialist agent of each pack that applies (detected, or set with `verticals` in the config).
   for (const { pack, why } of detectVerticals({ profile, site })) {
     for (const [name, ask] of Object.entries(PACKS[pack].agents)) add(name.replace(/^seo-/, ""), pack === "ecommerce" ? PHASES.fix : PHASES.grow, `${PACKS[pack].title} pack: ${why.join("; ")}.`, why, ask + how);

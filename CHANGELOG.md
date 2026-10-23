@@ -1,7 +1,17 @@
 # Changelog
 
-## Unreleased
+## 2.18.0
 
+Specialist packs: each site gets the agents for its kind of business, with data jobs behind them. Both new jobs need no key, and both have run only against test fixtures so far.
+
+- **Online shop data: the `shop` job (packs step 3).** Weekly, and only for sites the e-commerce pack applies to. It finds:
+  - Product markup missing, or missing required fields (name, price, currency) or recommended ones (image, brand, GTIN, MPN or SKU);
+  - markup prices the page does not show;
+  - out-of-stock and discontinued products;
+  - category pages under 150 words;
+  - filter, sort and tracking parameter URLs that are indexable without a canonical, and filter keys that multiply crawlable URLs.
+
+  Findings go to the seo-ecommerce agent with the pages to fix. Results are in `shop.json` and `shop.md`. It edits nothing, and assistants can run it through MCP.
 - **Local pack data: the `local` job (packs step 2).** Weekly, and only for sites the local pack applies to. It reads the home, contact, about and location pages, and finds:
   - **business name, address and phone variants** across markup, `tel:` links and visible text. Phones are compared by digits in any format or country; addresses by normalised text. Sites with branches (one address per location page) are recognised;
   - pages that never show the details the owner confirmed in the new `business` setting;
