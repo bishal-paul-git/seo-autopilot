@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Local pack data: the `local` job (packs step 2).** Weekly, and only for sites the local pack applies to. It reads the home, contact, about and location pages, and finds:
+  - **business name, address and phone variants** across markup, `tel:` links and visible text. Phones are compared by digits in any format or country; addresses by normalised text. Sites with branches (one address per location page) are recognised;
+  - pages that never show the details the owner confirmed in the new `business` setting;
+  - missing or incomplete LocalBusiness markup;
+  - **location pages** that are thin, show no address or map, or are near-identical apart from the place name. Google treats those as doorway pages.
+
+  Findings go to the seo-local-citation-auditor and the seo-local-content-writer, with the pages to fix. Results are in `local.json` and `local.md`. It edits nothing, and assistants can run it through MCP.
 - **Vertical packs, step 1 (decision D21).** The local pack (six agents) and the e-commerce pack (one agent) are defined in `departments/verticals/packs.json`.
   - Packs are detected from the site profile (business or product markup, the shop platform, `local: true`), or set with the new `verticals` config setting. `[]` turns them off.
   - The router gives work to every agent of each pack that applies. Before this, five of the six local agents were never routed.

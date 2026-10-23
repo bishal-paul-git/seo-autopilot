@@ -2,6 +2,16 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-23 (PR #15 merged; vertical packs step 2: local job)
+- **Integration:** PR https://github.com/bishal-paul-git/seo-autopilot/pull/15 merged (`48bfeb7`).
+- **Code (branch `claude/hopeful-euler-662mu5`):**
+  - new: `src/analysis/local.mjs`, `src/jobs/local.mjs` (registered; MCP allowlist), `test/local.test.mjs` (8 tests);
+  - changed: router (`local.json` → citation auditor, local content writer), `team` passes `local.json`, the weekly template gets a `local` step;
+  - config: new optional `business` setting, with schema;
+  - three local agents' Inputs now name `local.json`; docs updated.
+- **Bug caught by tests before commit:** stripping a country code with a regex ate digits (`+44 20…` lost the 2). Phones are now compared by their last 9 digits.
+- **Checks:** `npm test` 424/424. The job has run only against a fake site; **no real local business site has been checked yet**.
+
 ## 2026-10-23 (v2.17.0 released; vertical packs step 1)
 - **Deployment (release):**
   - Merged https://github.com/bishal-paul-git/seo-autopilot/pull/14 (`ae26980`).

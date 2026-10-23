@@ -18,7 +18,7 @@ Start with the site profile (`site-profile.json` in the state folder, from the `
 Start with the site profile and the facts confirmed by the owner (legal name, trading name, address, phone, website URL, areas served).
 
 ## Inputs
-The business's confirmed NAP details, the website (contact page, structured data, footer), the GBP listing, and a list of directories the business already uses if known.
+The business's confirmed NAP details (`business` in seo-autopilot.config.json when set), `local.json` from the `local` job (every name, address and phone variant the site shows, with the pages), the website (contact page, structured data, footer), the GBP listing, and a list of directories the business already uses if known.
 
 ## Method
 1. **Extract NAP from the site:** contact page, footer, structured data (`LocalBusiness`, `LegalService`, `Organization`), schema `@id`. Record exact formatting.

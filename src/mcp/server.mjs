@@ -37,6 +37,7 @@ export const SAFE_JOBS = {
   schema: "Structured data suggestions and checks",
   changes: "What changed on watched pages since last time",
   entity: "How Google's Knowledge Graph and Wikidata see the business",
+  local: "Local business: name, address and phone consistency, location pages (local pack)",
   speed: "PageSpeed Insights for top pages",
   consent: "Consent and measurement check",
   ymyl: "Sensitive-topic review gate",

@@ -56,6 +56,7 @@ One file, `seo-autopilot.config.json`, in the root of your repository. Paths are
 | `review` | sensitive-topic gate: `topics` (keyword lists) and `requireFields` (default `author`, `reviewedBy`) |
 | `thinIgnore` | URL path patterns (`*` wildcard) of pages that are meant to be short; the thin-content rule skips them. Example: `["/contact", "/book", "/tools/*"]` |
 | `retired` | URL path patterns of pages removed or redirected on purpose; left out of not-indexed counts and request lists |
+| `business` | the name, phone and address you confirm, for example `{ "name": "Example Dental", "phone": "+44 20 7946 0000", "address": "1 High Street, Leeds LS1 1AA" }`. The `local` job flags pages that disagree |
 | `verticals` | specialist packs for this kind of business: `["local"]`, `["ecommerce"]`, both, or `[]` for none. Without it, packs are detected from the site profile (business or product markup, the shop platform, `local: true`). It also decides which pack agents `init` and `upgrade` install. See `departments/verticals/packs.json` |
 | `language` | language the site publishes in (`en`, `en-GB`, `es`...); queries clearly in another language are not proposed as topics |
 | `citations` | `market`: default country for tracked questions (default `GB`) |

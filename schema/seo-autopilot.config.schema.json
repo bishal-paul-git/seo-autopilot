@@ -85,6 +85,12 @@
               "type": "string"
             }
           },
+          "business": {
+            "type": "object",
+            "description": "The business name, phone and address as you confirm them. The local job checks that the site shows exactly these.",
+            "properties": { "name": { "type": "string" }, "phone": { "type": "string" }, "address": { "type": "string" } },
+            "additionalProperties": false
+          },
           "verticals": {
             "type": "array",
             "description": "Specialist packs for this kind of business. Without this setting they are detected from the site profile. [] turns them off.",

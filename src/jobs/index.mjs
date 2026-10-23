@@ -54,6 +54,7 @@ export const JOBS = {
   vitals: () => import("./vitals.mjs"),
   changes: () => import("./changes.mjs"),
   schema: () => import("./schema.mjs"),
+  local: () => import("./local.mjs"),
   entity: () => import("./entity.mjs"),
 };
 
