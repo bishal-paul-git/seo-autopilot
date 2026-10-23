@@ -1,7 +1,7 @@
 {
   "name": "seo-autopilot",
   "description": "An open-source SEO team for any website: 38 specialist agents, 29 playbooks, and an MCP server that reads your SEO reports (audit, rankings, keywords, competitor gap, AI-search visibility, link graph, Core Web Vitals) and runs analysis jobs. Pairs with the seo-autopilot CLI and GitHub workflows.",
-  "version": "2.17.0",
+  "version": "2.18.0",
   "author": {
     "name": "Bishal Paul"
   },

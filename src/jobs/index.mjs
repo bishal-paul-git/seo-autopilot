@@ -55,6 +55,7 @@ export const JOBS = {
   changes: () => import("./changes.mjs"),
   schema: () => import("./schema.mjs"),
   local: () => import("./local.mjs"),
+  shop: () => import("./shop.mjs"),
   entity: () => import("./entity.mjs"),
 };
 

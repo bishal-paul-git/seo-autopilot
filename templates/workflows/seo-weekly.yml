@@ -148,6 +148,9 @@ jobs:
       - name: Local business checks (name, address, phone; location pages). Runs only when the local pack applies
         continue-on-error: true
         run: npx --yes "$SEO" run local
+      - name: Online shop checks (product markup and prices, stock, categories, filter URLs). Runs only when the e-commerce pack applies
+        continue-on-error: true
+        run: npx --yes "$SEO" run shop
       - name: Page change monitor (your key pages and competitors' winning pages)
         continue-on-error: true
         run: npx --yes "$SEO" run changes
