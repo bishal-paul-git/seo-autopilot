@@ -2,6 +2,13 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-23 (v2.19.0 released; brief 14 step 4: YouTube)
+- **Deployment (release):** https://github.com/bishal-paul-git/seo-autopilot/pull/20 merged as `e3f700a`. The tag-release workflow tagged `v2.19.0` and moved `v2` and `v2-stable` to `e3f700a` (checked with `git ls-remote`). The GitHub Release was published by github-actions at 02:06 UTC. npm skipped (no `NPM_TOKEN`).
+- **Code (branch `claude/hopeful-euler-662mu5`):**
+  - new: `src/lib/youtube.mjs`, `test/youtube.test.mjs` (5 tests);
+  - changed: `src/analysis/keywords.mjs` (`videoCandidates`, `videoSummary`, `videoMarkdown`), `src/jobs/keywords.mjs`, config and schema (`research.youtubeChannel`), `doctor`, weekly keywords env (`YOUTUBE_API_KEY`, `STACKEXCHANGE_KEY`), `docs/research-suite.md`, brief 14 status.
+- **Checks:** `npm test` 455/455. Not run against the live YouTube API.
+
 ## 2026-10-23 (brief 14 step 3: open data; v2.19.0 prepared)
 - **Deployment (merge):** https://github.com/bishal-paul-git/seo-autopilot/pull/19 (Keyword Planner) merged as `d3215ce` after CI passed on Node 20 and 22.
 - **Code (branch `claude/hopeful-euler-662mu5`):**

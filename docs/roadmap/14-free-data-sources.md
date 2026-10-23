@@ -32,7 +32,8 @@ Owner request (2026-10-23): "I need free APIs, or to build them. Search Console 
 - Step 1 is done (v2.19.0): the `gsc` job.
 - Step 2 is built (v2.19.0): Keyword Planner in `keywords` (`src/lib/google-ads.mjs`). Tested with recorded-style responses; waiting for the owner's developer token for the live run.
 - Step 3, first part, is done (v2.19.0): Wikipedia pageviews and Stack Exchange questions in `keywords` (`src/lib/open-data.mjs`).
-- Next: Common Crawl backlink discovery (large data; suits the Python engine), then step 4 (YouTube, Natural Language).
+- Step 4, first part, is built (Unreleased): YouTube video results in `keywords` (`src/lib/youtube.mjs`).
+- Next: Common Crawl backlink discovery. Its host-level web graph comes as multi-gigabyte files per release, too heavy for a weekly Actions run; it needs the Python engine with streaming, or a hosted job runner. Google Cloud Natural Language (entities) stays opt-in and paid after the free tier.
 
 ## Not doing
 - Scraping Google Trends or Google results without an API: against Google's terms. The opt-in autocomplete source stays capped as it is (D18).
