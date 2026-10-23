@@ -1,0 +1,31 @@
+name: Hosted version waitlist
+description: Tell us you would use a hosted seo-autopilot (no GitHub setup), and what you need from it
+title: "Waitlist: "
+labels: [waitlist]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A hosted version is planned: sign in, connect Google and your site, and the SEO team runs for you. This issue is public, so do not include private details. We will reply here when it opens.
+  - type: dropdown
+    id: who
+    attributes:
+      label: Who are you?
+      options: [Site owner, Freelancer or consultant, Agency, Developer, Other]
+    validations: { required: true }
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Where does your site run?
+      options: [WordPress, Shopify, Webflow, Wix or Squarespace, Next.js, Astro, Hugo or Jekyll, Other framework, Other]
+    validations: { required: true }
+  - type: input
+    id: sites
+    attributes:
+      label: How many sites would you connect?
+    validations: { required: false }
+  - type: textarea
+    id: need
+    attributes:
+      label: What should it do for you first?
+    validations: { required: false }

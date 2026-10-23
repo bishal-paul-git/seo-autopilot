@@ -1,15 +1,25 @@
 # seo-autopilot
 
-An open-source SEO autopilot for any website. It watches Google Search Console, checks which pages are indexed, researches keywords from your real search data, reads the news in your field, writes a weekly digest, drafts new pages **only after you approve them**, drips approved pages out on a schedule, and helps with backlinks in a careful, capped way. It runs on GitHub Actions, so no computer has to stay on, and everything it knows is kept in your own repository.
+An open-source SEO team for any website. It runs in your own GitHub repository with your own Google and AI keys:
+- it audits the site and reads Search Console;
+- it tracks rankings, researches keywords from your real queries and finds competitor gaps;
+- it checks Core Web Vitals, structured data and how AI assistants cite you.
 
-It is a command line tool (Node 20+, no dependencies) plus ready-made GitHub workflows. MIT licensed.
+38 specialist agents then turn findings into pull requests. A person approves them, or, if you turn autopilot on, routine changes merge after every automated check passes. It runs on GitHub Actions, so no computer has to stay on, and everything it learns is kept in your own repository.
 
-```bash
-# in your website's repository
-npx github:bishal-paul-git/seo-autopilot#v2 init --url https://example.com/
-```
+It is a command-line tool (Node 20+, no dependencies) plus ready-made GitHub workflows. MIT licensed. No telemetry: nothing is ever sent to the maintainers.
 
-That creates a config file, a few editable data files and the GitHub workflows. Then follow [docs/getting-started.md](docs/getting-started.md) (about 15 minutes, most of it Google's own screens).
+## Ways to use it
+| How | Command | Good for |
+|---|---|---|
+| **Full setup** in your website's repository | `npx github:bishal-paul-git/seo-autopilot#v2 init --url https://example.com/` | the whole team: daily, weekly and monthly jobs, approvals, autopilot |
+| **One job** as a GitHub Action | `uses: bishal-paul-git/seo-autopilot@v2` with `job: audit` (or `rank`, `keywords`, `schema`, …) | adding a single check to an existing workflow |
+| **Claude Code plugin** | `/plugin marketplace add bishal-paul-git/seo-autopilot` then `/plugin install seo-autopilot@seo-autopilot` | the 38 agents and the MCP server inside Claude Code |
+| **Claude or ChatGPT** | `seo-autopilot mcp` locally, or the hosted connector ([cloud/connector](cloud/connector/README.md)) | asking questions about your reports in plain words |
+
+`init` creates a config file, a few editable data files and the GitHub workflows. Then follow [docs/getting-started.md](docs/getting-started.md), which takes about 15 minutes, mostly on Google's own screens. Once the package is on npm, `npx seo-autopilot init` works too.
+
+How it compares with paid suites such as Ahrefs and Semrush: [docs/compare.md](docs/compare.md). Common questions: [docs/faq.md](docs/faq.md).
 
 ## What it does
 

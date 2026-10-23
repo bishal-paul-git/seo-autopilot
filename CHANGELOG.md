@@ -1,7 +1,23 @@
 # Changelog
 
-## Unreleased
+## 2.17.0
 
+Ready for an open-source launch (Stage A): one-line GitHub Action, npm publishing, an installable Claude Code plugin, a fuller landing site, community files, and the hosted connector for Claude and ChatGPT.
+
+- **GitHub Action.** `uses: bishal-paul-git/seo-autopilot@v2` with `job: audit` (or any job) runs one job in any workflow. Inputs reach the shell only through environment variables, and the job name is checked.
+- **npm.** The tag-release workflow publishes to npm when the repository has an `NPM_TOKEN` secret, with provenance. The package no longer ships Python caches or internal planning docs (279 files, about 0.5 MB packed).
+- **Claude Code plugin.** Its metadata is current (version, 38 agents, MCP server), and a test keeps the plugin version in step with the package. Install: `/plugin marketplace add bishal-paul-git/seo-autopilot`, then `/plugin install seo-autopilot@seo-autopilot`.
+- **Landing site.** New pages for Start, FAQ, Compare with paid suites, and Roadmap, rendered from the docs so they cannot drift. Agent and playbook counts are computed (38 and 29), and a test checks the landing page.
+- **Docs.**
+  - `docs/compare.md`: an honest comparison with paid SEO suites.
+  - FAQ updated: autopilot, the indexing URL to paste, no telemetry, keys, Claude and ChatGPT.
+  - README front door rewritten with every way to use the tool.
+- **Community.**
+  - `NOTICE` and `TRADEMARK.md` (how to use the name).
+  - DCO sign-off and "what we will not merge" in `CONTRIBUTING.md`.
+  - A hosted-version waitlist issue form.
+  - Launch kit in `docs/launch/`: checklist, post drafts, and a real-numbers-only case-study template.
+- **Local SEO agents.** Five new agents in `departments/verticals/`. Now wired correctly: listed in the plugin, starting from the site profile, playbooks indexed, unsourced percentages removed.
 - **Hosted connector for Claude and ChatGPT (decision D20).** `cloud/connector` is a remote MCP server (a Cloudflare Worker, no dependencies) that you add as a custom connector in Claude or ChatGPT.
   - People sign in with GitHub. It reads the reports your scheduled workflows already save on the `seo-data` branch, through a GitHub App with *Contents: read* only.
   - It is read-only: the same tools as `seo-autopilot mcp`, apart from `run_job`.

@@ -1,0 +1,13 @@
+seo-autopilot
+Copyright (c) 2026 Bishal Paul
+
+Licensed under the MIT License (see LICENSE).
+
+The core has no third-party runtime dependencies. Optional parts have their own:
+- engines/python uses claude-agent-sdk when installed (MIT licence);
+- engines/go uses only the Go standard library;
+- cloud/connector uses only Web APIs available in Cloudflare Workers.
+
+Each optional part degrades cleanly when its dependency is missing.
+
+"seo-autopilot" is the project's name. See TRADEMARK.md for how to use it.

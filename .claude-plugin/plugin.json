@@ -1,7 +1,7 @@
 {
   "name": "seo-autopilot",
-  "description": "Open-source SEO autopilot for any website: Search Console reports, indexing checks, keyword research, news watching, weekly digests, approval-gated content drafting, drip scheduling and careful backlink help. Guided setup included.",
-  "version": "2.1.0",
+  "description": "An open-source SEO team for any website: 38 specialist agents, 29 playbooks, and an MCP server that reads your SEO reports (audit, rankings, keywords, competitor gap, AI-search visibility, link graph, Core Web Vitals) and runs analysis jobs. Pairs with the seo-autopilot CLI and GitHub workflows.",
+  "version": "2.17.0",
   "author": {
     "name": "Bishal Paul"
   },
@@ -9,12 +9,17 @@
   "repository": "https://github.com/bishal-paul-git/seo-autopilot",
   "license": "MIT",
   "keywords": [
-    "seo",
-    "search-console",
-    "indexnow",
+    "agents",
+    "ai-search",
     "automation",
+    "backlinks",
     "github-actions",
-    "backlinks"
+    "indexnow",
+    "keyword-research",
+    "mcp",
+    "rank-tracking",
+    "search-console",
+    "seo"
   ],
   "agents": [
     "./departments/command/agents/seo-coordinator.md",
