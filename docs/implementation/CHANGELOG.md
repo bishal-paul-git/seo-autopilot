@@ -2,6 +2,14 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-23 (packs step 4: listings job; product name proposal)
+- **Deployment (merge):** https://github.com/bishal-paul-git/seo-autopilot/pull/21 (YouTube) merged as `c70b7aa` after CI passed.
+- **Code (branch `claude/hopeful-euler-662mu5`):**
+  - new: `src/lib/google-business.mjs` (Business Profile Information API v1 and reviews v4; Merchant API products v1), `src/analysis/listings.mjs`, `src/jobs/listings.mjs` (registered; MCP allowlist), `test/listings.test.mjs` (7 tests);
+  - changed: router (four new routes), `team` reads `listings.json`, weekly template step, `doctor` keys, three pack agents' Inputs, `nameKey` exported from `src/analysis/local.mjs`, `docs/jobs.md`, brief 12 status.
+- **Docs:** DECISIONS D22, the product-name proposal.
+- **Checks:** `npm test` 463/463. Not run against live Business Profile or Merchant Center accounts.
+
 ## 2026-10-23 (v2.19.0 released; brief 14 step 4: YouTube)
 - **Deployment (release):** https://github.com/bishal-paul-git/seo-autopilot/pull/20 merged as `e3f700a`. The tag-release workflow tagged `v2.19.0` and moved `v2` and `v2-stable` to `e3f700a` (checked with `git ls-remote`). The GitHub Release was published by github-actions at 02:06 UTC. npm skipped (no `NPM_TOKEN`).
 - **Code (branch `claude/hopeful-euler-662mu5`):**

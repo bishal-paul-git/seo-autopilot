@@ -83,6 +83,12 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-10-23 D22 Product name (proposed; owner decides)
+- **Problem:** "SEO Autopilot" is a category, not a name. BrightEdge sells "Autopilot", and at least two other tools are listed as "SEO Autopilot". It cannot be owned, protected or found.
+- **Owner brief (2026-10-23):** a simple, small, repeatable name; the domain need not be .com.
+- **Shortlist (web search found no SEO product with these names; no trademark or domain check done, the sandbox cannot reach registries):** Seora (coined: SEO plus aura; ownable, says what it is), Tend (tending a site like a garden; tend.io is an analytics tool, an adjacent risk), Hone (common word, harder to own). Ranko was rejected: an AI SEO agent of that name already exists.
+- **Rename plan once chosen:** a trademark search in the main markets (UKIPO, EUIPO, USPTO) and the domain first; then the repository (GitHub redirects the old URL), npm package, CLI (the `seo-autopilot` command stays as an alias), GitHub Action, Claude plugin, site and docs, in one release.
+
 ## 2026-10-23 D21 Vertical packs: a registry, not a folder per pack (owner: "a separate part so each site gets its own specialist agents")
 - **Decision:** packs are defined in `departments/verticals/packs.json` (pack → agents → routing instruction). Agent files stay in `departments/verticals/agents/`. A pure `detectVerticals` (`src/analysis/verticals.mjs`) decides which packs apply, from the site profile or the site's `verticals` setting.
 - **Why not one folder per pack yet:** moving agents would change every installed path, the plugin list and the department tests, with no gain for users. The registry gives the same result: each site gets and runs only its packs. Folders can come later, when a pack gains its own jobs and playbooks.

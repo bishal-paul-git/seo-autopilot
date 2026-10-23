@@ -25,7 +25,7 @@ export function addressKey(a) {
   return s.toLowerCase().replace(/[.,#]/g, " ").replace(/\bst\b/g, "street").replace(/\brd\b/g, "road").replace(/\bave?\b/g, "avenue").replace(/\s+/g, " ").trim();
 }
 
-const nameKey = (n) => String(n || "").toLowerCase().replace(/\b(ltd|limited|llc|inc|plc|gmbh|co)\b\.?/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+export const nameKey = (n) => String(n || "").toLowerCase().replace(/\b(ltd|limited|llc|inc|plc|gmbh|co)\b\.?/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 
 /** The local-business nodes in a page's JSON-LD (nested @graph included). */
 export function businessNodes(nodes = []) {

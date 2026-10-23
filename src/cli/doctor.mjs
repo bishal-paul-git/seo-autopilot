@@ -30,6 +30,8 @@ export const OPTIONAL_KEYS = [
   [["BING_WEBMASTER_API_KEY"], "Bing related queries for keywords (free)"],
   [["OPENPAGERANK_API_KEY"], "domain authority for difficulty and the authority report (free)"],
   [["YOUTUBE_API_KEY"], "YouTube video results for how-to and review topics in keywords (free quota)"],
+  [["GBP_CLIENT_ID", "GBP_REFRESH_TOKEN", "GBP_LOCATION"], "Google Business Profile for listings (local pack; Google must approve API access)"],
+  [["MERCHANT_ACCOUNT_ID"], "Merchant Center product issues for listings (e-commerce pack; uses the service account)"],
   [["CRUX_API_KEY"], "real-user Core Web Vitals for vitals (free)"],
   [["GOOGLE_KG_API_KEY"], "Google Knowledge Graph for entity (free)"],
   [["PERPLEXITY_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY"], "AI engines for ai-visibility (paid; ANTHROPIC_API_KEY counts too)"],

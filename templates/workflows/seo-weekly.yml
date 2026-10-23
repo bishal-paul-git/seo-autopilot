@@ -165,6 +165,16 @@ jobs:
       - name: Online shop checks (product markup and prices, stock, categories, filter URLs). Runs only when the e-commerce pack applies
         continue-on-error: true
         run: npx --yes "$SEO" run shop
+      - name: Google listings (Business Profile for local sites, Merchant Center for shops). Skips cleanly without access
+        continue-on-error: true
+        env:
+          GOOGLE_KEY_JSON: ${{ secrets.GOOGLE_KEY_JSON }}
+          MERCHANT_ACCOUNT_ID: ${{ secrets.MERCHANT_ACCOUNT_ID }}
+          GBP_CLIENT_ID: ${{ secrets.GBP_CLIENT_ID }}
+          GBP_CLIENT_SECRET: ${{ secrets.GBP_CLIENT_SECRET }}
+          GBP_REFRESH_TOKEN: ${{ secrets.GBP_REFRESH_TOKEN }}
+          GBP_LOCATION: ${{ secrets.GBP_LOCATION }}
+        run: npx --yes "$SEO" run listings
       - name: Page change monitor (your key pages and competitors' winning pages)
         continue-on-error: true
         run: npx --yes "$SEO" run changes
