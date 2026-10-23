@@ -142,6 +142,11 @@ jobs:
           BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
         run: npx --yes "$SEO" run authority
+      - name: Search Console beyond web search (sitemaps, Discover, News, image, video, appearance, countries, devices; free)
+        continue-on-error: true
+        env:
+          GOOGLE_KEY_JSON: ${{ secrets.GOOGLE_KEY_JSON }}
+        run: npx --yes "$SEO" run gsc
       - name: Structured data checks and drafts for the home page and top pages
         continue-on-error: true
         run: npx --yes "$SEO" run schema

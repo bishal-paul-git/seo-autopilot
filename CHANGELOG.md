@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- **More from Search Console, free: the `gsc` job (brief 14, step 1).** Weekly, with the same read-only key as the daily job:
+  - sitemap status from Search Console: none submitted, the configured sitemap not submitted, errors, warnings, not read for 30 days, pending;
+  - clicks from Google Discover, the Google News app, the News tab, image search and video search, each against the previous 28 days, with a finding when Discover or News falls 30% or more;
+  - search appearance (rich results), device and country splits, and a mobile click-through check at similar positions;
+  - the newest days as preliminary data (`dataState: all`), labelled so.
+
+  Sitemap problems go to the seo-indexing-monitor, and Discover or News drops to the seo-strategist. Results are in `gsc.json` and `gsc.md`. Assistants can run it through MCP. Tested against recorded-style responses only; not yet run against a live Search Console property.
+
 ## 2.18.0
 
 Specialist packs: each site gets the agents for its kind of business, with data jobs behind them. Both new jobs need no key, and both have run only against test fixtures so far.
