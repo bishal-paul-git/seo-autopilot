@@ -2,6 +2,12 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-23 (v2.18.0 released)
+- **Deployment (release):**
+  - Merged https://github.com/bishal-paul-git/seo-autopilot/pull/17 (`b601534`).
+  - The tag-release workflow tagged `v2.18.0` and moved `v2` and `v2-stable` to `b601534` (checked with `git ls-remote`). The release was published by github-actions at 01:26 UTC.
+  - npm was skipped: no `NPM_TOKEN`.
+
 ## 2026-10-23 (PR #16 merged; packs step 3: shop job; v2.18.0 prepared)
 - **Integration:** PR https://github.com/bishal-paul-git/seo-autopilot/pull/16 merged (`a47c055`).
 - **Code (branch `claude/hopeful-euler-662mu5`):**

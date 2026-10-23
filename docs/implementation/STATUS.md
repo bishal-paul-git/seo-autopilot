@@ -1,7 +1,7 @@
 # Implementation status
 
-Last updated: 2026-10-23 01:45 UTC.
-- **Now:** `main` at `a47c055` holds v2.17.0 plus packs steps 1 and 2 (#15, #16). Branch `claude/hopeful-euler-662mu5` adds packs step 3 (`shop` job) and prepares v2.18.0. Released: v2.17.0. Not done: connector deployment, npm publish (no `NPM_TOKEN`), real-site runs of the `local` and `shop` jobs.
+Last updated: 2026-10-23 01:30 UTC.
+- **Now:** v2.18.0 released (https://github.com/bishal-paul-git/seo-autopilot/releases/tag/v2.18.0; `v2.18.0`, `v2` and `v2-stable` at `b601534`). It includes specialist packs steps 1 to 3: detection, routing and install (D21), and the `local` and `shop` jobs. Not done: connector deployment, npm publish (no `NPM_TOKEN`), real-site runs of `local` and `shop`. Next build: packs step 4 (Google Business Profile, Merchant Center) and more packs (brief 12).
 - Erudience was upgraded to 2.16 by https://github.com/bishal-paul-git/erudience-flow-engine/pull/91 (merged, `ce934ba`). No scheduled run with 2.16 has been observed yet.
 - Cloudflare: the owner's account is `8566…5c39`. KV namespace `OAUTH_KV` (`27fd7750abf34014a04036e6f36b827c`) exists there and is bound in `cloud/connector/wrangler.toml`. An unused KV namespace, `seo-autopilot-connector-OAUTH_KV`, sits in account `0342…476d` and can be deleted. A Pages project, `seo-autopilot-gls`, publishes a static copy of the repository and is not the connector. This session could not deploy: the injected Cloudflare token never reached it, and Claude in Chrome is not available in cloud sessions.
 - Branch `claude/hopeful-euler-662mu5`, **pushed 2026-10-22** and merged with `main` at `57c533c` (v2.15.0). Draft PR: https://github.com/bishal-paul-git/seo-autopilot/pull/12. `npm test` 397/397 on the merged head.
