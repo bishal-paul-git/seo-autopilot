@@ -47,7 +47,7 @@
   <div class="wrap">
     <header>
       <a class="logo" href="#"><i><svg viewBox="0 0 32 32"><path d="M5 22l7-8 5 5 10-12" stroke="#10b981" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></i>seo-autopilot</a>
-      <nav><a href="#how">How it works</a><a href="#expert">Expert layer</a><a href="agents/">Agents</a><a href="playbooks/">Playbooks</a><a href="#install">Install</a><a href="demo/">Demo</a><a class="keep" href="https://github.com/bishal-paul-git/seo-autopilot">GitHub</a></nav>
+      <nav><a href="#how">How it works</a><a href="agents/">Agents</a><a href="playbooks/">Playbooks</a><a href="#install">Install</a><a href="compare/">Compare</a><a href="faq/">FAQ</a><a href="demo/">Demo</a><a class="keep" href="https://github.com/bishal-paul-git/seo-autopilot">GitHub</a></nav>
     </header>
     <span class="pill">Open source · MIT · runs in your own GitHub</span>
     <h1>An SEO agent that works your backlog, and <em>never publishes without you.</em></h1>
@@ -106,14 +106,14 @@
       <div class="card"><h3>Core Web Vitals</h3><p>Lab and real-user speed for your top pages through Google's PageSpeed Insights, with the biggest fixes listed.</p></div>
       <div class="card"><h3>Experiments with a control</h3><p>Log a change and get a before and after read, adjusted against your untouched pages. Labelled directional, because it is.</p></div>
     </div>
-    <p class="sub" style="margin:22px 0 0">Backed by twenty-six <a href="playbooks/">written playbooks</a> that say where the guidance comes from and where it is uncertain. <a href="demo/">See it in the demo</a>.</p>
+    <p class="sub" style="margin:22px 0 0">Backed by twenty-nine <a href="playbooks/">written playbooks</a> that say where the guidance comes from and where it is uncertain. <a href="demo/">See it in the demo</a>.</p>
   </div>
 </section>
 
 <section class="dark" id="agents">
   <div class="wrap">
     <div class="tag">The agent team</div>
-    <h2>Thirty agents. One job each. A human decides.</h2>
+    <h2>Thirty-eight agents. One job each. Checks and people decide.</h2>
     <p class="sub">Each agent has a fixed set of tools, required reading, a quality bar, a list of things it must never do and a defined output. You can read every word on the <a href="agents/">agents page</a>, and use them in Claude Code too.</p>
     <div class="grid">
       <div class="card"><h3>Strategist</h3><p>Turns all the data into at most five actions for the week, each with evidence, owner, effort and a stated confidence, plus what it is deliberately not doing.</p></div>
@@ -203,7 +203,13 @@ npx github:bishal-paul-git/seo-autopilot#v2 init --url https://your-site.com/
 npx github:bishal-paul-git/seo-autopilot#v2 doctor
 
 <span class="c"># 3. commit, push, and run Actions &gt; seo-daily</span></pre>
-      <p><a href="https://github.com/bishal-paul-git/seo-autopilot/blob/main/docs/getting-started.md">Full guide</a> · <a href="https://github.com/bishal-paul-git/seo-autopilot/blob/main/docs/google-setup.md">Connect Search Console and Analytics</a></p>
+      <p class="sub" style="margin:14px 0 6px">Or one job in any workflow, as a GitHub Action:</p>
+      <pre>- uses: bishal-paul-git/seo-autopilot@v2
+  with: { job: audit }</pre>
+      <p class="sub" style="margin:14px 0 6px">Or in Claude Code, with all 38 agents and the MCP server:</p>
+      <pre>/plugin marketplace add bishal-paul-git/seo-autopilot
+/plugin install seo-autopilot@seo-autopilot</pre>
+      <p><a href="start/">Full guide</a> · <a href="https://github.com/bishal-paul-git/seo-autopilot/blob/main/docs/mcp.md">Use it from Claude or ChatGPT</a> · <a href="https://github.com/bishal-paul-git/seo-autopilot/blob/main/docs/google-setup.md">Connect Search Console and Analytics</a></p>
     </div>
     <div>
       <div class="tag">Manage everything locally</div>

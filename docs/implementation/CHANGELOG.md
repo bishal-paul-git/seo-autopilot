@@ -2,6 +2,25 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-23 (Stage A: open-source launch readiness, v2.17.0 prepared)
+- **Code and CI:**
+  - `action.yml` (one-line GitHub Action);
+  - npm publish step in `tag-release.yml` (only with an `NPM_TOKEN` secret; the token reaches only that step);
+  - `package.json` files trimmed (no `__pycache__`, `docs/implementation`, `docs/research`, `docs/roadmap` or `docs/launch`; `NOTICE` added);
+  - `scripts/build-site.mjs`: computed counts and Start, FAQ, Compare and Roadmap pages;
+  - 2 new tests in `test/agents.test.mjs`: plugin version and landing-page counts, and the Action's input safety.
+- **Docs and community:**
+  - `docs/compare.md`, an updated `docs/faq.md`, and a rewritten README front door;
+  - `NOTICE`, `TRADEMARK.md`, DCO in `CONTRIBUTING.md`, and the waitlist issue form;
+  - `docs/launch/` (checklist, post drafts, case-study template);
+  - plugin and marketplace metadata.
+- **Checks:**
+  - `npm test` 409/409; Python tests OK; all workflow, action and issue-form YAML parses.
+  - Fresh install: `npm pack`, then the tarball installed into new Next.js, Hugo and plain-HTML repositories. `init` created 12 workflows, 38 agents, 7 skills and 29 playbooks in each, and detected Next.js in edit mode. `doctor` ran; its only failure was the unreachable sitemap (example.org; no network from the sandbox).
+  - The Action script was exercised locally: an invalid job name was refused.
+- **Mistake caught:** a local Action test ran `init` inside the product repository, because `init` has no `--cwd` flag. The stray files were untracked and removed before commit, and `.gitignore` was restored.
+- **Not done (owner):** npm token, Marketplace listing, Discussions and labels, demo video, live provider keys, connector deployment.
+
 ## 2026-10-22 (PR #13 merged)
 - **Integration:**
   - Merged https://github.com/bishal-paul-git/seo-autopilot/pull/13 (`3b8881a`): the hosted connector, and the KV binding for Cloudflare account 8566.

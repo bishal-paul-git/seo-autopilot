@@ -16,4 +16,13 @@ node bin/seo-autopilot.mjs help
 - New backlink targets: free, no account, no bot check, verified by hand with a `verifiedOn` date. No paid or reciprocal-link targets.
 - New content adapters: return the page shape documented in `src/adapters/index.mjs`.
 
-Please open an issue before large changes.
+Please open an issue before large changes. Good places to start: issues labelled `good first issue`, new audit rules (each needs a why, a fix, and a recipe in `knowledge/audit-fix-recipes.md`), content adapters, and detection fixtures from real sites.
+
+## Sign your commits (DCO)
+By contributing you certify the [Developer Certificate of Origin](https://developercert.org/): you wrote the change, or have the right to submit it under the MIT licence. Add a sign-off line with `git commit -s`. There is no separate contributor agreement.
+
+## What we will not merge
+- Anything that sends data to the maintainers or adds telemetry. If telemetry is ever added, it will be opt-in and minimal, and will never include URLs or content.
+- Invented numbers, clients, quotes or results in agents, playbooks, examples or tests.
+- Tricks that could harm sites or break search engines' rules: link schemes, cloaking, CAPTCHA solving, scaled low-value content.
+- Site-specific content. That belongs in that site's own repository (`docs/connected-projects.md`).

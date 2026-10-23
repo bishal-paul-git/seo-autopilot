@@ -1,4 +1,5 @@
-# Releases the version on main without a computer: Actions > tag-release > Run workflow.
+# Releases the version on main without a computer: Actions > tag-release > Run workflow. With an NPM_TOKEN secret it
+# also publishes the package to npm.
 # Checks that the version matches package.json on main, runs the tests, tags main as vX.Y.Z, moves v2 (and v2-stable when
 # ticked) to it, and creates the GitHub Release from the matching CHANGELOG.md section. It creates the release itself
 # because tags pushed with the workflow token do not start other workflows (so release.yml would not run).
@@ -16,6 +17,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write   # npm provenance
 
 concurrency:
   group: tag-release
@@ -28,6 +30,7 @@ jobs:
       VERSION: ${{ inputs.version }}
       STABLE: ${{ inputs.stable }}
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      HAS_NPM: ${{ secrets.NPM_TOKEN != '' }}   # only whether it exists; the token itself goes to the publish step alone
     steps:
       - uses: actions/checkout@v7
         with: { ref: main, fetch-depth: 0 }
@@ -54,3 +57,12 @@ jobs:
           if [ ! -s notes.md ]; then echo "See CHANGELOG.md for $version." > notes.md; fi
       - name: Create the release
         run: gh release create "$VERSION" --title "$VERSION" --notes-file notes.md --verify-tag
+      # npm: only when the repository has an NPM_TOKEN secret (an npm automation token). Provenance links the package to
+      # this workflow run. Skipped cleanly otherwise, so a release never fails for want of npm.
+      - name: Publish to npm
+        if: env.HAS_NPM == 'true'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
+          npm publish --provenance --access public

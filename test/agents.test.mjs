@@ -172,3 +172,22 @@ test("the config schema accepts a config written by init", async () => {
   for (const k of Object.keys(site)) assert.ok(k in props, `schema does not know site.${k}`);
   assert.match(site.url, new RegExp(props.url.pattern));
 });
+
+test("published metadata matches the product: plugin version, landing-page agent and playbook counts", () => {
+  const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+  const plugin = JSON.parse(readFileSync(join(root, ".claude-plugin", "plugin.json"), "utf8"));
+  assert.equal(plugin.version, pkg.version, "plugin.json version follows package.json");
+  const words = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"], tens = { 2: "twenty", 3: "thirty", 4: "forty" };
+  const say = (n) => tens[Math.floor(n / 10)] + (n % 10 ? "-" + words[n % 10] : "");
+  const landing = readFileSync(join(root, "site", "index.html"), "utf8").toLowerCase();
+  const playbooks = readdirSync(knowledgeDir).filter((x) => x.endsWith(".md") && x !== "README.md").length;
+  assert.ok(landing.includes(`${say(agents.length)} agents`), `site/index.html should say ${say(agents.length)} agents`);
+  assert.ok(landing.includes(`${say(playbooks)} <a href="playbooks/">written playbooks`), `site/index.html should say ${say(playbooks)} playbooks`);
+});
+
+test("the one-line GitHub Action passes inputs through the environment and checks the job name", () => {
+  const action = readFileSync(join(root, "action.yml"), "utf8");
+  assert.match(action, /using: composite/);
+  assert.ok(!/\$\{\{\s*inputs\./.test(action.split("run: |")[1] || ""), "no inputs interpolated into the shell script");
+  assert.match(action, /case "\$SEO_JOB" in ""\|\*\[!a-z0-9-\]\*\)/, "job name validated");
+});

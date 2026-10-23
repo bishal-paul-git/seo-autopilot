@@ -90,9 +90,12 @@ const read = (d, f) => readFileSync(new URL(`../${d}/${f}`, import.meta.url), "u
 const slug = (f) => f.replace(/\.md$/, "");
 const title = (md, fallback) => (md.match(/^#\s+(.+)$/m) || [])[1] || fallback;
 const REPO = "https://github.com/bishal-paul-git/seo-autopilot";
+const words = (n) => ["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen","twenty"][n] || (n < 100 ? ["twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"][Math.floor(n / 10) - 2] + (n % 10 ? "-" + ["","one","two","three","four","five","six","seven","eight","nine"][n % 10] : "") : String(n));
+const cap = (s) => s[0].toUpperCase() + s.slice(1);
+const AGENT_COUNT = listAgents().length, PLAYBOOK_COUNT = readDir("knowledge").filter((f) => f !== "README.md").length;
 
 const CSS = `:root{--paper:#f6f1e9;--ink:#14120e;--soft:#5b574d;--line:#e3dccf;--green:#10b981;--deep:#0a6e3e;--card:#fffdf9}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}a{color:var(--deep)}.wrap{max-width:860px;margin:0 auto;padding:0 20px}header{background:var(--ink);color:#f3efe7}header .wrap{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;max-width:1080px}header a{color:#cfd8d1;text-decoration:none;margin-left:18px;font-size:15px}header a.logo{margin:0;font-weight:800;font-size:18px;color:#f3efe7}h1{font-size:clamp(30px,4.6vw,44px);line-height:1.1;margin:36px 0 10px;letter-spacing:-.02em}h2{font-size:26px;margin:0 0 8px}h3{font-size:19px;margin:22px 0 6px}.lead{color:var(--soft);margin:0 0 22px}.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 30px}.chips a{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:5px 13px;font-size:14.5px;text-decoration:none}article{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin:0 0 18px}article>h2{scroll-margin-top:12px}.meta{font-size:14px;color:var(--soft);margin:0 0 12px}.meta code{white-space:normal}code{background:#efe8dc;border-radius:5px;padding:1px 5px;font-size:.9em}pre{background:#0e1511;color:#d7efe0;border-radius:12px;padding:16px 18px;overflow-x:auto;font:14px/1.6 ui-monospace,Consolas,monospace}pre code{background:none;padding:0;color:inherit}.tbl{overflow-x:auto;margin:12px 0}table{border-collapse:collapse;width:100%;font-size:15px}th,td{text-align:left;padding:8px 10px;border-top:1px solid var(--line);vertical-align:top}th{font-size:12.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--deep)}details>summary{cursor:pointer;font-weight:800;font-size:20px;list-style:none}details>summary::-webkit-details-marker{display:none}details>summary::after{content:"+";float:right;color:var(--deep)}details[open]>summary::after{content:"–"}.body{margin-top:12px}footer{padding:30px 0 50px;color:var(--soft);font-size:14.5px;border-top:1px solid var(--line);margin-top:30px}@media(max-width:640px){header a:not(.logo):not(.keep){display:none}}`;
-const shell = (pageTitle, desc, inner) => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${pageTitle} | seo-autopilot</title><meta name="description" content="${desc}"><style>${CSS}</style></head><body><header><div class="wrap"><a class="logo" href="../">seo-autopilot</a><nav><a href="../#how">How it works</a><a href="../agents/">Agents</a><a href="../playbooks/">Playbooks</a><a href="../demo/">Demo</a><a class="keep" href="${REPO}">GitHub</a></nav></div></header><main class="wrap">${inner}</main><footer><div class="wrap">Rendered from the files in the repository, so it always matches the product. <a href="${REPO}">Source</a> · MIT licence · made by <a href="https://erudience.com">Erudience</a></div></footer></body></html>`;
+const shell = (pageTitle, desc, inner) => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${pageTitle} | seo-autopilot</title><meta name="description" content="${desc}"><style>${CSS}</style></head><body><header><div class="wrap"><a class="logo" href="../">seo-autopilot</a><nav><a href="../start/">Start</a><a href="../agents/">Agents</a><a href="../playbooks/">Playbooks</a><a href="../compare/">Compare</a><a href="../faq/">FAQ</a><a href="../demo/">Demo</a><a class="keep" href="${REPO}">GitHub</a></nav></div></header><main class="wrap">${inner}</main><footer><div class="wrap">Rendered from the files in the repository, so it always matches the product. <a href="${REPO}">Source</a> · MIT licence · made by <a href="https://erudience.com">Erudience</a></div></footer></body></html>`;
 
 // Agents, grouped by department (departments/<dept>/agents/*.md)
 {
@@ -116,9 +119,9 @@ const shell = (pageTitle, desc, inner) => `<!doctype html><html lang="en"><head>
     const charter = read(`departments/${d}`, "README.md");
     return `<h2 id="dept-${d}">${inline(title(charter, d))}</h2>${agents.filter((a) => a.department === d).map(card).join("\n")}`;
   }).join("\n");
-  const inner = `<h1>The agent team</h1><p class="lead">Thirty agents in eight departments, each with one job, a fixed set of tools, required reading, a quality bar and a defined hand-off. The full text of each agent is below, exactly as it ships in the repository.</p><div class="chips">${DEPARTMENTS.map((d) => `<a href="#dept-${d}">${d}</a>`).join("")}</div><article>${markdown(intro, { linkMap: map, headingOffset: 1 })}</article>${sections}`;
+  const inner = `<h1>The agent team</h1><p class="lead">${cap(words(AGENT_COUNT))} agents in ${words(DEPARTMENTS.length)} departments, each with one job, a fixed set of tools, required reading, a quality bar and a defined hand-off. The full text of each agent is below, exactly as it ships in the repository.</p><div class="chips">${DEPARTMENTS.map((d) => `<a href="#dept-${d}">${d}</a>`).join("")}</div><article>${markdown(intro, { linkMap: map, headingOffset: 1 })}</article>${sections}`;
   mkdirSync(new URL("../site/agents/", import.meta.url), { recursive: true });
-  writeFileSync(new URL("../site/agents/index.html", import.meta.url), shell("The agent team", "The thirty-three seo-autopilot agents, from strategist and drafter to coordinator, onboarder, fact-checker, schema engineer and reporter, built to work on any kind of website, with their full instructions.", inner));
+  writeFileSync(new URL("../site/agents/index.html", import.meta.url), shell("The agent team", `The ${words(AGENT_COUNT)} seo-autopilot agents, from strategist and drafter to coordinator, onboarder, fact-checker, schema engineer and reporter, built to work on any kind of website, with their full instructions.`, inner));
   console.log("wrote site/agents/index.html");
 }
 
@@ -130,6 +133,32 @@ const shell = (pageTitle, desc, inner) => `<!doctype html><html lang="en"><head>
   const cards = files.map((f) => { const md = read("knowledge", f); return `<article id="${slug(f)}"><details><summary>${inline(title(md, slug(f)))}</summary><div class="body">${markdown(md.replace(/^#\s+.*\n/, ""), { linkMap: map, headingOffset: 1 })}</div></details></article>`; }).join("\n");
   const inner = `<h1>The SEO playbooks</h1><p class="lead">What an experienced SEO checks before changing a page. The agents read these before they act, and the audit and priority reports link their advice back to them. Guidance, not search-engine rules.</p><article>${markdown(intro, { linkMap: map, headingOffset: 1 })}</article>${cards}`;
   mkdirSync(new URL("../site/playbooks/", import.meta.url), { recursive: true });
-  writeFileSync(new URL("../site/playbooks/index.html", import.meta.url), shell("The SEO playbooks", "The twenty-six SEO playbooks that seo-autopilot's agents read: intent, technical SEO, content quality, structured data, AI search and more.", inner));
+  writeFileSync(new URL("../site/playbooks/index.html", import.meta.url), shell("The SEO playbooks", `The ${words(PLAYBOOK_COUNT)} SEO playbooks that seo-autopilot's agents read: intent, technical SEO, content quality, structured data, AI search and more.`, inner));
   console.log("wrote site/playbooks/index.html");
+}
+
+// ---- Documentation pages (rendered from docs/*.md; relative links go to the file on GitHub) ----
+{
+  const pages = [
+    ["start", "docs/getting-started.md", "Get started", "Install seo-autopilot in your website's repository, connect Google and run the first jobs."],
+    ["faq", "docs/faq.md", "FAQ", "Common questions about seo-autopilot: publishing, indexing, cost, data, keys, Claude and ChatGPT."],
+    ["compare", "docs/compare.md", "Compared with paid SEO suites", "An honest comparison of seo-autopilot with paid SEO suites: what each does that the other does not."],
+    ["roadmap", "docs/roadmap/README.md", "Roadmap", "What is built and what comes next in seo-autopilot."],
+  ];
+  for (const [dir, src, name, desc] of pages) {
+    const base = src.split("/").slice(0, -1).join("/");
+    const map = (h) => {
+      if (/^(https?:|#|mailto:)/.test(h)) return h;
+      const own = pages.find(([, s]) => s === [base, h].join("/").replace(/\/[^/]+\/\.\.\//g, "/"));
+      if (own) return `../${own[0]}/`;
+      const parts = [...base.split("/"), ...h.split("/")], out = [];
+      for (const p of parts) if (p === "..") out.pop(); else if (p && p !== ".") out.push(p);
+      return `${REPO}/blob/main/${out.join("/")}`;
+    };
+    const md = readFileSync(new URL(`../${src}`, import.meta.url), "utf8");
+    const inner = `<h1>${inline(title(md, name))}</h1><article>${markdown(md.replace(/^#\s+.*\n/, ""), { linkMap: map, headingOffset: 1 })}</article>`;
+    mkdirSync(new URL(`../site/${dir}/`, import.meta.url), { recursive: true });
+    writeFileSync(new URL(`../site/${dir}/index.html`, import.meta.url), shell(name, desc, inner));
+    console.log(`wrote site/${dir}/index.html`);
+  }
 }

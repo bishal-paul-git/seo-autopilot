@@ -1,0 +1,47 @@
+# seo-autopilot as a one-line GitHub Action, for repositories that want a single job without the full set of workflows:
+#   - uses: bishal-paul-git/seo-autopilot@v2
+#     with: { job: audit }
+# The full setup (daily, weekly and monthly workflows, approvals, autopilot) comes from `npx seo-autopilot init`.
+# Inputs reach the shell only through environment variables, and the job name is checked against a strict pattern.
+name: SEO Autopilot
+description: Run an open-source SEO team job (audit, rank tracking, keyword research, gap, schema, vitals and more) on your site.
+author: Bishal Paul
+branding:
+  icon: trending-up
+  color: green
+
+inputs:
+  job:
+    description: "The job to run, for example audit, rank, keywords, gap, linkgraph, schema, vitals, entity, priorities (see docs/jobs.md)"
+    required: true
+  args:
+    description: "Extra arguments, separated by spaces, for example: --serp 5"
+    required: false
+    default: ""
+  site:
+    description: "Site id from seo-autopilot.config.json (default: every site)"
+    required: false
+    default: ""
+  node-version:
+    description: "Node.js version"
+    required: false
+    default: "22"
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+    - name: Run seo-autopilot
+      shell: bash
+      env:
+        SEO_JOB: ${{ inputs.job }}
+        SEO_ARGS: ${{ inputs.args }}
+        SEO_SITE: ${{ inputs.site }}
+      run: |
+        case "$SEO_JOB" in ""|*[!a-z0-9-]*) echo "::error::job must be a job name such as audit or rank"; exit 1 ;; esac
+        read -r -a extra <<< "$SEO_ARGS"
+        site=()
+        if [ -n "$SEO_SITE" ]; then site=(--site "$SEO_SITE"); fi
+        node "$GITHUB_ACTION_PATH/bin/seo-autopilot.mjs" run "$SEO_JOB" "${extra[@]}" "${site[@]}"

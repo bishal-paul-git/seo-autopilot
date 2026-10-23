@@ -221,7 +221,8 @@ Next actions, in order:
 6. **Owner decision:** the local SEO playbooks from `54595d8` are written around UK housing-disrepair legal work. Keep them as a general vertical, or move the client-specific parts to that client's repository (rule: no site-specific content here).
 7. Before others use the connector: a rate-limiting rule for `/register`, and a privacy note. Next build, after real use: a hosted job runner, so `run_job` works from Claude.
 8. Release v2.17.0 (connector, local agents) with Actions → tag-release, once the connector has been tested live.
-9. **Logged for later (owner, 2026-10-23):**
+9. **Stage A launch (2026-10-23):** v2.17.0 is prepared, with the launch checklist in `docs/launch/README.md`. Owner items: the `NPM_TOKEN` secret, the Marketplace tick on the release, Discussions and labels, Pages domain, the demo video. The case study waits for real Erudience data.
+10. **Logged for later (owner, 2026-10-23):**
    - vertical packs, so each site gets the specialist agents and data jobs for its kind of business: `docs/roadmap/12-vertical-packs.md`;
    - going live, with an open-source launch first and then the hosted product: `docs/roadmap/13-go-live.md`.
 
