@@ -25,6 +25,7 @@ Jobs: `audit`, `analyze`, `priorities`, `experiments`, `speed`, `geo`, `deepdive
 | 11 | [Ideas and findings backlog](11-ideas-and-findings.md) | backlog | Bugs and ideas found in real use, not yet briefs |
 | 12 | [Vertical packs (local, e-commerce, more)](12-vertical-packs.md) | product | Each site gets the specialist agents and data jobs for its kind of business, detected automatically |
 | 13 | [Going live: open source launch, then hosted product](13-go-live.md) | business | The checklist from today's release to a paid product, and what only the owner can do |
+| 14 | [More free data: Search Console in full, Keyword Planner, open data](14-free-data-sources.md) | data | Free sources with the user's own accounts: Sitemaps API, Discover and News performance, Keyword Planner volumes, Wikipedia, Stack Exchange, Common Crawl |
 
 Strategy and the reasoning for this order: [../strategy.md](../strategy.md). How projects connect and feed back: [../connected-projects.md](../connected-projects.md).
 
