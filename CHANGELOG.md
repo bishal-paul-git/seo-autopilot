@@ -1,7 +1,14 @@
 # Changelog
 
-## Unreleased
+## 2.19.0
 
+More free data with the user's own accounts, and open data with no key (brief 14, steps 1 to 3). Every source below is tested against recorded-style responses only; none has yet run live from a scheduled job.
+
+- **Open data in `keywords` (brief 14, step 3), free and with no key.** For each seed:
+  - **topic interest from Wikipedia pageviews**: the closest article in the market's language, its monthly human views for the last 12 months, the last 3 months against the 3 before, and the peak month. Labelled as attention to the topic, not search volume;
+  - **real questions from Stack Exchange** on the sites you name (`research.stackExchangeSites`, or `--stackexchange webmasters,money`), most viewed first, each marked with the page that already covers it or "no page covers it". `STACKEXCHANGE_KEY` (free) raises the daily limit.
+
+  `--no-open-data` skips both. Results are in `keywords.json` (`topics`, `community`) and `keywords.md`.
 - **Google Keyword Planner in `keywords` (brief 14, step 2).** With your own Google Ads account (free to call), `keywords "<seed>"` adds Google's keyword ideas, average monthly searches, competition, top-of-page bid ranges and 12-month trend for your market. Google's volume ranks above every other demand source, and the report labels it as Google's estimate. Sign in with an OAuth refresh token (adwords scope) or your existing service account added as a user of the Ads account. A new developer token works only with test accounts until Google approves a higher access level; the error says so. `doctor` lists the keys, and the weekly keywords step passes them. See "Google Keyword Planner" in `docs/research-suite.md`. Tested against recorded-style responses only; not yet run against a live Ads account.
 - **More from Search Console, free: the `gsc` job (brief 14, step 1).** Weekly, with the same read-only key as the daily job:
   - sitemap status from Search Console: none submitted, the configured sitemap not submitted, errors, warnings, not read for 30 days, pending;

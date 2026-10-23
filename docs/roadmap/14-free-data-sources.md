@@ -29,9 +29,10 @@ Owner request (2026-10-23): "I need free APIs, or to build them. Search Console 
    - Google Cloud Natural Language: entity extraction for content gaps (free tier, then paid; opt-in).
 
 ## Status
-- Step 1 is done (Unreleased): the `gsc` job.
-- Step 2 is built (Unreleased): Keyword Planner in `keywords` (`src/lib/google-ads.mjs`). Tested with recorded-style responses; waiting for the owner's developer token for the live run.
-- Next: step 3, open data (Wikipedia pageviews, Stack Exchange questions, then Common Crawl).
+- Step 1 is done (v2.19.0): the `gsc` job.
+- Step 2 is built (v2.19.0): Keyword Planner in `keywords` (`src/lib/google-ads.mjs`). Tested with recorded-style responses; waiting for the owner's developer token for the live run.
+- Step 3, first part, is done (v2.19.0): Wikipedia pageviews and Stack Exchange questions in `keywords` (`src/lib/open-data.mjs`).
+- Next: Common Crawl backlink discovery (large data; suits the Python engine), then step 4 (YouTube, Natural Language).
 
 ## Not doing
 - Scraping Google Trends or Google results without an API: against Google's terms. The opt-in autocomplete source stays capped as it is (D18).

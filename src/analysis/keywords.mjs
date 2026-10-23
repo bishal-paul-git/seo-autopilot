@@ -156,3 +156,40 @@ export function keywordsMarkdown(r, siteName) {
   L.push("", "## Questions people ask", "", ...(r.questions.length ? r.questions.slice(0, 30).map((q) => `- ${q.query} (${q.demand.value}, ${q.demand.basis}${q.position != null ? `; you rank ${q.position}` : ""})`) : ["- none in these sources"]));
   return L.join("\n") + "\n";
 }
+
+/**
+ * Interest in a topic from monthly Wikipedia pageviews: the average, the last 3 months against the 3 before, and the peak.
+ * A sign of how attention moves, not search volume. Null under 6 months of data or with no views.
+ */
+export function interest(months = []) {
+  const v = months.map((x) => x.views);
+  if (v.length < 6 || !v.some(Boolean)) return null;
+  const avg = (a) => a.reduce((s, x) => s + x, 0) / a.length;
+  const recent = avg(v.slice(-3)), before = avg(v.slice(-6, -3));
+  const peak = months.reduce((p, x) => (x.views > p.views ? x : p), months[0]);
+  return { average: Math.round(avg(v)), recent: Math.round(recent), change: before ? Math.round(((recent - before) / before) * 100) : null, peak: peak.month, months };
+}
+
+/** Community questions, most viewed first, each with the site page that already covers it (most of its words in a title), if any. */
+export function communityQuestions(items = [], pages = []) {
+  const seen = new Set(), titles = pages.map((p) => ({ url: p.url, t: new Set(terms(`${p.title || ""} ${p.h1 || ""}`)) }));
+  return items.filter((q) => !seen.has(q.url) && seen.add(q.url)).sort((a, b) => (b.views || 0) - (a.views || 0)).map((q) => {
+    const qt = [...new Set(terms(q.title))];
+    const hit = qt.length >= 2 && titles.find((p) => qt.filter((t) => p.t.has(t)).length / qt.length >= 0.6);
+    return { ...q, covered: hit ? hit.url : null };
+  });
+}
+
+/** Report sections for the open-data sources; empty when neither ran. */
+export function openDataMarkdown({ topics = [], community = [] } = {}) {
+  const L = [];
+  if (topics.length) {
+    L.push("", "## Topic interest (Wikipedia pageviews)", "", "Monthly human views of the closest Wikipedia article: how attention to the topic moves. Not search volume.", "", "| Seed | Article | Monthly average | Last 3 months vs 3 before | Peak month |", "|---|---|---|---|---|");
+    for (const t of topics) L.push(`| ${t.seed} | [${t.article.title}](${t.article.url}) | ${t.interest ? t.interest.average : "-"} | ${t.interest?.change != null ? `${t.interest.change > 0 ? "+" : ""}${t.interest.change}%` : "-"} | ${t.interest?.peak || "-"} |`);
+  }
+  if (community.length) {
+    L.push("", "## Questions people ask in communities (Stack Exchange)", "", "Real questions in the asker's words, most viewed first. Views are lifetime views on that site.", "");
+    for (const q of community.slice(0, 25)) L.push(`- [${q.title}](${q.url}) (${q.site}; ${q.views ?? "-"} views, ${q.answers} answer(s)${q.covered ? `; covered by ${q.covered}` : "; **no page covers it**"})`);
+  }
+  return L.length ? L.join("\n") + "\n" : "";
+}

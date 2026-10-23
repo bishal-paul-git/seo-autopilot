@@ -301,7 +301,8 @@
               "aiRuns": { "type": "integer", "minimum": 1, "maximum": 5, "description": "Times each question is asked per engine (default 2)." },
               "logo": { "type": "string", "description": "Full URL of the logo image, used in suggested Organization markup." },
               "sameAs": { "type": "array", "items": { "type": "string" }, "description": "Your official profile URLs (social, Wikipedia, Wikidata, directories), used in suggested Organization markup and the entity check." },
-              "serpLimit": { "type": "integer", "minimum": 1, "maximum": 200, "description": "Tracked queries checked live by rank --serp (default 50)." }
+              "serpLimit": { "type": "integer", "minimum": 1, "maximum": 200, "description": "Tracked queries checked live by rank --serp (default 50)." },
+              "stackExchangeSites": { "type": "array", "items": { "type": "string" }, "description": "Stack Exchange sites to mine questions from in keywords, for example [\"webmasters\", \"money\"] (free, no key)." }
             }
           },
           "inbound": {
