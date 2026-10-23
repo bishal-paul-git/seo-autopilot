@@ -72,6 +72,7 @@ Outside GitHub Actions the jobs that open issues print what they would do unless
 | `CLAUDE_CODE_OAUTH_TOKEN` or `ANTHROPIC_API_KEY` | secret | the implementer (drafts approved pages as pull requests); either works and drafting is optional |
 | `PAGESPEED_API_KEY` | secret | optional, raises the PageSpeed rate limit |
 | `BRAVE_API_KEY`, `SERPAPI_KEY`, `DATAFORSEO_LOGIN` + `DATAFORSEO_PASSWORD` | secrets | optional, any one turns on the `citations` job |
+| `GOOGLE_ADS_DEVELOPER_TOKEN`, `GOOGLE_ADS_CUSTOMER_ID`, `GOOGLE_ADS_LOGIN_CUSTOMER_ID`, `GOOGLE_ADS_CLIENT_ID`, `GOOGLE_ADS_CLIENT_SECRET`, `GOOGLE_ADS_REFRESH_TOKEN` | secrets | optional, Google Keyword Planner in `keywords` (see `docs/research-suite.md`) |
 | `SEO_INGEST_URL`, `SEO_INGEST_TOKEN` | secrets | optional database dashboard |
 | `BROWSER_WS_ENDPOINT` | secret | optional cloud browser for backlinks |
 | `DEPLOY_HOOK_URL` | secret | optional rebuild hook for scheduled publishing |

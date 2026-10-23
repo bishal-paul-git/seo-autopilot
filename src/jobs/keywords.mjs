@@ -3,12 +3,14 @@
 //   npx seo-autopilot run keywords "web hosting" "domain names" [--suggest] [--serp 20]
 //   --suggest   also collect Google autocomplete phrasings (unofficial endpoint, capped, off by default)
 //   --serp N    check the live results of the top N keywords with your SERP provider: true topic grouping and difficulty
-// Keys (all optional): BING_WEBMASTER_API_KEY, DATAFORSEO_LOGIN + DATAFORSEO_PASSWORD, OPENPAGERANK_API_KEY, and a SERP
+// Keys (all optional): Google Keyword Planner (GOOGLE_ADS_DEVELOPER_TOKEN + GOOGLE_ADS_CUSTOMER_ID + sign-in, see
+// src/lib/google-ads.mjs), BING_WEBMASTER_API_KEY, DATAFORSEO_LOGIN + DATAFORSEO_PASSWORD, OPENPAGERANK_API_KEY, and a SERP
 // provider (BRAVE_API_KEY, SERPAPI_KEY or DataForSEO). Writes keywords.json and keywords.md in the state folder.
 import { readJson, writeJson, writeText, sleep } from "../core/util.mjs";
 import { loadPages } from "../adapters/index.mjs";
 import { pickProvider } from "../lib/serp.mjs";
 import { bing, dataforseo, openpagerank, suggest } from "../lib/research-sources.mjs";
+import { planner } from "../lib/google-ads.mjs";
 import { explore, keywordsMarkdown, demand, mergeCandidates } from "../analysis/keywords.mjs";
 
 export const description = "Keyword explorer: topics, intent, demand, difficulty, gaps and questions from Search Console plus any keys you add";
@@ -21,13 +23,14 @@ export async function run({ site, flags = {}, positional = [] }, deps = {}) {
   const s = site.paths.state, m = marketOf(site);
   const seeds = positional.map((x) => String(x).toLowerCase().trim()).filter(Boolean);
   const notes = [];
-  const sources = { gsc: readJson(`${s}/gsc-rows.json`, { rows: [] }).rows || [], bing: [], ideas: [], suggest: [] };
+  const sources = { gsc: readJson(`${s}/gsc-rows.json`, { rows: [] }).rows || [], bing: [], ideas: [], planner: [], suggest: [] };
   if (!sources.gsc.length) notes.push("No Search Console rows saved yet (run the daily job): own demand and positions are missing.");
   const tryIt = async (name, fn, fallback = []) => { try { return await fn(); } catch (e) { notes.push(`${name}: ${e.message}`); return fallback; } };
   for (const seed of seeds.slice(0, 10)) {
     if (bing.enabled(env)) sources.bing.push(...(await tryIt("bing", () => bing.related(seed, m, { fetch: f, env }))));
     if (flags.suggest) sources.suggest.push(...(await tryIt("suggest", () => suggest.expand(seed, m, { fetch: f, delayMs: delay, sleep }))));
   }
+  if (seeds.length && planner.enabled(env)) sources.planner = await tryIt("google-ads", () => planner.ideas(seeds, m, { fetch: f, env, token: deps.adsToken }));
   if (seeds.length && dataforseo.enabled(env)) sources.ideas = await tryIt("dataforseo", () => dataforseo.ideas(seeds, m, { fetch: f, env }));
   if (!seeds.length && !sources.gsc.length) { console.log("keywords: give seed terms (run keywords \"your topic\") or run the daily job first."); return; }
 

@@ -24,6 +24,7 @@ export function githubSetup(cwd) {
 }
 
 export const OPTIONAL_KEYS = [
+  [["GOOGLE_ADS_DEVELOPER_TOKEN", "GOOGLE_ADS_CUSTOMER_ID"], "Google Keyword Planner volumes, competition and bids for keywords (free; your own Ads account)"],
   [["DATAFORSEO_LOGIN", "DATAFORSEO_PASSWORD"], "keyword volumes, competitor rankings and backlinks (paid)"],
   [["BRAVE_API_KEY", "SERPAPI_KEY"], "live search results: rank --serp, keywords --serp, optimize"],
   [["BING_WEBMASTER_API_KEY"], "Bing related queries for keywords (free)"],

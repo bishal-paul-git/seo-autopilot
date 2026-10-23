@@ -1,6 +1,7 @@
 # Implementation status
 
-Last updated: 2026-10-23 01:30 UTC.
+Last updated: 2026-10-23 (brief 14 step 2), UTC.
+- **Unreleased on `main` + this branch:** the `gsc` job (PR #18, merged `308e445`) and Google Keyword Planner in `keywords` (`src/lib/google-ads.mjs`, branch `claude/hopeful-euler-662mu5`). Both tested with recorded-style responses only (`npm test` 444/444); neither has run against a live Google property. Keyword Planner needs the owner's Google Ads developer token.
 - **Now:** v2.18.0 released (https://github.com/bishal-paul-git/seo-autopilot/releases/tag/v2.18.0; `v2.18.0`, `v2` and `v2-stable` at `b601534`). It includes specialist packs steps 1 to 3: detection, routing and install (D21), and the `local` and `shop` jobs. Not done: connector deployment, npm publish (no `NPM_TOKEN`), real-site runs of `local` and `shop`. Next build: packs step 4 (Google Business Profile, Merchant Center) and more packs (brief 12).
 - Erudience was upgraded to 2.16 by https://github.com/bishal-paul-git/erudience-flow-engine/pull/91 (merged, `ce934ba`). No scheduled run with 2.16 has been observed yet.
 - Cloudflare: the owner's account is `8566…5c39`. KV namespace `OAUTH_KV` (`27fd7750abf34014a04036e6f36b827c`) exists there and is bound in `cloud/connector/wrangler.toml`. An unused KV namespace, `seo-autopilot-connector-OAUTH_KV`, sits in account `0342…476d` and can be deleted. A Pages project, `seo-autopilot-gls`, publishes a static copy of the repository and is not the connector. This session could not deploy: the injected Cloudflare token never reached it, and Claude in Chrome is not available in cloud sessions.
@@ -222,7 +223,8 @@ Next actions, in order:
 7. Before others use the connector: a rate-limiting rule for `/register`, and a privacy note. Next build, after real use: a hosted job runner, so `run_job` works from Claude.
 8. Release v2.17.0 (connector, local agents) with Actions → tag-release, once the connector has been tested live.
 9. **Stage A launch (2026-10-23):** v2.17.0 is prepared, with the launch checklist in `docs/launch/README.md`. Owner items: the `NPM_TOKEN` secret, the Marketplace tick on the release, Discussions and labels, Pages domain, the demo video. The case study waits for real Erudience data.
-10. **Logged for later (owner, 2026-10-23):**
+10. **Owner, Google Ads (for Keyword Planner):** in a Google Ads manager account, Tools > API Center > request a developer token, then apply for Basic access. Add `GOOGLE_ADS_DEVELOPER_TOKEN`, `GOOGLE_ADS_CUSTOMER_ID` (and `GOOGLE_ADS_LOGIN_CUSTOMER_ID`) as repository secrets, plus either the OAuth trio or the service account added as an Ads user. Never paste them in chat. Then run `keywords "<seed>"` once and record the evidence here.
+11. **Logged for later (owner, 2026-10-23):**
    - vertical packs, so each site gets the specialist agents and data jobs for its kind of business: `docs/roadmap/12-vertical-packs.md`;
    - going live, with an open-source launch first and then the hosted product: `docs/roadmap/13-go-live.md`.
 

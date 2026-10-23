@@ -2,6 +2,12 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-23 (brief 14 step 2: Keyword Planner)
+- **Code (branch `claude/hopeful-euler-662mu5`):**
+  - new: `src/lib/google-ads.mjs` (Google Ads API `generateKeywordIdeas`, v24 by default; OAuth refresh-token or service-account sign-in), `test/google-ads.test.mjs` (6 tests);
+  - changed: `src/analysis/keywords.mjs` (a `planner` source; Google's volume ranks first in `demand`), `src/jobs/keywords.mjs`, `doctor` optional keys, the weekly keywords step env, `docs/research-suite.md`, `docs/jobs.md`, brief 14 status.
+- **Checks:** `npm test` 444/444. **Not run against a live Google Ads account:** the owner has no developer token yet.
+
 ## 2026-10-23 (brief 14 step 1: gsc job)
 - **Research (docs):**
   - the GitHub topic `seo-free` (5 small tools; nothing to reuse);

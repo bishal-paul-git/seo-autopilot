@@ -17,9 +17,9 @@ const PROVIDER_INTENT = { informational: "informational", commercial: "commercia
 const norm = (q) => String(q || "").toLowerCase().replace(/\s+/g, " ").trim();
 
 /** Merge every source into one record per query. `brandTerms` (the site's own brand) are left out of research. */
-export function mergeCandidates({ gsc = [], bing = [], ideas = [], suggest = [] } = {}, { seeds = [], brandTerms = [], ignore = [] } = {}) {
+export function mergeCandidates({ gsc = [], bing = [], ideas = [], planner = [], suggest = [] } = {}, { seeds = [], brandTerms = [], ignore = [] } = {}) {
   const map = new Map();
-  const get = (q) => map.get(q) || map.set(q, { query: q, sources: [], impressions: 0, clicks: 0, position: null, pages: [], bingImpressions: null, volume: null, cpc: null, difficulty: null, providerIntent: null, trend: null }).get(q);
+  const get = (q) => map.get(q) || map.set(q, { query: q, sources: [], impressions: 0, clicks: 0, position: null, pages: [], bingImpressions: null, volume: null, cpc: null, difficulty: null, providerIntent: null, trend: null, googleVolume: null }).get(q);
   const add = (k, src) => { if (!k.sources.includes(src)) k.sources.push(src); };
   const posW = new Map();
   for (const r of gsc) {
@@ -37,6 +37,14 @@ export function mergeCandidates({ gsc = [], bing = [], ideas = [], suggest = [] 
     if (r.competition != null) k.competition = r.competition;
     if (r.intent) k.providerIntent = PROVIDER_INTENT[r.intent] || null;
   }
+  // Keyword Planner: Google's own estimate. Its trend and competition win over a third party's.
+  for (const r of planner) {
+    const k = get(norm(r.query)); add(k, "google-ads");
+    if (r.volume != null) k.googleVolume = r.volume;
+    if (r.competition) k.competition = r.competition;
+    if (r.bidLow != null || r.bidHigh != null) k.bid = { low: r.bidLow, high: r.bidHigh };
+    if (r.trend?.length) k.trend = r.trend;
+  }
   for (const r of suggest) add(get(norm(r.query)), "suggest");
 
   const brand = [...brandTerms, ...ignore].map(norm).filter(Boolean);
@@ -52,8 +60,9 @@ export function label(k, brandTerms = []) {
   return { ...k, intent, local: LOCAL.test(k.query), question: QUESTION.test(k.query), modifiers: MODIFIERS.filter((m) => new RegExp(`\\b${m}\\b`).test(k.query)) };
 }
 
-/** Demand of a keyword in one comparable number, and where it came from. Provider volume > Bing > Search Console impressions. */
+/** Demand of a keyword in one comparable number, and where it came from. Google Keyword Planner > provider volume > Bing > Search Console impressions. */
 export function demand(k) {
+  if (k.googleVolume != null) return { value: k.googleVolume, basis: "Google Keyword Planner monthly searches (Google's estimate)" };
   if (k.volume != null) return { value: k.volume, basis: "provider monthly volume (estimate)" };
   if (k.bingImpressions != null) return { value: k.bingImpressions, basis: "Bing impressions, 90 days" };
   if (k.impressions) return { value: k.impressions, basis: "your Search Console impressions, 28 days" };
@@ -119,7 +128,7 @@ export function explore(sources, { seeds = [], brandTerms = [], ignore = [], ser
   const list = mergeCandidates(sources, { seeds, brandTerms, ignore }).map((k) => label(k, brandTerms));
   const groups = groupKeywords(list, { serps }).map((g) => {
     const diff = difficulty(g.parent, { serp: serpResults[g.parent.query], authority });
-    const totals = g.members.reduce((t, k) => ({ volume: t.volume + (k.volume || 0), impressions: t.impressions + k.impressions, clicks: t.clicks + k.clicks, bing: t.bing + (k.bingImpressions || 0) }), { volume: 0, impressions: 0, clicks: 0, bing: 0 });
+    const totals = g.members.reduce((t, k) => ({ volume: t.volume + (k.googleVolume ?? k.volume ?? 0), impressions: t.impressions + k.impressions, clicks: t.clicks + k.clicks, bing: t.bing + (k.bingImpressions || 0) }), { volume: 0, impressions: 0, clicks: 0, bing: 0 });
     return {
       parent: g.parent.query, intent: g.parent.intent, local: g.parent.local, method: g.method, keywords: g.members.length,
       members: g.members.map((k) => k.query), totals, demand: demand(g.parent), position: g.parent.position,
@@ -140,7 +149,7 @@ const n = (x) => (x == null ? "-" : String(x));
 export function keywordsMarkdown(r, siteName) {
   const L = [`# ${siteName} keyword explorer`, ""];
   L.push(`Seeds: ${r.seeds.length ? r.seeds.map((s) => `"${s}"`).join(", ") : "none (all your Search Console queries)"}. Sources: ${r.sourcesUsed.join(", ") || "none"}. ${r.keywords} keywords in ${r.groups.length} topics.`);
-  L.push("Grouping by shared results means the live top 10 overlap by at least 3 pages; grouping by same words is an approximation. Volumes from a provider are estimates; Search Console and Bing numbers are measured impressions. Opportunity is a ranking inside this report, not a traffic forecast.", "");
+  L.push("Grouping by shared results means the live top 10 overlap by at least 3 pages; grouping by same words is an approximation. Volumes from Google Keyword Planner and from a provider are estimates (Google rounds them, more coarsely for accounts with little ad spend); Search Console and Bing numbers are measured impressions. Opportunity is a ranking inside this report, not a traffic forecast.", "");
   L.push("## Topics by opportunity", "", "| Topic (parent) | Intent | Keywords | Demand | Your position | Difficulty | Owner page | Opportunity |", "|---|---|---|---|---|---|---|---|");
   for (const g of r.groups.slice(0, 40)) L.push(`| ${g.parent} | ${g.intent}${g.local ? ", local" : ""} | ${g.keywords} | ${g.demand.value} (${g.demand.basis}) | ${n(g.position)} | ${g.difficulty ? `${g.difficulty.value} (${g.difficulty.basis})` : "-"} | ${g.owner ? g.owner.url : "**none: gap**"} | ${g.opportunity} |`);
   L.push("", "## Gaps (no page owns the topic)", "", ...(r.gaps.length ? r.gaps.slice(0, 15).map((g) => `- **${g.parent}** (${g.intent}): ${g.keywords} keywords, demand ${g.demand.value} (${g.demand.basis}). Also: ${g.members.slice(1, 6).join(", ") || "-"}`) : ["- none found"]));
