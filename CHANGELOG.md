@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **Google Keyword Planner in `keywords` (brief 14, step 2).** With your own Google Ads account (free to call), `keywords "<seed>"` adds Google's keyword ideas, average monthly searches, competition, top-of-page bid ranges and 12-month trend for your market. Google's volume ranks above every other demand source, and the report labels it as Google's estimate. Sign in with an OAuth refresh token (adwords scope) or your existing service account added as a user of the Ads account. A new developer token works only with test accounts until Google approves a higher access level; the error says so. `doctor` lists the keys, and the weekly keywords step passes them. See "Google Keyword Planner" in `docs/research-suite.md`. Tested against recorded-style responses only; not yet run against a live Ads account.
 - **More from Search Console, free: the `gsc` job (brief 14, step 1).** Weekly, with the same read-only key as the daily job:
   - sitemap status from Search Console: none submitted, the configured sitemap not submitted, errors, warnings, not read for 30 days, pending;
   - clicks from Google Discover, the Google News app, the News tab, image search and video search, each against the previous 28 days, with a finding when Discover or News falls 30% or more;

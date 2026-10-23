@@ -6,7 +6,7 @@ Every report says where each number came from. Search Console and Bing numbers a
 
 | Job | What it does | Works with | Adds when you set |
 |---|---|---|---|
-| `keywords [seeds...]` | Keyword explorer: topics (parent topic plus related queries), intent, demand, difficulty, the page that owns each topic, gaps no page owns, and questions people ask | Search Console rows (from `daily`) | `BING_WEBMASTER_API_KEY` (related queries with Bing impressions, free), DataForSEO (volume, CPC, difficulty), `--serp N` with a SERP key (topics grouped by shared results, difficulty from the authority of the top 10), `--suggest` (autocomplete phrasings) |
+| `keywords [seeds...]` | Keyword explorer: topics (parent topic plus related queries), intent, demand, difficulty, the page that owns each topic, gaps no page owns, and questions people ask | Search Console rows (from `daily`) | Google Keyword Planner (your own Ads account: Google's volume, competition and bids, free), `BING_WEBMASTER_API_KEY` (related queries with Bing impressions, free), DataForSEO (volume, CPC, difficulty), `--serp N` with a SERP key (topics grouped by shared results, difficulty from the authority of the top 10), `--suggest` (autocomplete phrasings) |
 | `rank [--serp]` | Rank tracker: daily positions of your tracked queries, this week vs last week vs four weeks ago, movers, dropped queries, a visibility index and position buckets. History is kept beyond Search Console's 16 months | Search Console (free), runs daily | `--serp` with a SERP key: search features on each results page and who holds them, competitors, share of voice by domain |
 | `gap` | Competitor and keyword gap: queries competitors rank top 10 for where you are absent ("missing") or on page two ("weak"), grouped into topics; the competitor pages behind most of them; queries only you hold | Your tracked queries' live results (`rank --serp`) | DataForSEO: every query each competitor ranks for |
 | `optimize --query ... --url/--file ...` | Content optimiser: scores a page or draft against the top-ranking pages. Covers terms most of them use (with a usage range scaled to your length), sections and questions several of them share, length, readability, and the query in title, H1, description and opening | `--compare url1,url2,...` | A SERP key finds the top pages for you. robots.txt is respected |
@@ -66,6 +66,7 @@ Set each key as a repository secret, or in your shell when running locally. Neve
 
 | Secret | Provider | Used by |
 |---|---|---|
+| `GOOGLE_ADS_DEVELOPER_TOKEN`, `GOOGLE_ADS_CUSTOMER_ID`, optional `GOOGLE_ADS_LOGIN_CUSTOMER_ID`, and `GOOGLE_ADS_CLIENT_ID` + `GOOGLE_ADS_CLIENT_SECRET` + `GOOGLE_ADS_REFRESH_TOKEN` (or `GOOGLE_KEY_JSON` with the service account added as a user of the Ads account) | Google Keyword Planner through your own Google Ads account (free; see below) | keywords |
 | `BING_WEBMASTER_API_KEY` | Bing Webmaster Tools (free; Settings > API access) | keywords |
 | `DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD` | DataForSEO (pay as you go) | keywords, gap, authority, live results |
 | `OPENPAGERANK_API_KEY` | Open PageRank (free key) | keywords difficulty, authority |
@@ -75,6 +76,14 @@ Set each key as a repository secret, or in your shell when running locally. Neve
 | `GOOGLE_KG_API_KEY` | Google Cloud API key with the Knowledge Graph Search API (free) | entity |
 
 Check each provider's current prices before switching a scheduled step on. The defaults keep paid steps off.
+
+### Google Keyword Planner
+`keywords "<seed>"` asks Keyword Planner for ideas, average monthly searches, competition and top-of-page bid ranges in your `research.market`. Its volume ranks above every other demand source in the report.
+1. In a Google Ads **manager** account, open Tools > API Center and request a developer token. A new token works only with test accounts; apply for Basic access for real data. Approval is Google's decision.
+2. Sign-in: create an OAuth client (Google Cloud console) and a refresh token with the `https://www.googleapis.com/auth/adwords` scope, or add your service account's email as a user of the Ads account and reuse `GOOGLE_KEY_JSON`.
+3. Add the secrets in the table above. `GOOGLE_ADS_CUSTOMER_ID` is the Ads account to plan in; set `GOOGLE_ADS_LOGIN_CUSTOMER_ID` to the manager account when access goes through it.
+
+Figures are Google's estimates. Google rounds them, and accounts with little or no ad spend can get coarser figures; bids are in the Ads account's currency. The API version defaults to v24; set `GOOGLE_ADS_API_VERSION` when Google retires it.
 
 ## Compared with paid suites, honestly
 - **Where this is as good or better:**
