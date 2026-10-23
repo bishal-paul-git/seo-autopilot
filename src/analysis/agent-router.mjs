@@ -28,7 +28,7 @@ function countBy(issues) {
   return m;
 }
 
-export function routeAgents({ profile = null, audit = null, priorities = null, inspect = {}, speed = null, geo = null, pipeline = null, consent = null, ymyl = null, pace = null, citations = null, quality = null, redirects = null, facts = null, links = null, render = null, inbound = null, logs = null, rank = null, keywords = null, gap = null, aiVisibility = null, authority = null, forecast = null, linkgraph = null, vitals = null, changes = null, schema = null, entity = null, site = {}, today = "" } = {}) {
+export function routeAgents({ profile = null, audit = null, priorities = null, inspect = {}, speed = null, geo = null, pipeline = null, consent = null, ymyl = null, pace = null, citations = null, quality = null, redirects = null, facts = null, links = null, render = null, inbound = null, logs = null, rank = null, keywords = null, gap = null, aiVisibility = null, authority = null, forecast = null, linkgraph = null, vitals = null, changes = null, schema = null, entity = null, local = null, site = {}, today = "" } = {}) {
   const plan = [];
   const advise = profile && profile.mode === "advise";
   const how = advise ? " This site is in advise mode: recommend exact changes for a person to make; do not try to edit files." : "";
@@ -106,6 +106,13 @@ export function routeAgents({ profile = null, audit = null, priorities = null, i
   const types = profile?.signals?.structuredData || [];
   if (profile && !types.some((t) => /Organization|LocalBusiness|Corporation|Person/.test(t))) add("entity-reputation", PHASES.fix, "The home page has no Organization or Person markup, so the business is a weak entity to search engines and AI tools.", ["structured data on the home page: " + (types.join(", ") || "none")], "Use the seo-entity-reputation agent to define the entity, its profiles and its consistent description, then brief the seo-schema-engineer to add the markup.");
   if (profile?.signals?.hreflang) add("international", PHASES.fix, "The site has language or region versions.", ["hreflang present"], "Use the seo-international agent to check language targeting end to end.");
+  // Local pack data (local.json): name, address and phone disagreements go to the citation auditor; thin or swapped-town
+  // location pages to the local content writer. Added before the pack loop, so these steps carry the evidence.
+  const lf = (local?.findings || []);
+  const napF = lf.filter((f) => /variants|not-owner|no-local-markup|markup-incomplete/.test(f.id));
+  if (napF.length) add("local-citation-auditor", napF.some((f) => f.severity === "high") ? PHASES.fix : PHASES.grow, `The local check found ${napF.length} problem(s) with the business name, address or phone.`, napF.map((f) => f.title), "Use the seo-local-citation-auditor on local.json: confirm the true name, address and phone with the owner, list every page and listing to correct, and hand markup fixes to the seo-schema-engineer." + how, [...new Set(napF.flatMap((f) => f.pages || []))].map(short));
+  const locF = lf.filter((f) => /^location-/.test(f.id));
+  if (locF.length) add("local-content-writer", locF.some((f) => f.severity === "high") ? PHASES.fix : PHASES.content, `The local check found ${locF.length} problem(s) with location pages.`, locF.map((f) => f.title), "Use the seo-local-content-writer on the location pages in local.json: merge near-identical pages or give each one real local substance the owner can confirm. Never swap the town name in a template." + how, [...new Set(locF.flatMap((f) => f.pages || []))].map(short));
   // Vertical packs: every specialist agent of each pack that applies (detected, or set with `verticals` in the config).
   for (const { pack, why } of detectVerticals({ profile, site })) {
     for (const [name, ask] of Object.entries(PACKS[pack].agents)) add(name.replace(/^seo-/, ""), pack === "ecommerce" ? PHASES.fix : PHASES.grow, `${PACKS[pack].title} pack: ${why.join("; ")}.`, why, ask + how);

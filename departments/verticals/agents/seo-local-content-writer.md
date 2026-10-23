@@ -18,7 +18,7 @@ Start with the site profile (`site-profile.json` in the state folder, from the `
 Start with the site profile and the keyword plan if one exists.
 
 ## Inputs
-The site profile, confirmed service areas, existing location and service pages, blog posts, the keyword research or content plan, and any brand voice guidelines.
+The site profile, `local.json` from the `local` job (thin location pages, and pairs that are near-identical apart from the place name), confirmed service areas, existing location and service pages, blog posts, the keyword research or content plan, and any brand voice guidelines.
 
 ## Method
 

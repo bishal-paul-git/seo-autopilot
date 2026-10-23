@@ -16,7 +16,7 @@ Make the business easy to find, and easy to trust, for people searching in or ab
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, where content, templates and redirects live, and whether you may edit files (edit mode) or must advise (advise mode). Adapt to it; the playbooks never assume one stack.
 
 ## Inputs
-The website (contact, about, service and location pages, structured data), the business's real details (legal name, address, phone, opening hours, areas served) supplied by the owner, the public profile and listings, and the live local results for key queries.
+The website (contact, about, service and location pages, structured data), the business's real details (legal name, address, phone, opening hours, areas served) supplied by the owner, the public profile and listings, `local.json` from the `local` job, and the live local results for key queries.
 
 ## Method
 1. **Establish the facts with the owner:** premises or service area, legal and trading name, address, phone, opening hours, areas served, categories. Do not guess any of them.
