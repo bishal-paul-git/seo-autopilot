@@ -3,6 +3,7 @@
 //   npx seo-autopilot run keywords "web hosting" "domain names" [--suggest] [--serp 20]
 //   --suggest   also collect Google autocomplete phrasings (unofficial endpoint, capped, off by default)
 //   --stackexchange webmasters,money   also mine questions from these Stack Exchange sites (default: research.stackExchangeSites)
+//   --no-video   skip YouTube results (on when YOUTUBE_API_KEY is set; at most 5 searches a run)
 //   --no-open-data   skip Wikipedia pageviews and Stack Exchange (both free, no key)
 //   --serp N    check the live results of the top N keywords with your SERP provider: true topic grouping and difficulty
 // Keys (all optional): Google Keyword Planner (GOOGLE_ADS_DEVELOPER_TOKEN + GOOGLE_ADS_CUSTOMER_ID + sign-in, see
@@ -14,7 +15,8 @@ import { pickProvider } from "../lib/serp.mjs";
 import { bing, dataforseo, openpagerank, suggest } from "../lib/research-sources.mjs";
 import { planner } from "../lib/google-ads.mjs";
 import { wikipedia, stackexchange } from "../lib/open-data.mjs";
-import { explore, keywordsMarkdown, demand, mergeCandidates, interest, communityQuestions, openDataMarkdown } from "../analysis/keywords.mjs";
+import { youtube } from "../lib/youtube.mjs";
+import { explore, keywordsMarkdown, demand, mergeCandidates, interest, communityQuestions, openDataMarkdown, videoCandidates, videoSummary, videoMarkdown } from "../analysis/keywords.mjs";
 
 export const description = "Keyword explorer: topics, intent, demand, difficulty, gaps and questions from Search Console plus any keys you add";
 
@@ -70,8 +72,13 @@ export async function run({ site, flags = {}, positional = [] }, deps = {}) {
     for (const se of seSites) for (const seed of seeds.slice(0, 5)) asked.push(...(await tryIt("stackexchange", () => stackexchange.questions(seed, se, { fetch: f, env }))));
     open.community = communityQuestions(asked, pages);
   }
-  writeJson(`${s}/keywords.json`, { generatedAt: new Date().toISOString(), market: m, provider: provider && want ? provider.name : null, notes, ...r, ...open });
-  const md = keywordsMarkdown(r, site.name) + openDataMarkdown(open) + (notes.length ? `\n## Notes\n${notes.map((x) => `- ${x}`).join("\n")}\n` : "");
+  // Video results for how-to, review and comparison topics (YOUTUBE_API_KEY; 5 searches = 500 of the 10,000 free daily units).
+  const video = [], channel = site.research?.youtubeChannel || "";
+  if (youtube.enabled(env) && !flags["no-video"]) {
+    for (const q of videoCandidates(r.groups, 5)) { const v = await tryIt("youtube", () => youtube.videos(q, m, { fetch: f, env }), null); if (v) video.push(videoSummary(q, v, channel)); }
+  }
+  writeJson(`${s}/keywords.json`, { generatedAt: new Date().toISOString(), market: m, provider: provider && want ? provider.name : null, notes, ...r, ...open, video });
+  const md = keywordsMarkdown(r, site.name) + openDataMarkdown(open) + videoMarkdown(video, channel) + (notes.length ? `\n## Notes\n${notes.map((x) => `- ${x}`).join("\n")}\n` : "");
   writeText(`${s}/keywords.md`, md);
   console.log(md);
 }

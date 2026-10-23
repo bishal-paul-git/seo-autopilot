@@ -29,6 +29,7 @@ export const OPTIONAL_KEYS = [
   [["BRAVE_API_KEY", "SERPAPI_KEY"], "live search results: rank --serp, keywords --serp, optimize"],
   [["BING_WEBMASTER_API_KEY"], "Bing related queries for keywords (free)"],
   [["OPENPAGERANK_API_KEY"], "domain authority for difficulty and the authority report (free)"],
+  [["YOUTUBE_API_KEY"], "YouTube video results for how-to and review topics in keywords (free quota)"],
   [["CRUX_API_KEY"], "real-user Core Web Vitals for vitals (free)"],
   [["GOOGLE_KG_API_KEY"], "Google Knowledge Graph for entity (free)"],
   [["PERPLEXITY_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY"], "AI engines for ai-visibility (paid; ANTHROPIC_API_KEY counts too)"],

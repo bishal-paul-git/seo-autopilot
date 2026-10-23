@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **YouTube video results in `keywords` (brief 14, step 4).** With `YOUTUBE_API_KEY` (a free Google Cloud key with the YouTube Data API), the 5 best how-to, review and comparison topics get their top YouTube results: the top video, the median views of the top 10, and where your channel ranks when `research.youtubeChannel` is set. It uses at most about 505 of the 10,000 free daily units. `--no-video` skips it. Results are in `keywords.json` (`video`) and `keywords.md`. Tested against recorded-style responses only.
+
 ## 2.19.0
 
 More free data with the user's own accounts, and open data with no key (brief 14, steps 1 to 3). Every source below is tested against recorded-style responses only; none has yet run live from a scheduled job.

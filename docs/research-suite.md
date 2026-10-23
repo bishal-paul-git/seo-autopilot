@@ -68,6 +68,7 @@ Set each key as a repository secret, or in your shell when running locally. Neve
 |---|---|---|
 | `GOOGLE_ADS_DEVELOPER_TOKEN`, `GOOGLE_ADS_CUSTOMER_ID`, optional `GOOGLE_ADS_LOGIN_CUSTOMER_ID`, and `GOOGLE_ADS_CLIENT_ID` + `GOOGLE_ADS_CLIENT_SECRET` + `GOOGLE_ADS_REFRESH_TOKEN` (or `GOOGLE_KEY_JSON` with the service account added as a user of the Ads account) | Google Keyword Planner through your own Google Ads account (free; see below) | keywords |
 | `BING_WEBMASTER_API_KEY` | Bing Webmaster Tools (free; Settings > API access) | keywords |
+| `YOUTUBE_API_KEY` | Google Cloud API key with the YouTube Data API v3 (free quota of 10,000 units a day; keywords uses at most about 505) | keywords video results; set `research.youtubeChannel` to see where your channel ranks |
 | `STACKEXCHANGE_KEY` (optional) | Stack Exchange API app key (free; raises 300 requests a day to 10,000) | keywords questions |
 | `DATAFORSEO_LOGIN`, `DATAFORSEO_PASSWORD` | DataForSEO (pay as you go) | keywords, gap, authority, live results |
 | `OPENPAGERANK_API_KEY` | Open PageRank (free key) | keywords difficulty, authority |

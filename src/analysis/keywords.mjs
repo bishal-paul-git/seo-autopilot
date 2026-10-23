@@ -193,3 +193,23 @@ export function openDataMarkdown({ topics = [], community = [] } = {}) {
   }
   return L.length ? L.join("\n") + "\n" : "";
 }
+
+const VIDEO_INTENT = /\b(how to|how do|tutorial|guide|diy|review|reviews|vs|versus|example|examples|step by step|install|set ?up|fix|recipe|ideas|demo)\b/;
+
+/** Topics where people often want a video (how-to, review, comparison), best opportunity first. */
+export const videoCandidates = (groups = [], n = 5) => groups.filter((g) => VIDEO_INTENT.test(g.parent)).slice(0, n).map((g) => g.parent);
+
+/** One topic's video results: the top 5, the median views of all results, and where the site's own channel ranks (1-based). */
+export function videoSummary(query, videos = [], channel = "") {
+  const v = videos.map((x) => x.views).filter((x) => x != null).sort((a, b) => a - b);
+  const median = v.length ? (v.length % 2 ? v[(v.length - 1) / 2] : Math.round((v[v.length / 2 - 1] + v[v.length / 2]) / 2)) : null;
+  const own = channel ? videos.findIndex((x) => x.channel.toLowerCase() === channel.toLowerCase()) : -1;
+  return { query, results: videos.length, medianViews: median, ownRank: own >= 0 ? own + 1 : null, top: videos.slice(0, 5) };
+}
+
+export function videoMarkdown(video = [], channel = "") {
+  if (!video.length) return "";
+  const L = ["", "## Video results (YouTube)", "", "Topics where searchers often want a video. Views are lifetime YouTube views of each result.", "", `| Topic | Top video | Median views (top ${10}) | ${channel ? "Your channel" : "Your channel (set research.youtubeChannel)"} |`, "|---|---|---|---|"];
+  for (const s of video) L.push(`| ${s.query} | ${s.top[0] ? `[${s.top[0].title}](${s.top[0].url}) (${s.top[0].channel}; ${s.top[0].views ?? "-"} views)` : "none"} | ${s.medianViews ?? "-"} | ${s.ownRank ? `#${s.ownRank}` : channel ? "**not in the top 10**" : "-"} |`);
+  return L.join("\n") + "\n";
+}
