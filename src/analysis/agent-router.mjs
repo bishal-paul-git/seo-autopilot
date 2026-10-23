@@ -28,7 +28,7 @@ function countBy(issues) {
   return m;
 }
 
-export function routeAgents({ profile = null, audit = null, priorities = null, inspect = {}, speed = null, geo = null, pipeline = null, consent = null, ymyl = null, pace = null, citations = null, quality = null, redirects = null, facts = null, links = null, render = null, inbound = null, logs = null, rank = null, keywords = null, gap = null, aiVisibility = null, authority = null, forecast = null, linkgraph = null, vitals = null, changes = null, schema = null, entity = null, local = null, shop = null, gsc = null, site = {}, today = "" } = {}) {
+export function routeAgents({ profile = null, audit = null, priorities = null, inspect = {}, speed = null, geo = null, pipeline = null, consent = null, ymyl = null, pace = null, citations = null, quality = null, redirects = null, facts = null, links = null, render = null, inbound = null, logs = null, rank = null, keywords = null, gap = null, aiVisibility = null, authority = null, forecast = null, linkgraph = null, vitals = null, changes = null, schema = null, entity = null, local = null, shop = null, gsc = null, listings = null, site = {}, today = "" } = {}) {
   const plan = [];
   const advise = profile && profile.mode === "advise";
   const how = advise ? " This site is in advise mode: recommend exact changes for a person to make; do not try to edit files." : "";
@@ -118,6 +118,17 @@ export function routeAgents({ profile = null, audit = null, priorities = null, i
   if (sm.length) add("indexing-monitor", sm.some((f) => f.severity === "high") ? PHASES.block : PHASES.fix, `Search Console reports ${sm.length} sitemap problem(s).`, sm.map((f) => f.title), "Use the seo-indexing-monitor agent on gsc.json: confirm each sitemap problem in Search Console, and hand the fix to the seo-technical-fixer (sitemap generation) or a person (submitting in Search Console)." + how);
   const drops = (gsc?.findings || []).filter((f) => /^drop-/.test(f.id));
   if (drops.length) add("strategist", PHASES.grow, drops.map((f) => f.title).join(" "), drops.map((f) => f.detail.split(".")[0]), "Use the seo-strategist agent on gsc.json: judge whether the drop is the surface's normal swing or a real loss, and what to publish or refresh.");
+  // Google listings (listings.json): profile facts that disagree with the site go to the citation auditor, profile gaps to the
+  // Business Profile optimiser, review replies to the review manager, Merchant Center problems to the e-commerce agent.
+  const lg = listings?.findings || [];
+  const napG = lg.filter((f) => /^gbp-(name|phone|address|website)/.test(f.id));
+  if (napG.length) add("local-citation-auditor", napG.some((f) => f.severity === "high") ? PHASES.fix : PHASES.grow, `The Business Profile disagrees with the site in ${napG.length} place(s).`, napG.map((f) => f.title), "Use the seo-local-citation-auditor on listings.json: confirm the true details with the owner, then list what to change on the profile (a person makes that change) or on the site.");
+  const gapG = lg.filter((f) => /^gbp-(not-open|no-hours|no-description|one-category|no-website)/.test(f.id));
+  if (gapG.length) add("local-gbp-optimizer", gapG.some((f) => f.severity === "high") ? PHASES.fix : PHASES.grow, `The Business Profile has ${gapG.length} gap(s).`, gapG.map((f) => f.title), "Use the seo-local-gbp-optimizer on listings.json: draft the hours, description and categories from facts the owner confirms, as a checklist for the person who manages the profile.");
+  const revG = lg.filter((f) => /^reviews-/.test(f.id));
+  if (revG.length) add("local-review-manager", PHASES.grow, revG.map((f) => f.title).join(". ") + ".", revG.map((f) => f.detail), "Use the seo-local-review-manager on listings.json: draft replies for the owner to approve and post, and an honest review-request routine. Never write, buy or gate reviews.");
+  const mc = lg.filter((f) => /^merchant-/.test(f.id));
+  if (mc.length) add("ecommerce", mc.some((f) => f.severity === "high") ? PHASES.fix : PHASES.content, `Merchant Center reports ${mc.length} problem(s): ${mc.map((f) => f.title).join("; ")}.`, mc.map((f) => f.detail).filter(Boolean), "Use the seo-ecommerce agent on listings.json: fix the product data or pages behind each disapproval first (markup, prices, availability, landing pages), then the demotions. Feed settings in Merchant Center are changed by a person." + how, [...new Set(mc.flatMap((f) => f.pages || []))].map(short));
   // E-commerce pack data (shop.json): markup, price, stock, category and crawl-trap findings go to the e-commerce agent.
   const sf = (shop?.findings || []).filter((f) => f.severity !== "low");
   if (sf.length) add("ecommerce", sf.some((f) => f.severity === "high") ? PHASES.fix : PHASES.content, `The shop check found ${sf.length} problem(s): ${sf.map((f) => f.id).join(", ")}.`, sf.map((f) => f.title), "Use the seo-ecommerce agent on shop.json: fix Product markup and price mismatches first, then canonicals or noindex for parameter URLs, then category introductions. Stock decisions (redirect, keep, remove) go to the owner." + how, [...new Set(sf.flatMap((f) => f.pages || []))].filter((u) => !u.includes("?")).map(short));

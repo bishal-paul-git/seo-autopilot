@@ -16,7 +16,7 @@ Maximise the business's visibility in the local pack and Google Maps by making i
 Start with the site profile (`site-profile.json` in the state folder, from the `profile` job): it says which platform this site runs on, how it renders, and what local signals already exist on the site.
 
 ## Inputs
-The business name, address, phone, opening hours, service areas and categories (confirmed by the owner). The website URL. Screenshots or export of the current GBP listing if available. The live local pack results for the top 5 target queries.
+`listings.json` from the `listings` job (the profile's name, phone, address, website, hours, description and categories, and how they differ from the site), when it exists. The business name, address, phone, opening hours, service areas and categories (confirmed by the owner). The website URL. Screenshots or export of the current GBP listing if available. The live local pack results for the top 5 target queries.
 
 ## Method
 1. **Verify core details:** legal name matches signage and website, address is real, phone is answered, hours are current including holidays.

@@ -1,7 +1,14 @@
 # Changelog
 
-## Unreleased
+## 2.20.0
 
+Google listings for the specialist packs, and YouTube results in keyword research. Both read only, with the user's own access, and tested against recorded-style responses only.
+
+- **Google listings for the packs: the `listings` job (packs step 4).** Weekly, read only, and each part only when its pack applies and its access is set:
+  - **Business Profile (local pack):** the profile's name, phone, address and website against the site and the confirmed `business` details; missing hours, description or extra categories; a profile not marked open; reviews without a reply (and low-rated ones), reply rate, median reply time, and a slowing review pace. Reviewer names and review text are never stored. Needs OAuth (business.manage) from an account that manages the profile, and Google's approval of API access for the project.
+  - **Merchant Center (e-commerce pack, Merchant API):** disapproved and demoted products grouped by issue, feed links to pages the audit found broken, and feed links to another domain. Uses the service account, added as a Merchant Center user, and `MERCHANT_ACCOUNT_ID`.
+
+  Findings go to the citation auditor, the Business Profile optimiser, the review manager and the e-commerce agent. It never replies to a review or edits a product. Tested against recorded-style responses only.
 - **YouTube video results in `keywords` (brief 14, step 4).** With `YOUTUBE_API_KEY` (a free Google Cloud key with the YouTube Data API), the 5 best how-to, review and comparison topics get their top YouTube results: the top video, the median views of the top 10, and where your channel ranks when `research.youtubeChannel` is set. It uses at most about 505 of the 10,000 free daily units. `--no-video` skips it. Results are in `keywords.json` (`video`) and `keywords.md`. Tested against recorded-style responses only.
 
 ## 2.19.0

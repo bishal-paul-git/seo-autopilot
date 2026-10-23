@@ -35,7 +35,8 @@ An agent is only as good as the data it is given.
 - Step 1 is done (Unreleased, D21): detection, the `verticals` setting, routing, install and `doctor`. Packs are defined in `departments/verticals/packs.json`; the agent files stay in `departments/verticals/agents/` (see D21).
 - Step 2 (local, no keys) is done (Unreleased): the `local` job, covering name, address and phone consistency, markup, and thin or duplicate location pages. Review velocity needs Google Business Profile access (step 4).
 - Step 3 (e-commerce, no keys) is done (v2.18.0): the `shop` job, covering product markup and price match, stock, thin categories and parameter crawl traps.
-- Step 4 is next: Google Business Profile and Merchant Center with the user's own access, plus `local/legal`, `saas` and `publisher` packs.
+- Step 4, first part, is built (v2.20.0): the `listings` job, Business Profile and Merchant Center with the user's own access. Not run live.
+- Next: local rank checks per city, then the `saas` and `publisher` packs; `local/legal` waits for the owner's decision on the legal playbooks.
 
 ## Order
 1. Pack layout, detection, install and routing. The existing agents start getting work. About one session.
