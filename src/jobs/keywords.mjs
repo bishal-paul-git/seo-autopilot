@@ -2,6 +2,8 @@
 // have. Search Console alone works (rows saved by the daily job); each key adds a source.
 //   npx seo-autopilot run keywords "web hosting" "domain names" [--suggest] [--serp 20]
 //   --suggest   also collect Google autocomplete phrasings (unofficial endpoint, capped, off by default)
+//   --stackexchange webmasters,money   also mine questions from these Stack Exchange sites (default: research.stackExchangeSites)
+//   --no-open-data   skip Wikipedia pageviews and Stack Exchange (both free, no key)
 //   --serp N    check the live results of the top N keywords with your SERP provider: true topic grouping and difficulty
 // Keys (all optional): Google Keyword Planner (GOOGLE_ADS_DEVELOPER_TOKEN + GOOGLE_ADS_CUSTOMER_ID + sign-in, see
 // src/lib/google-ads.mjs), BING_WEBMASTER_API_KEY, DATAFORSEO_LOGIN + DATAFORSEO_PASSWORD, OPENPAGERANK_API_KEY, and a SERP
@@ -11,7 +13,8 @@ import { loadPages } from "../adapters/index.mjs";
 import { pickProvider } from "../lib/serp.mjs";
 import { bing, dataforseo, openpagerank, suggest } from "../lib/research-sources.mjs";
 import { planner } from "../lib/google-ads.mjs";
-import { explore, keywordsMarkdown, demand, mergeCandidates } from "../analysis/keywords.mjs";
+import { wikipedia, stackexchange } from "../lib/open-data.mjs";
+import { explore, keywordsMarkdown, demand, mergeCandidates, interest, communityQuestions, openDataMarkdown } from "../analysis/keywords.mjs";
 
 export const description = "Keyword explorer: topics, intent, demand, difficulty, gaps and questions from Search Console plus any keys you add";
 
@@ -54,8 +57,21 @@ export async function run({ site, flags = {}, positional = [] }, deps = {}) {
   let pages = [];
   try { pages = await loadPages(site); } catch { /* sitemap site without content files: owner pages come from Search Console only */ }
   const r = explore(sources, { seeds, brandTerms: site.brandTerms || [], ignore: site.ignoreQueries || [], serps, serpResults, authority, pages });
-  writeJson(`${s}/keywords.json`, { generatedAt: new Date().toISOString(), market: m, provider: provider && want ? provider.name : null, notes, ...r });
-  const md = keywordsMarkdown(r, site.name) + (notes.length ? `\n## Notes\n${notes.map((x) => `- ${x}`).join("\n")}\n` : "");
+
+  // Open data, no key: interest over time from Wikipedia pageviews, and real questions from Stack Exchange.
+  const open = { topics: [], community: [] };
+  if (seeds.length && !flags["no-open-data"]) {
+    for (const seed of seeds.slice(0, 5)) {
+      const article = await tryIt("wikipedia", () => wikipedia.article(seed, m, { fetch: f }), null);
+      if (article) open.topics.push({ seed, article, interest: interest(await tryIt("wikipedia", () => wikipedia.pageviews(article.title, article.lang, { fetch: f, today: deps.today }))) });
+    }
+    const seSites = (typeof flags.stackexchange === "string" ? flags.stackexchange.split(",") : site.research?.stackExchangeSites || []).map((x) => x.trim()).filter(Boolean).slice(0, 5);
+    const asked = [];
+    for (const se of seSites) for (const seed of seeds.slice(0, 5)) asked.push(...(await tryIt("stackexchange", () => stackexchange.questions(seed, se, { fetch: f, env }))));
+    open.community = communityQuestions(asked, pages);
+  }
+  writeJson(`${s}/keywords.json`, { generatedAt: new Date().toISOString(), market: m, provider: provider && want ? provider.name : null, notes, ...r, ...open });
+  const md = keywordsMarkdown(r, site.name) + openDataMarkdown(open) + (notes.length ? `\n## Notes\n${notes.map((x) => `- ${x}`).join("\n")}\n` : "");
   writeText(`${s}/keywords.md`, md);
   console.log(md);
 }

@@ -2,6 +2,14 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-23 (brief 14 step 3: open data; v2.19.0 prepared)
+- **Deployment (merge):** https://github.com/bishal-paul-git/seo-autopilot/pull/19 (Keyword Planner) merged as `d3215ce` after CI passed on Node 20 and 22.
+- **Code (branch `claude/hopeful-euler-662mu5`):**
+  - new: `src/lib/open-data.mjs` (Wikipedia search and pageviews, Stack Exchange search), `test/open-data.test.mjs` (6 tests);
+  - changed: `src/analysis/keywords.mjs` (`interest`, `communityQuestions`, `openDataMarkdown`), `src/jobs/keywords.mjs`, config validation and schema (`research.stackExchangeSites`), `docs/research-suite.md`, brief 14 status;
+  - version 2.19.0 in `package.json`, `plugin.json` and the root CHANGELOG.
+- **Checks:** see STATUS. Nothing run against the live Wikipedia or Stack Exchange APIs from this sandbox.
+
 ## 2026-10-23 (brief 14 step 2: Keyword Planner)
 - **Code (branch `claude/hopeful-euler-662mu5`):**
   - new: `src/lib/google-ads.mjs` (Google Ads API `generateKeywordIdeas`, v24 by default; OAuth refresh-token or service-account sign-in), `test/google-ads.test.mjs` (6 tests);
