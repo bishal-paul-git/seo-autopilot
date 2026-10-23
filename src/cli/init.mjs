@@ -14,6 +14,7 @@ import { listFiles } from "../jobs/profile.mjs";
 const TEMPLATES = fileURLToPath(new URL("../../templates/", import.meta.url));
 const KNOWLEDGE = fileURLToPath(new URL("../../knowledge/", import.meta.url));
 import { listAgents, listSkills } from "../core/agents.mjs";
+import { ALL_PACK_AGENTS, packAgents, packsToInstall } from "../analysis/verticals.mjs";
 export const DEFAULT_SPEC = "github:bishal-paul-git/seo-autopilot#v2";
 
 /** The content paths drafts may touch, as globs. */
@@ -30,15 +31,19 @@ export function editTools(content = {}) {
 }
 
 /** Copy the SEO playbooks into <dataDir>/knowledge so the drafting agent (and you) can read them. Existing files are refreshed. */
-export function exportKnowledge({ cwd = process.cwd(), dataDir = "seo-autopilot" } = {}) {
+export function exportKnowledge({ cwd = process.cwd(), dataDir = "seo-autopilot", sites = [] } = {}) {
   const report = [];
   copyTree(KNOWLEDGE, join(cwd, dataDir, "knowledge"), { force: true, report });
   // Agents are refreshed too, but your own "## Project rules" section is kept. They are copied flat (one folder, found by name);
   // each file's front matter still says which department it belongs to.
   const dstDir = join(cwd, dataDir, "agents");
   mkdirSync(dstDir, { recursive: true });
+  // Vertical-pack agents only for the packs this project uses (all of them until a site sets `verticals`). Agents already
+  // installed are left alone, so your project rules in them are never deleted.
+  const packs = new Set(packAgents(packsToInstall(sites)));
   for (const { name, file } of listAgents()) {
     const dst = join(dstDir, `${name}.md`);
+    if (ALL_PACK_AGENTS.has(name) && !packs.has(name)) { report.push(`skipped  ${name} (vertical pack not used by this project)`); continue; }
     const fresh = readFileSync(file, "utf8");
     const text = existsSync(dst) ? keepProjectRules(fresh, readFileSync(dst, "utf8")) : fresh;
     writeFileSync(dst, text);

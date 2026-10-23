@@ -2,6 +2,8 @@
 // Deterministic and explainable: every recommendation says which finding caused it. Pure: pass the data in, get a plan back.
 // Order of work: know the site, fix what blocks crawling and indexing, fix the page-level and content issues, then grow and report.
 
+import { detectVerticals, PACKS } from "./verticals.mjs";
+
 const RULE_GROUPS = {
   "redirect-guardian": ["status-error", "status-redirect", "redirect-chain", "link-to-redirect", "broken-link"],
   "technical-fixer": ["robots-blocked", "noindex-in-sitemap", "canonical-missing", "canonical-other", "canonical-broken", "robots-blocks-all", "sitemap-not-in-robots", "viewport-missing", "lang-missing", "mixed-content", "h1-missing", "h1-multiple", "title-missing", "desc-missing"],
@@ -103,9 +105,11 @@ export function routeAgents({ profile = null, audit = null, priorities = null, i
 
   const types = profile?.signals?.structuredData || [];
   if (profile && !types.some((t) => /Organization|LocalBusiness|Corporation|Person/.test(t))) add("entity-reputation", PHASES.fix, "The home page has no Organization or Person markup, so the business is a weak entity to search engines and AI tools.", ["structured data on the home page: " + (types.join(", ") || "none")], "Use the seo-entity-reputation agent to define the entity, its profiles and its consistent description, then brief the seo-schema-engineer to add the markup.");
-  if (types.some((t) => /LocalBusiness|Dentist|Store|Restaurant|ProfessionalService/.test(t)) || site.local) add("local-agent", PHASES.grow, "The site is a local business (marked up as one, or flagged local in the config).", types.filter((t) => /Local|Dentist|Store|Restaurant|Professional/.test(t)), "Use the seo-local-agent to check the profile, listings consistency and location pages.");
   if (profile?.signals?.hreflang) add("international", PHASES.fix, "The site has language or region versions.", ["hreflang present"], "Use the seo-international agent to check language targeting end to end.");
-  if (/Shopify|Magento|WooCommerce/i.test(profile?.platform?.name || "") || types.some((t) => /^Product$|Offer/.test(t))) add("ecommerce", PHASES.fix, "The site sells products.", types.filter((t) => /Product|Offer/.test(t)), "Use the seo-ecommerce agent on category, product and faceted-navigation pages.");
+  // Vertical packs: every specialist agent of each pack that applies (detected, or set with `verticals` in the config).
+  for (const { pack, why } of detectVerticals({ profile, site })) {
+    for (const [name, ask] of Object.entries(PACKS[pack].agents)) add(name.replace(/^seo-/, ""), pack === "ecommerce" ? PHASES.fix : PHASES.grow, `${PACKS[pack].title} pack: ${why.join("; ")}.`, why, ask + how);
+  }
 
   // Server logs: what Googlebot really requested. Waste and uncrawled sitemap pages are fix-phase; the rest is context.
   const logFindings = (logs?.findings || []).filter((f) => ["crawl-waste", "sitemap-not-crawled", "no-googlebot"].includes(f.id) && f.severity !== "low");

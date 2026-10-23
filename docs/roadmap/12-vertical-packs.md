@@ -31,6 +31,10 @@ An agent is only as good as the data it is given.
 6. **Generic content.** Packs must work for any business of their kind. The housing-disrepair details in `knowledge/local-legal-services-seo.md` and `knowledge/local-seo-ai-visibility.md` (from commit `54595d8`) become general `local/legal` guidance, or move to that client's own repository (CLAUDE.md: no site-specific content here). Owner decision first.
 7. **Tests.** Detection on recorded real-site fixtures for each pack; tests that keep each pack's agents, playbooks, jobs and `pack.json` in step; install tests showing that a non-local site gets no local agents.
 
+## Status
+- Step 1 is done (Unreleased, D21): detection, the `verticals` setting, routing, install and `doctor`. Packs are defined in `departments/verticals/packs.json`; the agent files stay in `departments/verticals/agents/` (see D21).
+- Steps 2 to 4 (data jobs) are next.
+
 ## Order
 1. Pack layout, detection, install and routing. The existing agents start getting work. About one session.
 2. Local data jobs that need no keys: the consistency check and the location-page audit.

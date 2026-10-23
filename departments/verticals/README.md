@@ -6,6 +6,13 @@ Specialist rules for local businesses and online shops.
 - **Produces:** Location, listing and product-page fixes or advice.
 - **Rule:** Doorway location pages and fake reviews are never acceptable; Quality checks them.
 
+## Packs
+The agents come in packs (`packs.json`):
+- **local:** the six `seo-local-*` agents;
+- **ecommerce:** `seo-ecommerce`.
+
+A site gets a pack when its profile shows it is that kind of business (business or product markup, a shop platform), or when the config sets `verticals`. The router then gives work to every agent in the pack. `init` and `upgrade` install only the packs a project uses once every site sets `verticals`; until then they install all of them. `doctor` shows which packs apply and why. Plan for more packs and their data jobs: `docs/roadmap/12-vertical-packs.md`.
+
 ## Agents
 | Agent | Job | Runs | Can change files? |
 |---|---|---|---|

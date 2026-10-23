@@ -76,7 +76,7 @@ export function upgrade({ cwd = process.cwd(), flags = {} } = {}) {
   }
   if (flags.apply || flags.force) {
     const rel2 = relative(cfg.root, cfg.dataDir).replaceAll("\\", "/") || "seo-autopilot";
-    for (const l of exportKnowledge({ cwd: cfg.root, dataDir: rel2 })) log.push(`  ${l}`);
+    for (const l of exportKnowledge({ cwd: cfg.root, dataDir: rel2, sites: cfg.sites })) log.push(`  ${l}`);
     log.push("", "Review with `git diff`, then commit.");
   } else if (items.some((i) => i.status !== "current")) log.push("", "Nothing was changed. Add --apply to add missing files and refresh the playbooks and agents.");
   else log.push("", "Workflows are up to date.");
