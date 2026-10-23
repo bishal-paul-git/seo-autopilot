@@ -23,6 +23,8 @@ Jobs: `audit`, `analyze`, `priorities`, `experiments`, `speed`, `geo`, `deepdive
 | 09 | [Quality of life and gaps](09-gaps-and-polish.md) | polish | Known loose ends and small features |
 | 10 | [Page planner and funnels](10-page-planner-and-funnels.md) | product | From a business goal to a keyword map, page plan and conversion funnel, with facts the owner must supply |
 | 11 | [Ideas and findings backlog](11-ideas-and-findings.md) | backlog | Bugs and ideas found in real use, not yet briefs |
+| 12 | [Vertical packs (local, e-commerce, more)](12-vertical-packs.md) | product | Each site gets the specialist agents and data jobs for its kind of business, detected automatically |
+| 13 | [Going live: open source launch, then hosted product](13-go-live.md) | business | The checklist from today's release to a paid product, and what only the owner can do |
 
 Strategy and the reasoning for this order: [../strategy.md](../strategy.md). How projects connect and feed back: [../connected-projects.md](../connected-projects.md).
 
