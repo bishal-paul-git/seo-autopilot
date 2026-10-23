@@ -83,6 +83,12 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-10-23 D21 Vertical packs: a registry, not a folder per pack (owner: "a separate part so each site gets its own specialist agents")
+- **Decision:** packs are defined in `departments/verticals/packs.json` (pack → agents → routing instruction). Agent files stay in `departments/verticals/agents/`. A pure `detectVerticals` (`src/analysis/verticals.mjs`) decides which packs apply, from the site profile or the site's `verticals` setting.
+- **Why not one folder per pack yet:** moving agents would change every installed path, the plugin list and the department tests, with no gain for users. The registry gives the same result: each site gets and runs only its packs. Folders can come later, when a pack gains its own jobs and playbooks.
+- **Install rule:** pack agents are installed only once every site in a project names its packs. Until then all of them are installed, because the profile that detects packs runs after `init`. Agents already installed are never deleted, so project rules are never lost.
+- **Status:** unit tested (`test/verticals.test.mjs`); not yet run on a real site. Data jobs per pack are brief 12, steps 2 to 4.
+
 ## 2026-10-22 D20 Hosted connector for Claude and ChatGPT (owner: "start the hosted connector")
 - **Decision:** the first hosted piece is a read-only remote MCP server (`cloud/connector`, a Cloudflare Worker). Claude and ChatGPT can then use a site's reports with no local install. It reads what the site's own workflows already save, which is the GitHub-App distribution mode in D1(b), and adds no database, tenancy or job runner. D1 to D15 stay proposals; this decision is limited to the connector.
 - **Choices and tradeoffs:**

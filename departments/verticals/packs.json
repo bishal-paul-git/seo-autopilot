@@ -1,0 +1,21 @@
+{
+  "local": {
+    "title": "Local business",
+    "description": "For businesses that serve a place: a shop, clinic, firm or trade with an address or a service area.",
+    "agents": {
+      "seo-local-agent": "Use the seo-local-agent to check the business profile, listings consistency, local markup and location pages.",
+      "seo-local-gbp-optimizer": "Use the seo-local-gbp-optimizer to audit the Google Business Profile against the site: categories, services, hours, posts, Q&A and photos. It produces an action plan for a person.",
+      "seo-local-citation-auditor": "Use the seo-local-citation-auditor to check that name, address and phone match across the site, its markup and the main directories, and list the fixes.",
+      "seo-local-content-writer": "Use the seo-local-content-writer for location and service-area pages: unique local substance, never one template with the town name swapped.",
+      "seo-local-ai-visibility": "Use the seo-local-ai-visibility agent to check how AI answers name the business for local questions, and what would make it citable.",
+      "seo-local-review-manager": "Use the seo-local-review-manager to plan honest review requests and replies. Never write or buy reviews."
+    }
+  },
+  "ecommerce": {
+    "title": "Online shop",
+    "description": "For sites that sell products: catalogues, carts and product pages.",
+    "agents": {
+      "seo-ecommerce": "Use the seo-ecommerce agent on category, product and faceted-navigation pages: product markup, crawl traps, out-of-stock handling and duplicate categories."
+    }
+  }
+}

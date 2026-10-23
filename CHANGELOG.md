@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **Vertical packs, step 1 (decision D21).** The local pack (six agents) and the e-commerce pack (one agent) are defined in `departments/verticals/packs.json`.
+  - Packs are detected from the site profile (business or product markup, the shop platform, `local: true`), or set with the new `verticals` config setting. `[]` turns them off.
+  - The router gives work to every agent of each pack that applies. Before this, five of the six local agents were never routed.
+  - `init` and `upgrade` install only the packs a project uses once every site sets `verticals`; until then they install all of them, so nothing goes missing. Agents already installed are never deleted.
+  - `doctor` shows the packs that apply and why.
+
 ## 2.17.0
 
 Ready for an open-source launch (Stage A): one-line GitHub Action, npm publishing, an installable Claude Code plugin, a fuller landing site, community files, and the hosted connector for Claude and ChatGPT.

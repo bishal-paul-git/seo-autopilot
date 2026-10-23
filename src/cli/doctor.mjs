@@ -1,4 +1,5 @@
 // `seo-autopilot doctor`: checks the setup and says exactly what to fix. Read-only.
+import { detectVerticals, PACKS } from "../analysis/verticals.mjs";
 import { pickProvider } from "../lib/serp.mjs";
 import { loadConfig } from "../core/config.mjs";
 import { readJson } from "../core/util.mjs";
@@ -83,6 +84,10 @@ export async function doctor({ cwd = process.cwd() } = {}) {
     ingestEnabled(site) ? ok("dashboard ingest configured") : warn("no dashboard ingest (optional)");
     const prof = readJson(`${site.paths.state}/site-profile.json`, null);
     prof ? ok(`site profile: ${prof.platform?.name} (${prof.mode} mode)`) : warn("no site profile yet: run `seo-autopilot run profile` so the agents adapt to this site's platform (the weekly workflow does this too)");
+    // Specialist packs (local, e-commerce): which apply and why, so the owner can confirm or set `verticals`.
+    const packs = detectVerticals({ profile: prof, site });
+    if (packs.length) for (const p of packs) ok(`pack: ${PACKS[p.pack].title} (${p.why.join("; ")})`);
+    else console.log(`  info  ${Array.isArray(site.verticals) ? "packs: none (verticals: [] in the config)" : "packs: none detected yet. Set \"verticals\": [\"local\"] or [\"ecommerce\"] in the config if one applies"}`);
     pickProvider() ? ok(`citations provider: ${pickProvider().name}`) : warn("no search provider key for the citations job (optional): run `seo-autopilot run citations` to see how to enable one");
   }
 

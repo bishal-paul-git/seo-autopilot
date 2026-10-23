@@ -2,6 +2,18 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-23 (v2.17.0 released; vertical packs step 1)
+- **Deployment (release):**
+  - Merged https://github.com/bishal-paul-git/seo-autopilot/pull/14 (`ae26980`).
+  - The tag-release workflow tagged `v2.17.0` and moved `v2` and `v2-stable` to `ae26980` (checked with `git ls-remote`).
+  - The GitHub Release v2.17.0 was published by github-actions at 01:08 UTC.
+  - The npm publish step was skipped: there is no `NPM_TOKEN` secret yet.
+- **Code (branch `claude/hopeful-euler-662mu5`):**
+  - vertical packs step 1: `departments/verticals/packs.json`, `src/analysis/verticals.mjs`, router, install filter (`init`, `upgrade`), `doctor`, the `verticals` config setting and schema;
+  - `test/verticals.test.mjs` (6 tests);
+  - docs: configuration, the verticals charter, brief 12 status, DECISIONS D21, CHANGELOG Unreleased.
+- **Checks:** `npm test` 415/415.
+
 ## 2026-10-23 (Stage A: open-source launch readiness, v2.17.0 prepared)
 - **Code and CI:**
   - `action.yml` (one-line GitHub Action);

@@ -85,6 +85,11 @@
               "type": "string"
             }
           },
+          "verticals": {
+            "type": "array",
+            "description": "Specialist packs for this kind of business. Without this setting they are detected from the site profile. [] turns them off.",
+            "items": { "enum": ["local", "ecommerce"] }
+          },
           "language": {
             "type": "string",
             "description": "Language the site publishes in (for example en). Search queries clearly in another language are not turned into topic proposals."
