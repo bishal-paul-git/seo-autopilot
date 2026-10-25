@@ -2,6 +2,10 @@
 Written: 2026-10-16 UTC / 2026-10-17 Asia/Dhaka.
 Status: planning handoff, not implementation or deployment evidence.
 
+## 25 October planning addendum
+
+The owner now requests a SaaS workspace/dashboard redesign and backend structure plan, preserving the engine and current functionality. Read [the new design proposal](docs/superpowers/specs/2026-10-25-saas-workspace-redesign.md): owned/client businesses and websites, specialist coverage and run evidence, adding a website, shared service/record contracts and a login-free structural preview. Authentication is deferred for that preview; live connected customer access remains a separate later milestone. Name/branding remain undecided. This proposal does not claim a deployed backend or redesign.
+
 ## Start here
 Read this file, CLAUDE.md, applicable repository instructions, README, CHANGELOG, package scripts, source, migrations/templates and tests before changing code. Inspect the actual repository thoroughly; documentation and previous reviews may be stale. First produce an architecture map and a keep/adapt/replace/defer decision table with exact source paths. Reuse working modules; do not rebuild the engine simply to add a hosted interface.
 

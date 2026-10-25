@@ -209,3 +209,12 @@ The first implementation extends existing `team`/`work` state and `collectSiteDa
 Operator-entered status, checks, output references and costs are labelled as such. Missing costs remain unknown. Done work with missing/failed checks is needs review. None of these records authorises publication or proves an agent/model executed, a provider is live or a deployment succeeded. D17's exact-commit checks and human-only classes remain unchanged. No customer-site publication is authorised merely to demonstrate the cycle.
 
 Alternative considered: build a new hosted UI/queue now. Rejected for this increment: it duplicates an existing interface whose source is not yet traced, and skips the access/deployment evidence gate. Full screen/source/keep-improve-missing map: `LIVE-SYSTEM-TRACE-2026-10-25.md`.
+
+
+## 2026-10-25 D24 SaaS redesign planning and login-free preview (owner direction; architecture proposed)
+
+The owner requested preservation of existing functionality, a SaaS-style dashboard/system redesign, a clear backend structure and specialist coverage/execution view, owned/client businesses with an add-website journey, and no product authentication during the preview stage. Name, palette and branding remain undecided. These are requirements; the detailed design is a proposal, not implemented infrastructure.
+
+Design: `../superpowers/specs/2026-10-25-saas-workspace-redesign.md`. Recommend adapting the existing workspace around shared workspace → business → website → environment records, with frontend queries/commands separated from the existing engine. Sample-data preview and connected operation are explicit modes with no silent fallback. No live customer credentials or worker/publishing commands are attached to public preview controls; existing CLI/Actions protections remain.
+
+D23's preservation/source-trace rule and D17's graduated autonomy stay in force. The owner now wants a redesign, so D23 does not forbid visual/structural change; it forbids losing functionality or replacing an unidentified live source blindly. D13's proposed frontend stack is not a selected implementation. Postgres/Supabase and a Node worker remain proposals pending source/runtime/access verification. No authentication/billing purchase, migration or deployment is approved by writing the plan.

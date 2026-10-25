@@ -2,6 +2,12 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-25 — SaaS redesign and backend structure proposal
+- **Documentation only:** `docs/superpowers/specs/2026-10-25-saas-workspace-redesign.md`: owned/client business hierarchy, workspace/site navigation, onboarding, department coverage/execution evidence, shared backend records/services, preview/connected separation, budgets/policy, migration and staged acceptance criteria.
+- **Owner direction:** preserve existing system; login-free preview now; final name, colour and branding undecided. Three proposed visual directions; no chosen brand or implemented redesign.
+- **Handoff:** STATUS, DECISIONS D24, CLAUDE, product brief and roadmap link the design. Older DEPARTMENTS proposal marked historical so its superseded counts/approval rules are not mistaken for current behaviour.
+- **Validation:** relative document links/structure and whitespace checked; no runtime changes, so no new runtime tests required. Earlier code CI at c9c531a and documentation head 116a539 both passed. No deployment or live website changes.
+
 ## 2026-10-25 — live system trace and reliable work evidence
 - **Review / CI:** [PR #23](https://github.com/bishal-paul-git/seo-autopilot/pull/23), code commit `c9c531a6f073ee33d5d2744f133c63be1b8ba7b3`. [CI 40150950027](https://github.com/bishal-paul-git/seo-autopilot/actions/runs/40150950027) passed Node 20/22, Go/Python/Node and CLI smoke. Remote tree matches the locally tested tree. Git shell push was unauthenticated; the connected GitHub API published the branch. Draft remains unmerged; no deployment.
 - **Code:** extended existing work state (`src/core/work-state.mjs`, `src/jobs/team.mjs`, `src/jobs/work.mjs`) with site/order/dependency fingerprints, legacy invalidation, running-plan protection, exclusive local transactions, atomic writes, attempt/failure records, capped retries, pause checks and optional output/spend recording.

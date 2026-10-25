@@ -1,12 +1,20 @@
 # Implementation status
 
-Last updated: 2026-10-25 07:32 Asia/Dhaka. Branch: `feat/work-evidence-and-system-trace`. Audited base: `ac21a311753e8d7c6a39f3b48036203810f3f862` (main, v2.20.0). Environment: Linux, Node 24.22.1, Python 3.12.14; Go unavailable.
+Last updated: 2026-10-25 08:41 Asia/Dhaka. Branch: `feat/work-evidence-and-system-trace`. Audited base: `ac21a311753e8d7c6a39f3b48036203810f3f862` (main, v2.20.0). Environment: Linux, Node 24.22.1, Python 3.12.14; Go unavailable.
 
 Review: [PR #23](https://github.com/bishal-paul-git/seo-autopilot/pull/23), code commit [`c9c531a`](https://github.com/bishal-paul-git/seo-autopilot/commit/c9c531a6f073ee33d5d2744f133c63be1b8ba7b3). Remote tree `2fbee5b39a178b3680220922c018f6cf55490b91` matches the locally tested tree exactly. Git shell push lacked credentials; published via the connected GitHub API and fetched back for verification. PR is draft, mergeable, not merged.
 
 Goal: a complete commercial agentic SEO platform, extending the existing engine and interface. Current milestone: reconcile the live system and make work evidence reliable. The [historical status](STATUS-ARCHIVE-2026-10-23.md) preserves earlier sessions; do not use its old counts/releases as current status.
 
 Architecture: dependency-free Node CLI (`src/jobs`, `src/analysis`, `src/audit`), optional Go/Python engines, eight departments with **38 agent definitions**, **57 jobs**, **30 knowledge documents**, **seven shared skills**. Local UI (`src/ui`), generated dashboard (`src/dashboard`), static product site (`site`), remote read-only connector (`cloud/connector`). The live Hostinger interface is a separate existing artifact; its source/deployment revision is not yet identified. Full [keep/improve/missing map and screen trace](LIVE-SYSTEM-TRACE-2026-10-25.md).
+
+## Latest owner direction — SaaS structure and redesign plan
+
+[Proposed SaaS workspace design](../superpowers/specs/2026-10-25-saas-workspace-redesign.md) records the 25 October follow-up. Preserve existing functionality; group owned/client businesses under one workspace, with websites/environments, connections, opportunities, work, specialist execution and results. First review the backend record/service model and a **login-free structural preview**. Public preview controls use sample data, with no live credentials/execution attached. No existing authentication or execution protection has been removed.
+
+The design includes workspace/site navigation, old-screen mappings, eight-department coverage and run evidence, the add-website journey, reuse/source paths, backend boundaries, durable records/service contracts, work/policy/cost handling, migration, acceptance gates and three unselected visual directions. Direction A (light slate/cobalt) is a recommendation only; product name/brand remain undecided. SEO Autopilot stays the working label.
+
+**This follow-up changes documentation only.** No redesign, hosted backend, authentication, connection, worker or production deployment has been implemented. Next: review structure/visual concepts, resolve live source/deployment trace, then implement the selected preview in the existing product. Earlier backend/vendor proposals remain proposals. Draft PR #23 carries the plan alongside the existing work-tracker changes.
 
 ## Implemented
 

@@ -2,6 +2,8 @@
 
 Read SEO-PRODUCT-BUILD-BRIEF.md before product planning or implementation. It identifies the Marketing Mouse and News to Blog source repositories and the required audit/reuse process. This is a planning handoff; no product build is claimed.
 
+For dashboard/SaaS redesign work, also read [the 25 October workspace and backend design proposal](docs/superpowers/specs/2026-10-25-saas-workspace-redesign.md). It captures the owner's login-free preview request, business/site onboarding and system visibility. It is a proposal; do not claim it is implemented or use it to replace an unidentified live interface.
+
 ## Mandatory progress handoff
 At the start of every substantive session, read docs/implementation/STATUS.md if present and inspect git status/log. Do not overwrite uncommitted work. Reconcile claims with actual source and current branch. Create the following files if absent; maintain them during authorised implementation and before ending a session:
 - docs/implementation/STATUS.md — current concise snapshot and next-session entry point.
