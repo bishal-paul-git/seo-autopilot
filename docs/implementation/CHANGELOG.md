@@ -3,6 +3,7 @@
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
 ## 2026-10-25 — live system trace and reliable work evidence
+- **Review / CI:** [PR #23](https://github.com/bishal-paul-git/seo-autopilot/pull/23), code commit `c9c531a6f073ee33d5d2744f133c63be1b8ba7b3`. [CI 40150950027](https://github.com/bishal-paul-git/seo-autopilot/actions/runs/40150950027) passed Node 20/22, Go/Python/Node and CLI smoke. Remote tree matches the locally tested tree. Git shell push was unauthenticated; the connected GitHub API published the branch. Draft remains unmerged; no deployment.
 - **Code:** extended existing work state (`src/core/work-state.mjs`, `src/jobs/team.mjs`, `src/jobs/work.mjs`) with site/order/dependency fingerprints, legacy invalidation, running-plan protection, exclusive local transactions, atomic writes, attempt/failure records, capped retries, pause checks and optional output/spend recording.
 - **Existing interface surfaces:** `collectSiteData().work` feeds a Work tab in the local UI and a Work section in the generated report. Search snapshot date is separate from report generation/file modification. No new interface or framework; no Hostinger changes.
 - **Tests:** `test/work-state.test.mjs` exercises identity/dependency invalidation, cross-site rejection, local contention (including a separate process), atomic writes, attempt lifecycle, retry cap, pause, validation states and actual generated-script rendering/escaping. Final checks in STATUS.
