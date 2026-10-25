@@ -82,3 +82,6 @@ Outside GitHub Actions the jobs that open issues print what they would do unless
 ## Memory
 
 Each run restores its memory from the `seo-data` branch and saves it back (`state restore` / `state save`), so the next run picks up where the last stopped (which pages were inspected, which news was seen, which backlinks were tried). The workflows share one concurrency group so two runs never save at once.
+
+
+Work lifecycle, retries, migration and evidence limits: [work-tracking.md](work-tracking.md).

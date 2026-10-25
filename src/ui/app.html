@@ -58,17 +58,23 @@ function chart(rows, key, color) {
   return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline fill="none" stroke="${color}" stroke-width="2.5" points="${rows.map((r, i) => `${(i / (rows.length - 1)) * w},${h - (r[key] / max) * (h - 8) - 4}`).join(" ")}"/></svg><div class="muted">${esc(rows[0].day)} to ${esc(rows.at(-1).day)}, peak ${max}</div>`;
 }
 
-const TABS = [["overview", "Overview"], ["priorities", "Priorities"], ["audit", "Technical audit"], ["insights", "Search insights"], ["geo", "AI search"], ["speed", "Speed"], ["index", "Index status"], ["content", "Content"], ["keywords", "Keywords"], ["backlinks", "Backlinks"], ["inbox", "Approvals (GitHub)"], ["reports", "Digest and news"], ["run", "Run and sync"], ["settings", "Settings"]];
+const TABS = [["overview", "Overview"], ["work", "Work"], ["priorities", "Priorities"], ["audit", "Technical audit"], ["insights", "Search insights"], ["geo", "AI search"], ["speed", "Speed"], ["index", "Index status"], ["content", "Content"], ["keywords", "Keywords"], ["backlinks", "Backlinks"], ["inbox", "Approvals (GitHub)"], ["reports", "Digest and news"], ["run", "Run and sync"], ["settings", "Settings"]];
 
 function view() {
   const d = state.data;
   if (!state.current) return `<h2>Welcome</h2><p class="sub">Add a project on the left to begin. Use <code>seo-autopilot init</code> in a website repository first if it has no config yet.</p>${state.problems.map((p) => `<div class="msg bad">${esc(p.root)}: ${esc(p.error)}</div>`).join("")}`;
-  const head = `<h2>${esc(d?.site.name || "Loading")}</h2><p class="sub">${esc(d?.site.url || "")} ${d?.lastSynced ? "· data from " + esc(d.lastSynced.slice(0, 16).replace("T", " ")) : "· no data yet, press Sync"}</p><nav class="tabs">${TABS.map(([k, n]) => `<button data-tab="${k}" class="${state.tab === k ? "on" : ""}">${n}</button>`).join("")}</nav>`;
+  const head = `<h2>${esc(d?.site.name || "Loading")}</h2><p class="sub">${esc(d?.site.url || "")} ${d?.dataAsOf ? "· search snapshot dated " + esc(d.dataAsOf) : "· source date unknown"}</p><nav class="tabs">${TABS.map(([k, n]) => `<button data-tab="${k}" class="${state.tab === k ? "on" : ""}">${n}</button>`).join("")}</nav>`;
   if (!d) return head + `<p class="muted">Loading…</p>`;
   const insp = Object.entries(d.inspect), by = {}; insp.forEach(([, v]) => { by[v.coverage || "unknown"] = (by[v.coverage || "unknown"] || 0) + 1; });
   const indexed = by["Submitted and indexed"] || 0, last = d.history.at(-1), P = d.pipeline;
   const palette = ["#0a6e3e", "#b54708", "#b42318", "#6b7280", "#7c3aed", "#2563eb"];
   let body = "";
+  if (state.tab === "work") body = `<p class="sub">Saved work records, planned ${esc(d.work?.generatedAt || "not yet")}. Checks and execution are operator-recorded. These records do not prove publication or a live connection.</p>` + table(["Specialist / status", "Why / evidence", "Checks / dependencies", "Attempts / results"], (d.work?.items || []).map((w) => [
+    `<b>${esc(w.agent)}</b><br>${esc(w.status)}${w.readyToStart ? " · ready to start" : ""}<br>${esc(w.scope === "site" ? "Whole site" : w.targets.join(", "))}`,
+    `${esc(w.why)}<br>${(w.evidence || []).map(esc).join("<br>")}`,
+    `${w.validation.required.map((v) => `${esc(v)}: ${esc(w.validation.checks[v] || "not run")}`).join("<br>") || "No automated checks required"}<br>Depends on: ${esc(w.dependsOn.join(", ") || "none")}`,
+    `${w.attempts.length} attempt(s)<br>${esc(w.attempts.at(-1)?.failure || "")}<br>Output: ${esc(w.output || "not recorded")}<br>Cost: ${w.costUsd == null ? "unknown" : "$" + w.costUsd.toFixed(4)}<br>Publication: ${esc(w.publication)}<br>Monitoring: ${esc(w.monitoring)}`
+  ]), "No work orders yet. Run team to create a plan. Planned work is not completed work.");
   if (state.tab === "overview") body = `<div class="grid">
     <div class="card"><div class="num">${last ? last.clicks : "–"}</div><div class="lbl">Clicks (28 days)</div></div>
     <div class="card"><div class="num">${last ? last.impressions : "–"}</div><div class="lbl">Impressions (28 days)</div></div>

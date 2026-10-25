@@ -2,6 +2,10 @@
 
 You get a dashboard with no extra setup, and can add a database-backed one if you want history across devices.
 
+The existing hosted workspace is a separate artifact; see [the live-system trace](implementation/LIVE-SYSTEM-TRACE-2026-10-25.md). Its client routes do not provide authentication. Do not replace it with the local/report UI described below.
+
+The local UI and generated report now expose [work evidence](work-tracking.md). Plans, operator-recorded checks and publication evidence remain distinct.
+
 ## 1. The built-in dashboard (default)
 
 `seo-autopilot run dashboard` builds **one HTML file** from the data the autopilot keeps in your repository:

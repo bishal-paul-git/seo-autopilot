@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Bind work results to the site, work definition and dependencies; invalidate stale/legacy results and protect running plans. Serialize local work writes, retain attempt/failure history, cap explicit retries, respect pause and record optional outputs/costs.
+- Show work evidence in the existing local UI/generated report; distinguish snapshot date, planned work, operator-recorded execution/checks and missing publication evidence.
+- Trace the separate existing Hostinger interface and reconcile current documentation without replacing it. See `docs/implementation/STATUS.md`.
+
 ## 2.20.0
 
 Google listings for the specialist packs, and YouTube results in keyword research. Both read only, with the user's own access, and tested against recorded-style responses only.

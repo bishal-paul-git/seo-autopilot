@@ -2,6 +2,21 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-25 — SaaS redesign and backend structure proposal
+- **Documentation only:** `docs/superpowers/specs/2026-10-25-saas-workspace-redesign.md`: owned/client business hierarchy, workspace/site navigation, onboarding, department coverage/execution evidence, shared backend records/services, preview/connected separation, budgets/policy, migration and staged acceptance criteria.
+- **Owner direction:** preserve existing system; login-free preview now; final name, colour and branding undecided. Three proposed visual directions; no chosen brand or implemented redesign.
+- **Handoff:** STATUS, DECISIONS D24, CLAUDE, product brief and roadmap link the design. Older DEPARTMENTS proposal marked historical so its superseded counts/approval rules are not mistaken for current behaviour.
+- **Validation:** relative document links/structure and whitespace checked; no runtime changes, so no new runtime tests required. Earlier code CI at c9c531a and documentation head 116a539 both passed. No deployment or live website changes.
+
+## 2026-10-25 — live system trace and reliable work evidence
+- **Review / CI:** [PR #23](https://github.com/bishal-paul-git/seo-autopilot/pull/23), code commit `c9c531a6f073ee33d5d2744f133c63be1b8ba7b3`. [CI 40150950027](https://github.com/bishal-paul-git/seo-autopilot/actions/runs/40150950027) passed Node 20/22, Go/Python/Node and CLI smoke. Remote tree matches the locally tested tree. Git shell push was unauthenticated; the connected GitHub API published the branch. Draft remains unmerged; no deployment.
+- **Code:** extended existing work state (`src/core/work-state.mjs`, `src/jobs/team.mjs`, `src/jobs/work.mjs`) with site/order/dependency fingerprints, legacy invalidation, running-plan protection, exclusive local transactions, atomic writes, attempt/failure records, capped retries, pause checks and optional output/spend recording.
+- **Existing interface surfaces:** `collectSiteData().work` feeds a Work tab in the local UI and a Work section in the generated report. Search snapshot date is separate from report generation/file modification. No new interface or framework; no Hostinger changes.
+- **Tests:** `test/work-state.test.mjs` exercises identity/dependency invalidation, cross-site rejection, local contention (including a separate process), atomic writes, attempt lifecycle, retry cap, pause, validation states and actual generated-script rendering/escaping. Final checks in STATUS.
+- **Documentation:** live screen/data/control/deployment map, keep/improve/missing decisions, work migration guide; reconciled 38 agents/57 jobs/30 knowledge documents/seven skills. Historical STATUS preserved in STATUS-ARCHIVE-2026-10-23.md. D23 preserves live interface and working name.
+- **Deployment:** none. Base main is ac21a31/v2.20.0 with green existing CI. Hostinger confirmed by HTTP headers; its source SHA, build/upload process and account configuration remain unverified. Private customer repository access was blocked by automatic approval review; no workaround attempted.
+- **Limitations:** operator records are not signed executor/CI/publication receipts. No distributed queue, budget enforcement, new live provider check or customer content publication. No dependency, config schema or DB migration.
+
 ## 2026-10-23 (packs step 4: listings job; product name proposal)
 - **Deployment (merge):** https://github.com/bishal-paul-git/seo-autopilot/pull/21 (YouTube) merged as `c70b7aa` after CI passed.
 - **Code (branch `claude/hopeful-euler-662mu5`):**

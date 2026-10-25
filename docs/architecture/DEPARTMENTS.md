@@ -1,4 +1,6 @@
-# Departments: proposed organisation of the agent team
+# Departments: historical organisation proposal
+
+**Historical document:** the proposal below describes the 18 October baseline and preserves that history. Departments and work orders now exist; current definitions are in `departments/README.md` and `src/analysis/work-orders.mjs`. D17 supersedes the older mandatory-human-publication wording below. Current SaaS structure/coverage design: [25 October proposal](../superpowers/specs/2026-10-25-saas-workspace-redesign.md).
 
 Status: **proposal, not implemented.** It needs owner approval before any file moves (decision D16 in `docs/implementation/DECISIONS.md`). The evidence for the problems it solves is in `docs/research/AGENT-AUDIT-2026-10-18.md`. Sources for the SEO, AEO and GEO practice it encodes are in `docs/research/REFERENCES.md`.
 
