@@ -53,7 +53,7 @@ function render() {
 
   $("#app").innerHTML = `
   <h1>${esc(D.site.name)} SEO dashboard</h1>
-  <p class="sub">${esc(D.site.url)} · generated ${esc(D.generated)} · data from Search Console, kept in your own repository</p>
+  <p class="sub">${esc(D.site.url)} · generated ${esc(D.generated)} · search snapshot dated ${esc(D.dataAsOf || last?.day || "unknown")}, kept in your own repository. Generating this page does not refresh the source data.</p>
   <div class="grid">
     <div class="card"><div class="num">${last ? last.clicks : "–"}</div><div class="lbl">Clicks (28 days)</div></div>
     <div class="card"><div class="num">${last ? last.impressions : "–"}</div><div class="lbl">Impressions (28 days)</div></div>
@@ -61,6 +61,15 @@ function render() {
     <div class="card"><div class="num">${indexed} / ${insp.length}</div><div class="lbl">Inspected pages indexed</div></div>
     ${P.tracked ? `<div class="card"><div class="num">${P.upcoming}</div><div class="lbl">Scheduled to publish</div></div><div class="card"><div class="num">${P.queued}</div><div class="lbl">Approved, not yet scheduled</div></div>` : ""}
   </div>
+
+  <h2>Work</h2>
+  <p class="muted">${esc(D.work?.source || "No work records yet.")} Execution and checks below are operator-recorded; they do not prove publication.</p>
+  ${table(["Specialist / status", "Why / evidence", "Checks / dependencies", "Attempts / output / cost"], (D.work?.items || []).map((w) => [
+    `<b>${esc(w.agent)}</b><br>${esc(w.status)}${w.readyToStart ? " · ready to start" : ""}<br>${esc(w.scope === "site" ? "Whole site" : w.targets.join(", "))}`,
+    `${esc(w.why)}<br>${(w.evidence || []).map(esc).join("<br>")}`,
+    `${w.validation.required.map((v) => `${esc(v)}: ${esc(w.validation.checks[v] || "not run")}`).join("<br>") || "No automated checks required"}<br>Depends on: ${esc(w.dependsOn.join(", ") || "none")}<br>Publication: ${esc(w.publication)} · Monitoring: ${esc(w.monitoring)}`,
+    `${w.attempts.length} attempt(s)<br>${esc(w.attempts.at(-1)?.failure || "")}<br>Output: ${esc(w.output || "not recorded")}<br>Cost: ${w.costUsd == null ? "unknown" : "$" + w.costUsd.toFixed(4)}`
+  ]), "No work orders yet. Run team to create a plan; a plan alone is not completed work.")}
 
   <h2>Clicks and impressions over time</h2>
   <div class="grid"><div class="card"><div class="lbl">Clicks</div>${chart(H, "clicks", "#0a6e3e")}</div><div class="card"><div class="lbl">Impressions</div>${chart(H, "impressions", "#2563eb")}</div></div>

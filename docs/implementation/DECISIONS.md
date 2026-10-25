@@ -198,3 +198,14 @@ Keep the engine MIT; sell hosting, multi-client operations, approvals, scheduled
 - Agents are Markdown definitions; the `team` job routes deterministically from reports; a human approves what goes live.
 - Site profile decides edit vs advise mode; agents never edit when the source is not in the repository.
 - Users bring their own Google and AI accounts; no maintainer keys.
+
+
+## 2026-10-25 D23 Preserve the live interface; make work evidence specific
+
+The owner explicitly authorised extending the existing system and tracing its live deployment. Keep SEO Autopilot as the working name; earlier name proposals remain historical, not selected branding. The current multi-site Hostinger interface must be preserved; it is not the engine's generated report or local UI. Do not implement D13's proposed UI replacement without reviewing the actual source and deployment.
+
+The first implementation extends existing `team`/`work` state and `collectSiteData`, not a new agent framework or hosted store. Hash the site, order and dependency definitions so old checks cannot be reused for different work. Retain unchanged work, archive changed/legacy records and block replacing running work. Serialize local status updates with an exclusive lock and atomic replacement; use explicit capped retries and retain failures. A crashed lock fails closed and needs operator recovery after confirming the process stopped. Distributed leases remain future work.
+
+Operator-entered status, checks, output references and costs are labelled as such. Missing costs remain unknown. Done work with missing/failed checks is needs review. None of these records authorises publication or proves an agent/model executed, a provider is live or a deployment succeeded. D17's exact-commit checks and human-only classes remain unchanged. No customer-site publication is authorised merely to demonstrate the cycle.
+
+Alternative considered: build a new hosted UI/queue now. Rejected for this increment: it duplicates an existing interface whose source is not yet traced, and skips the access/deployment evidence gate. Full screen/source/keep-improve-missing map: `LIVE-SYSTEM-TRACE-2026-10-25.md`.

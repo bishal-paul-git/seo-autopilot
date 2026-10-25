@@ -4,6 +4,7 @@ import { readFileSync, existsSync, statSync } from "node:fs";
 import { readJson, today } from "./util.mjs";
 import { loadPages, pipeline } from "../adapters/index.mjs";
 import { RULES } from "../audit/rules.mjs";
+import { workView } from "./work-state.mjs";
 
 const read = (f) => (existsSync(f) ? readFileSync(f, "utf8") : "");
 
@@ -29,11 +30,15 @@ export async function collectSiteData(site) {
     return { target_id: t.id, name: t.name, submit_url: t.submitUrl, mode: t.mode, status: r.status || (t.mode === "auto" ? "pending" : t.mode), attempts: r.attempts || 0, note: (r.history?.at(-1)?.reason || t.notes || "").slice(0, 200) };
   });
   const inspectFile = `${s}/inspect-state.json`;
+  const history = readJson(`${s}/history.json`, []);
   return {
     site: { id: site.id, name: site.name, url: site.url, property: site.searchConsoleProperty },
     generated: today(),
+    dataMode: "saved snapshot",
+    dataAsOf: history.at(-1)?.day || null,
+    work: workView(site),
     lastSynced: existsSync(inspectFile) ? statSync(inspectFile).mtime.toISOString() : null,
-    history: readJson(`${s}/history.json`, []),
+    history,
     inspect: readJson(inspectFile, { results: {} }).results,
     backlog: readJson(`${s}/keyword-backlog.json`, {}),
     backlinks,

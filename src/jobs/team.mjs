@@ -8,6 +8,7 @@ import { ghAvailable, ensureLabel, existingTitles, openIssue } from "../lib/gh.m
 import { agentFacts } from "../core/agents.mjs";
 import { buildWorkOrders, validateOrders, waves, ordersMarkdown, workOrderIssues } from "../analysis/work-orders.mjs";
 import { resolvePolicy } from "../analysis/autonomy.mjs";
+import { reconcileWork, withWorkLock, writeWorkJson, workScope, assertNoRunningReplan } from "../core/work-state.mjs";
 
 export const description = "Decide which of the agents to run next, in order, with a ready-to-paste instruction for each";
 
@@ -54,13 +55,21 @@ export async function run({ site, flags = {} }) {
     site,
     today: today(),
   });
-  writeJson(`${s}/agent-plan.json`, plan);
   const facts = agentFacts();
   const sensitivePaths = (ymyl?.pages || []).filter((p) => p.status === "needs reviewer" && p.url).map((p) => String(p.url).replace(/^https?:\/\/[^/]+/, "") || "/");
   const orders = buildWorkOrders(plan, facts, { sensitivePaths });
   const problems = validateOrders(orders, new Set(Object.keys(facts)));
   if (problems.length) throw new Error(`work orders are inconsistent (a bug, please report it): ${problems.join("; ")}`);
-  writeJson(`${s}/work-orders.json`, { generatedAt: plan.generatedAt, date: plan.date, waves: waves(orders), orders });
+  withWorkLock(s, () => {
+    const file = { generatedAt: plan.generatedAt, date: plan.date, site: workScope(site), waves: waves(orders), orders };
+    const saved = readJson(`${s}/work-status.json`, {});
+    const state = reconcileWork(file, saved, site);
+    assertNoRunningReplan(saved, state);
+    // Write the new definition first. Readers reconcile against it even if the process stops before state is saved.
+    writeWorkJson(`${s}/work-orders.json`, file);
+    writeWorkJson(`${s}/work-status.json`, state);
+    writeJson(`${s}/agent-plan.json`, plan);
+  });
   const md = planMarkdown(plan, site.name) + "\n" + ordersMarkdown(orders);
   writeText(`${s}/agent-plan.md`, md);
   console.log(md);

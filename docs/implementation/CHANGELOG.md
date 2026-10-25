@@ -2,6 +2,14 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-25 — live system trace and reliable work evidence
+- **Code:** extended existing work state (`src/core/work-state.mjs`, `src/jobs/team.mjs`, `src/jobs/work.mjs`) with site/order/dependency fingerprints, legacy invalidation, running-plan protection, exclusive local transactions, atomic writes, attempt/failure records, capped retries, pause checks and optional output/spend recording.
+- **Existing interface surfaces:** `collectSiteData().work` feeds a Work tab in the local UI and a Work section in the generated report. Search snapshot date is separate from report generation/file modification. No new interface or framework; no Hostinger changes.
+- **Tests:** `test/work-state.test.mjs` exercises identity/dependency invalidation, cross-site rejection, local contention (including a separate process), atomic writes, attempt lifecycle, retry cap, pause, validation states and actual generated-script rendering/escaping. Final checks in STATUS.
+- **Documentation:** live screen/data/control/deployment map, keep/improve/missing decisions, work migration guide; reconciled 38 agents/57 jobs/30 knowledge documents/seven skills. Historical STATUS preserved in STATUS-ARCHIVE-2026-10-23.md. D23 preserves live interface and working name.
+- **Deployment:** none. Base main is ac21a31/v2.20.0 with green existing CI. Hostinger confirmed by HTTP headers; its source SHA, build/upload process and account configuration remain unverified. Private customer repository access was blocked by automatic approval review; no workaround attempted.
+- **Limitations:** operator records are not signed executor/CI/publication receipts. No distributed queue, budget enforcement, new live provider check or customer content publication. No dependency, config schema or DB migration.
+
 ## 2026-10-23 (packs step 4: listings job; product name proposal)
 - **Deployment (merge):** https://github.com/bishal-paul-git/seo-autopilot/pull/21 (YouTube) merged as `c70b7aa` after CI passed.
 - **Code (branch `claude/hopeful-euler-662mu5`):**

@@ -3,7 +3,7 @@
 How any website project connects to seo-autopilot, stays up to date, and feeds what it learns back into the product. This page is the same for every business. Anything specific to one site (its rules, secrets, history, plans) lives in that site's own repository.
 
 ## Connect a project
-1. In the site's repository: `npx seo-autopilot init --url https://example.com/` (add `--content markdown --dir content` or `--content json --include "..."` only if you want the drafting agent to write there). `init` copies the config, data files, 27 agents, 26 playbooks and the GitHub workflows, and tells you what it detected (platform, edit or advise mode).
+1. In the site's repository: `npx seo-autopilot init --url https://example.com/` (add `--content markdown --dir content` or `--content json --include "..."` only if you want the drafting agent to write there). `init` copies the config, data files, 38 agents, 30 knowledge documents and the GitHub workflows, and tells you what it detected (platform, edit or advise mode).
 2. Give Google access (a service account added to Search Console, saved as the secret `GOOGLE_KEY_JSON`) and run `seo-autopilot doctor`.
 3. The workflows install the product from a pinned reference (`github:bishal-paul-git/seo-autopilot#v2` by default). Pin to an exact version (`#v2.14.0`) if you want no surprises, or to `v2-stable`.
 4. State (reports, history) is kept on the project's own `seo-data` branch; it holds no secrets and is never merged into the main branch.
