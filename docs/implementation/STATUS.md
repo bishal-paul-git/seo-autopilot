@@ -1,6 +1,15 @@
 # Implementation status
 
-Last updated: 2026-10-30 UTC (v2.21.0 prepared: client portal).
+Last updated: 2026-10-30 UTC (v2.21.0 released: client portal).
+- **Released 2026-10-30:** https://github.com/bishal-paul-git/seo-autopilot/pull/25 was merged as `45c5abe`. The tag-release workflow tagged `v2.21.0` and moved `v2` and `v2-stable` to `45c5abe` (checked with `git ls-remote`). The first run failed on an input-format error of mine (`2.21.0` instead of `v2.21.0`); the re-run succeeded.
+- **Site PRs adding the daily portal step (draft, owner merges):**
+  - https://github.com/bishal-paul-git/tenanthousingdisrepair/pull/25
+  - https://github.com/bishal-paul-git/erudience-flow-engine/pull/101
+  - commit `4e2555b` on https://github.com/bishal-paul-git/excel-error-finder/pull/3
+- **Private seed prepared, not committed:** it creates the Erudience org, the 24 Oct snapshots for Manchester and Erudience, Excel Error Finder as "connecting", and the legacy links `mdc` and `eru`. The owner's account joins on sign-up. Tested on local Postgres.
+- **Blocked on the owner:**
+  1. Restore Supabase `seo-hridoy`. After that: apply the migration, deploy `ingest`, run the seed, build the page with the publishable key and deploy it to seo.erudience.com.
+  2. Re-authorise the Hostinger connector, for that deploy.
 - **v2.21.0 (branch `claude/hopeful-euler-662mu5`): client portal (D23).**
   - **Built:**
     - the `portal` job (snapshot of the latest reports, optional GA4 visits, `--push`);
