@@ -1,5 +1,25 @@
 # Changelog
 
+## 2.21.0
+
+The client portal: a hosted dashboard where an agency signs in, connects its websites and shares a link with each client. Each website sends a fresh snapshot every day.
+
+- **`portal` job.** `seo-autopilot run portal` gathers the latest reports into `portal.json`. It holds Search Console totals against the previous 28 days, keywords ranking now and targeted next, every page with a 0 to 100 score, location pages grouped by area, pages Google has not indexed, the plan, proposed pages, the agents' recent work and the weekly report.
+  - **GA4 visits:** when `ga4PropertyId` is set, the snapshot adds visits by channel, source, country and device, last 28 days against the 28 before.
+  - **Daily push:** `--push` sends the snapshot to the portal with `SEO_PORTAL_URL` and `SEO_PORTAL_TOKEN`. The daily workflow's new last step does this when both secrets are set.
+  - **Settings:** `portal.market`, `portal.schedule`, `portal.locationPattern` and `portal.keywords` in the site config.
+- **Portal (`cloud/portal`).**
+  - **Database:** Supabase Postgres with row level security. Every account gets its own agency, and nobody sees another agency's websites.
+  - **Site tokens:** only their hash is stored, and making a new one stops the old one.
+  - **Client links:** random and revocable, with no sign-in. They show one website and nothing else.
+  - **Ingest:** an Edge Function takes each website's daily snapshot.
+  - **Page:** one static file with no libraries and a phone-first layout with a bottom tab bar. It has sign-in, "Connect a website" (the token is shown once, with the two values to add as GitHub secrets) and the client link button. Clients see Overview, Traffic, Keywords, Pages, Locations, Coming next and Weekly report.
+- **Checks.**
+  - Snapshot tests.
+  - Access-rule tests run on Postgres 16 with a stand-in for Supabase auth (`cloud/portal/supabase/test`). They cover cross-agency isolation, token rotation, revoked links and anon access.
+  - A Chromium test of the page against a stand-in API.
+  - **Not yet run against a live Supabase project.**
+
 ## 2.20.0
 
 Google listings for the specialist packs, and YouTube results in keyword research. Both read only, with the user's own access, and tested against recorded-style responses only.

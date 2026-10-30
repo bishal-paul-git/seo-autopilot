@@ -2,6 +2,24 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-30 (client portal: v2.21.0 prepared)
+- **Code (branch `claude/hopeful-euler-662mu5`):**
+  - **New:**
+    - `src/analysis/portal.mjs`, `src/jobs/portal.mjs` (registered);
+    - `traffic()` in `src/lib/ga4.mjs`;
+    - `cloud/portal/` (`app/index.html`, `build.mjs`, `supabase/migrations/20261030000000_portal.sql`, `supabase/functions/ingest/index.ts`, `supabase/test/{shim,rls}.sql`, README);
+    - `test/portal.test.mjs` (6 tests) and `test/portal-app.test.mjs` (1 browser test).
+  - **Changed:** `seo-daily` template (portal step), `doctor` keys, config schema (`portal`), `docs/jobs.md`, `.gitignore`, version 2.21.0.
+- **Docs:** DECISIONS D23.
+- **Checks:**
+  - `npm test` 471/471;
+  - access rules on local Postgres 16.15 with the shim: all checks passed;
+  - snapshot parity with the 24 Oct dashboard data for the two sites (differences only in tie order and a leading slash on keyword pages).
+- **Deployment:** none.
+  - Supabase `seo-hridoy` is INACTIVE (paused): `execute_sql` reports "Database is possibly not accessible", and `deploy_edge_function` reports "status 'INACTIVE'".
+  - The Supabase management API token in this session is rejected (401).
+  - The Hostinger connector needs re-authorisation.
+
 ## 2026-10-23 (packs step 4: listings job; product name proposal)
 - **Deployment (merge):** https://github.com/bishal-paul-git/seo-autopilot/pull/21 (YouTube) merged as `c70b7aa` after CI passed.
 - **Code (branch `claude/hopeful-euler-662mu5`):**

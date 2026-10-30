@@ -83,5 +83,13 @@ jobs:
           path: .seo-autopilot/*/dashboard/index.html
           retention-days: 14
           if-no-files-found: ignore
+      - name: Client portal (pushes when the SEO_PORTAL_URL and SEO_PORTAL_TOKEN secrets are set)
+        continue-on-error: true
+        env:
+          GOOGLE_KEY_JSON: ${{ secrets.GOOGLE_KEY_JSON }}
+          SEO_PORTAL_URL: ${{ secrets.SEO_PORTAL_URL }}
+          SEO_PORTAL_TOKEN: ${{ secrets.SEO_PORTAL_TOKEN }}
+        run: |
+          if [ -n "$SEO_PORTAL_TOKEN" ]; then npx --yes "$SEO" run portal --push; else npx --yes "$SEO" run portal; fi
       - name: Save state
         run: npx --yes "$SEO" state save
