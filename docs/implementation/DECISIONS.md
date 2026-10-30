@@ -83,6 +83,14 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-10-30 D24 Approvals from the portal are applied by the site's own run (owner: "do your works")
+**Decision:** the portal records a decision (approve, hold, decline). The site's daily `portal --push` receives the pending decisions in the push response, applies them on GitHub with its own `GITHUB_TOKEN`, then acknowledges them. For an approval, it adds the label and comment and starts `seo-implement` by workflow dispatch.
+- **Why:** the portal keeps no GitHub access, which matches D23's push model. The site's token can already label issues. GitHub does not start workflows from labels added by `GITHUB_TOKEN`, but it does honour workflow dispatch, hence the explicit dispatch.
+- **Tradeoffs:**
+  - Decisions apply at the next daily run (05:17 UTC), not instantly. A later option is an hourly sync step, or a GitHub App held by the portal.
+  - Portal members can approve: the site owner accepts that by installing the portal token. Every change still passes the checks, and the risk policy (D17) is unchanged.
+  - `seo-daily` needs `actions: write`.
+
 ## 2026-10-30 D23 Client portal on Supabase, fed by a daily push (owner: "do all of your remaining works")
 **Built:** an agency signs in, connects websites, and shares a no-login link with each client. Each website's own scheduled run pushes one JSON snapshot a day (`portal` job). The portal stores the snapshots in Supabase Postgres and shows them on one static page. Source: `cloud/portal`, `src/jobs/portal.mjs`.
 - **Why push, not pull.** Agencies' websites live in their own (often private) repositories. A push needs one site-scoped token per website. A pull would need the portal to hold GitHub access to every client repository. The workflow already runs daily, so a push costs one step.

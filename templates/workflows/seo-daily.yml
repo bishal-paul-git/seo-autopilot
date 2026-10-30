@@ -14,6 +14,7 @@ on:
 permissions:
   contents: write
   issues: write
+  actions: write   # the portal step starts seo-implement for proposals approved in the client portal
 concurrency:
   group: seo-data
   cancel-in-progress: false
@@ -83,10 +84,12 @@ jobs:
           path: .seo-autopilot/*/dashboard/index.html
           retention-days: 14
           if-no-files-found: ignore
-      - name: Client portal (pushes when the SEO_PORTAL_URL and SEO_PORTAL_TOKEN secrets are set)
+      - name: Client portal (pushes when the SEO_PORTAL_URL and SEO_PORTAL_TOKEN secrets are set; applies approvals made there)
         continue-on-error: true
         env:
           GOOGLE_KEY_JSON: ${{ secrets.GOOGLE_KEY_JSON }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           SEO_PORTAL_URL: ${{ secrets.SEO_PORTAL_URL }}
           SEO_PORTAL_TOKEN: ${{ secrets.SEO_PORTAL_TOKEN }}
         run: |

@@ -108,3 +108,45 @@ test("job: writes portal.json; --push sends the snapshot with the token in the h
   await assert.rejects(push(snap, { env: {} }), /set SEO_PORTAL_URL/);
   await assert.rejects(push(snap, { env: { ...env, SEO_PORTAL_URL: "http://portal.test" } }), /https/);
 });
+
+test("issues and decisions: kinds from labels; approve labels, comments and starts drafting; hold; decline closes", async () => {
+  const { issueRows, decisionActions } = await import("../src/analysis/portal.mjs");
+  const rows = issueRows([{ number: 7, title: "Refresh /boilers", labels: [{ name: "seo-proposal" }, { name: "seo-refresh" }], html_url: "u7" }, { number: 9, title: "New page", labels: ["seo-topic", "approved"] }]);
+  assert.deepEqual(rows.map((r) => [r.number, r.kind, r.approved]), [[9, "new page", true], [7, "refresh", false]]);
+  const a = decisionActions({ issue: 7, decision: "approve", by: "ann@agency.test", note: "go" }, rows[1], { ref: "main" });
+  assert.deepEqual(a.map((x) => x.type), ["label", "comment", "dispatch"]);
+  assert.match(a[1].body, /Approved in the client portal by ann@agency\.test\.\n\n> go/);
+  assert.equal(a[2].workflow, "seo-implement.yml");
+  assert.deepEqual(decisionActions({ issue: 7, decision: "hold" }, rows[1])[0].labels, ["seo-hold"]);
+  assert.deepEqual(decisionActions({ issue: 7, decision: "decline" }, rows[1]).map((x) => x.type), ["comment", "close"]);
+  assert.deepEqual(decisionActions({ issue: 99, decision: "approve" }, undefined), []);
+});
+
+test("job: lists proposals into the snapshot, applies the portal's decisions on GitHub, then acknowledges them", async () => {
+  const root = mkdtempSync(join(tmpdir(), "seo-portal-dec-")), state = join(root, "state"); mkdirSync(state);
+  const { run } = await import("../src/jobs/portal.mjs");
+  const ghCalls = [];
+  const gh = async (path, init = {}) => {
+    ghCalls.push([init.method || "GET", path, init.body ? JSON.parse(init.body) : null]);
+    if (path.startsWith("/issues?labels=seo-proposal")) return res([{ number: 7, title: "Refresh /boilers", labels: [{ name: "seo-proposal" }] }, { number: 8, title: "Not really", labels: [{ name: "seo-proposal" }] }]);
+    if (path.startsWith("/issues?")) return res([]);
+    if (path === "/issues/8/comments") return res({}, 403);
+    return res({});
+  };
+  const posts = [];
+  const f = async (u, init) => {
+    const b = JSON.parse(init.body); posts.push(b);
+    return res(b.snapshot ? { ok: true, at: "t", decisions: [{ id: 1, issue: 7, decision: "approve", by: "ann@agency.test" }, { id: 2, issue: 8, decision: "decline" }, { id: 3, issue: 55, decision: "hold" }] } : { ok: true, decisions: [] });
+  };
+  const log = console.log; console.log = () => {};
+  try {
+    await run({ site: { id: "p", name: "P", url: "https://p.test/", labels: { proposal: "seo-proposal", topic: "seo-topic", approved: "approved" }, paths: { state } }, flags: { push: true } },
+      { env: { SEO_PORTAL_URL: "https://portal.test/functions/v1/ingest", SEO_PORTAL_TOKEN: "spt_x", GITHUB_REF_NAME: "main" }, fetch: f, gh, now: "t" });
+  } finally { console.log = log; }
+  assert.deepEqual(posts[0].snapshot.issues.map((i) => i.number), [8, 7]);
+  assert.ok(ghCalls.some(([m, p, b]) => m === "POST" && p === "/issues/7/labels" && b.labels[0] === "approved"));
+  assert.ok(ghCalls.some(([m, p, b]) => m === "POST" && p === "/actions/workflows/seo-implement.yml/dispatches" && b.inputs.issue === "7" && b.ref === "main"));
+  assert.ok(ghCalls.some(([m, p]) => m === "PATCH" && p === "/issues/8"), "decline still tries to close");
+  // 1 applied; 2 failed (comment refused) so it is retried next run; 3 is not open any more, so it is acknowledged.
+  assert.deepEqual(posts[1], { applied: [1, 3] });
+});

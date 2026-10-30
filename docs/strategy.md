@@ -3,7 +3,7 @@
 Where seo-autopilot can go from here, written for the owner and for any session planning work. It is an analysis with a recommendation, not a promise of revenue.
 
 ## What exists
-A complete open-source SEO team: 12 jobs plus audit and engines, 27 agents, 26 playbooks, a landing site, and real production use on the maintainers' own sites. It runs in the user's own GitHub repository with the user's own Google and AI accounts. That design is a strength (no data leaves the user's control, no per-user running cost for us) and the main barrier to growth (the user must be comfortable with GitHub, secrets and a command line).
+A complete open-source SEO team: 58 jobs, 38 agents in 8 departments, 30 playbooks, 7 shared skills, a client portal, a landing site, and real production use on the maintainers' own sites. It runs in the user's own GitHub repository with the user's own Google and AI accounts. That design is a strength (no data leaves the user's control, no per-user running cost for us) and the main barrier to growth (the user must be comfortable with GitHub, secrets and a command line).
 
 ## Who would use it
 1. **Developers and technical founders** with a site in a repository (frameworks, static generators). Can use today. Small willingness to pay; they value open source.

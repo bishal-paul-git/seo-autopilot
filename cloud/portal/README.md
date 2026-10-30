@@ -8,11 +8,25 @@ Decision D23 in `docs/implementation/DECISIONS.md` explains the design.
 
 **What the dashboard shows:** search totals and trend, keywords (ranking now and targeted next), every page with a 0 to 100 score, location pages by area, pages Google has not indexed, the plan and proposed pages, the weekly report and the agents' recent work. When the site's GA4 property is connected, it also shows visits by channel, source, country and device.
 
+**Agency tools:**
+- **Approvals:** approve, hold or decline the SEO team's proposals per site.
+- **Team:** invite colleagues by email.
+- **Brand:** set the brand clients see on their links (name and colour).
+- **Growth:** see how the average page score, the searches a site appears for and its indexed pages change across the daily snapshots.
+
+## Approvals from the portal
+A decision is only recorded in the portal. The website's own daily run applies it on GitHub and reports back, so the portal never holds GitHub access:
+- **approve:** the run adds the `approved` label, comments who approved, and starts `seo-implement` with a workflow dispatch. A label added by the workflow token starts nothing on its own.
+- **hold:** the run adds `seo-hold` and comments.
+- **decline:** the run comments and closes the issue as not planned.
+
+Only signed-in agency members can decide; client links cannot. Approved changes still go through every check, and high-risk kinds still wait for a person before merging. This needs the v2.22 `seo-daily` (with `actions: write`) and `seo-implement` (with `workflow_dispatch`) templates: run `seo-autopilot upgrade --apply`.
+
 ## Parts
 | Part | Where | What it is |
 |---|---|---|
 | Snapshot | `src/analysis/portal.mjs`, `src/jobs/portal.mjs` | `seo-autopilot run portal [--push]`: `portal.json` from the reports the other jobs already wrote. The daily workflow pushes it when the secrets below are set |
-| Database | `supabase/migrations/` | Tables, row level security and the functions the page calls (Postgres on Supabase) |
+| Database | `supabase/migrations/` | Tables, row level security and the functions the page calls (Postgres on Supabase). Apply both files in order |
 | Ingest | `supabase/functions/ingest/` | Edge Function: takes a snapshot with the site's token and saves it |
 | Page | `app/index.html`, `build.mjs` | One static file with no libraries. It reads through Supabase's REST API with the publishable key |
 | Checks | `supabase/test/`, `test/portal*.test.mjs` | Access rules on Postgres 16; the snapshot; the page in Chromium against a stand-in API |
@@ -43,10 +57,9 @@ Decision D23 in `docs/implementation/DECISIONS.md` explains the design.
 - The access rules need a Postgres 16 server:
   `createdb portal && psql -v ON_ERROR_STOP=1 -d portal -f cloud/portal/supabase/test/shim.sql -f cloud/portal/supabase/migrations/20261030000000_portal.sql -f cloud/portal/supabase/test/rls.sql`
 
-  It ends with `all portal access checks passed`.
+  Then apply the second migration and run `cloud/portal/supabase/test/rls2.sql` the same way. They end with `all portal access checks passed` and `all second-step access checks passed`.
 
 ## Not done yet
 - **Billing:** plans, limits per plan and Stripe.
-- **Team invitations:** a second person in the same agency is added by hand in `org_members` for now.
 - **Custom domains per agency.**
 - **Real-time updates:** the page reloads data when opened.

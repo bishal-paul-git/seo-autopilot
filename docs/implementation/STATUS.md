@@ -1,6 +1,13 @@
 # Implementation status
 
-Last updated: 2026-10-30 UTC (v2.21.0 released: client portal).
+Last updated: 2026-10-30 UTC (v2.22.0 prepared: portal approvals, team invites, brand, growth).
+- **v2.22.0 (branch `claude/hopeful-euler-662mu5`):**
+  - **Approvals in the portal:** decisions are applied by the site's daily run (D24).
+  - **Team invites, agency brand on client links, growth over time.**
+  - **Second migration** `20261030120000_portal_approvals_team_brand.sql`; the ingest function returns pending decisions.
+  - **Templates:** `seo-implement` gets `workflow_dispatch`, `seo-daily` gets `actions: write`.
+  - **Checks:** `npm test` 473/473 (including the browser test); `rls.sql` and `rls2.sql` pass on local Postgres 16.
+  - **Not deployed:** Supabase is still INACTIVE (last checked 2026-10-30 07:xx UTC).
 - **Released 2026-10-30:** https://github.com/bishal-paul-git/seo-autopilot/pull/25 was merged as `45c5abe`. The tag-release workflow tagged `v2.21.0` and moved `v2` and `v2-stable` to `45c5abe` (checked with `git ls-remote`). The first run failed on an input-format error of mine (`2.21.0` instead of `v2.21.0`); the re-run succeeded.
 - **Site PRs adding the daily portal step (draft, owner merges):**
   - https://github.com/bishal-paul-git/tenanthousingdisrepair/pull/25
