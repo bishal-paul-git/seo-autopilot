@@ -83,6 +83,18 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-10-30 D23 Client portal on Supabase, fed by a daily push (owner: "do all of your remaining works")
+**Built:** an agency signs in, connects websites, and shares a no-login link with each client. Each website's own scheduled run pushes one JSON snapshot a day (`portal` job). The portal stores the snapshots in Supabase Postgres and shows them on one static page. Source: `cloud/portal`, `src/jobs/portal.mjs`.
+- **Why push, not pull.** Agencies' websites live in their own (often private) repositories. A push needs one site-scoped token per website. A pull would need the portal to hold GitHub access to every client repository. The workflow already runs daily, so a push costs one step.
+- **Why Supabase.** It provides Postgres with row level security, email sign-in and Edge Functions in one service, and the owner already uses it. With RLS, isolation is enforced by the database rather than by the page. The page talks to the REST API with the publishable key, so it needs no server and no libraries, and stays a static file that any host can serve.
+- **Tenancy.** Every account gets its own organisation on sign-up. Site tokens are stored as SHA-256 hashes in a schema the API does not expose, and making a new one stops the old one. Client links are random tokens that read one website's latest snapshot through one function.
+- **Tradeoffs.**
+  - Snapshots are whole documents (about 60 to 70 KB per site per day; the last 120 are kept), not normalised tables. That is simple and fast to show, but cross-site analytics would need extraction later.
+  - Client links are bearer links: anyone holding one can view that site. That is acceptable for SEO reports, and links are revocable.
+  - The portal depends on Supabase. The schema is plain Postgres plus `auth.uid()`, so moving is feasible.
+- **Relationship to the Phase 0 plan (D1 to D15, still awaiting owner review).** This is the smaller alternative to the full hosted app. It runs no jobs and holds no Google credentials, and it reuses the engine unchanged, so it does not pre-empt the hosted-worker decision (D1). It overlaps briefs 05 and 07.
+- **Not done:** billing, team invitations, per-agency domains, live updates.
+
 ## 2026-10-23 D22 Product name (proposed; owner decides)
 - **Problem:** "SEO Autopilot" is a category, not a name. BrightEdge sells "Autopilot", and at least two other tools are listed as "SEO Autopilot". It cannot be owned, protected or found.
 - **Owner brief (2026-10-23):** a simple, small, repeatable name; the domain need not be .com.

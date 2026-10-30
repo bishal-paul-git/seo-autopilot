@@ -35,6 +35,7 @@ export const OPTIONAL_KEYS = [
   [["CRUX_API_KEY"], "real-user Core Web Vitals for vitals (free)"],
   [["GOOGLE_KG_API_KEY"], "Google Knowledge Graph for entity (free)"],
   [["PERPLEXITY_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY"], "AI engines for ai-visibility (paid; ANTHROPIC_API_KEY counts too)"],
+  [["SEO_PORTAL_URL", "SEO_PORTAL_TOKEN"], "client portal: the daily snapshot push (both come from \"Connect a website\" in the portal)"],
 ];
 
 export async function doctor({ cwd = process.cwd() } = {}) {

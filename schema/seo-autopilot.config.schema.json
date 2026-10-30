@@ -289,6 +289,17 @@
               }
             }
           },
+          "portal": {
+            "type": "object",
+            "description": "Client portal snapshot (the portal job). All optional.",
+            "properties": {
+              "market": { "type": "string", "description": "Shown to the client, for example \"United Kingdom, Greater Manchester\"." },
+              "schedule": { "type": "string", "description": "When the reports run, as shown to the client." },
+              "locationPattern": { "type": "string", "description": "Regular expression for location pages: group 1 is the area, group 2 (optional) the town. Default matches /areas/, /locations/ and /service-areas/." },
+              "keywords": { "type": "integer", "minimum": 10, "maximum": 500, "description": "How many keywords the snapshot keeps (default 80)." }
+            },
+            "additionalProperties": false
+          },
           "research": {
             "type": "object",
             "description": "Research suite: keyword explorer, rank tracker, gap, optimiser, AI visibility and authority. All optional.",

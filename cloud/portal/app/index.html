@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0c0f14">
+<title>SEO Autopilot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: mobile-first app. Phone: sticky header, content, bottom tab bar. Desktop: left page rail + wide content. */
+:root {
+  --bg: #f4f5f7; --panel: #ffffff; --ink: #0f1419; --muted: #636c78; --line: #e3e6eb; --line-2: #eef0f3;
+  --side: #0c0f14; --side-2: #161b23; --side-ink: #cdd4dd; --side-muted: #7f8995;
+  --accent: #0f9d74; --accent-ink: #ffffff; --accent-soft: #e2f5ed;
+  --warn: #b26a12; --warn-soft: #fdf1e1; --bad: #c2382f; --bad-soft: #fde9e7; --info: #3559c7; --info-soft: #e8eefc;
+  --chart: #0f9d74; --chart-2: #8e9aab;
+  --sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e1116; --panel: #161a21; --ink: #e8ebef; --muted: #98a1ad; --line: #262c35; --line-2: #1d222a;
+  --accent: #34c99c; --accent-ink: #052a1e; --accent-soft: #123328;
+  --warn: #e3a556; --warn-soft: #382a17; --bad: #f07a71; --bad-soft: #3b1d1b; --info: #8ba6f5; --info-soft: #1d2640;
+  --chart: #34c99c; --chart-2: #5b6574; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0e1116; --panel: #161a21; --ink: #e8ebef; --muted: #98a1ad; --line: #262c35; --line-2: #1d222a;
+  --accent: #34c99c; --accent-ink: #052a1e; --accent-soft: #123328;
+  --warn: #e3a556; --warn-soft: #382a17; --bad: #f07a71; --bad-soft: #3b1d1b; --info: #8ba6f5; --info-soft: #1d2640;
+  --chart: #34c99c; --chart-2: #5b6574; color-scheme: dark }
+* { box-sizing: border-box }
+html, body { margin: 0 }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--sans); -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent }
+a { color: inherit }
+button { font: inherit; color: inherit }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.app { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh }
+
+/* Desktop rail */
+.rail { background: var(--side); color: var(--side-ink); position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding-block: 20px; padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: 14px }
+.brand { display: flex; align-items: center; gap: 10px; padding: 0 6px; text-decoration: none }
+.brand-mark { width: 30px; height: 30px; border-radius: 9px; background: var(--accent); display: grid; place-items: center; flex: none }
+.brand-mark svg { width: 18px; height: 18px }
+.brand b { color: #fff; font-weight: 600; font-size: 15px; display: block; line-height: 1.2 }
+.brand span { font: 11px var(--mono); color: var(--side-muted) }
+.rail .lbl { font: 500 10.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--side-muted); padding: 0 8px; margin-bottom: 6px }
+.rail nav { display: flex; flex-direction: column; gap: 2px }
+.rail nav a { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; text-decoration: none; color: var(--side-ink); font-weight: 500; font-size: 14px }
+.rail nav a:hover { background: var(--side-2) }
+.rail nav a[aria-current="page"] { background: var(--side-2); color: #fff }
+.rail nav a svg { width: 17px; height: 17px; flex: none; opacity: .85 }
+.rail nav .dot { width: 8px; height: 8px; border-radius: 50%; margin: 0 4px; flex: none }
+.dot.live { background: #34c99c } .dot.setup { background: #e3a556 }
+.rail .foot { margin-top: auto; font-size: 12px; color: var(--side-muted); padding: 0 8px; line-height: 1.5 }
+
+/* Header */
+.main { min-width: 0; display: flex; flex-direction: column }
+.hdr { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 6; background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); padding-block: 12px; padding-left: 28px; padding-right: max(20px, env(safe-area-inset-right, 0px)); display: flex; align-items: center; gap: 12px }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg) }
+.hdr .site { min-width: 0 }
+.hdr .site b { display: block; font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.hdr .site span { font-size: 12px; color: var(--muted) }
+.hdr .sp { flex: 1 }
+.hdr .mobile-brand { display: none }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 8px 13px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); font-weight: 500; font-size: 13.5px; text-decoration: none; cursor: pointer; white-space: nowrap }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink) }
+.btn svg { width: 15px; height: 15px }
+.page { padding-block: 22px 40px; padding-left: 28px; padding-right: max(20px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 18px; max-width: 1180px; width: 100% }
+h1 { font-size: 24px; line-height: 1.2; font-weight: 600; letter-spacing: -0.02em; margin: 0; text-wrap: balance }
+.lead { color: var(--muted); margin: 4px 0 0; max-width: 68ch }
+h2 { font-size: 16px; font-weight: 600; margin: 0; letter-spacing: -0.01em }
+
+/* Cards */
+.grid { display: grid; gap: 12px }
+.g4 { grid-template-columns: repeat(4, minmax(0, 1fr)) }
+.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)) }
+.g2 { grid-template-columns: repeat(2, minmax(0, 1fr)) }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; min-width: 0 }
+.card.pad0 { padding: 0 }
+.ch { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 12px }
+.pad0 .ch { padding: 16px 16px 0 }
+.ch p { margin: 0; color: var(--muted); font-size: 13px }
+.ch .r { margin-left: auto }
+.kpi .l { font-size: 13px; color: var(--muted) }
+.kpi .v { font: 600 26px/1.15 var(--sans); letter-spacing: -0.02em; margin-top: 6px; font-variant-numeric: tabular-nums }
+.kpi .v small { font-size: 14px; color: var(--muted); font-weight: 500 }
+.kpi .d { font-size: 12.5px; margin-top: 4px; color: var(--muted) }
+.kpi .help { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.4 }
+.up { color: var(--accent) } .down { color: var(--bad) }
+.pill { display: inline-flex; align-items: center; gap: 5px; font: 500 11.5px var(--sans); padding: 3px 9px; border-radius: 99px; background: var(--line-2); color: var(--muted); white-space: nowrap }
+.pill.ok { background: var(--accent-soft); color: var(--accent) } .pill.warn { background: var(--warn-soft); color: var(--warn) } .pill.bad { background: var(--bad-soft); color: var(--bad) } .pill.info { background: var(--info-soft); color: var(--info) }
+.pill i { width: 6px; height: 6px; border-radius: 50% ; background: currentColor }
+.muted { color: var(--muted) } .sm { font-size: 13px } .xs { font-size: 12px }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums }
+svg text { fill: var(--muted); font: 10px var(--mono) }
+.hero { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center }
+.ring { width: 92px; height: 92px; position: relative; flex: none }
+.ring b { position: absolute; inset: 0; display: grid; place-items: center; font: 600 26px var(--sans); letter-spacing: -0.02em }
+.ring small { position: absolute; left: 0; right: 0; bottom: 18px; text-align: center; font-size: 10.5px; color: var(--muted) }
+.callout { border: 1px solid var(--line); border-left: 3px solid var(--warn); background: var(--panel); border-radius: 12px; padding: 13px 15px; font-size: 14px }
+.callout.ok { border-left-color: var(--accent) } .callout.info { border-left-color: var(--info) }
+
+/* Lists */
+.list { display: flex; flex-direction: column }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 12px 16px; border-top: 1px solid var(--line-2) }
+.row:first-child { border-top: 0 }
+.row .t { font-weight: 500; overflow-wrap: anywhere }
+.row .s { font-size: 12.5px; color: var(--muted); margin-top: 2px; overflow-wrap: anywhere }
+.row .end { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px }
+.pos { display: inline-grid; place-items: center; min-width: 44px; padding: 3px 8px; border-radius: 8px; font: 600 13px var(--mono) }
+.pos.p1 { background: var(--accent-soft); color: var(--accent) } .pos.p2 { background: var(--info-soft); color: var(--info) } .pos.p3 { background: var(--warn-soft); color: var(--warn) } .pos.p4 { background: var(--line-2); color: var(--muted) }
+.score { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font: 600 13.5px var(--mono); flex: none }
+.score.ok { background: var(--accent-soft); color: var(--accent) } .score.warn { background: var(--warn-soft); color: var(--warn) } .score.bad { background: var(--bad-soft); color: var(--bad) }
+.prow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 16px; border-top: 1px solid var(--line-2) }
+.prow:first-child { border-top: 0 }
+.seg { display: flex; gap: 6px; flex-wrap: wrap }
+.seg button { border: 1px solid var(--line); background: var(--panel); padding: 6px 12px; border-radius: 99px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--muted) }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink) }
+.search { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); font: inherit; color: var(--ink) }
+.bar { height: 10px; border-radius: 99px; background: var(--line-2); overflow: hidden; display: flex }
+.bar span { height: 100%; display: block }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 12.5px; color: var(--muted) }
+.legend i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 6px; vertical-align: -1px }
+.legend b { color: var(--ink); font-family: var(--mono); font-weight: 500 }
+.chips { display: flex; flex-wrap: wrap; gap: 6px }
+.chip { font-size: 12.5px; padding: 4px 9px; border-radius: 8px; background: var(--line-2); color: var(--muted); display: inline-flex; gap: 6px; align-items: center }
+.chip.ok { background: var(--accent-soft); color: var(--accent) }
+.chip.warn { background: var(--warn-soft); color: var(--warn) }
+.report h3 { font-size: 15px; margin: 18px 0 6px } .report h3:first-child { margin-top: 0 }
+.report ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px }
+.report p { margin: 0 0 6px; font-size: 14px }
+.form { display: grid; gap: 12px; max-width: 420px }
+.form label { display: grid; gap: 6px; font-size: 13.5px; font-weight: 500 }
+.form input { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); font: inherit; color: var(--ink) }
+.form .err { color: var(--bad); font-size: 13.5px; min-height: 1em }
+.secret { font-family: var(--mono); font-size: 12.5px; padding: 10px 12px; border-radius: 10px; background: var(--line-2); overflow-wrap: anywhere; user-select: all }
+.steps { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 14px }
+.empty { padding: 22px 16px; text-align: center; color: var(--muted); font-size: 14px }
+.tbl { overflow-x: auto } table { width: 100%; border-collapse: collapse; font-size: 13.5px }
+th { text-align: left; font: 500 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--line); white-space: nowrap }
+td { padding: 11px 16px; border-bottom: 1px solid var(--line-2) } tr:last-child td { border-bottom: 0 }
+.sites { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px }
+.site-card { text-decoration: none; display: flex; flex-direction: column; gap: 12px }
+.site-card:hover { border-color: var(--accent) }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 14px; z-index: 30 }
+
+/* Mobile bottom bar and sheet */
+.tabbar { display: none }
+.sheet { position: fixed; inset: 0; z-index: 40; background: rgb(0 0 0 / .4); display: flex; align-items: flex-end }
+.sheet .panel { background: var(--panel); width: 100%; border-radius: 18px 18px 0 0; padding: 10px 12px calc(16px + env(safe-area-inset-bottom, 0px)); padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)) }
+.sheet .grab { width: 40px; height: 4px; border-radius: 4px; background: var(--line); margin: 4px auto 10px }
+.sheet a { display: flex; align-items: center; gap: 12px; padding: 13px 10px; border-radius: 10px; text-decoration: none; font-weight: 500 }
+.sheet a:active { background: var(--line-2) }
+.sheet a svg { width: 20px; height: 20px; color: var(--muted) }
+
+@media (max-width: 960px) { .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)) } .g3 { grid-template-columns: 1fr } }
+@media (max-width: 760px) {
+  body { font-size: 15px }
+  .app { grid-template-columns: 1fr }
+  .rail { display: none }
+  .hdr { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+  .hdr .mobile-brand { display: grid }
+  .page { padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: max(14px, env(safe-area-inset-right, 0px)); padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); gap: 14px }
+  .g2 { grid-template-columns: 1fr }
+  h1 { font-size: 21px }
+  .kpi .v { font-size: 23px }
+  .tabbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: color-mix(in srgb, var(--panel) 94%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--line); padding: 6px max(6px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(6px, env(safe-area-inset-left, 0px)) }
+  .tabbar a, .tabbar button { all: unset; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 0; font-size: 11px; font-weight: 500; color: var(--muted); cursor: pointer; text-align: center }
+  .tabbar svg { width: 22px; height: 22px }
+  .tabbar [aria-current="page"] { color: var(--accent) }
+  .hero { grid-template-columns: 1fr; justify-items: start }
+  .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px }
+  .g3 .kpi { padding: 12px }
+  .g3 .kpi .v { font-size: 20px }
+  .g3 .kpi .help, .g3 .kpi .d { display: none }
+  .g3 .kpi .l { font-size: 12px; line-height: 1.3 }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <aside class="rail" id="rail"></aside>
+  <div class="main">
+    <header class="hdr" id="hdr"></header>
+    <main class="page" id="page"></main>
+  </div>
+</div>
+<nav class="tabbar" id="tabbar" aria-label="Sections"></nav>
+<div id="overlay"></div>
+
+<script>
+// The portal app. Reads from the portal's Supabase project over its REST API with the public (publishable) key; what a
+// person can see is decided by the database (row level security), not by this page. No libraries.
+const CFG = __CONFIG__;
+const DEPTS = __DEPTS__;
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = (n, d = 0) => (n == null || Number.isNaN(Number(n)) ? "–" : Number(n).toLocaleString("en-GB", { maximumFractionDigits: d }));
+const host = (u) => String(u || "").replace(/^https?:\/\//, "").replace(/\/$/, "");
+const toast = (m) => { const t = document.createElement("div"); t.className = "toast"; t.textContent = m; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); };
+
+/* ---------- API: Supabase Auth and REST, plain fetch ---------- */
+const SKEY = "seo-portal-session";
+let session = (() => { try { return JSON.parse(localStorage.getItem(SKEY) || "null"); } catch { return null; } })();
+const saveSession = (s) => { session = s; try { s ? localStorage.setItem(SKEY, JSON.stringify(s)) : localStorage.removeItem(SKEY); } catch {} };
+async function authCall(path, body) {
+  const r = await fetch(`${CFG.supabaseUrl}/auth/v1/${path}`, { method: "POST", headers: { apikey: CFG.anonKey, "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.msg || j.error_description || j.message || `Sign-in failed (${r.status})`);
+  return j;
+}
+const keep = (j) => saveSession({ access_token: j.access_token, refresh_token: j.refresh_token, expires_at: Date.now() / 1000 + (j.expires_in || 3600), email: j.user?.email });
+async function token() {
+  if (!session) return null;
+  if (session.expires_at - 60 < Date.now() / 1000) {
+    try { keep(await authCall("token?grant_type=refresh_token", { refresh_token: session.refresh_token })); } catch { saveSession(null); return null; }
+  }
+  return session.access_token;
+}
+async function api(path, { method = "GET", body, anon = false } = {}) {
+  const t = anon ? null : await token();
+  const r = await fetch(`${CFG.supabaseUrl}/rest/v1/${path}`, { method, headers: { apikey: CFG.anonKey, Authorization: `Bearer ${t || CFG.anonKey}`, "Content-Type": "application/json", Prefer: "return=representation" }, body: body ? JSON.stringify(body) : undefined });
+  const j = r.status === 204 ? null : await r.json().catch(() => null);
+  if (r.status === 401 && !anon) { saveSession(null); location.hash = "#/login"; throw new Error("Please sign in again."); }
+  if (!r.ok) throw new Error(j?.message || `Request failed (${r.status})`);
+  return j;
+}
+const rpc = (fn, args = {}, opts = {}) => api(`rpc/${fn}`, { method: "POST", body: args, ...opts });
+
+/* ---------- Data: a site row plus its latest snapshot, flattened for the pages ---------- */
+const EMPTY = { history: [], keywords: [], targets: [], pages: [], locations: [], proposals: [], priorities: [], plan: [], runs: [], coverage: [], notIndexed: [], integrations: [], period: { cur: {}, prev: {} }, audit: null, digest: "" };
+function toSite(row, data, key) {
+  const d = data || {};
+  return { ...EMPTY, ...d, key, id: row.id, name: row.name, url: row.url, repo: row.repo, status: data ? "live" : row.status === "live" ? "live" : "connecting", lastAt: row.last_snapshot_at, market: d.site?.market, platform: d.site?.platform, period: d.period || EMPTY.period };
+}
+let SITES = [], loaded = false;
+async function loadAgency() { SITES = (await rpc("my_sites")).map((x) => toSite(x.site, x.data, x.site.id)); loaded = true; }
+const shared = new Map();
+async function loadShared(t) {
+  if (!shared.has(t)) { const j = await rpc("shared_site", { p_token: t }, { anon: true }); shared.set(t, j ? toSite(j.site, j.data, t) : null); }
+  return shared.get(t);
+}
+
+/* ---------- Shared bits ---------- */
+const I = {
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
+  trend: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>',
+  key: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',
+  page: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6z"/><path d="M9 12h6M9 16h6"/></svg>',
+  pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+  plan: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/></svg>',
+  report: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M8 15v-3M12 15V9M16 15v-5"/></svg>',
+  team: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 14h.01M15 14h.01"/></svg>',
+  plug: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7V3M15 7V3M6 7h12v4a6 6 0 0 1-12 0z"/><path d="M12 17v4"/></svg>',
+  more: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>',
+  share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v13M7 8l5-5 5 5"/></svg>',
+  grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg>',
+};
+const PAGES = [["overview", "Overview", I.home], ["traffic", "Traffic", I.trend], ["keywords", "Keywords", I.key], ["pages", "Pages", I.page], ["locations", "Locations", I.pin], ["plan", "Coming next", I.plan], ["report", "Weekly report", I.report], ["team", "SEO team", I.team], ["connect", "Connection", I.plug]];
+const AGENCY_ONLY = new Set(["team", "connect"]);
+const MOBILE_TABS = ["overview", "traffic", "keywords", "pages"];
+let state = { kwTab: "ranking", kwQ: "", pgFilter: "all", newToken: null };
+
+const last = (s) => s.history[s.history.length - 1] || {};
+const first = (s) => s.history[0] || {};
+const tone = (v) => (v >= 85 ? "ok" : v >= 70 ? "warn" : "bad");
+const isIdx = (p) => /^submitted and indexed$|^indexed, not submitted in sitemap$/i.test(p.indexed || "");
+function health(s) {
+  const l = last(s), sev = s.audit?.bySeverity || {};
+  const idx = l.inspected ? l.indexed / l.inspected : 0;
+  const avg = s.pages.length ? s.pages.reduce((a, p) => a + p.score, 0) / s.pages.length : 80;
+  return Math.max(0, Math.min(100, Math.round(idx * 45 + avg * 0.55 - (sev.high || 0) * 5)));
+}
+const posClass = (p) => (p == null ? "p4" : p <= 3 ? "p1" : p <= 10 ? "p2" : p <= 20 ? "p3" : "p4");
+const posLabel = (p) => (p == null ? "–" : p <= 3 ? "Top 3" : p <= 10 ? "Page 1" : p <= 20 ? "Page 2" : "Page 3+");
+function pct(a, b) { if (!b) return null; return Math.round(((a - b) / b) * 100); }
+function change(a, b, invert = false) {
+  if (b == null || b === 0) return `<span class="muted">first 28 days</span>`;
+  const p = invert ? -pct(a, b) : pct(a, b);
+  if (!p) return `<span class="muted">no change</span>`;
+  return `<span class="${p > 0 ? "up" : "down"}">${p > 0 ? "▲" : "▼"} ${Math.abs(p)}%</span> <span class="muted">vs previous 28 days</span>`;
+}
+
+function chart(points, key, { h = 170, color = "var(--chart)", label = "", fmtY = (v) => fmt(v) } = {}) {
+  points = (points || []).filter((p) => p[key] != null);
+  if (points.length < 2) return '<div class="empty">Not enough days yet for a chart.</div>';
+  const w = 620, pad = { l: 40, r: 10, t: 10, b: 22 };
+  const vals = points.map((p) => p[key]);
+  const max = Math.max(...vals), min = Math.min(...vals, 0);
+  const x = (i) => pad.l + (i * (w - pad.l - pad.r)) / Math.max(points.length - 1, 1);
+  const y = (v) => pad.t + (h - pad.t - pad.b) * (1 - (v - min) / (max - min || 1));
+  const d = points.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p[key]).toFixed(1)}`).join("");
+  const n = points.length - 1, id = "g" + key + Math.random().toString(36).slice(2, 6);
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="${esc(label)}">
+    <defs><linearGradient id="${id}" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${color}" stop-opacity=".25"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+    ${[min, (min + max) / 2, max].map((t) => `<line x1="${pad.l}" x2="${w - pad.r}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)" stroke-dasharray="3 4"/><text x="${pad.l - 6}" y="${y(t) + 3}" text-anchor="end">${fmtY(t)}</text>`).join("")}
+    <path d="${d}L${x(n)},${h - pad.b}L${x(0)},${h - pad.b}Z" fill="url(#${id})"/>
+    <path d="${d}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${x(n)}" cy="${y(points[n][key])}" r="4.5" fill="${color}"/>
+    <text x="${x(0)}" y="${h - 5}">${esc(String(points[0].day).slice(5))}</text><text x="${x(n)}" y="${h - 5}" text-anchor="end">${esc(String(points[n].day).slice(5))}</text>
+  </svg>`;
+}
+function ring(v) {
+  const r = 38, c = 2 * Math.PI * r, col = `var(--${tone(v) === "ok" ? "accent" : tone(v)})`;
+  return `<div class="ring"><svg viewBox="0 0 92 92" width="92" height="92"><circle cx="46" cy="46" r="${r}" fill="none" stroke="var(--line-2)" stroke-width="8"/><circle cx="46" cy="46" r="${r}" fill="none" stroke="${col}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(c * v) / 100} ${c}" transform="rotate(-90 46 46)"/></svg><b>${v}</b><small>SEO score</small></div>`;
+}
+const bars = (rows, total, label = (x) => x.key) => `<div class="list">${rows.map((x) => `<div class="row"><div style="flex:1;min-width:0"><div class="t">${esc(label(x))}</div><div class="bar" style="height:6px;margin-top:6px"><span style="width:${Math.round((x.v / (total || 1)) * 100)}%;background:var(--accent)"></span></div></div><div class="end"><b class="mono">${fmt(x.v)}</b><span class="xs muted">${x.note || ""}</span></div></div>`).join("")}</div>`;
+
+/* ---------- Pages ---------- */
+function pOverview(s) {
+  const c = s.period.cur, p = s.period.prev, l = last(s), f = first(s), h = health(s);
+  const top = s.keywords.slice(0, 5);
+  const next = [...s.proposals.map((x) => x.title), ...s.priorities.slice(0, 3).map((x) => x.title)].slice(0, 4);
+  return `<div class="card hero">${ring(h)}<div><h1>${esc(s.name)}</h1><p class="lead">${summary(s)}</p></div></div>
+  <div class="grid g4">
+    ${kpi("Google impressions", c.impressions, change(c.impressions, p.impressions), "Times your pages showed in Google search, last 28 days")}
+    ${kpi("Visits from Google", c.clicks, change(c.clicks, p.clicks), "Clicks from Google search to the site")}
+    ${kpi("Average position", c.position, change(c.position, p.position, true), "Where you appear on average. Lower is better; 1–10 is page one")}
+    ${kpi("Pages in Google", `${fmt(l.indexed)}<small> / ${fmt(l.inspected)}</small>`, l.indexed > f.indexed ? `<span class="up">▲ ${l.indexed - f.indexed}</span> <span class="muted">since ${esc(String(f.day).slice(5))}</span>` : "", "Pages Google has indexed and can show")}
+  </div>
+  <div class="grid g2">
+    <div class="card"><div class="ch"><h2>Daily impressions</h2><p>How often Google shows the site</p></div>${chart(s.history, "impressions", { label: "Daily impressions" })}</div>
+    <div class="card pad0"><div class="ch"><h2>Top keywords</h2><a class="r btn" href="${link(s, "keywords")}">All keywords</a></div><div class="list">${top.map(kwRow).join("") || '<div class="empty">No searches yet.</div>'}</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="card pad0"><div class="ch"><h2>Coming next</h2><a class="r btn" href="${link(s, "plan")}">Plan</a></div><div class="list">${next.map((t) => `<div class="row"><div><div class="t">${esc(t)}</div></div><span class="pill info">Planned</span></div>`).join("") || '<div class="empty">Nothing planned yet.</div>'}</div></div>
+    <div class="card"><div class="ch"><h2>Where visitors come from</h2></div>${sourcesBlock(s)}</div>
+  </div>`;
+}
+function summary(s) {
+  const c = s.period.cur, l = last(s);
+  const bits = [`Google showed the site <b>${fmt(c.impressions)}</b> times in the last 28 days for <b>${fmt(c.queries)}</b> different searches`];
+  bits.push(c.clicks ? `bringing <b>${fmt(c.clicks)}</b> visits` : `with no clicks yet: most pages still rank beyond page one`);
+  if (l.inspected) bits.push(`<b>${fmt(l.indexed)}</b> of ${fmt(l.inspected)} pages are in Google`);
+  if (s.ga4 && !s.ga4.error) bits.push(`and <b>${fmt(s.ga4.sessions)}</b> visits in all (Google Analytics)`);
+  return bits.join(", ") + ".";
+}
+function kpi(label, v, delta, help) {
+  return `<div class="card kpi"><div class="l">${label}</div><div class="v">${typeof v === "number" ? fmt(v, 1) : v ?? "–"}</div><div class="d">${delta || "&nbsp;"}</div><div class="help">${help}</div></div>`;
+}
+const CHANNEL = { "Organic Search": "Google and other search", Direct: "Direct (typed or bookmarked)", Referral: "Links on other sites", "Organic Social": "Social media", "Paid Search": "Search ads", Email: "Email", Unassigned: "Not known" };
+function sourcesBlock(s) {
+  const g = s.ga4;
+  if (g && !g.error && g.channels?.length) {
+    const tot = g.channels.reduce((a, x) => a + x.sessions, 0);
+    return `<p class="xs muted" style="margin:0 0 8px">${fmt(g.sessions)} visits in the last ${g.days} days ${change(g.sessions, g.prevSessions)}</p>` +
+      bars(g.channels.map((x) => ({ key: CHANNEL[x.key] || x.key, v: x.sessions, note: x.prev ? `${pct(x.sessions, x.prev) > 0 ? "▲" : "▼"} ${Math.abs(pct(x.sessions, x.prev) || 0)}%` : "visits" })), tot);
+  }
+  const why = g?.error ? `Google Analytics could not be read: ${esc(g.error)}` : "<b>Google Analytics is not connected yet.</b> Once it is, this shows visitors by channel (Google, social, direct, referrals), country and device.";
+  const cs = s.search?.countries || [];
+  return `<div class="callout info">${why} Search data from Google Search Console is live now.</div>
+  ${cs.length ? `<div class="lbl" style="margin-top:12px">Google clicks by country</div>${bars(cs.slice(0, 5).map((x) => ({ key: country(x.key), v: x.clicks, note: `${fmt(x.impressions)} impr.` })), cs.reduce((a, x) => a + x.clicks, 0))}` : `<div class="legend" style="margin-top:12px"><span><i style="background:var(--accent)"></i>Google search <b>${fmt(s.period.cur.clicks)}</b> visits</span><span><i style="background:var(--line)"></i>Other channels <b>needs Analytics</b></span></div>`}`;
+}
+const country = (c) => { try { return new Intl.DisplayNames(["en"], { type: "region" }).of(String(c).length === 3 ? ISO3[String(c).toUpperCase()] || String(c).toUpperCase() : String(c).toUpperCase()); } catch { return String(c).toUpperCase(); } };
+const ISO3 = { GBR: "GB", USA: "US", IND: "IN", CAN: "CA", AUS: "AU", IRL: "IE", DEU: "DE", FRA: "FR", NLD: "NL", ESP: "ES", ITA: "IT", PAK: "PK", BGD: "BD", NGA: "NG", ZAF: "ZA", ARE: "AE", PHL: "PH", NZL: "NZ", SGP: "SG", POL: "PL" };
+function kwRow(k) {
+  return `<div class="row"><div><div class="t">${esc(k.q)}</div><div class="s">${fmt(k.i)} impressions · ${fmt(k.c)} clicks${k.page ? ` · ${esc(k.page)}` : ""}</div></div><div class="end"><span class="pos ${posClass(k.pos)}">${fmt(k.pos, 1)}</span><span class="xs muted">${posLabel(k.pos)}</span></div></div>`;
+}
+
+function pTraffic(s) {
+  const c = s.period.cur, p = s.period.prev;
+  const byPage = [...s.pages].filter((x) => x.i).sort((a, b) => b.i - a.i).slice(0, 10);
+  const buckets = [["Top 3", (k) => k.pos <= 3, "var(--accent)"], ["Page 1", (k) => k.pos > 3 && k.pos <= 10, "color-mix(in srgb, var(--accent) 60%, var(--bg))"], ["Page 2", (k) => k.pos > 10 && k.pos <= 20, "var(--warn)"], ["Page 3+", (k) => k.pos > 20, "var(--chart-2)"]];
+  const tot = s.keywords.length || 1, g = s.ga4 && !s.ga4.error ? s.ga4 : null, dev = g?.devices?.length ? g.devices.map((x) => ({ key: x.key, v: x.sessions })) : (s.search?.devices || []).map((x) => ({ key: x.key, v: x.clicks }));
+  return `<div><h1>Traffic</h1><p class="lead">From Google Search Console, ${esc(s.period.window?.start || "")} to ${esc(s.period.window?.end || "")}${g ? ", and Google Analytics" : ""}.</p></div>
+  <div class="grid g4">
+    ${kpi("Impressions", c.impressions, change(c.impressions, p.impressions), "Times shown in Google")}
+    ${kpi("Clicks", c.clicks, change(c.clicks, p.clicks), "Visits from Google search")}
+    ${kpi("Click-through rate", `${fmt(c.ctr, 1)}%`, "", "Share of impressions that became a visit")}
+    ${kpi("Searches you appear for", c.queries, change(c.queries, p.queries), "Different search terms")}
+  </div>
+  <div class="grid g2">
+    <div class="card"><div class="ch"><h2>Impressions per day</h2></div>${chart(s.history, "impressions", { label: "Impressions per day" })}</div>
+    <div class="card"><div class="ch"><h2>Average position</h2><p>Lower is better</p></div>${chart(s.history, "position", { label: "Average position", color: "var(--info)", fmtY: (v) => fmt(v, 0) })}</div>
+  </div>
+  <div class="card"><div class="ch"><h2>Where the keywords rank</h2><p>${fmt(s.keywords.length)} searches</p></div>
+    <div class="bar">${buckets.map(([, fn, col]) => `<span style="width:${(s.keywords.filter((k) => k.pos != null && fn(k)).length / tot) * 100}%;background:${col}"></span>`).join("")}</div>
+    <div class="legend">${buckets.map(([t, fn, col]) => `<span><i style="background:${col}"></i>${t} <b>${s.keywords.filter((k) => k.pos != null && fn(k)).length}</b></span>`).join("")}</div></div>
+  <div class="grid g2">
+    <div class="card pad0"><div class="ch"><h2>Landing pages</h2><p>Pages people see in Google</p></div><div class="list">${byPage.map((x) => `<div class="row"><div><div class="t">${esc(x.title || x.path)}</div><div class="s">${esc(x.path)}</div></div><div class="end"><b class="mono">${fmt(x.i)}</b><span class="xs muted">impressions</span></div></div>`).join("") || '<div class="empty">No page data yet.</div>'}</div></div>
+    <div class="card"><div class="ch"><h2>Visitor sources</h2></div>${sourcesBlock(s)}</div>
+  </div>
+  ${g?.sources?.length || dev.length ? `<div class="grid g2">
+    ${g?.sources?.length ? `<div class="card pad0"><div class="ch"><h2>Top sources</h2><p>Sites and apps that sent visitors</p></div>${bars(g.sources.map((x) => ({ key: x.key, v: x.sessions, note: "visits" })), g.sources[0].sessions)}</div>` : ""}
+    ${dev.length ? `<div class="card pad0"><div class="ch"><h2>Devices</h2><p>${g ? "Visits" : "Google clicks"}</p></div>${bars(dev.map((x) => ({ ...x, key: x.key.charAt(0).toUpperCase() + x.key.slice(1).toLowerCase() })), dev.reduce((a, x) => a + x.v, 0))}</div>` : ""}
+  </div>` : ""}`;
+}
+
+function pKeywords(s) {
+  const q = state.kwQ.toLowerCase();
+  const list = state.kwTab === "ranking" ? s.keywords.filter((k) => k.q.includes(q)) : s.targets.filter((k) => k.q.includes(q));
+  return `<div><h1>Keywords</h1><p class="lead">Searches the site already shows up for, and the ones we are targeting next.</p></div>
+  <div class="seg"><button data-kw="ranking" aria-pressed="${state.kwTab === "ranking"}">Ranking now · ${s.keywords.length}</button><button data-kw="target" aria-pressed="${state.kwTab === "target"}">Targeting next · ${s.targets.length}</button></div>
+  <input class="search" id="kw-q" placeholder="Search keywords" value="${esc(state.kwQ)}" aria-label="Search keywords">
+  <div class="card pad0"><div class="list">${state.kwTab === "ranking"
+    ? list.map(kwRow).join("") || '<div class="empty">No keywords match.</div>'
+    : list.map((k) => `<div class="row"><div><div class="t">${esc(k.q)}</div><div class="s">${k.i ? `${fmt(k.i)} impressions so far` : "New opportunity"}${k.pos ? ` · now at ${fmt(k.pos, 1)}` : ""} · ${k.covered ? "page exists" : "needs a page"}</div></div><div class="end"><span class="pill ${k.status === "approved" ? "ok" : k.status === "proposed" ? "info" : ""}">${esc(k.status === "new" ? "Found" : k.status === "proposed" ? "Proposed" : k.status || "Found")}</span></div></div>`).join("") || '<div class="empty">No target keywords yet.</div>'}</div></div>
+  <p class="xs muted">Position is the average place in Google for that search. Page 1 means positions 1 to 10.</p>`;
+}
+
+function pPages(s) {
+  const f = state.pgFilter;
+  const list = s.pages.filter((p) => (f === "all" ? true : f === "work" ? p.score < 85 : f === "notidx" ? p.indexed && !isIdx(p) : true));
+  const avg = s.pages.length ? Math.round(s.pages.reduce((a, p) => a + p.score, 0) / s.pages.length) : 0;
+  const RULE = { "title-long": "Title too long", "desc-long": "Description too long", "h1-long": "Heading too long", "canonical-missing": "No canonical tag", "heading-skip": "Heading levels skip", "og-missing": "No social preview", "thin-content": "Too little text" };
+  return `<div><h1>Pages</h1><p class="lead">${fmt(s.pages.length)} live pages. Each one gets a score from 0 to 100: audit issues, whether Google has indexed it, enough text and a description.</p></div>
+  <div class="grid g3">
+    ${kpi("Average page score", avg, "", "Higher is better; 85+ is healthy")}
+    ${kpi("In Google", s.pages.filter(isIdx).length, "", "Indexed and able to rank")}
+    ${kpi("Need attention", s.pages.filter((p) => p.score < 85).length, "", "Pages scoring under 85")}
+  </div>
+  <div class="seg">${[["all", "All"], ["work", "Needs work"], ["notidx", "Not in Google"]].map(([k, t]) => `<button data-pg="${k}" aria-pressed="${f === k}">${t}</button>`).join("")}</div>
+  <div class="card pad0"><div class="list">${list.slice(0, 150).map((p) => `<div class="prow"><span class="score ${tone(p.score)}">${p.score}</span><div style="min-width:0"><div class="t" style="font-weight:500;overflow-wrap:anywhere">${esc(p.title || p.path)}</div><div class="s xs muted" style="overflow-wrap:anywhere">${esc(p.path)} · ${fmt(p.words)} words${p.i ? ` · ${fmt(p.i)} impressions` : ""}</div>${p.issues.length ? `<div class="chips" style="margin-top:6px">${[...new Set(p.issues)].map((r) => `<span class="chip warn">${esc(RULE[r] || String(r).replace(/-/g, " "))}</span>`).join("")}</div>` : ""}</div><span class="pill ${isIdx(p) ? "ok" : p.indexed ? "bad" : ""}">${isIdx(p) ? "In Google" : p.indexed ? "Not yet" : "Checking"}</span></div>`).join("") || '<div class="empty">No pages match.</div>'}</div></div>`;
+}
+
+function pLocations(s) {
+  const cs = s.ga4 && !s.ga4.error && s.ga4.countries?.length ? s.ga4.countries.map((x) => ({ key: country(x.key), v: x.sessions, note: "visits" })) : (s.search?.countries || []).map((x) => ({ key: country(x.key), v: x.clicks, note: `${fmt(x.impressions)} impr.` }));
+  const byCountry = cs.length ? `<div class="card pad0"><div class="ch"><h2>Visitors by country</h2><p>${s.ga4 && !s.ga4.error ? "Google Analytics" : "Google Search Console clicks"}</p></div>${bars(cs.slice(0, 10), cs.reduce((a, x) => a + x.v, 0))}</div>` : "";
+  if (!s.locations.length) return `<div><h1>Locations</h1><p class="lead">Target market: ${esc(s.market || "not set")}.</p></div>${byCountry || `<div class="callout info">This site targets the whole market rather than individual towns, so there are no location pages. A country breakdown appears here once Google Analytics or the Search Console country report is connected.</div>`}`;
+  const pagesN = s.locations.reduce((a, l) => a + l.pages, 0), idxN = s.locations.reduce((a, l) => a + l.indexed, 0);
+  return `<div><h1>Target locations</h1><p class="lead">${esc(s.market || "")}${s.market ? ": " : ""}${s.locations.length} areas and ${fmt(pagesN)} location pages, ${fmt(idxN)} already in Google.</p></div>
+  <div class="grid g2">${s.locations.map((l) => `<div class="card"><div class="ch"><h2>${esc(l.area)}</h2><p>${l.pages} page${l.pages === 1 ? "" : "s"} · ${l.indexed} in Google${l.i ? ` · ${fmt(l.i)} impressions` : ""}</p></div>
+    <div class="bar" style="height:6px;margin-bottom:12px"><span style="width:${(l.indexed / (l.pages || 1)) * 100}%;background:var(--accent)"></span></div>
+    <div class="chips">${l.towns.map((t) => `<span class="chip ${t.indexed ? "ok" : "warn"}">${esc(t.name)}${t.i ? ` · ${fmt(t.i)}` : ""}</span>`).join("") || `<span class="chip">Area page</span>`}</div></div>`).join("")}</div>
+  <p class="xs muted">Green: the town page is in Google. Amber: waiting for Google to index it. Numbers are impressions.</p>${byCountry}`;
+}
+
+function pPlan(s) {
+  return `<div><h1>Coming next</h1><p class="lead">What the SEO team is working on and what is planned. New pages go live after a quality check and your approval.</p></div>
+  <div class="card pad0"><div class="ch"><h2>Upcoming pages</h2><p>${s.proposals.length} proposed</p></div><div class="list">${s.proposals.map((x) => `<div class="row"><div><div class="t">${esc(x.title)}</div><div class="s">Target search: ${esc(x.query || "–")}</div></div><span class="pill info">Proposed</span></div>`).join("") || '<div class="empty">No new pages proposed this week.</div>'}</div></div>
+  <div class="card pad0"><div class="ch"><h2>Keywords we are going after</h2><a class="r btn" href="${link(s, "keywords")}">All</a></div><div class="list">${s.targets.slice(0, 8).map((k) => `<div class="row"><div><div class="t">${esc(k.q)}</div><div class="s">${k.covered ? "Improve the existing page" : "Needs a new page"}</div></div><span class="pos ${posClass(k.pos)}">${fmt(k.pos, 1)}</span></div>`).join("") || '<div class="empty">No target keywords yet.</div>'}</div></div>
+  <div class="card pad0"><div class="ch"><h2>This week's tasks</h2></div><div class="list">${s.priorities.map((p) => `<div class="row"><div><div class="t">${esc(p.title)}</div><div class="s">${esc(p.why)}</div></div><span class="pill ${p.effort === "S" ? "ok" : "warn"}">${p.effort === "S" ? "Quick" : p.effort === "M" ? "Medium" : "Large"}</span></div>`).join("") || '<div class="empty">No open tasks.</div>'}</div></div>`;
+}
+
+function md(t) {
+  const out = []; let list = false;
+  for (const raw of String(t || "").split("\n")) {
+    const line = raw.trim();
+    const inline = (x) => esc(x).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`(.+?)`/g, "<code>$1</code>");
+    if (/^- /.test(line)) { if (!list) { out.push("<ul>"); list = true; } out.push(`<li>${inline(line.slice(2))}</li>`); continue; }
+    if (list) { out.push("</ul>"); list = false; }
+    if (/^#{2,3} /.test(line)) out.push(`<h3>${inline(line.replace(/^#+ /, ""))}</h3>`);
+    else if (/^# /.test(line)) continue;
+    else if (line) out.push(`<p>${inline(line)}</p>`);
+  }
+  if (list) out.push("</ul>");
+  return out.join("");
+}
+function pReport(s) {
+  const title = (String(s.digest).match(/^# (.+)$/m) || [])[1] || "Weekly report";
+  return `<div><h1>Weekly report</h1><p class="lead">${esc(title.replace(/^.*?digest,?\s*/i, "") || title)}</p></div>
+  <div class="card report">${s.digest ? md(s.digest) : '<p class="muted">The first weekly report arrives after the first full week.</p>'}</div>`;
+}
+
+function pTeam(s) {
+  const active = new Set([...s.plan.map((p) => p.agent), ...s.runs.map((r) => r.agent)]);
+  return `<div><h1>Your SEO team</h1><p class="lead">${Object.values(DEPTS).flat().length} specialist agents in ${Object.keys(DEPTS).length} teams. Highlighted ones worked on this site recently.</p></div>
+  <div class="grid g2">${Object.entries(DEPTS).map(([d, a]) => `<div class="card"><div class="ch"><h2>${esc(d)}</h2><p>${a.length}</p></div><div class="chips">${a.map((x) => `<span class="chip ${active.has(x) ? "ok" : ""}">${esc(x.replace(/^seo-/, "").replace(/-/g, " "))}</span>`).join("")}</div></div>`).join("")}</div>
+  ${s.runs.length ? `<div class="card pad0"><div class="ch"><h2>Recent work</h2></div><div class="list">${s.runs.slice().reverse().map((r) => `<div class="row"><div><div class="t">${esc(String(r.agent).replace(/^seo-/, "").replace(/-/g, " "))}</div><div class="s">${esc(String(r.task).slice(0, 120))}…</div></div><span class="xs muted mono">${esc(String(r.at).slice(0, 10))}</span></div>`).join("")}</div></div>` : ""}`;
+}
+
+const ingestUrl = () => `${CFG.supabaseUrl}/functions/v1/ingest`;
+function pConnect(s) {
+  const t = state.newToken && state.newToken.site === s.id ? state.newToken.token : null;
+  return `<div><h1>Connection</h1><p class="lead">${esc(host(s.url))} sends a fresh snapshot every day from its own SEO Autopilot run. ${s.lastAt ? `Last snapshot: <b>${esc(new Date(s.lastAt).toLocaleString("en-GB"))}</b>.` : "No snapshot has arrived yet."}</p></div>
+  <div class="card"><div class="ch"><h2>Set up the daily push</h2><p>Once per website</p></div>
+    <ol class="steps">
+      <li>Install SEO Autopilot in the website's GitHub repository (<code>npx github:bishal-paul-git/seo-autopilot#v2 init</code>) or run <code>seo-autopilot upgrade --apply</code> on an existing install.</li>
+      <li>In the repository, open Settings › Secrets and variables › Actions and add two secrets:
+        <div style="display:grid;gap:6px;margin-top:8px"><span class="xs muted">SEO_PORTAL_URL</span><div class="secret">${esc(ingestUrl())}</div>
+        <span class="xs muted">SEO_PORTAL_TOKEN</span>${t ? `<div class="secret">${esc(t)}</div><span class="xs" style="color:var(--warn)">Copy it now: it is shown only once.</span>` : `<div><button class="btn" id="rotate">Make a new token</button> <span class="xs muted">Making one stops the old one working.</span></div>`}</div></li>
+      <li>Run Actions › seo-daily › Run workflow. The dashboard fills in when it finishes; after that it updates every day.</li>
+    </ol></div>
+  <div class="card"><div class="ch"><h2>Client link</h2><p>No sign-in needed</p></div><p class="xs muted" style="margin-top:0">Anyone with the link sees this website's dashboard (not your other websites, not the SEO team page). You can make as many as you like.</p><button class="btn primary" id="share2">${I.share}Make and copy a client link</button></div>`;
+}
+
+function pSetup(s) {
+  return `<div class="card hero">${ring(0).replace(">0<", ">–<")}<div><h1>${esc(s.name)}</h1><p class="lead">${esc(host(s.url))} is being connected. The dashboard fills in after its first daily run.</p></div></div>
+  ${mode === "agency" ? pConnect(s) : '<div class="callout info">Your SEO team is connecting this website. Check back after its first daily report.</div>'}`;
+}
+
+function pHome() {
+  return `<div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap"><div style="flex:1;min-width:220px"><h1>Websites</h1><p class="lead">Every connected site. Open one to see its dashboard, or share a client link.</p></div><a class="btn primary" href="#/add">${I.plus}Connect a website</a></div>
+  ${SITES.length ? `<div class="sites">${SITES.map((s) => s.status === "live" ? `<a class="card site-card" href="#/s/${s.key}/overview"><div style="display:flex;gap:12px;align-items:center"><span class="score ${tone(health(s))}">${health(s)}</span><div style="min-width:0"><b>${esc(s.name)}</b><div class="xs muted">${esc(host(s.url))}</div></div></div>
+    <div class="grid g3" style="grid-template-columns:repeat(3,1fr);gap:8px">${[["Impressions", s.period.cur.impressions], ["Clicks", s.period.cur.clicks], ["In Google", last(s).indexed]].map(([t, v]) => `<div><div class="xs muted">${t}</div><div class="mono" style="font-weight:600">${fmt(v)}</div></div>`).join("")}</div></a>`
+    : `<a class="card site-card" href="#/s/${s.key}/connect"><div style="display:flex;gap:12px;align-items:center"><span class="score warn">–</span><div><b>${esc(s.name)}</b><div class="xs muted">${esc(host(s.url))}</div></div></div><span class="pill warn"><i></i>Connecting</span></a>`).join("")}</div>`
+    : `<div class="card"><h2 style="margin-top:0">Connect your first website</h2><p class="muted">Add a website, then paste two values into its GitHub repository. Its dashboard fills in after the first daily run.</p><a class="btn primary" href="#/add">${I.plus}Connect a website</a></div>`}`;
+}
+
+function pAdd() {
+  return `<div><h1>Connect a website</h1><p class="lead">Add the website here, then follow the steps to send its reports.</p></div>
+  <form class="card form" id="add-form"><label>Name<input name="name" required maxlength="120" placeholder="Acme Plumbing"></label>
+  <label>Website address<input name="url" required type="url" placeholder="https://www.example.com/"></label>
+  <label>GitHub repository (optional)<input name="repo" placeholder="owner/repository" pattern="[A-Za-z0-9_.\\-]+/[A-Za-z0-9_.\\-]+"></label>
+  <div class="err" id="add-err"></div><button class="btn primary" type="submit">Add website</button></form>`;
+}
+
+function pLogin() {
+  const signup = location.hash === "#/signup";
+  return `<div class="card form" style="margin:6vh auto 0"><div><h1 style="margin:0 0 4px">${signup ? "Create your account" : "Sign in"}</h1><p class="muted" style="margin:0">${signup ? "Your agency workspace for every website you look after." : "SEO Autopilot workspace."}</p></div>
+  <form class="form" id="login-form"><label>Email<input name="email" type="email" required autocomplete="email"></label>
+  <label>Password<input name="password" type="password" required minlength="8" autocomplete="${signup ? "new-password" : "current-password"}"></label>
+  <div class="err" id="login-err"></div><button class="btn primary" type="submit">${signup ? "Create account" : "Sign in"}</button></form>
+  <p class="xs muted" style="margin:0">${signup ? 'Already have an account? <a href="#/login">Sign in</a>' : 'New here? <a href="#/signup">Create an account</a>'}</p>
+  <p class="xs muted" style="margin:0">Clients do not need an account: open the link your SEO team sent you.</p></div>`;
+}
+
+/* ---------- Shell ---------- */
+let mode = "agency";
+const link = (s, page) => `#/${mode === "client" ? "c" : "s"}/${s.key}/${page}`;
+const brandMark = '<span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#052a1e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8"/><path d="M15 8h5v5"/></svg></span>';
+function shell(s, page) {
+  const pages = PAGES.filter(([k]) => !(mode === "client" && AGENCY_ONLY.has(k)));
+  $("#rail").innerHTML = `<a class="brand" href="${mode === "client" && s ? link(s, "overview") : "#/"}">${brandMark}<span><b>${mode === "client" && s ? esc(s.name) : "SEO Autopilot"}</b><span>${mode === "client" ? "SEO dashboard" : "Workspace"}</span></span></a>
+    ${s ? `<div><div class="lbl">Dashboard</div><nav>${pages.map(([k, t, ic]) => `<a href="${link(s, k)}" aria-current="${k === page ? "page" : "false"}">${ic}${t}</a>`).join("")}</nav></div>` : ""}
+    ${mode === "agency" && session ? `<div><div class="lbl">Websites</div><nav><a href="#/" aria-current="${!s && page !== "add" ? "page" : "false"}">${I.grid}All websites</a>${SITES.map((x) => `<a href="#/s/${x.key}/overview" aria-current="${s && x.key === s.key ? "page" : "false"}"><span class="dot ${x.status === "live" ? "live" : "setup"}"></span>${esc(x.name)}</a>`).join("")}<a href="#/add" aria-current="${page === "add" ? "page" : "false"}">${I.plus}Connect a website</a><a href="#/logout">${I.out}Sign out</a></nav></div>` : ""}
+    <div class="foot">${s ? `Data from Google Search Console${s.ga4 && !s.ga4.error ? ", Google Analytics" : ""} and the site audit. Updated ${esc(s.lastAt ? s.lastAt.slice(0, 10) : last(s).day || "–")}.` : session ? esc(session.email || "") : ""}</div>`;
+  const title = s ? (PAGES.find(([k]) => k === page) || PAGES[0])[1] : { add: "Connect a website", login: "Sign in" }[page] || "Websites";
+  $("#hdr").innerHTML = `<span class="mobile-brand">${brandMark}</span>
+    <div class="site"><b>${s ? esc(s.name) : "SEO Autopilot"}</b><span>${esc(title)}${s && s.status === "live" && s.lastAt ? ` · updated ${esc(s.lastAt.slice(0, 10))}` : ""}</span></div><span class="sp"></span>
+    ${s && mode === "agency" ? `<button class="btn" id="share">${I.share}<span>Client link</span></button>` : ""}
+    ${mode === "agency" && session ? `<a class="btn" href="#/" aria-label="All websites">${I.grid}</a>` : ""}`;
+  if (s) {
+    const more = pages.filter(([k]) => !MOBILE_TABS.includes(k));
+    $("#tabbar").innerHTML = MOBILE_TABS.map((k) => { const [, t, ic] = PAGES.find(([x]) => x === k); return `<a href="${link(s, k)}" aria-current="${k === page ? "page" : "false"}">${ic}<span>${t}</span></a>`; }).join("") +
+      `<button id="more-btn" aria-current="${more.some(([k]) => k === page) ? "page" : "false"}">${I.more}<span>More</span></button>`;
+    $("#more-btn").onclick = () => {
+      $("#overlay").innerHTML = `<div class="sheet" id="sheet"><div class="panel" role="dialog" aria-label="More sections"><div class="grab"></div>${more.map(([k, t, ic]) => `<a href="${link(s, k)}">${ic}${t}</a>`).join("")}${mode === "agency" ? `<a href="#/">${I.grid}All websites</a>` : ""}</div></div>`;
+      $("#sheet").onclick = (e) => { if (e.target.id === "sheet" || e.target.closest("a")) $("#overlay").innerHTML = ""; };
+    };
+  } else $("#tabbar").innerHTML = "";
+}
+async function shareLink(s) {
+  try {
+    const t = await rpc("create_share_link", { p_site: s.id });
+    const url = location.href.split("#")[0] + `#/c/${t}/overview`;
+    navigator.clipboard.writeText(url).then(() => toast("Client link copied"), () => prompt("Client link", url));
+  } catch (e) { toast(e.message); }
+}
+
+function wire(s) {
+  document.querySelectorAll("[data-kw]").forEach((b) => (b.onclick = () => { state.kwTab = b.dataset.kw; render(); }));
+  document.querySelectorAll("[data-pg]").forEach((b) => (b.onclick = () => { state.pgFilter = b.dataset.pg; render(); }));
+  const q = $("#kw-q"); if (q) q.oninput = () => { state.kwQ = q.value; const pos = q.selectionStart; render(); const n = $("#kw-q"); n.focus(); n.setSelectionRange(pos, pos); };
+  for (const id of ["#share", "#share2"]) { const b = $(id); if (b && s) b.onclick = () => shareLink(s); }
+  const rot = $("#rotate");
+  if (rot && s) rot.onclick = async () => { if (!confirm("Make a new token? The old one stops working.")) return; try { state.newToken = { site: s.id, token: await rpc("rotate_site_token", { p_site: s.id }) }; render(); } catch (e) { toast(e.message); } };
+  const lf = $("#login-form");
+  if (lf) lf.onsubmit = async (e) => {
+    e.preventDefault(); const f = new FormData(lf), err = $("#login-err"); err.textContent = "";
+    try {
+      const body = { email: f.get("email"), password: f.get("password") };
+      if (location.hash === "#/signup") {
+        const j = await authCall("signup", body);
+        if (!j.access_token) { err.style.color = "var(--accent)"; err.textContent = "Check your email and open the confirmation link, then sign in here."; return; }
+        keep(j);
+      } else keep(await authCall("token?grant_type=password", body));
+      loaded = false; location.hash = "#/";
+    } catch (x) { err.textContent = x.message; }
+  };
+  const af = $("#add-form");
+  if (af) af.onsubmit = async (e) => {
+    e.preventDefault(); const f = new FormData(af), err = $("#add-err"); err.textContent = "";
+    let url = String(f.get("url")).trim(); if (!url.endsWith("/")) url += "/";
+    if (!url.startsWith("https://")) { err.textContent = "Use the https:// address."; return; }
+    try {
+      const j = await rpc("create_site", { p_name: f.get("name"), p_url: url, p_repo: f.get("repo") || null });
+      state.newToken = { site: j.site.id, token: j.token }; loaded = false; location.hash = `#/s/${j.site.id}/connect`;
+    } catch (x) { err.textContent = x.message; }
+  };
+}
+
+const PAGE_FN = { overview: pOverview, traffic: pTraffic, keywords: pKeywords, pages: pPages, locations: pLocations, plan: pPlan, report: pReport, team: pTeam, connect: pConnect };
+async function render() {
+  const h = location.hash || "#/";
+  $("#overlay").innerHTML = "";
+  if (!CFG.supabaseUrl || !CFG.anonKey) { shell(null); $("#page").innerHTML = '<div class="callout">This portal is not configured yet (no Supabase address or key at build time).</div>'; return; }
+  if (h === "#/logout") { saveSession(null); SITES = []; loaded = false; location.hash = "#/login"; return; }
+  const m = h.match(/^#\/(s|c)\/([\w-]+)(?:\/(\w+))?/);
+  try {
+    if (m && m[1] === "c") {
+      mode = "client";
+      $("#page").innerHTML = '<div class="empty">Loading…</div>';
+      const s = await loadShared(m[2]);
+      if (!s) { shell(null); $("#page").innerHTML = '<div class="callout">This link is not valid any more. Ask your SEO team for a new one.</div>'; return; }
+      let page = m[3] || "overview"; if (AGENCY_ONLY.has(page)) page = "overview";
+      shell(s, page); document.title = `${s.name} · SEO dashboard`;
+      $("#page").innerHTML = s.status !== "live" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
+      return wire(s);
+    }
+    mode = "agency";
+    if (h === "#/login" || h === "#/signup") { shell(null, "login"); document.title = "Sign in · SEO Autopilot"; $("#page").innerHTML = pLogin(); return wire(null); }
+    if (!(await token())) { location.hash = "#/login"; return; }
+    if (!loaded) { $("#page").innerHTML = '<div class="empty">Loading…</div>'; await loadAgency(); }
+    if (h === "#/add") { shell(null, "add"); document.title = "Connect a website · SEO Autopilot"; $("#page").innerHTML = pAdd(); return wire(null); }
+    if (!m) { shell(null); document.title = "Websites · SEO Autopilot"; $("#page").innerHTML = pHome(); return wire(null); }
+    const s = SITES.find((x) => x.key === m[2]);
+    if (!s) { location.hash = "#/"; return; }
+    const page = m[3] || "overview";
+    shell(s, page); document.title = `${s.name} · SEO dashboard`;
+    $("#page").innerHTML = s.status !== "live" && page !== "connect" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
+    wire(s);
+  } catch (e) { $("#page").innerHTML = `<div class="callout">${esc(e.message)}</div>`; }
+}
+let lastHash = "";
+addEventListener("hashchange", () => { if (location.hash !== lastHash) { lastHash = location.hash; render(); window.scrollTo(0, 0); } });
+render();
+</script>
+</body>
+</html>

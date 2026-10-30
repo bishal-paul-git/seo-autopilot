@@ -37,3 +37,28 @@ export async function keyEvents(propertyId, token, { fetchFn = fetch } = {}) {
   }
   return names;
 }
+
+/**
+ * Visits for the portal: sessions and users over the last `days` days against the `days` before, by channel (organic
+ * search, direct, referral...), source, country and device. One runReport per dimension, both windows in one call.
+ */
+export async function traffic(propertyId, token, { days = 28, fetchFn = fetch } = {}) {
+  const ranges = [{ startDate: `${days}daysAgo`, endDate: "yesterday", name: "cur" }, { startDate: `${days * 2}daysAgo`, endDate: `${days + 1}daysAgo`, name: "prev" }];
+  const report = async (dimension) => {
+    const j = await getJson(fetchFn, "GA4 Data API", `${DATA}/properties/${encodeURIComponent(propertyId)}:runReport`, {
+      method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ dateRanges: ranges, dimensions: dimension ? [{ name: dimension }] : [], metrics: [{ name: "sessions" }, { name: "totalUsers" }], limit: 50 }),
+    });
+    const out = { cur: [], prev: [] };
+    for (const r of j.rows || []) {
+      const dims = (r.dimensionValues || []).map((d) => d.value);
+      // With two date ranges the API adds a dateRange dimension last; with none requested it is the only one.
+      const range = dims.at(-1) === "prev" ? "prev" : "cur", key = dimension ? dims[0] : "total";
+      out[range].push({ key, sessions: Number(r.metricValues?.[0]?.value || 0), users: Number(r.metricValues?.[1]?.value || 0) });
+    }
+    return out;
+  };
+  const total = await report(null), channels = await report("sessionDefaultChannelGroup"), sources = await report("sessionSource");
+  const countries = await report("country"), devices = await report("deviceCategory");
+  return { days, total, channels, sources, countries, devices };
+}

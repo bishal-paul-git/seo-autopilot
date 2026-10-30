@@ -1,6 +1,18 @@
 # Implementation status
 
-Last updated: 2026-10-23 16:30 UTC (v2.20.0 prepared).
+Last updated: 2026-10-30 UTC (v2.21.0 prepared: client portal).
+- **v2.21.0 (branch `claude/hopeful-euler-662mu5`): client portal (D23).**
+  - **Built:**
+    - the `portal` job (snapshot of the latest reports, optional GA4 visits, `--push`);
+    - the daily workflow's push step;
+    - `cloud/portal`: Supabase schema with RLS and RPCs, the ingest Edge Function, a static page with sign-in, websites, connect-a-website, client links and a phone-first dashboard, and a build script.
+  - **Verified:**
+    - `npm test` 471/471, including the snapshot tests and a Chromium test of the page against a stand-in API;
+    - the access rules on local Postgres 16 with a Supabase auth stand-in (`cloud/portal/supabase/test/rls.sql`: all checks passed);
+    - the snapshot builder reproduces the 24 Oct dashboard data for both sites (same totals, pages, scores, targets, coverage).
+  - **NOT deployed:** the Supabase project `seo-hridoy` (`rmwgpttkqrxwubtityrd`) is paused ("INACTIVE"). SQL and function deploys are refused until the owner restores it. The Hostinger connector also needs re-authorising.
+  - **Live today:** the 24 Oct static snapshot at seo.erudience.com (Hostinger, branch `seo-portal` of erudience-flow-engine). It is unchanged.
+- Earlier: v2.20.0 released (`ac21a31`).
 - **v2.20.0 prepared (branch `claude/hopeful-euler-662mu5`):** the `listings` job (Business Profile and Merchant Center, packs step 4) and YouTube results in `keywords` (PR #21, `c70b7aa`). v2.19.0 is released (`e3f700a`: `gsc`, Keyword Planner, Wikipedia and Stack Exchange). `npm test` 463/463. Every new source is tested with recorded-style responses only; none has made a live call. Product rename proposed (D22), waiting for the owner's choice.
 - **Now:** v2.18.0 released (https://github.com/bishal-paul-git/seo-autopilot/releases/tag/v2.18.0; `v2.18.0`, `v2` and `v2-stable` at `b601534`). It includes specialist packs steps 1 to 3: detection, routing and install (D21), and the `local` and `shop` jobs. Not done: connector deployment, npm publish (no `NPM_TOKEN`), real-site runs of `local` and `shop`. Next build: packs step 4 (Google Business Profile, Merchant Center) and more packs (brief 12).
 - Erudience was upgraded to 2.16 by https://github.com/bishal-paul-git/erudience-flow-engine/pull/91 (merged, `ce934ba`). No scheduled run with 2.16 has been observed yet.

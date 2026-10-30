@@ -59,6 +59,7 @@ export const JOBS = {
   gsc: () => import("./gsc.mjs"),
   listings: () => import("./listings.mjs"),
   entity: () => import("./entity.mjs"),
+  portal: () => import("./portal.mjs"),
 };
 
 export async function describeJobs() {
