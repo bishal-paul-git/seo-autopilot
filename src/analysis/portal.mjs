@@ -87,7 +87,7 @@ export function runRows(lines = []) {
  * The whole snapshot. `reports` holds the parsed state files by name (missing ones undefined); `site` is the configured
  * site; `ga4` is the optional traffic summary from GA4 (null when not connected).
  */
-export function buildSnapshot({ site = {}, reports = {}, ga4 = null, now = new Date().toISOString(), options = {} }) {
+export function buildSnapshot({ site = {}, reports = {}, ga4 = null, issues = [], now = new Date().toISOString(), options = {} }) {
   const r = reports;
   const { period, keywords } = keywordRows(r.gscRows || {}, options.keywords || 80);
   const pages = pageRows({ audit: r.audit || {}, inspect: r.inspect?.results || {}, pageDaily: r.pageDaily || {} });
@@ -123,6 +123,7 @@ export function buildSnapshot({ site = {}, reports = {}, ga4 = null, now = new D
     locations: locationRows(pages, options.locationPattern || DEFAULT_LOCATION_PATTERN),
     search: r.gsc ? { period: r.gsc.period || null, countries: r.gsc.countries || [], devices: r.gsc.devices || [], types: r.gsc.types || [] } : null,
     ga4,
+    issues,
     integrations,
     digest: String(r.digest || "").slice(0, 6000),
   };
@@ -132,4 +133,31 @@ export function buildSnapshot({ site = {}, reports = {}, ga4 = null, now = new D
 export function ga4Breakdown(cur = [], prev = [], limit = 10) {
   const p = new Map(prev.map((x) => [x.key, x.sessions]));
   return cur.map((x) => ({ ...x, prev: p.get(x.key) ?? 0 })).sort((a, b) => b.sessions - a.sessions).slice(0, limit);
+}
+
+/** Open proposal issues as the portal lists them: number, title, kind (from its labels), link, age. */
+export function issueRows(issues = [], labels = {}) {
+  const kinds = { [labels.proposal || "seo-proposal"]: "proposal", [labels.topic || "seo-topic"]: "new page", "seo-refresh": "refresh", "seo-snippet": "snippet", "seo-links": "links", "seo-fix": "fix", "seo-work-order": "work order" };
+  return issues.map((i) => {
+    const names = (i.labels || []).map((l) => (typeof l === "string" ? l : l.name));
+    return { number: i.number, title: String(i.title || "").slice(0, 200), kind: names.map((n) => kinds[n]).filter(Boolean).filter((k) => k !== "proposal")[0] || "proposal", labels: names, url: i.html_url || null, created: i.created_at || null, approved: names.includes(labels.approved || "approved"), held: names.includes("seo-hold") };
+  }).sort((a, b) => b.number - a.number).slice(0, 50);
+}
+
+/**
+ * What to do on GitHub for one portal decision. Approve: label it approved, say who approved, and start the drafting
+ * workflow (a label added by the workflow token starts nothing on its own). Hold: label seo-hold so nothing picks it up.
+ * Decline: say who declined and close it as not planned. An issue that is not open any more gets nothing.
+ */
+export function decisionActions(d, issue, { approvedLabel = "approved", workflow = "seo-implement.yml", ref = "main" } = {}) {
+  if (!issue) return [];
+  const who = d.by ? ` by ${d.by}` : "", note = d.note ? `\n\n> ${String(d.note).replace(/\n/g, " ").slice(0, 300)}` : "";
+  if (d.decision === "approve") return [
+    { type: "label", issue: d.issue, labels: [approvedLabel] },
+    { type: "comment", issue: d.issue, body: `Approved in the client portal${who}.${note}` },
+    { type: "dispatch", issue: d.issue, workflow, ref },
+  ];
+  if (d.decision === "hold") return [{ type: "label", issue: d.issue, labels: ["seo-hold"] }, { type: "comment", issue: d.issue, body: `Put on hold in the client portal${who}.${note}` }];
+  if (d.decision === "decline") return [{ type: "comment", issue: d.issue, body: `Declined in the client portal${who}.${note}` }, { type: "close", issue: d.issue }];
+  return [];
 }

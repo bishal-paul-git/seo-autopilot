@@ -199,7 +199,7 @@ const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmt = (n, d = 0) => (n == null || Number.isNaN(Number(n)) ? "–" : Number(n).toLocaleString("en-GB", { maximumFractionDigits: d }));
 const host = (u) => String(u || "").replace(/^https?:\/\//, "").replace(/\/$/, "");
-const toast = (m) => { const t = document.createElement("div"); t.className = "toast"; t.textContent = m; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); };
+const toast = (m) => { document.querySelectorAll(".toast").forEach((x) => x.remove()); const t = document.createElement("div"); t.className = "toast"; t.textContent = m; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); };
 
 /* ---------- API: Supabase Auth and REST, plain fetch ---------- */
 const SKEY = "seo-portal-session";
@@ -230,16 +230,21 @@ async function api(path, { method = "GET", body, anon = false } = {}) {
 const rpc = (fn, args = {}, opts = {}) => api(`rpc/${fn}`, { method: "POST", body: args, ...opts });
 
 /* ---------- Data: a site row plus its latest snapshot, flattened for the pages ---------- */
-const EMPTY = { history: [], keywords: [], targets: [], pages: [], locations: [], proposals: [], priorities: [], plan: [], runs: [], coverage: [], notIndexed: [], integrations: [], period: { cur: {}, prev: {} }, audit: null, digest: "" };
-function toSite(row, data, key) {
+const EMPTY = { history: [], issues: [], decisions: [], growth: [], keywords: [], targets: [], pages: [], locations: [], proposals: [], priorities: [], plan: [], runs: [], coverage: [], notIndexed: [], integrations: [], period: { cur: {}, prev: {} }, audit: null, digest: "" };
+function toSite(row, data, key, extra = {}) {
   const d = data || {};
-  return { ...EMPTY, ...d, key, id: row.id, name: row.name, url: row.url, repo: row.repo, status: data ? "live" : row.status === "live" ? "live" : "connecting", lastAt: row.last_snapshot_at, market: d.site?.market, platform: d.site?.platform, period: d.period || EMPTY.period };
+  return { ...EMPTY, ...d, ...extra, key, id: row.id, name: row.name, url: row.url, repo: row.repo, status: data ? "live" : row.status === "live" ? "live" : "connecting", lastAt: row.last_snapshot_at, market: d.site?.market, platform: d.site?.platform, period: d.period || EMPTY.period };
 }
 let SITES = [], loaded = false;
-async function loadAgency() { SITES = (await rpc("my_sites")).map((x) => toSite(x.site, x.data, x.site.id)); loaded = true; }
+let ORG = null;
+async function loadAgency() {
+  SITES = (await rpc("my_sites")).map((x) => toSite(x.site, x.data, x.site.id, { decisions: x.decisions || [] }));
+  ORG = await rpc("my_org").catch(() => null); loaded = true;
+}
+async function loadGrowth(s) { if (!s.growthLoaded) { s.growth = await rpc("site_growth", { p_site: s.id }).catch(() => []); s.growthLoaded = true; } }
 const shared = new Map();
 async function loadShared(t) {
-  if (!shared.has(t)) { const j = await rpc("shared_site", { p_token: t }, { anon: true }); shared.set(t, j ? toSite(j.site, j.data, t) : null); }
+  if (!shared.has(t)) { const j = await rpc("shared_site", { p_token: t }, { anon: true }); shared.set(t, j ? toSite(j.site, j.data, t, { growth: j.growth || [], growthLoaded: true, brand: j.brand || null }) : null); }
   return shared.get(t);
 }
 
@@ -253,6 +258,8 @@ const I = {
   plan: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M16 3v4M8 3v4M4 11h16"/></svg>',
   report: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v16H4z"/><path d="M8 15v-3M12 15V9M16 15v-5"/></svg>',
   team: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4M9 14h.01M15 14h.01"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>',
+  people: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.8-3.6 3.2-5.4 6-5.4s5.2 1.8 6 5.4"/><path d="M16 4.8a3 3 0 0 1 0 6M18.5 14.8c1.4.8 2.2 2.5 2.5 5.2"/></svg>',
   plug: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 7V3M15 7V3M6 7h12v4a6 6 0 0 1-12 0z"/><path d="M12 17v4"/></svg>',
   more: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>',
   share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v13M7 8l5-5 5 5"/></svg>',
@@ -260,8 +267,8 @@ const I = {
   plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg>',
 };
-const PAGES = [["overview", "Overview", I.home], ["traffic", "Traffic", I.trend], ["keywords", "Keywords", I.key], ["pages", "Pages", I.page], ["locations", "Locations", I.pin], ["plan", "Coming next", I.plan], ["report", "Weekly report", I.report], ["team", "SEO team", I.team], ["connect", "Connection", I.plug]];
-const AGENCY_ONLY = new Set(["team", "connect"]);
+const PAGES = [["overview", "Overview", I.home], ["traffic", "Traffic", I.trend], ["keywords", "Keywords", I.key], ["pages", "Pages", I.page], ["locations", "Locations", I.pin], ["plan", "Coming next", I.plan], ["report", "Weekly report", I.report], ["approvals", "Approvals", I.check], ["team", "SEO team", I.team], ["connect", "Connection", I.plug]];
+const AGENCY_ONLY = new Set(["approvals", "team", "connect"]);
 const MOBILE_TABS = ["overview", "traffic", "keywords", "pages"];
 let state = { kwTab: "ranking", kwQ: "", pgFilter: "all", newToken: null };
 
@@ -329,7 +336,18 @@ function pOverview(s) {
   <div class="grid g2">
     <div class="card pad0"><div class="ch"><h2>Coming next</h2><a class="r btn" href="${link(s, "plan")}">Plan</a></div><div class="list">${next.map((t) => `<div class="row"><div><div class="t">${esc(t)}</div></div><span class="pill info">Planned</span></div>`).join("") || '<div class="empty">Nothing planned yet.</div>'}</div></div>
     <div class="card"><div class="ch"><h2>Where visitors come from</h2></div>${sourcesBlock(s)}</div>
-  </div>`;
+  </div>
+  ${growthCard(s)}`;
+}
+// Growth across stored daily snapshots: the average page score and the searches the site shows up for.
+function growthCard(s) {
+  const g = (s.growth || []).map((r) => ({ ...r, day: String(r.at).slice(0, 10) }));
+  if (g.length < 2) return `<div class="card"><div class="ch"><h2>Growth over time</h2><p>Builds up from the daily snapshots</p></div><div class="empty">${g.length ? "One snapshot so far. The trend appears after the second day." : "The trend appears after the first daily snapshots."}</div></div>`;
+  const a = g[0], b = g[g.length - 1], d = (k) => (b[k] ?? 0) - (a[k] ?? 0);
+  const sign = (n, dp = 0) => (n > 0 ? `<span class="up">▲ ${fmt(n, dp)}</span>` : n < 0 ? `<span class="down">▼ ${fmt(-n, dp)}</span>` : `<span class="muted">no change</span>`);
+  return `<div class="card"><div class="ch"><h2>Growth over time</h2><p>${g.length} daily snapshots since ${esc(a.day)}</p></div>
+    <div class="grid g3" style="margin-bottom:12px">${kpi("Average page score", b.score, sign(d("score"), 1) + " since start", "Higher is better")}${kpi("Searches you appear for", b.keywords, sign(d("keywords")) + " since start", "Top 80 kept")}${kpi("Pages in Google", b.indexed, sign(d("indexed")) + " since start", "Pages indexed")}</div>
+    <div class="grid g2"><div>${chart(g, "score", { label: "Average page score", fmtY: (v) => fmt(v, 0) })}</div><div>${chart(g, "keywords", { label: "Searches the site appears for", color: "var(--info)" })}</div></div></div>`;
 }
 function summary(s) {
   const c = s.period.cur, l = last(s);
@@ -478,6 +496,30 @@ function pConnect(s) {
   <div class="card"><div class="ch"><h2>Client link</h2><p>No sign-in needed</p></div><p class="xs muted" style="margin-top:0">Anyone with the link sees this website's dashboard (not your other websites, not the SEO team page). You can make as many as you like.</p><button class="btn primary" id="share2">${I.share}Make and copy a client link</button></div>`;
 }
 
+const DEC = { approve: ["Approved", "ok"], hold: ["On hold", "warn"], decline: ["Declined", "bad"] };
+function pApprovals(s) {
+  const byIssue = new Map((s.decisions || []).map((d) => [d.issue, d]));
+  const rows = s.issues || [];
+  return `<div><h1>Approvals</h1><p class="lead">Proposals the SEO team made for ${esc(host(s.url))}. Approve to have it drafted, hold to park it, decline to close it. Your decision is applied on GitHub at the next daily run (05:17 UTC); risky changes still wait for a person before going live.</p></div>
+  <div class="card pad0"><div class="list">${rows.map((i) => {
+    const d = byIssue.get(i.number), st = d ? DEC[d.decision] : i.approved ? ["Approved", "ok"] : i.held ? ["On hold", "warn"] : null;
+    return `<div class="row" style="align-items:flex-start;flex-wrap:wrap;gap:10px"><div style="flex:1;min-width:220px"><div class="t">${esc(i.title)}</div><div class="s">#${i.number} · ${esc(i.kind)}${i.url ? ` · <a href="${esc(i.url)}" target="_blank" rel="noopener">open on GitHub</a>` : ""}${d ? ` · ${d.applied_at ? "applied" : "waiting for the next daily run"}${d.by ? ` · by ${esc(d.by)}` : ""}` : ""}</div></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${st ? `<span class="pill ${st[1]}">${st[0]}</span>` : ""}${i.approved && !d ? "" : `<button class="btn" data-dec="approve" data-issue="${i.number}">Approve</button><button class="btn" data-dec="hold" data-issue="${i.number}">Hold</button><button class="btn" data-dec="decline" data-issue="${i.number}">Decline</button>`}</div></div>`;
+  }).join("") || '<div class="empty">No open proposals. New ones arrive with the daily and weekly runs.</div>'}</div></div>`;
+}
+
+function pTeamPage() {
+  const owner = ORG?.role === "owner";
+  return `<div><h1>Team and brand</h1><p class="lead">People in ${esc(ORG?.name || "your agency")}, and how your client links look.</p></div>
+  <div class="grid g2">
+    <div class="card pad0"><div class="ch"><h2>People</h2></div><div class="list" id="people"><div class="empty">Loading…</div></div>
+      ${owner ? `<form class="form" id="invite-form" style="padding:14px 16px;max-width:none"><label>Invite by email<input id="inv-email" name="email" type="email" required placeholder="colleague@agency.com"></label><label style="flex-direction:row;display:flex;gap:8px;align-items:center;font-weight:400"><input id="inv-owner" name="owner" type="checkbox"> Make them an owner (can invite and change the brand)</label><div class="err" id="inv-err"></div><button class="btn primary" type="submit">Send invite</button><p class="xs muted" style="margin:0">They join as soon as they sign up (or straight away if they already have an account) with that email.</p></form>` : '<p class="xs muted" style="padding:0 16px 14px">Only an owner can invite people.</p>'}</div>
+    <div class="card"><div class="ch"><h2>Brand on client links</h2></div>
+      ${owner ? `<form class="form" id="brand-form" style="max-width:none"><label>Name clients see<input id="brand-name" name="brand_name" maxlength="80" value="${esc(ORG?.brand_name || ORG?.name || "")}"></label><label>Colour<input id="brand-color" name="brand_color" type="color" value="${esc(ORG?.brand_color || "#0f9d74")}" style="height:42px;padding:4px"></label><div class="err" id="brand-err"></div><button class="btn primary" type="submit">Save brand</button></form>` : `<p class="muted">${esc(ORG?.brand_name || ORG?.name || "")}</p>`}
+      <p class="xs muted">Client links show "SEO dashboard by" this name, in this colour.</p></div>
+  </div>`;
+}
+
 function pSetup(s) {
   return `<div class="card hero">${ring(0).replace(">0<", ">–<")}<div><h1>${esc(s.name)}</h1><p class="lead">${esc(host(s.url))} is being connected. The dashboard fills in after its first daily run.</p></div></div>
   ${mode === "agency" ? pConnect(s) : '<div class="callout info">Your SEO team is connecting this website. Check back after its first daily report.</div>'}`;
@@ -515,11 +557,11 @@ const link = (s, page) => `#/${mode === "client" ? "c" : "s"}/${s.key}/${page}`;
 const brandMark = '<span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#052a1e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8"/><path d="M15 8h5v5"/></svg></span>';
 function shell(s, page) {
   const pages = PAGES.filter(([k]) => !(mode === "client" && AGENCY_ONLY.has(k)));
-  $("#rail").innerHTML = `<a class="brand" href="${mode === "client" && s ? link(s, "overview") : "#/"}">${brandMark}<span><b>${mode === "client" && s ? esc(s.name) : "SEO Autopilot"}</b><span>${mode === "client" ? "SEO dashboard" : "Workspace"}</span></span></a>
+  $("#rail").innerHTML = `<a class="brand" href="${mode === "client" && s ? link(s, "overview") : "#/"}">${brandMark}<span><b>${mode === "client" && s ? esc(s.name) : "SEO Autopilot"}</b><span>${mode === "client" ? (s?.brand?.name ? `SEO dashboard by ${esc(s.brand.name)}` : "SEO dashboard") : "Workspace"}</span></span></a>
     ${s ? `<div><div class="lbl">Dashboard</div><nav>${pages.map(([k, t, ic]) => `<a href="${link(s, k)}" aria-current="${k === page ? "page" : "false"}">${ic}${t}</a>`).join("")}</nav></div>` : ""}
-    ${mode === "agency" && session ? `<div><div class="lbl">Websites</div><nav><a href="#/" aria-current="${!s && page !== "add" ? "page" : "false"}">${I.grid}All websites</a>${SITES.map((x) => `<a href="#/s/${x.key}/overview" aria-current="${s && x.key === s.key ? "page" : "false"}"><span class="dot ${x.status === "live" ? "live" : "setup"}"></span>${esc(x.name)}</a>`).join("")}<a href="#/add" aria-current="${page === "add" ? "page" : "false"}">${I.plus}Connect a website</a><a href="#/logout">${I.out}Sign out</a></nav></div>` : ""}
+    ${mode === "agency" && session ? `<div><div class="lbl">Websites</div><nav><a href="#/" aria-current="${!s && page !== "add" ? "page" : "false"}">${I.grid}All websites</a>${SITES.map((x) => `<a href="#/s/${x.key}/overview" aria-current="${s && x.key === s.key ? "page" : "false"}"><span class="dot ${x.status === "live" ? "live" : "setup"}"></span>${esc(x.name)}</a>`).join("")}<a href="#/add" aria-current="${page === "add" ? "page" : "false"}">${I.plus}Connect a website</a><a href="#/team" aria-current="${page === "teampage" ? "page" : "false"}">${I.people}Team and brand</a><a href="#/logout">${I.out}Sign out</a></nav></div>` : ""}
     <div class="foot">${s ? `Data from Google Search Console${s.ga4 && !s.ga4.error ? ", Google Analytics" : ""} and the site audit. Updated ${esc(s.lastAt ? s.lastAt.slice(0, 10) : last(s).day || "–")}.` : session ? esc(session.email || "") : ""}</div>`;
-  const title = s ? (PAGES.find(([k]) => k === page) || PAGES[0])[1] : { add: "Connect a website", login: "Sign in" }[page] || "Websites";
+  const title = s ? (PAGES.find(([k]) => k === page) || PAGES[0])[1] : { add: "Connect a website", login: "Sign in", teampage: "Team and brand" }[page] || "Websites";
   $("#hdr").innerHTML = `<span class="mobile-brand">${brandMark}</span>
     <div class="site"><b>${s ? esc(s.name) : "SEO Autopilot"}</b><span>${esc(title)}${s && s.status === "live" && s.lastAt ? ` · updated ${esc(s.lastAt.slice(0, 10))}` : ""}</span></div><span class="sp"></span>
     ${s && mode === "agency" ? `<button class="btn" id="share">${I.share}<span>Client link</span></button>` : ""}
@@ -562,6 +604,28 @@ function wire(s) {
       loaded = false; location.hash = "#/";
     } catch (x) { err.textContent = x.message; }
   };
+  document.querySelectorAll("[data-dec]").forEach((b) => (b.onclick = async () => {
+    const issue = Number(b.dataset.issue), decision = b.dataset.dec;
+    try {
+      const d = await rpc("decide_proposal", { p_site: s.id, p_issue: issue, p_decision: decision });
+      s.decisions = [...(s.decisions || []).filter((x) => x.issue !== issue), { issue, decision, applied_at: null, by: d.decided_email }];
+      toast(`${DEC[decision][0]}. Applied on GitHub at the next daily run.`); render();
+    } catch (e) { toast(e.message); }
+  }));
+  const people = $("#people");
+  if (people) rpc("org_people").then((list) => { people.innerHTML = list.filter((p) => !ORG || p.org === ORG.id).map((p) => `<div class="row"><div><div class="t">${esc(p.email)}</div><div class="s">since ${esc(String(p.since).slice(0, 10))}</div></div><span class="pill ${p.role === "owner" ? "ok" : ""}">${esc(p.role)}</span></div>`).join("") || '<div class="empty">Only you so far.</div>'; }).catch((e) => (people.innerHTML = `<div class="empty">${esc(e.message)}</div>`));
+  const inv = $("#invite-form");
+  if (inv) inv.onsubmit = async (e) => {
+    e.preventDefault(); const err = $("#inv-err"); err.textContent = "";
+    try { await rpc("invite_member", { p_email: $("#inv-email").value, p_role: $("#inv-owner").checked ? "owner" : "member", p_org: ORG?.id || null }); toast("Invite saved"); render(); }
+    catch (x) { err.textContent = x.message; }
+  };
+  const bf = $("#brand-form");
+  if (bf) bf.onsubmit = async (e) => {
+    e.preventDefault(); const err = $("#brand-err"); err.textContent = "";
+    try { const r = await api(`orgs?id=eq.${ORG.id}`, { method: "PATCH", body: { brand_name: $("#brand-name").value.trim() || null, brand_color: $("#brand-color").value } }); ORG = { ...ORG, ...(r?.[0] || {}) }; toast("Brand saved"); }
+    catch (x) { err.textContent = x.message; }
+  };
   const af = $("#add-form");
   if (af) af.onsubmit = async (e) => {
     e.preventDefault(); const f = new FormData(af), err = $("#add-err"); err.textContent = "";
@@ -574,7 +638,7 @@ function wire(s) {
   };
 }
 
-const PAGE_FN = { overview: pOverview, traffic: pTraffic, keywords: pKeywords, pages: pPages, locations: pLocations, plan: pPlan, report: pReport, team: pTeam, connect: pConnect };
+const PAGE_FN = { overview: pOverview, traffic: pTraffic, keywords: pKeywords, pages: pPages, locations: pLocations, plan: pPlan, report: pReport, team: pTeam, connect: pConnect, approvals: pApprovals };
 async function render() {
   const h = location.hash || "#/";
   $("#overlay").innerHTML = "";
@@ -588,6 +652,7 @@ async function render() {
       const s = await loadShared(m[2]);
       if (!s) { shell(null); $("#page").innerHTML = '<div class="callout">This link is not valid any more. Ask your SEO team for a new one.</div>'; return; }
       let page = m[3] || "overview"; if (AGENCY_ONLY.has(page)) page = "overview";
+      if (/^#[0-9a-f]{6}$/i.test(s.brand?.color || "")) { document.documentElement.style.setProperty("--accent", s.brand.color); document.documentElement.style.setProperty("--chart", s.brand.color); }
       shell(s, page); document.title = `${s.name} · SEO dashboard`;
       $("#page").innerHTML = s.status !== "live" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
       return wire(s);
@@ -596,11 +661,13 @@ async function render() {
     if (h === "#/login" || h === "#/signup") { shell(null, "login"); document.title = "Sign in · SEO Autopilot"; $("#page").innerHTML = pLogin(); return wire(null); }
     if (!(await token())) { location.hash = "#/login"; return; }
     if (!loaded) { $("#page").innerHTML = '<div class="empty">Loading…</div>'; await loadAgency(); }
+    if (h === "#/team") { shell(null, "teampage"); document.title = "Team and brand · SEO Autopilot"; $("#page").innerHTML = pTeamPage(); return wire(null); }
     if (h === "#/add") { shell(null, "add"); document.title = "Connect a website · SEO Autopilot"; $("#page").innerHTML = pAdd(); return wire(null); }
     if (!m) { shell(null); document.title = "Websites · SEO Autopilot"; $("#page").innerHTML = pHome(); return wire(null); }
     const s = SITES.find((x) => x.key === m[2]);
     if (!s) { location.hash = "#/"; return; }
     const page = m[3] || "overview";
+    if (page === "overview" && s.status === "live") await loadGrowth(s);
     shell(s, page); document.title = `${s.name} · SEO dashboard`;
     $("#page").innerHTML = s.status !== "live" && page !== "connect" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
     wire(s);

@@ -22,6 +22,14 @@ on:
       issue:
         type: number
         required: true
+  # Started by the daily portal step for an issue someone approved in the client portal (a label added by the workflow
+  # token starts nothing by itself). Only agency members signed in to the portal can approve.
+  workflow_dispatch:
+    inputs:
+      issue:
+        description: "Issue number to draft"
+        type: number
+        required: true
 
 permissions:
   contents: write

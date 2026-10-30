@@ -2,6 +2,22 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-30 (v2.22.0 prepared: portal approvals, team, brand, growth)
+- **Code:**
+  - **New migration:** `cloud/portal/supabase/migrations/20261030120000_portal_approvals_team_brand.sql`, with the `decisions` and `invites` tables, brand columns and the growth functions.
+  - **Ingest function:** now also returns pending decisions.
+  - **`src/lib/gh.mjs`:** `openIssues`, `applyAction`.
+  - **`src/analysis/portal.mjs`:** `issueRows`, `decisionActions`.
+  - **`src/jobs/portal.mjs`:** lists the issues and applies decisions.
+  - **Portal page:** Approvals, Team and brand, growth card, client brand.
+  - **Templates:** `seo-implement` (dispatch) and `seo-daily` (`actions: write`, GitHub env on the portal step).
+- **Tests:** `test/portal.test.mjs` (8 tests), `test/portal-app.test.mjs` (extended) and `cloud/portal/supabase/test/rls2.sql`.
+- **Docs:**
+  - agent count corrected to 38 and playbooks to 30 (`CLAUDE.md`, `docs/agents.md`, `docs/strategy.md`, `docs/connected-projects.md`);
+  - D24.
+- **Checks:** `npm test` 473/473; both access files pass on local Postgres 16.15 with the stand-in.
+- **Deployment:** none; Supabase `seo-hridoy` is still INACTIVE.
+
 ## 2026-10-30 (client portal: v2.21.0 prepared)
 - **Code (branch `claude/hopeful-euler-662mu5`):**
   - **New:**

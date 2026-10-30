@@ -1,5 +1,25 @@
 # Changelog
 
+## 2.22.0
+
+The client portal, second step: approve the SEO team's proposals from the portal, invite your team, put your agency's brand on client links, and see growth over time.
+
+- **Approvals in the portal.**
+  - **The portal side:** each site has an Approvals page listing its open proposal issues, with Approve, Hold and Decline. The `portal` job now lists those issues in the snapshot.
+  - **The site side:** the daily run applies each decision on GitHub. Approve adds the `approved` label, comments who approved and starts drafting through a workflow dispatch. Hold adds `seo-hold`. Decline comments and closes the issue as not planned. The run then tells the portal, which records the decision as applied.
+  - **Security:** the portal never holds GitHub access. Only signed-in agency members can decide, never client links. Approved work still passes every check, and high-risk kinds still wait for a person before merging.
+  - **Templates:** `seo-implement` accepts `workflow_dispatch` (an issue number), and `seo-daily` gets `actions: write` to start it. Existing installs: `seo-autopilot upgrade --apply`.
+- **Team invites:** owners invite by email. People join when they sign up with that email, or straight away if they already have an account. The Team and brand page lists everyone in the agency.
+- **Agency brand on client links:** a name and a colour. Client links read "SEO dashboard by <your agency>" in that colour.
+- **Growth over time:** across the stored daily snapshots, the overview shows average page score, searches the site appears for and pages in Google. Client links show it too.
+- **Database:** a second migration (`cloud/portal/supabase/migrations/20261030120000_portal_approvals_team_brand.sql`) adds decisions, invites, brand columns and the growth function. The ingest function now also returns pending decisions and accepts acknowledgements.
+- **Docs:** the agent count is corrected to 38 (8 departments) and the playbook count to 30.
+- **Checks:**
+  - access rules for decisions, invites, branding and growth, on Postgres 16 with the Supabase stand-in;
+  - unit tests of the decision handling against a stand-in GitHub;
+  - the browser test now covers approving, inviting, saving the brand, the growth card and the branded client link.
+  - **Not yet run against the live Supabase project, which is paused.**
+
 ## 2.21.0
 
 The client portal: a hosted dashboard where an agency signs in, connects its websites and shares a link with each client. Each website sends a fresh snapshot every day.
