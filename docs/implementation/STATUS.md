@@ -1,6 +1,11 @@
 # Implementation status
 
-Last updated: 2026-10-30 UTC (v2.22.0 prepared: portal approvals, team invites, brand, growth).
+Last updated: 2026-10-30 UTC (v2.22.0 released: portal approvals, team invites, brand, growth).
+- **Released:** https://github.com/bishal-paul-git/seo-autopilot/pull/27 was merged as `d2b3462`. The tag-release workflow set `v2.22.0`, `v2` and `v2-stable` to `d2b3462` (checked with `git ls-remote`).
+- **Site PRs updated with the approval wiring (owner merges):**
+  - https://github.com/bishal-paul-git/tenanthousingdisrepair/pull/25 (`c82e7af`: a full workflow, agent and playbook upgrade, because its workflows were uncustomised older templates);
+  - https://github.com/bishal-paul-git/erudience-flow-engine/pull/101 (`6ca3dce`);
+  - https://github.com/bishal-paul-git/excel-error-finder/pull/3 (`5a986cf`).
 - **v2.22.0 (branch `claude/hopeful-euler-662mu5`):**
   - **Approvals in the portal:** decisions are applied by the site's daily run (D24).
   - **Team invites, agency brand on client links, growth over time.**
