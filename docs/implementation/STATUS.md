@@ -1,6 +1,25 @@
 # Implementation status
 
-Last updated: 2026-10-30 UTC (v2.22.0 released: portal approvals, team invites, brand, growth).
+Last updated: 2026-10-31 06:05 UTC (portal live on Supabase `seo-autopilot`).
+- **Deployed 2026-10-31 (deployment actions, no code change):**
+  - **Supabase project `seo-autopilot` (`ymwwwhdlyjnqbxxhtcew`):** both portal migrations are applied: schema, tables and policies by Claude; the functions, grants and second migration by the owner in the SQL Editor. Checked: 12 public functions are present. The `ingest` Edge Function is ACTIVE.
+  - **Security advisor:** 9 WARN, all `SECURITY DEFINER` functions callable by signed-in users, plus `shared_site` callable anonymously. All of this is intended: each function checks membership itself, and `shared_site` is the client link.
+  - **Seed:** Erudience org, Manchester and Erudience sites, Excel Error Finder ("connecting"), links `mdc` and `eru`, and a trigger that makes contact.bishalpaul@gmail.com the owner on sign-up.
+    - The two snapshots were pushed through the live `ingest` function with `push()` from `src/jobs/portal.mjs`. That is a real end-to-end check: both returned `ok`, with 67 and 80 keywords.
+    - Their stored `taken_at` is 2026-10-31, but the data is from 24 Oct. Backdating them needed a confirmation that got no answer, so it was not applied.
+  - **Frontend:** built with `cloud/portal/build.mjs` and the project's legacy anon key, then committed to erudience-flow-engine `seo-portal` as `69f0d00`. Hostinger build `01a1908c` completed and published seo.erudience.com at 2026-10-31 06:01 UTC.
+  - **Smoke tests (curl, live):**
+    - ingest with a malformed token → 401 `missing or malformed site token`;
+    - ingest with an unknown well-formed token → `unknown token`;
+    - `rpc/shared_site` with `mdc` as anon → site, brand and 67 keywords;
+    - anon `GET /rest/v1/sites` → 42501 permission denied.
+  - **Not checked:** the page itself in a browser, because this session's proxy blocks seo.erudience.com. Sign-up and sign-in on the live project are also untested.
+  - **Rollback:** revert `69f0d00` on `seo-portal`; Hostinger redeploys the old static page.
+- **Owner next:**
+  1. Sign up at seo.erudience.com with contact.bishalpaul@gmail.com.
+  2. For each site, open Connect and make a new token. This replaces the temporary seed tokens.
+  3. Add the `SEO_PORTAL_URL` and `SEO_PORTAL_TOKEN` repository secrets.
+  4. Optional: Supabase Auth SMTP and the site URL.
 - **Released:** https://github.com/bishal-paul-git/seo-autopilot/pull/27 was merged as `d2b3462`. The tag-release workflow set `v2.22.0`, `v2` and `v2-stable` to `d2b3462` (checked with `git ls-remote`).
 - **Site PRs updated with the approval wiring (owner merges):**
   - https://github.com/bishal-paul-git/tenanthousingdisrepair/pull/25 (`c82e7af`: a full workflow, agent and playbook upgrade, because its workflows were uncustomised older templates);
