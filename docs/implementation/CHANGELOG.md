@@ -2,6 +2,17 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-10-31 (deployment: portal live on Supabase seo-autopilot)
+- **Deployment only, no code change:**
+  - Remaining portal SQL run by the owner; seed applied (org, 3 sites, 2 client links, owner-claim trigger).
+  - 2 snapshots pushed through the live `ingest` function.
+  - Page built with the anon key and deployed to seo.erudience.com (erudience-flow-engine `seo-portal` `69f0d00`, Hostinger build `01a1908c`).
+- **Checks (live, curl):**
+  - ingest 401 on a malformed token, and "unknown token" on an unknown one;
+  - `shared_site(mdc)` returns data for anon;
+  - anon cannot read `sites` (42501).
+- **Not done:** browser check of the live page (proxy blocks it); snapshot dates not backdated to 24 Oct (confirmation unanswered).
+
 ## 2026-10-30 (v2.22.0 prepared: portal approvals, team, brand, growth)
 - **Code:**
   - **New migration:** `cloud/portal/supabase/migrations/20261030120000_portal_approvals_team_brand.sql`, with the `decisions` and `invites` tables, brand columns and the growth functions.
