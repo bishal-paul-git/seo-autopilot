@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Websites, mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0}
+.r{--shell:#0b1437;--shell-2:#1a2556;--bg:#f4f6fb;--surface:#fff;--line:#e3e7f0;--line-2:#eef1f6;--ink:#0b1437;--muted:#5b6482;--pri:#4f46e5;--pri-soft:#eef0ff;--c1:#4f46e5;--ok:#0f8a5f;--warn:#b45309;--bad:#c2261d;width:390px;display:flex;flex-direction:column;background:var(--bg);color:var(--ink);font:14px/20px Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+.r *{box-sizing:border-box}.r svg{display:block}.r a{color:var(--pri);text-decoration:none}
+.ab{height:56px;flex:0 0 56px;background:var(--shell);color:#fff;display:flex;align-items:center;gap:10px;padding:0 6px 0 16px;position:sticky;top:0;z-index:2}
+.ab .t{flex:1;font-weight:600;font-size:16px}
+.mk{width:28px;height:28px;border-radius:8px;background:var(--pri);display:flex;align-items:center;justify-content:center;flex:0 0 28px}
+.ic{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:10px;color:#fff;background:transparent;border:0;padding:0}
+.ic svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.c{padding:16px;display:flex;flex-direction:column;gap:12px;flex:1}
+.muted{color:var(--muted)}.xs{font-size:12.5px}
+.search{height:44px;display:flex;align-items:center;gap:8px;padding:0 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--muted)}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:0 -16px;padding:0 16px 2px}
+.chip{height:36px;padding:0 14px;border-radius:99px;border:1px solid var(--line);background:var(--surface);display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:500;color:var(--muted);white-space:nowrap;flex:0 0 auto}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;min-width:0}
+.sc{display:block;padding:14px;color:var(--ink)}
+.r a.sc{color:var(--ink)}
+.top{display:flex;align-items:center;gap:12px}
+.fav{width:38px;height:38px;border-radius:10px;background:var(--pri-soft);color:var(--pri);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex:0 0 38px}
+.top .tx{flex:1;min-width:0}.top b{display:block;font-weight:600}.top small{display:block;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line-2)}
+.meta span{display:block;font-size:11.5px;color:var(--muted)}.meta b{font-weight:600;font-size:14px}
+.hb{display:flex;align-items:center;gap:6px}.hb i{display:block;width:40px;height:5px;border-radius:99px;background:var(--line-2);overflow:hidden}.hb i em{display:block;height:100%;background:var(--c1);border-radius:99px}
+.up{color:var(--ok)}.dn{color:var(--bad)}
+.bd{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:500;background:var(--line-2);color:var(--muted);white-space:nowrap}
+.bd i{width:6px;height:6px;border-radius:99px;background:currentColor}
+.bd.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}.bd.wait{color:var(--warn);background:color-mix(in srgb,var(--warn) 13%,transparent)}.bd.bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.acc{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.tb{position:sticky;bottom:0;height:68px;flex:0 0 68px;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:6px;z-index:2}
+.r .tb a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11.5px;font-weight:500;color:var(--muted);position:relative}
+.r .tb a.on{color:var(--pri)}
+.tb svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tb .n{position:absolute;top:7px;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:99px;background:var(--bad);color:#fff;font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px}
+</style>
+</helmet>
+
+<div class="r" style="min-height:1300px">
+  <header class="ab">
+    <span class="mk" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 32 32"><path d="M5 22l7-8 5 5 10-12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="t">Websites</span>
+    <a class="ic" href="AddSite.dc.html" aria-label="Connect a website"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></a>
+  </header>
+
+  <main class="c">
+    <label class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span>Search websites or clients</span></label>
+    <div class="chips" role="group" aria-label="Status"><span class="chip on">All 24</span><span class="chip">Live 21</span><span class="chip">Connecting 2</span><span class="chip">Paused 1</span><span class="chip">Not shared 5</span></div>
+
+    <a class="card sc" href="MSite.dc.html">
+      <div class="top"><span class="fav">N</span><span class="tx"><b>Northwind Dental</b><small>northwinddental.co.uk · Northwind Dental Ltd</small></span><span class="bd ok"><i></i>Live</span></div>
+      <div class="meta"><div><span>Health</span><div class="hb"><b>86</b><i><em style="width:86%"></em></i></div></div><div><span>Clicks, 30d</span><b>6,412</b></div><div><span>Change</span><b class="up">+18%</b></div></div>
+      <div class="acc"><span>2 client links · today 05:21</span><span style="color:var(--warn);font-weight:500">5 to approve</span></div>
+    </a>
+    <div class="card sc">
+      <div class="top"><span class="fav">B</span><span class="tx"><b>Brightpath Tutors</b><small>brightpathtutors.co.uk · Brightpath Education</small></span><span class="bd ok"><i></i>Live</span></div>
+      <div class="meta"><div><span>Health</span><div class="hb"><b>90</b><i><em style="width:90%"></em></i></div></div><div><span>Clicks, 30d</span><b>9,027</b></div><div><span>Change</span><b class="up">+21%</b></div></div>
+      <div class="acc"><span>1 client link · today 05:19</span><span>Up to date</span></div>
+    </div>
+    <div class="card sc">
+      <div class="top"><span class="fav">O</span><span class="tx"><b>Oakline Legal</b><small>oaklinelegal.com · Oakline LLP</small></span><span class="bd bad"><i></i>No snapshot</span></div>
+      <div class="meta"><div><span>Health</span><div class="hb"><b>41</b><i><em style="width:41%"></em></i></div></div><div><span>Clicks, 30d</span><b>2,104</b></div><div><span>Change</span><b class="dn">−8%</b></div></div>
+      <div class="acc"><span>Last snapshot 2 days ago</span><span style="color:var(--bad);font-weight:500">Fix connection</span></div>
+    </div>
+    <div class="card sc">
+      <div class="top"><span class="fav">H</span><span class="tx"><b>Harbor Plumbing</b><small>harborplumbing.co.uk · Harbor Services</small></span><span class="bd ok"><i></i>Live</span></div>
+      <div class="meta"><div><span>Health</span><div class="hb"><b>72</b><i><em style="width:72%"></em></i></div></div><div><span>Clicks, 30d</span><b>2,950</b></div><div><span>Change</span><b class="up">+6%</b></div></div>
+      <div class="acc"><span>Not shared with client</span><a href="MShare.dc.html" style="font-weight:600">Share</a></div>
+    </div>
+    <div class="card sc">
+      <div class="top"><span class="fav">C</span><span class="tx"><b>Cedar &amp; Co Interiors</b><small>cedarandco.design · Cedar &amp; Co</small></span><span class="bd wait"><i></i>Connecting</span></div>
+      <div class="acc" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line-2)"><span>Waiting for first snapshot</span><a href="AddSite.dc.html" style="font-weight:600">Setup</a></div>
+    </div>
+  </main>
+
+  <nav class="tb" aria-label="Main">
+    <a href="MPortfolio.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>Portfolio</a>
+    <a class="on" href="MSites.dc.html" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.5 3 2.5 13 0 16M12 4c-2.5 3-2.5 13 0 16"/></svg>Websites</a>
+    <a href="MApprovals.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Approvals<span class="n">17</span></a>
+    <a href="Team.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>More</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

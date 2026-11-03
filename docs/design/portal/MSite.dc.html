@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Website, mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0}
+.r{--shell:#0b1437;--shell-2:#1a2556;--bg:#f4f6fb;--surface:#fff;--line:#e3e7f0;--line-2:#eef1f6;--ink:#0b1437;--muted:#5b6482;--pri:#4f46e5;--pri-soft:#eef0ff;--c1:#4f46e5;--ok:#0f8a5f;--warn:#b45309;--bad:#c2261d;width:390px;display:flex;flex-direction:column;background:var(--bg);color:var(--ink);font:14px/20px Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+.r *{box-sizing:border-box}.r svg{display:block}.r a{color:var(--pri);text-decoration:none}
+.ab{height:56px;flex:0 0 56px;background:var(--shell);color:#fff;display:flex;align-items:center;gap:4px;padding:0 6px;position:sticky;top:0;z-index:2}
+.ab .t{flex:1;font-weight:600;font-size:16px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ic{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:10px;color:#fff;background:transparent;border:0;padding:0}
+.r a.ic{color:#fff}
+.ic svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.hero{background:var(--shell);color:#fff;padding:4px 16px 16px;display:flex;flex-direction:column;gap:12px}
+.hero small{color:#a3acd4;font-size:12.5px}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btn{display:flex;align-items:center;justify-content:center;gap:6px;height:44px;border-radius:10px;font:600 14px Geist,system-ui,sans-serif;border:0}
+.btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.r a.btn.ghost{background:var(--shell-2);color:#fff}.r a.btn.pri{background:var(--pri);color:#fff}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:56px;z-index:1}
+.tabs a{height:34px;padding:0 12px;border-radius:99px;display:flex;align-items:center;font-size:13.5px;font-weight:500;white-space:nowrap;flex:0 0 auto}
+.r .tabs a{color:var(--muted)}
+.r .tabs a.on{background:var(--pri-soft);color:var(--pri)}
+.c{padding:16px;display:flex;flex-direction:column;gap:14px;flex:1}
+h2{margin:0;font-size:15px;line-height:22px;font-weight:600}
+.muted{color:var(--muted)}.xs{font-size:12.5px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;min-width:0}
+.ch{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.k2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{padding:12px 14px;display:flex;flex-direction:column;gap:2px}.kpi .k{font-size:12.5px;color:var(--muted)}
+.kpi .v{font-size:22px;line-height:28px;font-weight:650;letter-spacing:-.02em}.kpi .d{font-size:12px;font-weight:600}
+.up{color:var(--ok)}.dn{color:var(--bad)}
+.kw{display:flex;align-items:center;gap:12px;min-height:48px;padding:8px 14px;border-top:1px solid var(--line-2)}.kw:first-of-type{border-top:0}
+.kw span:first-child{flex:1;min-width:0}
+.pos{width:32px;height:28px;border-radius:7px;background:var(--line-2);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px}
+.row{display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 14px;border-top:1px solid var(--line-2)}.row:first-of-type{border-top:0}
+.row .tx{flex:1;min-width:0}.row .tx b{display:block;font-weight:500}.row .tx small{display:block;color:var(--muted);font-size:12.5px}
+.bd{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:500;background:var(--line-2);color:var(--muted);white-space:nowrap}
+.bd i{width:6px;height:6px;border-radius:99px;background:currentColor}
+.bd.ok{color:#6ee7b7;background:rgba(110,231,183,.14)}.bd.wait{color:var(--warn);background:color-mix(in srgb,var(--warn) 13%,transparent)}.bd.pri{color:var(--pri);background:var(--pri-soft)}
+.tb{position:sticky;bottom:0;height:68px;flex:0 0 68px;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:6px;z-index:2}
+.r .tb a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11.5px;font-weight:500;color:var(--muted);position:relative}
+.r .tb a.on{color:var(--pri)}
+.tb svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tb .n{position:absolute;top:7px;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:99px;background:var(--bad);color:#fff;font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px}
+</style>
+</helmet>
+
+<div class="r" style="min-height:1420px">
+  <header class="ab">
+    <a class="ic" href="MSites.dc.html" aria-label="Back to websites"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></a>
+    <span class="t">Northwind Dental</span>
+    <button class="ic" type="button" aria-label="More actions"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/></svg></button>
+  </header>
+  <section class="hero">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><small>northwinddental.co.uk · updated 05:21</small><span class="bd ok"><i></i>Live</span></div>
+    <div class="acts"><a class="btn ghost" href="MClient.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>View as client</a><a class="btn pri" href="MShare.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M12 3v13M7 8l5-5 5 5"/></svg>Share</a></div>
+  </section>
+  <nav class="tabs" aria-label="Website sections"><a class="on" href="MSite.dc.html" aria-current="page">Overview</a><a href="#">Traffic</a><a href="#">Keywords</a><a href="#">Pages</a><a href="MApprovals.dc.html">Approvals 5</a><a href="#">Coming next</a><a href="#">Report</a><a href="MShare.dc.html">Client access</a></nav>
+
+  <main class="c">
+    <div class="k2">
+      <div class="card kpi"><span class="k">Impressions</span><span class="v">182k</span><span class="d up">+9.1%</span></div>
+      <div class="card kpi"><span class="k">Clicks</span><span class="v">6,412</span><span class="d up">+18.0%</span></div>
+      <div class="card kpi"><span class="k">Avg position</span><span class="v">14.2</span><span class="d up">↑ 2.3</span></div>
+      <div class="card kpi"><span class="k">Indexed</span><span class="v">231<span class="muted" style="font-size:14px;font-weight:500"> / 248</span></span><span class="d muted" style="font-weight:500">17 missing</span></div>
+    </div>
+
+    <section class="card">
+      <div class="ch" style="border-bottom:0;padding-bottom:0"><h2>Daily impressions</h2><span class="muted xs">30 days</span></div>
+      <svg viewBox="0 0 358 130" width="100%" height="130" preserveAspectRatio="none" role="img" aria-label="Impressions rising">
+        <path d="M0 40H358M0 80H358M0 120H358" stroke="var(--line-2)"/>
+        <path d="M0 108 L25 100 L50 106 L75 92 L100 96 L125 82 L150 88 L175 74 L200 78 L225 62 L250 68 L275 52 L300 56 L325 40 L358 34 L358 130 L0 130Z" fill="var(--c1)" fill-opacity=".08"/>
+        <path d="M0 108 L25 100 L50 106 L75 92 L100 96 L125 82 L150 88 L175 74 L200 78 L225 62 L250 68 L275 52 L300 56 L325 40 L358 34" fill="none" stroke="var(--c1)" stroke-width="2.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <div style="display:flex;justify-content:space-between;padding:4px 14px 12px" class="muted xs"><span>4 Oct</span><span>18 Oct</span><span>3 Nov</span></div>
+    </section>
+
+    <section class="card">
+      <div class="ch"><h2>Top keywords</h2><a class="xs" href="#" style="font-weight:600">All</a></div>
+      <div class="kw"><span>dentist leeds</span><span class="up xs" style="font-weight:600">+2</span><span class="pos">4</span></div>
+      <div class="kw"><span>dental implants leeds</span><span class="up xs" style="font-weight:600">+5</span><span class="pos">7</span></div>
+      <div class="kw"><span>teeth whitening leeds</span><span class="up xs" style="font-weight:600">+1</span><span class="pos">9</span></div>
+      <div class="kw"><span>emergency dentist leeds</span><span class="up xs" style="font-weight:600">+11</span><span class="pos">18</span></div>
+    </section>
+
+    <section class="card">
+      <div class="ch"><h2>Coming next</h2></div>
+      <div class="row"><span class="tx"><b>Emergency dentist Leeds</b><small>New page · 6 Nov</small></span><span class="bd wait"><i></i>Approve</span></div>
+      <div class="row"><span class="tx"><b>Dental implants guide</b><small>Refresh · 12 Nov</small></span><span class="bd pri">Scheduled</span></div>
+      <div class="row"><span class="tx"><b>Dentist in Harrogate</b><small>New area</small></span><span class="bd">Proposed</span></div>
+    </section>
+  </main>
+
+  <nav class="tb" aria-label="Main">
+    <a href="MPortfolio.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>Portfolio</a>
+    <a class="on" href="MSites.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.5 3 2.5 13 0 16M12 4c-2.5 3-2.5 13 0 16"/></svg>Websites</a>
+    <a href="MApprovals.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Approvals<span class="n">17</span></a>
+    <a href="Team.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>More</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1420}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

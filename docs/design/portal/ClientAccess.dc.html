@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Client access</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0}
+.r{--shell:#0b1437;--shell-2:#1a2556;--shell-text:#e8ecff;--shell-muted:#939dc8;--bg:#f4f6fb;--surface:#fff;--line:#e3e7f0;--line-2:#eef1f6;--ink:#0b1437;--muted:#5b6482;--pri:#4f46e5;--pri-ink:#fff;--pri-soft:#eef0ff;--ok:#0f8a5f;--warn:#b45309;--bad:#c2261d;width:1280px;display:flex;background:var(--bg);color:var(--ink);font:14px/20px Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+.r *{box-sizing:border-box}.r svg{display:block}.r a{color:var(--pri);text-decoration:none}
+.side{width:236px;flex:0 0 236px;background:var(--shell);color:var(--shell-text);padding:20px 14px;display:flex;flex-direction:column;gap:18px}
+.logo{display:flex;align-items:center;gap:10px;padding:2px 8px;font-weight:700;font-size:15px;color:#fff}
+.logo i{width:26px;height:26px;border-radius:7px;background:var(--pri);display:flex;align-items:center;justify-content:center}
+.ws{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;background:var(--shell-2);font-size:13px}
+.ws b{flex:1;font-weight:500}.ws .a{width:22px;height:22px;border-radius:6px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+.nav{display:flex;flex-direction:column;gap:2px}
+.r .nav a{display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:var(--shell-muted);font-size:13.5px;font-weight:500}
+.r .nav a:hover{color:#fff;background:rgba(255,255,255,.05)}.r .nav a.on{background:var(--shell-2);color:#fff}
+.nav svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav .n{margin-left:auto;font-size:12px;padding:1px 7px;border-radius:99px;background:rgba(255,255,255,.1);color:var(--shell-text)}
+.nav .h{padding:14px 10px 4px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--shell-muted)}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{height:60px;flex:0 0 60px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 28px;border-bottom:1px solid var(--line);background:var(--surface)}
+.crumb{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:13.5px}.crumb b{color:var(--ink);font-weight:600}.r .crumb a{color:var(--muted)}
+.av{width:34px;height:34px;border-radius:99px;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:0 0 34px}
+.page{padding:22px 28px 40px;display:flex;flex-direction:column;gap:18px}
+h1{margin:0;font-size:22px;line-height:28px;font-weight:650;letter-spacing:-.02em}h2{margin:0;font-size:15px;line-height:22px;font-weight:600}
+.muted{color:var(--muted)}.xs{font-size:12.5px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 13.5px Geist,system-ui,sans-serif;cursor:pointer;white-space:nowrap}
+.r a.btn{color:var(--ink)}.btn.pri,.r a.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff;font-weight:600}
+.btn.sm{height:30px;padding:0 10px;font-size:12.5px;border-radius:8px}.btn.danger{color:var(--bad)}
+.btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;min-width:0}
+.ch{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.cb{padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+.sh{display:flex;align-items:center;gap:14px}
+.favl{width:44px;height:44px;border-radius:11px;background:var(--pri-soft);color:var(--pri);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;flex:0 0 44px}
+.tabs{display:flex;gap:22px;border-bottom:1px solid var(--line)}
+.r .tabs a{padding:10px 0;color:var(--muted);font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;display:flex;gap:6px;align-items:center;font-size:13.5px}
+.r .tabs a.on{color:var(--ink);border-color:var(--pri)}
+.tabs .n{font-size:11.5px;padding:0 6px;border-radius:99px;background:var(--pri-soft);color:var(--pri)}
+.tabs .sep{width:1px;background:var(--line);margin:8px 0}
+.g2{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:14px;align-items:start}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:12px;font-weight:500;color:var(--muted);padding:9px 18px;border-bottom:1px solid var(--line);background:#fafbfd;white-space:nowrap}
+td{padding:12px 18px;border-bottom:1px solid var(--line-2);font-size:13.5px;vertical-align:middle;white-space:nowrap}tr:last-child td{border-bottom:0}
+td small{display:block;color:var(--muted);font:12px "Geist Mono",ui-monospace,monospace}
+.bd{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:500;background:var(--line-2);color:var(--muted);white-space:nowrap}
+.bd i{width:6px;height:6px;border-radius:99px;background:currentColor}
+.bd.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}.bd.pri{color:var(--pri);background:var(--pri-soft)}.bd.wait{color:var(--warn);background:color-mix(in srgb,var(--warn) 13%,transparent)}
+.mk{display:flex;gap:8px}
+.inp{height:38px;width:100%;padding:0 12px;border:1px solid var(--line);border-radius:9px;font:14px Geist,system-ui,sans-serif;color:var(--ink);background:#fff}
+.fld{display:flex;flex-direction:column;gap:6px;flex:1}.fld label{font-weight:500;font-size:13.5px}
+.vis{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line-2);font-size:13.5px}.vis:first-child{border-top:0;padding-top:0}
+.ck{width:18px;height:18px;border-radius:5px;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 18px}
+.ck svg{width:11px;height:11px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.ck.off{background:var(--line-2)}.ck.off svg{stroke:var(--muted);stroke-width:2.2}
+.vis span.m{margin-left:auto;font-size:12px;color:var(--muted)}
+.brand{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fafbfd}
+.bm{width:30px;height:30px;border-radius:8px;background:#0f9d74;display:flex;align-items:center;justify-content:center;flex:0 0 30px}
+.linkbox{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:9px;background:var(--pri-soft);color:var(--pri);font:12.5px "Geist Mono",ui-monospace,monospace}
+.linkbox span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.new{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:5px;background:color-mix(in srgb,var(--warn) 13%,transparent);color:var(--warn);font-size:11.5px;font-weight:600}
+</style>
+</helmet>
+
+<div class="r" style="min-height:1080px">
+  <aside class="side">
+    <div class="logo"><i><svg width="15" height="15" viewBox="0 0 32 32" aria-hidden="true"><path d="M5 22l7-8 5 5 10-12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i>seo-autopilot</div>
+    <div class="ws"><span class="a">DA</span><b>Demo agency</b><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg></div>
+    <nav class="nav" aria-label="Primary">
+      <a href="Main.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>Portfolio</a>
+      <a class="on" href="Sites.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.5 3 2.5 13 0 16M12 4c-2.5 3-2.5 13 0 16"/></svg>Websites<span class="n">24</span></a>
+      <a href="Approvals.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Approvals<span class="n">17</span></a>
+      <a href="SiteOverview.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg>Reports</a>
+      <div class="h">Agency</div>
+      <a href="Team.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5M16 11a3 3 0 0 0 0-6M21 20c0-2.5-2-4.3-4-4.8"/></svg>Team and brand</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <div class="crumb"><a href="Sites.dc.html">Websites</a><span aria-hidden="true">/</span><a href="SiteOverview.dc.html">Northwind Dental</a><span aria-hidden="true">/</span><b>Client access</b></div>
+      <span class="av">BP</span>
+    </header>
+
+    <main class="page">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:16px">
+        <div class="sh"><span class="favl" aria-hidden="true">N</span><div><h1>Client access</h1><div class="muted xs">Who outside your agency can see Northwind Dental's dashboard</div></div></div>
+        <a class="btn" href="ClientView.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Preview client view</a>
+      </div>
+
+      <nav class="tabs" aria-label="Website sections">
+        <a href="SiteOverview.dc.html">Overview</a><a href="#">Traffic</a><a href="#">Keywords</a><a href="#">Pages</a><a href="#">Locations</a><a href="#">Coming next</a><a href="#">Weekly report</a>
+        <span class="sep" aria-hidden="true"></span>
+        <a href="Approvals.dc.html">Approvals<span class="n">5</span></a><a href="#">SEO team</a><a href="AddSite.dc.html">Connection</a><a class="on" href="ClientAccess.dc.html" aria-current="page">Client access</a>
+      </nav>
+
+      <div class="g2">
+        <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+          <section class="card" aria-labelledby="l-h">
+            <div class="ch"><div><h2 id="l-h">Client links</h2><div class="muted xs">No sign-in needed. A link shows this website only.</div></div><button class="btn pri" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Create link</button></div>
+            <div class="cb" style="padding-bottom:6px">
+              <div class="linkbox"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg><span>portal.demo-agency.co.uk/#/c/k7Pq2xVb9mLs</span><span class="btn sm" style="flex:0 0 auto">Copy</span></div>
+              <div class="muted xs" style="margin-top:-6px">New link for "Practice manager" created and copied</div>
+            </div>
+            <table>
+              <thead><tr><th>Label</th><th>Created</th><th>By</th><th>Status</th><th><span style="position:absolute;left:-9999px">Actions</span></th></tr></thead>
+              <tbody>
+                <tr><td>Practice manager<small>…/c/k7Pq2xVb9mLs</small></td><td class="muted">Today</td><td class="muted">Bishal P.</td><td><span class="bd ok"><i></i>Active</span></td><td><span class="mk"><span class="btn sm">Copy</span><span class="btn sm danger">Revoke</span></span></td></tr>
+                <tr><td>Dr Patel, owner<small>…/c/R3nW8tQe4yHd</small></td><td class="muted">12 Oct</td><td class="muted">Bishal P.</td><td><span class="bd ok"><i></i>Active</span></td><td><span class="mk"><span class="btn sm">Copy</span><span class="btn sm danger">Revoke</span></span></td></tr>
+                <tr><td>Old marketing agency<small>…/c/Xa1bZ6pK0vNc</small></td><td class="muted">2 Sep</td><td class="muted">Toby S.</td><td><span class="bd"><i></i>Revoked 1 Oct</span></td><td></td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="card" aria-labelledby="i-h">
+            <div class="ch"><div style="display:flex;align-items:center;gap:8px"><h2 id="i-h">Invite client by email</h2><span class="new">Proposed</span></div></div>
+            <div class="cb">
+              <div style="display:flex;gap:10px;align-items:flex-end">
+                <div class="fld"><label for="ie">Email</label><input id="ie" class="inp" type="email" placeholder="name@northwinddental.co.uk"></div>
+                <div class="fld" style="flex:0 0 160px"><label for="ir">Access</label><select id="ir" class="inp"><option>View only</option></select></div>
+                <button class="btn pri" type="button" style="height:38px">Send invite</button>
+              </div>
+              <div class="muted xs">Sends a branded email with a personal link. Unlike a shared link, you can see who opened it and remove one person without affecting others. Not in the portal yet.</div>
+            </div>
+          </section>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+          <section class="card" aria-labelledby="v-h">
+            <div class="ch"><h2 id="v-h">What the client sees</h2></div>
+            <div class="cb" style="gap:0">
+              <div class="vis"><span class="ck"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.5l2.2 2.2L9.5 3.8"/></svg></span>Overview</div>
+              <div class="vis"><span class="ck"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.5l2.2 2.2L9.5 3.8"/></svg></span>Traffic and visitor sources</div>
+              <div class="vis"><span class="ck"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.5l2.2 2.2L9.5 3.8"/></svg></span>Keywords and pages</div>
+              <div class="vis"><span class="ck"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.5l2.2 2.2L9.5 3.8"/></svg></span>Locations</div>
+              <div class="vis"><span class="ck"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 6.5l2.2 2.2L9.5 3.8"/></svg></span>Coming next and weekly report</div>
+              <div class="vis"><span class="ck off"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6"/></svg></span>Approvals<span class="m">Agency only</span></div>
+              <div class="vis"><span class="ck off"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6"/></svg></span>SEO team<span class="m">Agency only</span></div>
+              <div class="vis"><span class="ck off"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3l-6 6"/></svg></span>Connection and tokens<span class="m">Agency only</span></div>
+            </div>
+          </section>
+          <section class="card" aria-labelledby="b-h">
+            <div class="ch"><h2 id="b-h">Brand on client links</h2><a class="xs" href="Team.dc.html" style="font-weight:500">Change</a></div>
+            <div class="cb">
+              <div class="brand"><span class="bm" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8"/></svg></span><span><b style="font-weight:600;display:block">Northwind Dental</b><span class="muted xs">SEO dashboard by Demo agency</span></span></div>
+              <div class="muted xs">Clients never see your other websites or clients.</div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

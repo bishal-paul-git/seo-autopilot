@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Style A: Midnight</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0}
+.r{--shell:#0b1437;--shell-2:#1a2556;--shell-text:#e8ecff;--shell-muted:#939dc8;--bg:#f4f6fb;--surface:#ffffff;--line:#e3e7f0;--line-2:#eef1f6;--ink:#0b1437;--muted:#5b6482;--pri:#4f46e5;--pri-ink:#ffffff;--pri-soft:#eef0ff;--c1:#4f46e5;--c2:#9aa3c2;--ok:#0f8a5f;--warn:#b45309;--bad:#c2261d}
+</style>
+<style>
+.r{width:1280px;height:960px;overflow:hidden;display:flex;background:var(--bg);color:var(--ink);font:14px/20px Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums;box-sizing:border-box}
+.r *{box-sizing:border-box}
+.r svg{display:block}
+.side{width:236px;flex:0 0 236px;background:var(--shell);color:var(--shell-text);padding:20px 14px;display:flex;flex-direction:column;gap:18px}
+.logo{display:flex;align-items:center;gap:10px;padding:2px 8px;font-weight:700;font-size:15px;letter-spacing:-.01em}
+.logo i{width:26px;height:26px;border-radius:7px;background:var(--pri);display:flex;align-items:center;justify-content:center}
+.ws{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;background:var(--shell-2);font-size:13px}
+.ws b{flex:1;font-weight:500}
+.ws .a{width:22px;height:22px;border-radius:6px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:var(--shell-muted);font-size:13.5px;font-weight:500;text-decoration:none}
+.nav a.on{background:var(--shell-2);color:#fff}
+.nav svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav .n{margin-left:auto;font-size:12px;padding:1px 7px;border-radius:99px;background:rgba(255,255,255,.1);color:var(--shell-text)}
+.nav .h{padding:14px 10px 4px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--shell-muted);opacity:.8}
+.use{margin-top:auto;padding:14px;border-radius:10px;background:var(--shell-2);font-size:12.5px;color:var(--shell-muted);display:flex;flex-direction:column;gap:8px}
+.use b{color:var(--shell-text);font-weight:500}
+.use span{height:5px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden;display:block}
+.use span i{display:block;height:100%;width:61%;background:var(--pri);border-radius:99px}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{height:60px;flex:0 0 60px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border-bottom:1px solid var(--line);background:var(--surface)}
+.search{width:360px;height:36px;border:1px solid var(--line);border-radius:9px;display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--muted);font-size:13px;background:var(--bg)}
+.search kbd{margin-left:auto;font:11px "Geist Mono",monospace;padding:1px 6px;border:1px solid var(--line);border-radius:5px;background:var(--surface)}
+.tr{display:flex;align-items:center;gap:12px}
+.ib{width:36px;height:36px;border-radius:9px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted);background:var(--surface)}
+.av{width:34px;height:34px;border-radius:99px;background:var(--pri);color:var(--pri-ink);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.page{padding:24px 28px;display:flex;flex-direction:column;gap:18px}
+.head{display:flex;align-items:flex-end;justify-content:space-between}
+h1{margin:0;font-size:24px;line-height:30px;font-weight:650;letter-spacing:-.02em}
+.muted{color:var(--muted)}
+.seg{display:inline-flex;padding:3px;border-radius:9px;background:var(--line-2);border:1px solid var(--line)}
+.seg span{height:28px;padding:0 12px;border-radius:7px;display:flex;align-items:center;font-size:13px;color:var(--muted);font-weight:500}
+.seg span.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:9px;background:var(--pri);color:var(--pri-ink);font-weight:600;font-size:13.5px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.kpi{padding:16px 18px;display:flex;flex-direction:column;gap:4px}
+.kpi .k{font-size:13px;color:var(--muted)}
+.kpi .v{display:flex;align-items:baseline;gap:8px;font-size:26px;line-height:32px;font-weight:650;letter-spacing:-.02em}
+.kpi .v small{font-size:12.5px;font-weight:600;letter-spacing:0}
+.up{color:var(--ok)}.dn{color:var(--bad)}
+.grid{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:14px}
+.ch{display:flex;justify-content:space-between;align-items:center;padding:14px 18px 6px}
+.ch h2,.th h2{margin:0;font-size:15px;font-weight:600}
+.lg{display:flex;gap:14px;font-size:12.5px;color:var(--muted)}
+.lg i{display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.ax{display:flex;justify-content:space-between;padding:0 18px 12px;font-size:11.5px;color:var(--muted)}
+.act{padding:4px 18px 10px}
+.ev{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-2);font-size:13px}
+.ev:last-child{border-bottom:0}
+.ev .b{width:28px;height:28px;border-radius:8px;background:var(--pri-soft);color:var(--pri);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.ev small{display:block;color:var(--muted);font-size:12px}
+.ev time{color:var(--muted);font-size:12px}
+.th{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line)}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:12px;font-weight:500;color:var(--muted);padding:9px 18px;border-bottom:1px solid var(--line)}
+td{padding:11px 18px;border-bottom:1px solid var(--line-2);font-size:13.5px}
+tr:last-child td{border-bottom:0}
+.site{display:flex;align-items:center;gap:10px}
+.fav{width:28px;height:28px;border-radius:8px;background:var(--pri-soft);color:var(--pri);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.site small{display:block;color:var(--muted);font-size:12px}
+.hb{display:flex;align-items:center;gap:8px}
+.hb span{width:72px;height:6px;border-radius:99px;background:var(--line-2);overflow:hidden;display:block}
+.hb i{display:block;height:100%;border-radius:99px;background:var(--c1)}
+.bd{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:500}
+.bd i{width:6px;height:6px;border-radius:99px;background:currentColor}
+.bd.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.bd.wait{color:var(--warn);background:color-mix(in srgb,var(--warn) 13%,transparent)}
+.bd.bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+</style>
+</helmet>
+
+<div class="r">
+  <aside class="side">
+    <div class="logo"><i><svg width="15" height="15" viewBox="0 0 32 32" aria-hidden="true"><path d="M5 22l7-8 5 5 10-12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i>seo-autopilot</div>
+    <div class="ws"><span class="a">DA</span><b>Demo agency</b><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg></div>
+    <nav class="nav" aria-label="Primary">
+      <a class="on" href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>Portfolio</a>
+      <a href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.5 3 2.5 13 0 16"/></svg>Sites<span class="n">24</span></a>
+      <a href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>Agents</a>
+      <a href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Approvals<span class="n">17</span></a>
+      <a href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg>Reports</a>
+      <div class="h">Workspace</div>
+      <a href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5M16 11a3 3 0 0 0 0-6M21 20c0-2.5-2-4.3-4-4.8"/></svg>Team</a>
+      <a href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Settings</a>
+    </nav>
+    <div class="use"><b>Agent runs this month</b><span><i></i></span>1,840 of 3,000</div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Search sites, pages, agents<kbd>⌘K</kbd></div>
+      <div class="tr"><span class="ib"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/></svg></span><span class="av">BP</span></div>
+    </header>
+
+    <main class="page">
+      <div class="head">
+        <div><h1>Portfolio</h1><div class="muted">24 sites across 6 workspaces</div></div>
+        <div style="display:flex;gap:10px;align-items:center"><div class="seg"><span>7d</span><span class="on">30d</span><span>90d</span></div><span class="btn">+ Add website</span></div>
+      </div>
+
+      <div class="kpis">
+        <div class="card kpi"><span class="k">Organic clicks</span><span class="v">48.2k<small class="up">+12.4%</small></span><span class="muted" style="font-size:12.5px">vs previous 30 days</span></div>
+        <div class="card kpi"><span class="k">Healthy sites</span><span class="v">19<small class="muted" style="font-weight:500">of 24</small></span><span class="muted" style="font-size:12.5px">3 need attention</span></div>
+        <div class="card kpi"><span class="k">Awaiting approval</span><span class="v">17<small class="dn">+5</small></span><span class="muted" style="font-size:12.5px">Oldest 2 days</span></div>
+        <div class="card kpi"><span class="k">Agent runs</span><span class="v">1,840<small class="up">98.6%</small></span><span class="muted" style="font-size:12.5px">success rate</span></div>
+      </div>
+
+      <div class="grid">
+        <section class="card">
+          <div class="ch"><h2>Organic clicks, all sites</h2><div class="lg"><span><i style="background:var(--c1)"></i>This period</span><span><i style="background:var(--c2)"></i>Previous</span></div></div>
+          <svg viewBox="0 0 640 200" width="100%" height="200" preserveAspectRatio="none" role="img" aria-label="Clicks rising over 30 days, above the previous period">
+            <path d="M0 50H640M0 100H640M0 150H640" stroke="var(--line-2)" stroke-width="1"/>
+            <path d="M0 150 L45 146 L90 150 L135 140 L180 142 L225 134 L270 138 L315 128 L360 130 L405 122 L450 126 L495 118 L540 120 L585 112 L640 108" fill="none" stroke="var(--c2)" stroke-width="1.6" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>
+            <path d="M0 140 L45 132 L90 136 L135 118 L180 122 L225 104 L270 110 L315 92 L360 96 L405 78 L450 84 L495 66 L540 70 L585 52 L640 44 L640 200 L0 200Z" fill="var(--c1)" fill-opacity=".08"/>
+            <path d="M0 140 L45 132 L90 136 L135 118 L180 122 L225 104 L270 110 L315 92 L360 96 L405 78 L450 84 L495 66 L540 70 L585 52 L640 44" fill="none" stroke="var(--c1)" stroke-width="2.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+          </svg>
+          <div class="ax"><span>4 Oct</span><span>11 Oct</span><span>18 Oct</span><span>25 Oct</span><span>3 Nov</span></div>
+        </section>
+        <section class="card">
+          <div class="ch" style="padding-bottom:4px"><h2>Live agent activity</h2><span class="bd ok"><i></i>12 running</span></div>
+          <div class="act">
+            <div class="ev"><span class="b">CT</span><span>Drafted new page<small>Northwind Dental</small></span><time>2m</time></div>
+            <div class="ev"><span class="b">TA</span><span>Audit finished, 9 issues<small>Harbor Plumbing</small></span><time>8m</time></div>
+            <div class="ev"><span class="b">RS</span><span>Keyword map updated<small>Brightpath Tutors</small></span><time>15m</time></div>
+            <div class="ev"><span class="b">PB</span><span>Published 4 changes<small>Fernhill Vets</small></span><time>32m</time></div>
+            <div class="ev"><span class="b">LK</span><span>Linked 14 orphan pages<small>Lumen Physio</small></span><time>1h</time></div>
+          </div>
+        </section>
+      </div>
+
+      <section class="card">
+        <div class="th"><h2>Sites</h2><span class="muted" style="font-size:13px">Sorted by attention needed</span></div>
+        <table>
+          <thead><tr><th>Site</th><th>Health</th><th>Clicks, 30d</th><th>Change</th><th>Agents</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><div class="site"><span class="fav">O</span><span>Oakline Legal<small>oaklinelegal.com</small></span></div></td><td><div class="hb"><span><i style="width:41%"></i></span>41</div></td><td>2,104</td><td class="dn">−8.2%</td><td>Paused</td><td><span class="bd bad"><i></i>Reconnect</span></td></tr>
+            <tr><td><div class="site"><span class="fav">L</span><span>Lumen Physio<small>lumenphysio.co.uk</small></span></div></td><td><div class="hb"><span><i style="width:64%"></i></span>64</div></td><td>3,880</td><td class="up">+4.1%</td><td>3 running</td><td><span class="bd wait"><i></i>8 to approve</span></td></tr>
+            <tr><td><div class="site"><span class="fav">N</span><span>Northwind Dental<small>northwinddental.co.uk</small></span></div></td><td><div class="hb"><span><i style="width:86%"></i></span>86</div></td><td>6,412</td><td class="up">+18.0%</td><td>4 running</td><td><span class="bd wait"><i></i>5 to approve</span></td></tr>
+            <tr><td><div class="site"><span class="fav">B</span><span>Brightpath Tutors<small>brightpathtutors.co.uk</small></span></div></td><td><div class="hb"><span><i style="width:90%"></i></span>90</div></td><td>9,027</td><td class="up">+21.3%</td><td>1 running</td><td><span class="bd ok"><i></i>Healthy</span></td></tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":960}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

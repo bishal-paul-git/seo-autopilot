@@ -4,31 +4,38 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#0c0f14">
+<meta name="theme-color" content="#0b1437">
 <title>SEO Autopilot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: mobile-first app. Phone: sticky header, content, bottom tab bar. Desktop: left page rail + wide content. */
+/* Layout: mobile-first app. Phone: sticky header, content, bottom tab bar. Desktop: left page rail + wide content.
+   Look: "Style A" (docs/design/portal): midnight navy shell, indigo actions, green only for good news. On a client
+   link the agency's brand colour replaces the indigo accent. */
 :root {
-  --bg: #f4f5f7; --panel: #ffffff; --ink: #0f1419; --muted: #636c78; --line: #e3e6eb; --line-2: #eef0f3;
-  --side: #0c0f14; --side-2: #161b23; --side-ink: #cdd4dd; --side-muted: #7f8995;
-  --accent: #0f9d74; --accent-ink: #ffffff; --accent-soft: #e2f5ed;
-  --warn: #b26a12; --warn-soft: #fdf1e1; --bad: #c2382f; --bad-soft: #fde9e7; --info: #3559c7; --info-soft: #e8eefc;
-  --chart: #0f9d74; --chart-2: #8e9aab;
+  --bg: #f4f6fb; --panel: #ffffff; --ink: #0b1437; --muted: #5b6482; --line: #e3e7f0; --line-2: #eef1f6;
+  --side: #0b1437; --side-2: #1a2556; --side-ink: #c9d0f0; --side-muted: #939dc8;
+  --accent: #4f46e5; --accent-ink: #ffffff; --accent-soft: #eef0ff;
+  --ok: #0f8a5f; --ok-soft: #e3f4ec;
+  --warn: #b45309; --warn-soft: #fdf1e1; --bad: #c2261d; --bad-soft: #fde9e7; --info: #0e7490; --info-soft: #e0f2f5;
+  --chart: #4f46e5; --chart-2: #9aa3c2;
   --sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #0e1116; --panel: #161a21; --ink: #e8ebef; --muted: #98a1ad; --line: #262c35; --line-2: #1d222a;
-  --accent: #34c99c; --accent-ink: #052a1e; --accent-soft: #123328;
-  --warn: #e3a556; --warn-soft: #382a17; --bad: #f07a71; --bad-soft: #3b1d1b; --info: #8ba6f5; --info-soft: #1d2640;
-  --chart: #34c99c; --chart-2: #5b6574; color-scheme: dark } }
+  --bg: #0b0f1e; --panel: #121831; --ink: #e8ecff; --muted: #9aa3c8; --line: #232b4a; --line-2: #1a2140;
+  --side: #080c1a; --side-2: #161d3b;
+  --accent: #818cf8; --accent-ink: #0b1437; --accent-soft: #1e2350;
+  --ok: #34d399; --ok-soft: #10302a;
+  --warn: #e3a556; --warn-soft: #382a17; --bad: #f07a71; --bad-soft: #3b1d1b; --info: #67c7d9; --info-soft: #12313a;
+  --chart: #818cf8; --chart-2: #5b6482; color-scheme: dark } }
 :root[data-theme="dark"] {
-  --bg: #0e1116; --panel: #161a21; --ink: #e8ebef; --muted: #98a1ad; --line: #262c35; --line-2: #1d222a;
-  --accent: #34c99c; --accent-ink: #052a1e; --accent-soft: #123328;
-  --warn: #e3a556; --warn-soft: #382a17; --bad: #f07a71; --bad-soft: #3b1d1b; --info: #8ba6f5; --info-soft: #1d2640;
-  --chart: #34c99c; --chart-2: #5b6574; color-scheme: dark }
+  --bg: #0b0f1e; --panel: #121831; --ink: #e8ecff; --muted: #9aa3c8; --line: #232b4a; --line-2: #1a2140;
+  --side: #080c1a; --side-2: #161d3b;
+  --accent: #818cf8; --accent-ink: #0b1437; --accent-soft: #1e2350;
+  --ok: #34d399; --ok-soft: #10302a;
+  --warn: #e3a556; --warn-soft: #382a17; --bad: #f07a71; --bad-soft: #3b1d1b; --info: #67c7d9; --info-soft: #12313a;
+  --chart: #818cf8; --chart-2: #5b6482; color-scheme: dark }
 * { box-sizing: border-box }
 html, body { margin: 0 }
 body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--sans); -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent }
@@ -40,7 +47,7 @@ button { font: inherit; color: inherit }
 /* Desktop rail */
 .rail { background: var(--side); color: var(--side-ink); position: sticky; top: 0; height: 100vh; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding-block: 20px; padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: 14px }
 .brand { display: flex; align-items: center; gap: 10px; padding: 0 6px; text-decoration: none }
-.brand-mark { width: 30px; height: 30px; border-radius: 9px; background: var(--accent); display: grid; place-items: center; flex: none }
+.brand-mark { width: 30px; height: 30px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; flex: none }
 .brand-mark svg { width: 18px; height: 18px }
 .brand b { color: #fff; font-weight: 600; font-size: 15px; display: block; line-height: 1.2 }
 .brand span { font: 11px var(--mono); color: var(--side-muted) }
@@ -48,7 +55,7 @@ button { font: inherit; color: inherit }
 .rail nav { display: flex; flex-direction: column; gap: 2px }
 .rail nav a { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; text-decoration: none; color: var(--side-ink); font-weight: 500; font-size: 14px }
 .rail nav a:hover { background: var(--side-2) }
-.rail nav a[aria-current="page"] { background: var(--side-2); color: #fff }
+.rail nav a[aria-current="page"] { background: var(--side-2); color: #fff; box-shadow: inset 2px 0 0 #818cf8 }
 .rail nav a svg { width: 17px; height: 17px; flex: none; opacity: .85 }
 .rail nav .dot { width: 8px; height: 8px; border-radius: 50%; margin: 0 4px; flex: none }
 .dot.live { background: #34c99c } .dot.setup { background: #e3a556 }
@@ -64,10 +71,10 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .hdr .sp { flex: 1 }
 .hdr .mobile-brand { display: none }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 8px 13px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); font-weight: 500; font-size: 13.5px; text-decoration: none; cursor: pointer; white-space: nowrap }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink) }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600 }
 .btn svg { width: 15px; height: 15px }
 .page { padding-block: 22px 40px; padding-left: 28px; padding-right: max(20px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 18px; max-width: 1180px; width: 100% }
-h1 { font-size: 24px; line-height: 1.2; font-weight: 600; letter-spacing: -0.02em; margin: 0; text-wrap: balance }
+h1 { font-size: 24px; line-height: 1.2; font-weight: 650; letter-spacing: -0.02em; margin: 0; text-wrap: balance }
 .lead { color: var(--muted); margin: 4px 0 0; max-width: 68ch }
 h2 { font-size: 16px; font-weight: 600; margin: 0; letter-spacing: -0.01em }
 
@@ -87,9 +94,9 @@ h2 { font-size: 16px; font-weight: 600; margin: 0; letter-spacing: -0.01em }
 .kpi .v small { font-size: 14px; color: var(--muted); font-weight: 500 }
 .kpi .d { font-size: 12.5px; margin-top: 4px; color: var(--muted) }
 .kpi .help { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.4 }
-.up { color: var(--accent) } .down { color: var(--bad) }
-.pill { display: inline-flex; align-items: center; gap: 5px; font: 500 11.5px var(--sans); padding: 3px 9px; border-radius: 99px; background: var(--line-2); color: var(--muted); white-space: nowrap }
-.pill.ok { background: var(--accent-soft); color: var(--accent) } .pill.warn { background: var(--warn-soft); color: var(--warn) } .pill.bad { background: var(--bad-soft); color: var(--bad) } .pill.info { background: var(--info-soft); color: var(--info) }
+.up { color: var(--ok) } .down { color: var(--bad) }
+.pill { display: inline-flex; align-items: center; gap: 5px; font: 500 12px var(--sans); padding: 3px 9px; border-radius: 6px; background: var(--line-2); color: var(--muted); white-space: nowrap; text-decoration: none }
+.pill.ok { background: var(--ok-soft); color: var(--ok) } .pill.warn { background: var(--warn-soft); color: var(--warn) } .pill.bad { background: var(--bad-soft); color: var(--bad) } .pill.info { background: var(--info-soft); color: var(--info) }
 .pill i { width: 6px; height: 6px; border-radius: 50% ; background: currentColor }
 .muted { color: var(--muted) } .sm { font-size: 13px } .xs { font-size: 12px }
 .mono { font-family: var(--mono); font-variant-numeric: tabular-nums }
@@ -111,7 +118,7 @@ svg text { fill: var(--muted); font: 10px var(--mono) }
 .pos { display: inline-grid; place-items: center; min-width: 44px; padding: 3px 8px; border-radius: 8px; font: 600 13px var(--mono) }
 .pos.p1 { background: var(--accent-soft); color: var(--accent) } .pos.p2 { background: var(--info-soft); color: var(--info) } .pos.p3 { background: var(--warn-soft); color: var(--warn) } .pos.p4 { background: var(--line-2); color: var(--muted) }
 .score { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font: 600 13.5px var(--mono); flex: none }
-.score.ok { background: var(--accent-soft); color: var(--accent) } .score.warn { background: var(--warn-soft); color: var(--warn) } .score.bad { background: var(--bad-soft); color: var(--bad) }
+.score.ok { background: var(--ok-soft); color: var(--ok) } .score.warn { background: var(--warn-soft); color: var(--warn) } .score.bad { background: var(--bad-soft); color: var(--bad) }
 .prow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 16px; border-top: 1px solid var(--line-2) }
 .prow:first-child { border-top: 0 }
 .seg { display: flex; gap: 6px; flex-wrap: wrap }
@@ -125,7 +132,7 @@ svg text { fill: var(--muted); font: 10px var(--mono) }
 .legend b { color: var(--ink); font-family: var(--mono); font-weight: 500 }
 .chips { display: flex; flex-wrap: wrap; gap: 6px }
 .chip { font-size: 12.5px; padding: 4px 9px; border-radius: 8px; background: var(--line-2); color: var(--muted); display: inline-flex; gap: 6px; align-items: center }
-.chip.ok { background: var(--accent-soft); color: var(--accent) }
+.chip.ok { background: var(--ok-soft); color: var(--ok) }
 .chip.warn { background: var(--warn-soft); color: var(--warn) }
 .report h3 { font-size: 15px; margin: 18px 0 6px } .report h3:first-child { margin-top: 0 }
 .report ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px }
@@ -138,11 +145,40 @@ svg text { fill: var(--muted); font: 10px var(--mono) }
 .steps { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 14px }
 .empty { padding: 22px 16px; text-align: center; color: var(--muted); font-size: 14px }
 .tbl { overflow-x: auto } table { width: 100%; border-collapse: collapse; font-size: 13.5px }
-th { text-align: left; font: 500 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--line); white-space: nowrap }
+th { text-align: left; font: 500 12px var(--sans); color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--line-2) 45%, var(--panel)); white-space: nowrap }
 td { padding: 11px 16px; border-bottom: 1px solid var(--line-2) } tr:last-child td { border-bottom: 0 }
-.sites { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px }
-.site-card { text-decoration: none; display: flex; flex-direction: column; gap: 12px }
-.site-card:hover { border-color: var(--accent) }
+
+/* Portfolio (agency home) */
+.g21 { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); align-items: start }
+.att .row { grid-template-columns: auto minmax(0, 1fr) auto }
+.att .ic { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; flex: none }
+.att .ic svg { width: 16px; height: 16px }
+.ic.bad { background: var(--bad-soft); color: var(--bad) } .ic.warn { background: var(--warn-soft); color: var(--warn) } .ic.setup { background: var(--accent-soft); color: var(--accent) } .ic.ok { background: var(--ok-soft); color: var(--ok) }
+.runcard { background: var(--side); border-color: var(--side); color: #fff; display: flex; flex-direction: column; gap: 6px }
+.runcard .big { font: 600 30px/1.1 var(--sans); letter-spacing: -0.02em; font-variant-numeric: tabular-nums }
+.runcard .xs { color: var(--side-muted) }
+.srow { display: flex; gap: 12px; align-items: center; text-decoration: none; min-width: 0 }
+.srow b { display: block; font-weight: 600 } .srow .xs { display: block }
+.sites-tbl td { vertical-align: middle; white-space: nowrap }
+.scards { display: none }
+.scard { display: flex; flex-direction: column; gap: 12px; text-decoration: none }
+.mini3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding-top: 10px; border-top: 1px solid var(--line-2) }
+.stepper { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 0; margin: 0; list-style: none }
+.stepper li { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-left: 1px solid var(--line); font-size: 13.5px; min-width: 0 }
+.stepper li:first-child { border-left: 0 }
+.stepper .n { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center; font-weight: 600; font-size: 12px; color: var(--muted); flex: none }
+.stepper .done .n { background: var(--accent); border-color: var(--accent); color: var(--accent-ink) }
+.stepper .now .n { border-color: var(--accent); color: var(--accent) }
+.stepper b { display: block; font-weight: 600 } .stepper small { color: var(--muted); font-size: 12px }
+.sees { display: flex; flex-wrap: wrap; gap: 6px }
+.sees span { font-size: 12.5px; padding: 4px 10px; border-radius: 99px; background: var(--line-2) }
+.sees span.no { background: transparent; border: 1px dashed var(--line); color: var(--muted); text-decoration: line-through }
+.linkrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 12px 16px; border-top: 1px solid var(--line-2) }
+.linkrow:first-child { border-top: 0 }
+.linkrow .acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end }
+.inline-form { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; padding: 0 16px 16px }
+.inline-form label { display: grid; gap: 6px; font-size: 13.5px; font-weight: 500; flex: 1; min-width: 200px }
+.inline-form input { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); font: inherit; color: var(--ink) }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 14px; z-index: 30 }
 
 /* Mobile bottom bar and sheet */
@@ -154,7 +190,7 @@ td { padding: 11px 16px; border-bottom: 1px solid var(--line-2) } tr:last-child 
 .sheet a:active { background: var(--line-2) }
 .sheet a svg { width: 20px; height: 20px; color: var(--muted) }
 
-@media (max-width: 960px) { .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)) } .g3 { grid-template-columns: 1fr } }
+@media (max-width: 960px) { .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)) } .g3 { grid-template-columns: 1fr } .g21 { grid-template-columns: 1fr } }
 @media (max-width: 760px) {
   body { font-size: 15px }
   .app { grid-template-columns: 1fr }
@@ -175,6 +211,11 @@ td { padding: 11px 16px; border-bottom: 1px solid var(--line-2) } tr:last-child 
   .g3 .kpi .v { font-size: 20px }
   .g3 .kpi .help, .g3 .kpi .d { display: none }
   .g3 .kpi .l { font-size: 12px; line-height: 1.3 }
+  .g4 .kpi .help { display: none }
+  .sites-tbl { display: none }
+  .stepper { grid-template-columns: 1fr } .stepper li { border-left: 0; border-top: 1px solid var(--line) } .stepper li:first-child { border-top: 0 }
+  .scards { display: grid; gap: 10px }
+  .btn { min-height: 40px }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important } }
 </style>
@@ -237,10 +278,16 @@ function toSite(row, data, key, extra = {}) {
 }
 let SITES = [], loaded = false;
 let ORG = null;
+let LINKS = null; // site id -> number of active client links; null when the count could not be read
 async function loadAgency() {
   SITES = (await rpc("my_sites")).map((x) => toSite(x.site, x.data, x.site.id, { decisions: x.decisions || [] }));
-  ORG = await rpc("my_org").catch(() => null); loaded = true;
+  ORG = await rpc("my_org").catch(() => null);
+  // Row level security lets members read their own sites' links (share_select), so the count needs no extra RPC.
+  LINKS = await api("share_links?select=site_id&revoked_at=is.null").then((r) => (r || []).reduce((m, x) => ({ ...m, [x.site_id]: (m[x.site_id] || 0) + 1 }), {})).catch(() => null);
+  loaded = true;
 }
+async function loadLinks(s) { s.links = await api(`share_links?site_id=eq.${s.id}&select=token,label,created_at,revoked_at&order=created_at.desc`).catch(() => null); }
+const clientUrl = (t) => location.href.split("#")[0] + `#/c/${t}/overview`;
 async function loadGrowth(s) { if (!s.growthLoaded) { s.growth = await rpc("site_growth", { p_site: s.id }).catch(() => []); s.growthLoaded = true; } }
 const shared = new Map();
 async function loadShared(t) {
@@ -267,8 +314,8 @@ const I = {
   plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg>',
 };
-const PAGES = [["overview", "Overview", I.home], ["traffic", "Traffic", I.trend], ["keywords", "Keywords", I.key], ["pages", "Pages", I.page], ["locations", "Locations", I.pin], ["plan", "Coming next", I.plan], ["report", "Weekly report", I.report], ["approvals", "Approvals", I.check], ["team", "SEO team", I.team], ["connect", "Connection", I.plug]];
-const AGENCY_ONLY = new Set(["approvals", "team", "connect"]);
+const PAGES = [["overview", "Overview", I.home], ["traffic", "Traffic", I.trend], ["keywords", "Keywords", I.key], ["pages", "Pages", I.page], ["locations", "Locations", I.pin], ["plan", "Coming next", I.plan], ["report", "Weekly report", I.report], ["approvals", "Approvals", I.check], ["team", "SEO team", I.team], ["connect", "Connection", I.plug], ["access", "Client access", I.share]];
+const AGENCY_ONLY = new Set(["approvals", "team", "connect", "access"]);
 const MOBILE_TABS = ["overview", "traffic", "keywords", "pages"];
 let state = { kwTab: "ranking", kwQ: "", pgFilter: "all", newToken: null };
 
@@ -312,7 +359,7 @@ function chart(points, key, { h = 170, color = "var(--chart)", label = "", fmtY 
   </svg>`;
 }
 function ring(v) {
-  const r = 38, c = 2 * Math.PI * r, col = `var(--${tone(v) === "ok" ? "accent" : tone(v)})`;
+  const r = 38, c = 2 * Math.PI * r, col = `var(--${tone(v) === "ok" ? "ok" : tone(v)})`;
   return `<div class="ring"><svg viewBox="0 0 92 92" width="92" height="92"><circle cx="46" cy="46" r="${r}" fill="none" stroke="var(--line-2)" stroke-width="8"/><circle cx="46" cy="46" r="${r}" fill="none" stroke="${col}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${(c * v) / 100} ${c}" transform="rotate(-90 46 46)"/></svg><b>${v}</b><small>SEO score</small></div>`;
 }
 const bars = (rows, total, label = (x) => x.key) => `<div class="list">${rows.map((x) => `<div class="row"><div style="flex:1;min-width:0"><div class="t">${esc(label(x))}</div><div class="bar" style="height:6px;margin-top:6px"><span style="width:${Math.round((x.v / (total || 1)) * 100)}%;background:var(--accent)"></span></div></div><div class="end"><b class="mono">${fmt(x.v)}</b><span class="xs muted">${x.note || ""}</span></div></div>`).join("")}</div>`;
@@ -482,9 +529,14 @@ function pTeam(s) {
 }
 
 const ingestUrl = () => `${CFG.supabaseUrl}/functions/v1/ingest`;
+// Connect-a-website progress: details, then the daily push, then sharing with the client.
+function stepper(at) {
+  const st = [["Details", "Name and address"], ["Connect", "Two repository secrets"], ["Share with client", "A link they can open"]];
+  return `<ol class="card pad0 stepper" aria-label="Progress">${st.map(([t, d], i) => `<li class="${i < at ? "done" : i === at ? "now" : ""}"${i === at ? ' aria-current="step"' : ""}><span class="n">${i < at ? "✓" : i + 1}</span><span><b>${t}</b><small>${d}</small></span></li>`).join("")}</ol>`;
+}
 function pConnect(s) {
   const t = state.newToken && state.newToken.site === s.id ? state.newToken.token : null;
-  return `<div><h1>Connection</h1><p class="lead">${esc(host(s.url))} sends a fresh snapshot every day from its own SEO Autopilot run. ${s.lastAt ? `Last snapshot: <b>${esc(new Date(s.lastAt).toLocaleString("en-GB"))}</b>.` : "No snapshot has arrived yet."}</p></div>
+  return `${s.status !== "live" ? stepper(1) : ""}<div><h1>Connection</h1><p class="lead">${esc(host(s.url))} sends a fresh snapshot every day from its own SEO Autopilot run. ${s.lastAt ? `Last snapshot: <b>${esc(new Date(s.lastAt).toLocaleString("en-GB"))}</b>.` : "No snapshot has arrived yet."}</p></div>
   <div class="card"><div class="ch"><h2>Set up the daily push</h2><p>Once per website</p></div>
     <ol class="steps">
       <li>Install SEO Autopilot in the website's GitHub repository (<code>npx github:bishal-paul-git/seo-autopilot#v2 init</code>) or run <code>seo-autopilot upgrade --apply</code> on an existing install.</li>
@@ -493,7 +545,34 @@ function pConnect(s) {
         <span class="xs muted">SEO_PORTAL_TOKEN</span>${t ? `<div class="secret">${esc(t)}</div><span class="xs" style="color:var(--warn)">Copy it now: it is shown only once.</span>` : `<div><button class="btn" id="rotate">Make a new token</button> <span class="xs muted">Making one stops the old one working.</span></div>`}</div></li>
       <li>Run Actions › seo-daily › Run workflow. The dashboard fills in when it finishes; after that it updates every day.</li>
     </ol></div>
-  <div class="card"><div class="ch"><h2>Client link</h2><p>No sign-in needed</p></div><p class="xs muted" style="margin-top:0">Anyone with the link sees this website's dashboard (not your other websites, not the SEO team page). You can make as many as you like.</p><button class="btn primary" id="share2">${I.share}Make and copy a client link</button></div>`;
+  <div class="card"><div class="ch"><h2>${s.status !== "live" ? "Next: share with the client" : "Client link"}</h2><p>No sign-in needed</p></div><p class="xs muted" style="margin-top:0">Anyone with the link sees this website's dashboard (not your other websites, not the SEO team page). You can make as many as you like, and revoke any of them.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="share2">${I.share}Make and copy a client link</button><a class="btn" href="#/s/${s.key}/access">Manage client links</a></div></div>`;
+}
+
+// Client access: every link made for this site, with copy and revoke (share_links rows; RLS limits them to members).
+function pAccess(s) {
+  const shown = PAGES.filter(([k]) => !AGENCY_ONLY.has(k)), hidden = PAGES.filter(([k]) => AGENCY_ONLY.has(k));
+  const links = s.links, active = (links || []).filter((l) => !l.revoked_at);
+  return `<div><h1>Client access</h1><p class="lead">Who outside your agency can see ${esc(host(s.url))}. A client link needs no sign-in and shows this website only.</p></div>
+  <div class="grid g21">
+    <div class="card pad0"><div class="ch"><h2>Client links</h2><p>${links ? `${active.length} active` : ""}</p></div>
+      <form class="inline-form" id="link-form"><label>Who is this link for?<input id="link-label" maxlength="120" placeholder="e.g. Practice manager"></label><button class="btn primary" type="submit">${I.plus}Create and copy</button></form>
+      <div class="list" style="border-top:1px solid var(--line)">${links == null ? '<div class="empty">Could not load the links.</div>' : links.map((l) => `<div class="linkrow"><div style="min-width:0"><div class="t">${esc(l.label || "Client link")}</div><div class="s xs muted mono" style="overflow-wrap:anywhere">…/c/${esc(l.token.slice(0, 6))}… · made ${esc(String(l.created_at).slice(0, 10))}</div></div>
+        <div class="acts">${l.revoked_at ? `<span class="pill"><i></i>Revoked ${esc(String(l.revoked_at).slice(0, 10))}</span>` : `<span class="pill ok"><i></i>Active</span><button class="btn" data-copy="${esc(l.token)}">Copy</button><button class="btn" data-revoke="${esc(l.token)}" style="color:var(--bad)">Revoke</button>`}</div></div>`).join("") || '<div class="empty">No client links yet. Create one above and send it to your client.</div>'}</div></div>
+    <div class="card"><div class="ch"><h2>What the client sees</h2></div>
+      <div class="sees">${shown.map(([, t]) => `<span>${t}</span>`).join("")}${hidden.map(([, t]) => `<span class="no">${t}</span>`).join("")}</div>
+      <p class="xs muted">Struck-through pages are for your agency only.${ORG ? ` Links read "SEO dashboard by ${esc(ORG.brand_name || ORG.name)}". <a href="#/team">Change the brand</a>.` : ""}</p>
+      ${active[0] ? `<a class="btn" href="#/c/${esc(active[0].token)}/overview" target="_blank" rel="noopener">Preview as client</a>` : ""}</div>
+  </div>`;
+}
+
+// Approvals across every website, so an agency can work through the queue in one place.
+function pApprovalsAll() {
+  const groups = SITES.map((s) => ({ s, rows: (s.issues || []).filter((i) => { const d = (s.decisions || []).find((x) => x.issue === i.number); return !i.approved && !i.held && !d; }) })).filter((g) => g.rows.length);
+  const waiting = SITES.flatMap((s) => (s.decisions || []).filter((d) => !d.applied_at).map((d) => ({ s, d })));
+  return `<div><h1>Approvals</h1><p class="lead">Open proposals from the SEO team on every website. Approve to have it drafted, hold to park it, decline to close it. Decisions are applied on GitHub at each website's next daily run (05:17 UTC by default); risky changes still wait for a person before going live.</p></div>
+  ${groups.map(({ s, rows }) => `<div class="card pad0"><div class="ch"><h2>${esc(s.name)}</h2><p>${rows.length} to review</p><a class="r btn" href="#/s/${s.key}/approvals">Open site</a></div><div class="list">${rows.map((i) => `<div class="row" style="align-items:flex-start;flex-wrap:wrap;gap:10px"><div style="flex:1;min-width:220px"><div class="t">${esc(i.title)}</div><div class="s">#${i.number} · ${esc(i.kind)}${i.url ? ` · <a href="${esc(i.url)}" target="_blank" rel="noopener">open on GitHub</a>` : ""}</div></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn primary" data-dec="approve" data-site="${s.key}" data-issue="${i.number}">Approve</button><button class="btn" data-dec="hold" data-site="${s.key}" data-issue="${i.number}">Hold</button><button class="btn" data-dec="decline" data-site="${s.key}" data-issue="${i.number}">Decline</button></div></div>`).join("")}</div></div>`).join("") || '<div class="card"><div class="empty">Nothing to review. New proposals arrive with each website\'s daily and weekly runs.</div></div>'}
+  ${waiting.length ? `<div class="card pad0"><div class="ch"><h2>Waiting for the daily run</h2><p>${waiting.length}</p></div><div class="list">${waiting.map(({ s, d }) => `<div class="row"><div><div class="t">${esc(s.name)} · #${d.issue}</div><div class="s">${esc(DEC[d.decision]?.[0] || d.decision)}${d.by ? ` by ${esc(d.by)}` : ""}</div></div><span class="pill ${DEC[d.decision]?.[1] || ""}">${esc(DEC[d.decision]?.[0] || d.decision)}</span></div>`).join("")}</div></div>` : ""}`;
 }
 
 const DEC = { approve: ["Approved", "ok"], hold: ["On hold", "warn"], decline: ["Declined", "bad"] };
@@ -525,16 +604,60 @@ function pSetup(s) {
   ${mode === "agency" ? pConnect(s) : '<div class="callout info">Your SEO team is connecting this website. Check back after its first daily report.</div>'}`;
 }
 
+// Portfolio: the agency home. Everything here comes from my_sites (latest snapshot and decisions per site); nothing is
+// estimated. Proposals "to review" are open proposal issues with no decision yet.
+function pending(s) { const dec = new Set((s.decisions || []).map((d) => d.issue)); return (s.issues || []).filter((i) => !i.approved && !i.held && !dec.has(i.number)).length; }
+const queued = (s) => (s.decisions || []).filter((d) => !d.applied_at).length;
+const stale = (s) => s.status === "live" && !!s.lastAt && Date.now() - Date.parse(s.lastAt) > 36 * 3600e3; // missed a daily run
+const ago = (iso) => { if (!iso) return "–"; const h = (Date.now() - Date.parse(iso)) / 3600e3; return h < 1 ? "just now" : h < 24 ? `${Math.round(h)}h ago` : `${Math.round(h / 24)}d ago`; };
+// The default seo-daily schedule is 05:17 UTC (templates/workflows/seo-daily.yml); a site may have changed its own.
+function nextRun() { const n = new Date(), t = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate(), 5, 17)); if (t <= n) t.setUTCDate(t.getUTCDate() + 1); const m = Math.round((t - n) / 60000); return `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, "0")}m`; }
+const delta = (a, b) => { const p = pct(a, b); return p == null ? "" : p ? `<span class="${p > 0 ? "up" : "down"}">${p > 0 ? "▲" : "▼"} ${Math.abs(p)}%</span>` : '<span class="muted">±0%</span>'; };
+const statusPill = (s) => s.status !== "live" ? '<span class="pill warn"><i></i>Connecting</span>' : stale(s) ? '<span class="pill bad"><i></i>No new snapshot</span>' : '<span class="pill ok"><i></i>Live</span>';
 function pHome() {
-  return `<div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap"><div style="flex:1;min-width:220px"><h1>Websites</h1><p class="lead">Every connected site. Open one to see its dashboard, or share a client link.</p></div><a class="btn primary" href="#/add">${I.plus}Connect a website</a></div>
-  ${SITES.length ? `<div class="sites">${SITES.map((s) => s.status === "live" ? `<a class="card site-card" href="#/s/${s.key}/overview"><div style="display:flex;gap:12px;align-items:center"><span class="score ${tone(health(s))}">${health(s)}</span><div style="min-width:0"><b>${esc(s.name)}</b><div class="xs muted">${esc(host(s.url))}</div></div></div>
-    <div class="grid g3" style="grid-template-columns:repeat(3,1fr);gap:8px">${[["Impressions", s.period.cur.impressions], ["Clicks", s.period.cur.clicks], ["In Google", last(s).indexed]].map(([t, v]) => `<div><div class="xs muted">${t}</div><div class="mono" style="font-weight:600">${fmt(v)}</div></div>`).join("")}</div></a>`
-    : `<a class="card site-card" href="#/s/${s.key}/connect"><div style="display:flex;gap:12px;align-items:center"><span class="score warn">–</span><div><b>${esc(s.name)}</b><div class="xs muted">${esc(host(s.url))}</div></div></div><span class="pill warn"><i></i>Connecting</span></a>`).join("")}</div>`
-    : `<div class="card"><h2 style="margin-top:0">Connect your first website</h2><p class="muted">Add a website, then paste two values into its GitHub repository. Its dashboard fills in after the first daily run.</p><a class="btn primary" href="#/add">${I.plus}Connect a website</a></div>`}`;
+  const head = `<div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap"><div style="flex:1;min-width:220px"><h1>Portfolio</h1><p class="lead">Every client website: what changed, what needs you, and what to share.</p></div><a class="btn primary" href="#/add">${I.plus}Connect a website</a></div>`;
+  if (!SITES.length) return `${head}<div class="card"><h2 style="margin-top:0">Connect your first website</h2><p class="muted">Add a website, then paste two values into its GitHub repository. Its dashboard fills in after the first daily run.</p><a class="btn primary" href="#/add">${I.plus}Connect a website</a></div>`;
+  const live = SITES.filter((s) => s.status === "live"), sum = (w, k) => live.reduce((a, s) => a + (s.period[w]?.[k] || 0), 0);
+  const review = SITES.reduce((a, s) => a + pending(s), 0), waiting = SITES.reduce((a, s) => a + queued(s), 0);
+  const att = [
+    ...SITES.filter(stale).map((s) => ["bad", I.plug, `${s.name}: last snapshot ${ago(s.lastAt)}`, "The daily run may be failing, or its token was replaced.", `#/s/${s.key}/connect`, "Check connection"]),
+    ...SITES.filter((s) => s.status !== "live").map((s) => ["setup", I.plug, `${s.name}: waiting for its first snapshot`, "Add the two repository secrets, then run seo-daily once.", `#/s/${s.key}/connect`, "Setup"]),
+    ...SITES.filter((s) => pending(s)).map((s) => ["warn", I.check, `${s.name}: ${pending(s)} proposal${pending(s) === 1 ? "" : "s"} to review`, "Decisions are applied at the next daily run.", `#/s/${s.key}/approvals`, "Review"]),
+    ...(LINKS ? live.filter((s) => !LINKS[s.id]) : []).map((s) => ["setup", I.share, `${s.name}: not shared with the client`, "Create a link they can open without signing in.", `#/s/${s.key}/access`, "Share"]),
+  ];
+  const linksCell = (s) => (LINKS == null ? "–" : LINKS[s.id] ? `<a href="#/s/${s.key}/access">${LINKS[s.id]} link${LINKS[s.id] === 1 ? "" : "s"}</a>` : '<span class="muted">Not shared</span>');
+  const tr = (s) => {
+    const L = s.status === "live", h = L ? health(s) : null, c = s.period.cur, p = s.period.prev, l = last(s), n = pending(s);
+    return `<tr class="site-card"><td><a class="srow" href="#/s/${s.key}/${L ? "overview" : "connect"}"><span class="score ${L ? tone(h) : "warn"}">${L ? h : "–"}</span><span><b>${esc(s.name)}</b><span class="xs muted">${esc(host(s.url))}</span></span></a></td>
+      <td>${statusPill(s)}</td><td class="muted">${esc(ago(s.lastAt))}</td>
+      <td class="mono">${L ? fmt(c.clicks) : "–"} <span class="xs">${L ? delta(c.clicks, p.clicks) : ""}</span></td>
+      <td class="mono">${L && l.inspected ? `${fmt(l.indexed)}<span class="muted"> / ${fmt(l.inspected)}</span>` : "–"}</td>
+      <td>${n ? `<a class="pill warn" href="#/s/${s.key}/approvals">${n} to review</a>` : '<span class="muted">–</span>'}</td>
+      <td>${linksCell(s)}</td>
+      <td style="text-align:right">${L ? `<button class="btn" data-share="${s.key}">${I.share}Client link</button>` : `<a class="btn" href="#/s/${s.key}/connect">Set up</a>`}</td></tr>`;
+  };
+  const card = (s) => {
+    const L = s.status === "live", h = L ? health(s) : null, l = last(s);
+    return `<a class="card scard" href="#/s/${s.key}/${L ? "overview" : "connect"}"><div style="display:flex;gap:12px;align-items:center"><span class="score ${L ? tone(h) : "warn"}">${L ? h : "–"}</span><div style="min-width:0;flex:1"><b>${esc(s.name)}</b><div class="xs muted">${esc(host(s.url))} · ${esc(ago(s.lastAt))}</div></div>${statusPill(s)}</div>
+      ${L ? `<div class="mini3">${[["Clicks, 28d", `${fmt(s.period.cur.clicks)} <span class="xs">${delta(s.period.cur.clicks, s.period.prev.clicks)}</span>`], ["In Google", fmt(l.indexed)], ["To review", pending(s) || "–"]].map(([t, v]) => `<div><div class="xs muted">${t}</div><div class="mono" style="font-weight:600">${v}</div></div>`).join("")}</div>` : ""}</a>`;
+  };
+  return `${head}
+  <div class="grid g4">
+    ${kpi("Visits from Google", sum("cur", "clicks"), change(sum("cur", "clicks"), sum("prev", "clicks")), "All live websites, last 28 days")}
+    ${kpi("Google impressions", sum("cur", "impressions"), change(sum("cur", "impressions"), sum("prev", "impressions")), "All live websites, last 28 days")}
+    ${kpi("Live websites", `${live.length}<small> / ${SITES.length}</small>`, SITES.length - live.length ? `<span class="muted">${SITES.length - live.length} connecting</span>` : '<span class="muted">all sending snapshots</span>', "A site is live once its first daily snapshot arrives")}
+    ${kpi("Proposals to review", review, waiting ? `<span class="muted">${waiting} decision${waiting === 1 ? "" : "s"} waiting for the daily run</span>` : "", "Open proposals with no decision yet")}
+  </div>
+  <div class="grid g21">
+    <div class="card pad0 att"><div class="ch"><h2>Needs attention</h2><p>${att.length || "Nothing"}</p></div><div class="list">${att.map(([t, ic, title, why, href, cta]) => `<div class="row"><span class="ic ${t}">${ic}</span><div><div class="t">${esc(title)}</div><div class="s">${why}</div></div><a class="btn" href="${href}">${cta}</a></div>`).join("") || `<div class="row"><span class="ic ok">${I.check}</span><div><div class="t">All websites are up to date</div><div class="s">Every site sent its snapshot and nothing is waiting for you.</div></div><span></span></div>`}</div></div>
+    <div class="card runcard"><span class="xs">Next daily run · 05:17 UTC (default)</span><span class="big">${nextRun()}</span><span class="xs">${waiting ? `${waiting} decision${waiting === 1 ? "" : "s"} will be applied on GitHub then.` : "Each website sends a fresh snapshot and applies your decisions."}</span></div>
+  </div>
+  <div class="card pad0 sites-tbl"><div class="ch"><h2>Websites</h2><p>${SITES.length}</p></div><div class="tbl"><table><thead><tr><th>Website</th><th>Status</th><th>Last snapshot</th><th>Clicks, 28 days</th><th>In Google</th><th>Approvals</th><th>Client access</th><th><span class="sr" style="position:absolute;left:-9999px">Actions</span></th></tr></thead><tbody>${SITES.map(tr).join("")}</tbody></table></div></div>
+  <div class="scards">${SITES.map(card).join("")}</div>`;
 }
 
 function pAdd() {
-  return `<div><h1>Connect a website</h1><p class="lead">Add the website here, then follow the steps to send its reports.</p></div>
+  return `${stepper(0)}<div><h1>Connect a website</h1><p class="lead">Add the website here, then follow the steps to send its reports.</p></div>
   <form class="card form" id="add-form"><label>Name<input name="name" required maxlength="120" placeholder="Acme Plumbing"></label>
   <label>Website address<input name="url" required type="url" placeholder="https://www.example.com/"></label>
   <label>GitHub repository (optional)<input name="repo" placeholder="owner/repository" pattern="[A-Za-z0-9_.\\-]+/[A-Za-z0-9_.\\-]+"></label>
@@ -554,14 +677,14 @@ function pLogin() {
 /* ---------- Shell ---------- */
 let mode = "agency";
 const link = (s, page) => `#/${mode === "client" ? "c" : "s"}/${s.key}/${page}`;
-const brandMark = '<span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#052a1e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8"/><path d="M15 8h5v5"/></svg></span>';
+const brandMark = '<span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8"/><path d="M15 8h5v5"/></svg></span>';
 function shell(s, page) {
   const pages = PAGES.filter(([k]) => !(mode === "client" && AGENCY_ONLY.has(k)));
   $("#rail").innerHTML = `<a class="brand" href="${mode === "client" && s ? link(s, "overview") : "#/"}">${brandMark}<span><b>${mode === "client" && s ? esc(s.name) : "SEO Autopilot"}</b><span>${mode === "client" ? (s?.brand?.name ? `SEO dashboard by ${esc(s.brand.name)}` : "SEO dashboard") : "Workspace"}</span></span></a>
     ${s ? `<div><div class="lbl">Dashboard</div><nav>${pages.map(([k, t, ic]) => `<a href="${link(s, k)}" aria-current="${k === page ? "page" : "false"}">${ic}${t}</a>`).join("")}</nav></div>` : ""}
-    ${mode === "agency" && session ? `<div><div class="lbl">Websites</div><nav><a href="#/" aria-current="${!s && page !== "add" ? "page" : "false"}">${I.grid}All websites</a>${SITES.map((x) => `<a href="#/s/${x.key}/overview" aria-current="${s && x.key === s.key ? "page" : "false"}"><span class="dot ${x.status === "live" ? "live" : "setup"}"></span>${esc(x.name)}</a>`).join("")}<a href="#/add" aria-current="${page === "add" ? "page" : "false"}">${I.plus}Connect a website</a><a href="#/team" aria-current="${page === "teampage" ? "page" : "false"}">${I.people}Team and brand</a><a href="#/logout">${I.out}Sign out</a></nav></div>` : ""}
+    ${mode === "agency" && session ? `<div><div class="lbl">Websites</div><nav><a href="#/" aria-current="${!s && !["add", "teampage", "allapprovals"].includes(page) ? "page" : "false"}">${I.grid}Portfolio</a><a href="#/approvals" aria-current="${page === "allapprovals" ? "page" : "false"}">${I.check}All approvals${(() => { const n = SITES.reduce((a, x) => a + pending(x), 0); return n ? ` <span class="pill warn" style="margin-left:auto">${n}</span>` : ""; })()}</a>${SITES.map((x) => `<a href="#/s/${x.key}/overview" aria-current="${s && x.key === s.key ? "page" : "false"}"><span class="dot ${x.status === "live" ? "live" : "setup"}"></span>${esc(x.name)}</a>`).join("")}<a href="#/add" aria-current="${page === "add" ? "page" : "false"}">${I.plus}Connect a website</a><a href="#/team" aria-current="${page === "teampage" ? "page" : "false"}">${I.people}Team and brand</a><a href="#/logout">${I.out}Sign out</a></nav></div>` : ""}
     <div class="foot">${s ? `Data from Google Search Console${s.ga4 && !s.ga4.error ? ", Google Analytics" : ""} and the site audit. Updated ${esc(s.lastAt ? s.lastAt.slice(0, 10) : last(s).day || "–")}.` : session ? esc(session.email || "") : ""}</div>`;
-  const title = s ? (PAGES.find(([k]) => k === page) || PAGES[0])[1] : { add: "Connect a website", login: "Sign in", teampage: "Team and brand" }[page] || "Websites";
+  const title = s ? (PAGES.find(([k]) => k === page) || PAGES[0])[1] : { add: "Connect a website", login: "Sign in", teampage: "Team and brand", allapprovals: "Approvals" }[page] || "Portfolio";
   $("#hdr").innerHTML = `<span class="mobile-brand">${brandMark}</span>
     <div class="site"><b>${s ? esc(s.name) : "SEO Autopilot"}</b><span>${esc(title)}${s && s.status === "live" && s.lastAt ? ` · updated ${esc(s.lastAt.slice(0, 10))}` : ""}</span></div><span class="sp"></span>
     ${s && mode === "agency" ? `<button class="btn" id="share">${I.share}<span>Client link</span></button>` : ""}
@@ -574,12 +697,17 @@ function shell(s, page) {
       $("#overlay").innerHTML = `<div class="sheet" id="sheet"><div class="panel" role="dialog" aria-label="More sections"><div class="grab"></div>${more.map(([k, t, ic]) => `<a href="${link(s, k)}">${ic}${t}</a>`).join("")}${mode === "agency" ? `<a href="#/">${I.grid}All websites</a>` : ""}</div></div>`;
       $("#sheet").onclick = (e) => { if (e.target.id === "sheet" || e.target.closest("a")) $("#overlay").innerHTML = ""; };
     };
+  } else if (mode === "agency" && session && page !== "login") {
+    // Off a website, a phone still gets the agency's own sections at the bottom.
+    const tabs = [["#/", "Portfolio", I.grid, !page], ["#/approvals", "Approvals", I.check, page === "allapprovals"], ["#/add", "Connect", I.plus, page === "add"], ["#/team", "Team", I.people, page === "teampage"], ["#/logout", "Sign out", I.out, false]];
+    $("#tabbar").innerHTML = tabs.map(([h, t, ic, on]) => `<a href="${h}" aria-current="${on ? "page" : "false"}">${ic}<span>${t}</span></a>`).join("");
   } else $("#tabbar").innerHTML = "";
 }
 async function shareLink(s) {
   try {
     const t = await rpc("create_share_link", { p_site: s.id });
-    const url = location.href.split("#")[0] + `#/c/${t}/overview`;
+    if (LINKS) LINKS[s.id] = (LINKS[s.id] || 0) + 1;
+    const url = clientUrl(t);
     navigator.clipboard.writeText(url).then(() => toast("Client link copied"), () => prompt("Client link", url));
   } catch (e) { toast(e.message); }
 }
@@ -589,6 +717,20 @@ function wire(s) {
   document.querySelectorAll("[data-pg]").forEach((b) => (b.onclick = () => { state.pgFilter = b.dataset.pg; render(); }));
   const q = $("#kw-q"); if (q) q.oninput = () => { state.kwQ = q.value; const pos = q.selectionStart; render(); const n = $("#kw-q"); n.focus(); n.setSelectionRange(pos, pos); };
   for (const id of ["#share", "#share2"]) { const b = $(id); if (b && s) b.onclick = () => shareLink(s); }
+  document.querySelectorAll("[data-share]").forEach((b) => { const x = SITES.find((y) => y.key === b.dataset.share); if (x) b.onclick = () => shareLink(x); });
+  const copy = (url) => navigator.clipboard.writeText(url).then(() => toast("Client link copied"), () => prompt("Client link", url));
+  document.querySelectorAll("[data-copy]").forEach((b) => (b.onclick = () => copy(clientUrl(b.dataset.copy))));
+  document.querySelectorAll("[data-revoke]").forEach((b) => (b.onclick = async () => {
+    if (!confirm("Revoke this link? Anyone using it loses access straight away.")) return;
+    try { await api(`share_links?token=eq.${encodeURIComponent(b.dataset.revoke)}`, { method: "PATCH", body: { revoked_at: new Date().toISOString() } }); await loadLinks(s); if (LINKS && s) LINKS[s.id] = Math.max(0, (LINKS[s.id] || 1) - 1); toast("Link revoked"); render(); }
+    catch (e) { toast(e.message); }
+  }));
+  const lkf = $("#link-form");
+  if (lkf && s) lkf.onsubmit = async (e) => {
+    e.preventDefault();
+    try { const t = await rpc("create_share_link", { p_site: s.id, p_label: $("#link-label").value.trim() || null }); copy(clientUrl(t)); await loadLinks(s); if (LINKS) LINKS[s.id] = (LINKS[s.id] || 0) + 1; render(); }
+    catch (x) { toast(x.message); }
+  };
   const rot = $("#rotate");
   if (rot && s) rot.onclick = async () => { if (!confirm("Make a new token? The old one stops working.")) return; try { state.newToken = { site: s.id, token: await rpc("rotate_site_token", { p_site: s.id }) }; render(); } catch (e) { toast(e.message); } };
   const lf = $("#login-form");
@@ -605,10 +747,11 @@ function wire(s) {
     } catch (x) { err.textContent = x.message; }
   };
   document.querySelectorAll("[data-dec]").forEach((b) => (b.onclick = async () => {
-    const issue = Number(b.dataset.issue), decision = b.dataset.dec;
+    const issue = Number(b.dataset.issue), decision = b.dataset.dec, site = b.dataset.site ? SITES.find((x) => x.key === b.dataset.site) : s;
+    if (!site) return;
     try {
-      const d = await rpc("decide_proposal", { p_site: s.id, p_issue: issue, p_decision: decision });
-      s.decisions = [...(s.decisions || []).filter((x) => x.issue !== issue), { issue, decision, applied_at: null, by: d.decided_email }];
+      const d = await rpc("decide_proposal", { p_site: site.id, p_issue: issue, p_decision: decision });
+      site.decisions = [...(site.decisions || []).filter((x) => x.issue !== issue), { issue, decision, applied_at: null, by: d.decided_email }];
       toast(`${DEC[decision][0]}. Applied on GitHub at the next daily run.`); render();
     } catch (e) { toast(e.message); }
   }));
@@ -638,7 +781,7 @@ function wire(s) {
   };
 }
 
-const PAGE_FN = { overview: pOverview, traffic: pTraffic, keywords: pKeywords, pages: pPages, locations: pLocations, plan: pPlan, report: pReport, team: pTeam, connect: pConnect, approvals: pApprovals };
+const PAGE_FN = { overview: pOverview, traffic: pTraffic, keywords: pKeywords, pages: pPages, locations: pLocations, plan: pPlan, report: pReport, team: pTeam, connect: pConnect, approvals: pApprovals, access: pAccess };
 async function render() {
   const h = location.hash || "#/";
   $("#overlay").innerHTML = "";
@@ -662,14 +805,16 @@ async function render() {
     if (!(await token())) { location.hash = "#/login"; return; }
     if (!loaded) { $("#page").innerHTML = '<div class="empty">Loading…</div>'; await loadAgency(); }
     if (h === "#/team") { shell(null, "teampage"); document.title = "Team and brand · SEO Autopilot"; $("#page").innerHTML = pTeamPage(); return wire(null); }
+    if (h === "#/approvals") { shell(null, "allapprovals"); document.title = "Approvals · SEO Autopilot"; $("#page").innerHTML = pApprovalsAll(); return wire(null); }
     if (h === "#/add") { shell(null, "add"); document.title = "Connect a website · SEO Autopilot"; $("#page").innerHTML = pAdd(); return wire(null); }
     if (!m) { shell(null); document.title = "Websites · SEO Autopilot"; $("#page").innerHTML = pHome(); return wire(null); }
     const s = SITES.find((x) => x.key === m[2]);
     if (!s) { location.hash = "#/"; return; }
     const page = m[3] || "overview";
     if (page === "overview" && s.status === "live") await loadGrowth(s);
+    if (page === "access") await loadLinks(s);
     shell(s, page); document.title = `${s.name} · SEO dashboard`;
-    $("#page").innerHTML = s.status !== "live" && page !== "connect" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
+    $("#page").innerHTML = s.status !== "live" && page !== "connect" && page !== "access" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
     wire(s);
   } catch (e) { $("#page").innerHTML = `<div class="callout">${esc(e.message)}</div>`; }
 }
