@@ -19,7 +19,9 @@ const TITLE_KEYS = ["h1", "title", "name", "term", "metaTitle", "headline"];
 const KEYWORD_KEYS = ["primaryKeyword", "keyword", "focusKeyword"];
 const fwd = (p) => p.split("\\").join("/");
 
-function urlFor(site, file, slug) {
+function urlFor(site, file, slug, own) {
+  // An entry that states its own path ("path": "/partners/agencies") wins over the pattern: hubs and nested pages cannot be built from a slug.
+  if (typeof own === "string" && own.startsWith("/")) return site.url.replace(/\/$/, "") + own;
   const c = site.content || {};
   const route = (c.routes || []).find((r) => file.includes(r.match));
   const pattern = route?.urlPattern || c.urlPattern;
@@ -36,7 +38,7 @@ function fromObject(it, file, site) {
   const text = [title, it.metaTitle, keyword, ...questions].filter(Boolean).join(" ").toLowerCase();
   const slug = String(it.slug ?? it.id ?? title);
   return {
-    id: slug, title, keyword, questions, text, file, url: urlFor(site, file, slug),
+    id: slug, title, keyword, questions, text, file, url: urlFor(site, file, slug, it.path),
     publishAt: it.publishAt ?? undefined, queued: it.queued === true, hold: it.hold === true,
     author: personOf(it.author), reviewedBy: personOf(it.reviewedBy ?? it.reviewed_by),
     template: it.template ?? it.type ?? undefined,

@@ -1,6 +1,6 @@
 # Implementation status
 
-Last updated: 2026-10-31 06:05 UTC (portal live on Supabase `seo-autopilot`).
+Last updated: 2026-11-03 (v2.22.1 entry path override, branch fix/entry-path-field; not yet released at time of writing).
 - **Deployed 2026-10-31 (deployment actions, no code change):**
   - **Supabase project `seo-autopilot` (`ymwwwhdlyjnqbxxhtcew`):** both portal migrations are applied: schema, tables and policies by Claude; the functions, grants and second migration by the owner in the SQL Editor. Checked: 12 public functions are present. The `ingest` Edge Function is ACTIVE.
   - **Security advisor:** 9 WARN, all `SECURITY DEFINER` functions callable by signed-in users, plus `shared_site` callable anonymously. All of this is intended: each function checks membership itself, and `shared_site` is the client link.
