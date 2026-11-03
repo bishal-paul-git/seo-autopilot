@@ -4,18 +4,18 @@ Last updated: 2026-11-03 23:59 Asia/Dhaka. Branch `claude/portal-style-a` from `
 - **This session: portal restyle (D25), page only.** No database, RPC or Edge Function change.
   - **Built:**
     - Style A colours;
-    - a Portfolio home (totals, needs attention, next daily run, websites table);
-    - phone cards and an agency tab bar.
+    - a Portfolio home (totals, needs attention, next daily run, websites table with client-link counts);
+    - phone cards and an agency tab bar;
+    - a client access page (list, label, copy, revoke links);
+    - an all-approvals page;
+    - the connect stepper.
   - **Designs:** in `docs/design/portal/`, whose README lists what is built.
   - **Checks:** `npm test` 474/474, including the extended Chromium test of the page against the stand-in API. Desktop and phone screenshots were reviewed.
   - **Not deployed:** seo.erudience.com still serves `69f0d00`. To deploy:
     1. Merge, then build with `cloud/portal/build.mjs` and the same key.
     2. Commit `dist/` to erudience-flow-engine `seo-portal`.
-  - **Next, needs backend work:**
-    - list and revoke a site's client links (an RPC over `share_links`);
-    - a cross-site approvals page;
-    - client email invites;
-    - client-link counts on the Portfolio.
+  - **Next, owner decision:** client email invites. These need an email provider, and a choice between client accounts and emailed links.
+  - **Not checked:** revoking a link against the live database. The policies allow it, and `rls.sql` covers revoked links. The browser test uses a stand-in.
 - Earlier, 2026-11-03: v2.22.1 entry path override (`f2301b4`, merged as #30).
 - **Deployed 2026-10-31 (deployment actions, no code change):**
   - **Supabase project `seo-autopilot` (`ymwwwhdlyjnqbxxhtcew`):** both portal migrations are applied: schema, tables and policies by Claude; the functions, grants and second migration by the owner in the SQL Editor. Checked: 12 public functions are present. The `ingest` Edge Function is ACTIVE.

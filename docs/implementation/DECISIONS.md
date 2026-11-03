@@ -88,7 +88,13 @@ Recommendation: (c) now, then (b) at the next minor release.
 - **Portfolio contents:** totals across live sites, a "needs attention" list, the next default daily run, and a websites table. On a phone the table becomes cards and the agency gets a bottom tab bar.
 - **Data:** everything comes from the existing `my_sites` data. Nothing is estimated, and no database or RPC change was made.
 - **Kept:** every route, RPC, the client-link brand colour (it still replaces the accent) and the dark theme.
-- **Not built:** these parts of the designs need backend work: listing and revoking client links, client email invites, a cross-site approvals page and client-link counts. `docs/design/portal/README.md` lists what is built and what is not.
+- **Also built (same PR):**
+  - **Client access per site:** list, label, copy and revoke links.
+  - **Client-link counts on the Portfolio.**
+  - **A cross-site approvals page.**
+  - **The connect stepper.**
+- **Why no RPC change:** links are read and revoked straight through REST, because the existing policies already allow members to select and update `revoked_at` (`share_select`, `share_update`). `shared_site` already refuses revoked links, and `rls.sql` tests that.
+- **Not built:** client email invites. They need an email provider and a choice between accounts for clients and links sent by email; this is for the owner to decide. `docs/design/portal/README.md` lists what is built and what is not.
 - **Tradeoffs:**
   - "Last snapshot over 36 hours ago" is a heuristic for a missed run.
   - The countdown assumes the default 05:17 UTC schedule, and says so on the card.

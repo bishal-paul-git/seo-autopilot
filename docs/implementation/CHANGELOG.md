@@ -7,7 +7,15 @@ Dated session entries; history is preserved. Product release notes are in the ro
   - `cloud/portal/app/index.html`: Style A colours and type, with a separate `--ok` green for good news.
   - A Portfolio home with totals, needs attention, the next daily run and a websites table, which becomes cards on a phone.
   - A bottom tab bar for the agency when no website is open, and a "Client link" button per row.
-- **Tests:** `test/portal-app.test.mjs` extended. It checks that the Portfolio shows a new site as needing setup, that each row has a client-link button, and the phone layout: cards, tab bar and no sideways scroll.
+  - **Client access page** (`#/s/<id>/access`): links read and revoked through REST under the existing row level security.
+  - **Portfolio additions:** client-link counts, and "not shared" in the needs-attention list.
+  - **All approvals page** (`#/approvals`).
+  - **Connect stepper.**
+- **Tests:** `test/portal-app.test.mjs` extended. It checks:
+  - the Portfolio shows a new site as needing setup, with link counts and a client-link button per row;
+  - the phone layout: cards, tab bar and no sideways scroll;
+  - client access lists the links and makes a labelled one;
+  - a cross-site decision goes to the right site.
 - **Docs:** `docs/design/portal/` (the designs, with a README of what is built), and D25.
 - **Checks:** `npm test` 474/474, including the Chromium test. Screenshots against the stand-in API were reviewed for desktop and phone.
 - **Deployment:** none. The live page at seo.erudience.com is unchanged until it is rebuilt from this branch.

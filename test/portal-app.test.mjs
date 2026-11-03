@@ -32,6 +32,7 @@ function fakeSupabase() {
   const sites = [{ site, data: SNAP, decisions: [] }];
   const growth = [{ at: "2026-09-29T06:00:00Z", score: 90, keywords: 1, indexed: 1 }, { at: "2026-09-30T06:00:00Z", score: 95, keywords: 3, indexed: 2 }];
   const html = { body: "" };
+  const links = [{ token: "c123", site_id: site.id, label: "Dr Patel", created_at: "2026-09-20T10:00:00Z", revoked_at: null }];
   const server = createServer(async (req, res) => {
     let body = ""; for await (const c of req) body += c;
     const send = (code, j) => { res.writeHead(code, { "Content-Type": "application/json" }); res.end(JSON.stringify(j)); };
@@ -54,6 +55,13 @@ function fakeSupabase() {
       if (fn === "rotate_site_token") return send(200, "spt_" + "b".repeat(64));
     }
     if (u.pathname === "/rest/v1/orgs" && req.method === "PATCH") return send(200, [{ id: "org-a", ...JSON.parse(body) }]);
+    // share_links straight through REST, as row level security allows members (share_select, share_update).
+    if (u.pathname === "/rest/v1/share_links") {
+      if (req.headers.authorization !== "Bearer user-jwt") return send(401, { message: "JWT required" });
+      if (req.method === "PATCH") { const t = u.searchParams.get("token").replace(/^eq\./, ""); const l = links.find((x) => x.token === t); if (l) l.revoked_at = JSON.parse(body).revoked_at; return send(200, l ? [l] : []); }
+      const sid = (u.searchParams.get("site_id") || "").replace(/^eq\./, "");
+      return send(200, sid ? links.filter((l) => l.site_id === sid) : links.filter((l) => !l.revoked_at).map((l) => ({ site_id: l.site_id })));
+    }
     send(404, { message: "not found" });
   });
   return { server, calls, html };
@@ -99,6 +107,8 @@ test("portal app: sign in, websites, connect a website, client link, client view
     await page.waitForSelector("text=Bakery: waiting for its first snapshot");
     assert.ok(await page.isVisible("h1 >> text=Portfolio"));
     assert.ok(await page.isVisible('[data-share="11111111-1111-4111-8111-111111111111"]'));
+    assert.ok(await page.isVisible(".sites-tbl >> text=1 link"), "client-link count from share_links");
+    assert.ok(await page.isVisible("text=Plumber: 1 proposal to review"));
     await page.setViewportSize({ width: 390, height: 844 });
     assert.ok(await page.isVisible(".scard >> text=Plumber"));
     assert.ok(!(await page.isVisible(".sites-tbl")));
@@ -118,12 +128,30 @@ test("portal app: sign in, websites, connect a website, client link, client view
     await page.waitForSelector("text=Leeds");
     assert.ok(await page.isVisible("text=United Kingdom"), "country name from the Search Console code");
 
+    // Client access: the site's links are listed with copy and revoke, and a new labelled link can be made.
+    await page.goto(`${origin}/#/s/11111111-1111-4111-8111-111111111111/access`);
+    await page.waitForSelector("text=Dr Patel");
+    assert.ok(await page.isVisible('[data-revoke="c123"]'));
+    await page.fill("#link-label", "Practice manager");
+    await page.click("#link-form button[type=submit]");
+    await page.waitForTimeout(300);
+    assert.equal(fake.calls.filter((c) => c.path === "/rest/v1/rpc/create_share_link").pop().body.p_label, "Practice manager");
+    assert.ok(fake.calls.some((c) => c.path === "/rest/v1/share_links" && c.auth === "Bearer user-jwt"), "links read as the signed-in member");
+
+    // Approvals across all websites: a decision made there goes to the right site.
+    await page.goto(`${origin}/#/approvals`);
+    await page.waitForSelector("text=Refresh the boilers page");
+    await page.click('[data-dec="hold"][data-site="11111111-1111-4111-8111-111111111111"][data-issue="7"]');
+    await page.waitForSelector("text=Waiting for the daily run");
+    const held = fake.calls.filter((c) => c.path === "/rest/v1/rpc/decide_proposal").pop();
+    assert.deepEqual([held.body.p_site, held.body.p_issue, held.body.p_decision], ["11111111-1111-4111-8111-111111111111", 7, "hold"]);
+
     // Approvals: a decision is recorded through the portal, and shown as waiting for the next daily run.
     await page.goto(`${origin}/#/s/11111111-1111-4111-8111-111111111111/approvals`);
     await page.waitForSelector("text=Refresh the boilers page");
     await page.click('[data-dec="approve"][data-issue="7"]');
     await page.waitForSelector("text=waiting for the next daily run");
-    const dec = fake.calls.find((c) => c.path === "/rest/v1/rpc/decide_proposal");
+    const dec = fake.calls.filter((c) => c.path === "/rest/v1/rpc/decide_proposal").pop();
     assert.deepEqual([dec.body.p_issue, dec.body.p_decision], [7, "approve"]);
     // Team and brand: invite a colleague, save the brand.
     await page.goto(`${origin}/#/team`);
