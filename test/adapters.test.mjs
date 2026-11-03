@@ -79,3 +79,14 @@ test("pipeline counts live, upcoming, queued and held", () => {
   assert.equal(p.liveThisWeek, 1); assert.equal(p.upcoming, 1); assert.equal(p.queued, 1); assert.equal(p.held, 1);
   assert.equal(p.schedule[0].date, "2026-10-20");
 });
+
+test("json adapter: an entry's own path overrides the route pattern (hub and nested pages)", async () => {
+  const d = tmp(); mkdirSync(join(d, "content"));
+  writeFileSync(join(d, "content/partners.json"), JSON.stringify([
+    { slug: "partners", path: "/partners", h1: "Partners" },
+    { slug: "agencies", path: "/partners/agencies", h1: "Agencies" },
+    { slug: "plain", h1: "No path" },
+  ]));
+  const pages = await loadPages(site(d, { type: "json", include: ["content/**/*.json"], routes: [{ match: "partners.json", urlPattern: "/partners/{slug}" }] }));
+  assert.deepEqual(pages.map((p) => p.url), ["https://t.com/partners", "https://t.com/partners/agencies", "https://t.com/partners/plain"]);
+});

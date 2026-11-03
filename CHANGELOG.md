@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.22.1
+
+Pages that state their own path are now seen at that path, so release dates work for hubs and nested pages.
+
+- **Fix:** in a JSON content file, an entry with a `path` (for example `"path": "/partners/agencies"`) now uses it instead of the route's `urlPattern`. Before, a hub page (`/partners`) or a nested page could not be described by `/{section}/{slug}`, so the release job saw nothing due and never rebuilt the site on the page's release day.
+
 ## 2.22.0
 
 The client portal, second step: approve the SEO team's proposals from the portal, invite your team, put your agency's brand on client links, and see growth over time.

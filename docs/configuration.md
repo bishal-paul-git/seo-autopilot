@@ -73,6 +73,8 @@ The adapter tells the autopilot what pages exist, so it never proposes a duplica
 { "type": "markdown", "dir": "content/blog", "ext": [".md", ".mdx"], "urlPattern": "/blog/{slug}" }
 ```
 
+An entry can state its own address with `"path": "/partners/agencies"`; that wins over `urlPattern`. Use it for hubs and nested pages that a `/{section}/{slug}` pattern cannot describe.
+
 Page fields it understands: `slug`/`id`, a title (`h1`, `title`, `name`, `term` or `metaTitle`), `primaryKeyword`/`keyword`, `faqs` (`q` or `question`), and the drip fields `publishAt` (YYYY-MM-DD), `queued` (approved, not dated) and `hold` (never schedule). Scheduling and release need `json` or `markdown`.
 
 ## Data files you edit (in `dataDir`)

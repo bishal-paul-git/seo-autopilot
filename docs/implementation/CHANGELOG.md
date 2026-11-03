@@ -524,3 +524,9 @@ Dated session entries; history is preserved. Product release notes are in the ro
 - Verification beyond tests: profile detection tried on 12 live sites; consent check run against live Erudience (found its new banner after a heuristic fix); ymyl and pace run on Erudience data; 8 agents run on Erudience in report-only mode.
 - Not verified: `citations` against real provider APIs.
 - Deployment actions: tags and GitHub Releases only; Erudience workflow files updated by its own PRs.
+
+## 2026-11-03
+- Code: v2.22.1. The JSON content adapter uses an entry's own `path` over the route `urlPattern` (`urlFor` in `src/adapters/index.mjs`). Test added in `test/adapters.test.mjs`; `npm test` 471 pass, 0 fail (local).
+- Why: on Erudience `/partners/agencies` (release date 26 Oct) stayed 404 for a day because the release job could not see the page (hub and nested pages do not fit `/{section}/{slug}`), so no rebuild was triggered.
+- Documentation: `docs/configuration.md`, root `CHANGELOG.md`.
+- Deployment actions: none yet in this entry; release tag and the Erudience config change are recorded in STATUS once done.
