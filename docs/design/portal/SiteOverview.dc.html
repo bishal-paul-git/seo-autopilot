@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Northwind Dental</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0}
+.r{--shell:#0b1437;--shell-2:#1a2556;--shell-text:#e8ecff;--shell-muted:#939dc8;--bg:#f4f6fb;--surface:#fff;--line:#e3e7f0;--line-2:#eef1f6;--ink:#0b1437;--muted:#5b6482;--pri:#4f46e5;--pri-ink:#fff;--pri-soft:#eef0ff;--c1:#4f46e5;--c2:#9aa3c2;--ok:#0f8a5f;--warn:#b45309;--bad:#c2261d;width:1280px;display:flex;background:var(--bg);color:var(--ink);font:14px/20px Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+.r *{box-sizing:border-box}.r svg{display:block}.r a{color:var(--pri);text-decoration:none}
+.side{width:236px;flex:0 0 236px;background:var(--shell);color:var(--shell-text);padding:20px 14px;display:flex;flex-direction:column;gap:18px}
+.logo{display:flex;align-items:center;gap:10px;padding:2px 8px;font-weight:700;font-size:15px;color:#fff}
+.logo i{width:26px;height:26px;border-radius:7px;background:var(--pri);display:flex;align-items:center;justify-content:center}
+.ws{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;background:var(--shell-2);font-size:13px}
+.ws b{flex:1;font-weight:500}.ws .a{width:22px;height:22px;border-radius:6px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+.nav{display:flex;flex-direction:column;gap:2px}
+.r .nav a{display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:var(--shell-muted);font-size:13.5px;font-weight:500}
+.r .nav a:hover{color:#fff;background:rgba(255,255,255,.05)}.r .nav a.on{background:var(--shell-2);color:#fff}
+.nav svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav .n{margin-left:auto;font-size:12px;padding:1px 7px;border-radius:99px;background:rgba(255,255,255,.1);color:var(--shell-text)}
+.nav .h{padding:14px 10px 4px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--shell-muted)}
+.r .nav a.s{height:32px;font-size:13px}
+.sd{width:7px;height:7px;border-radius:99px;background:#34d399;margin:0 4px}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{height:60px;flex:0 0 60px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 28px;border-bottom:1px solid var(--line);background:var(--surface)}
+.crumb{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:13.5px}.crumb b{color:var(--ink);font-weight:600}.r .crumb a{color:var(--muted)}
+.av{width:34px;height:34px;border-radius:99px;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:0 0 34px}
+.page{padding:22px 28px 40px;display:flex;flex-direction:column;gap:18px}
+h1{margin:0;font-size:22px;line-height:28px;font-weight:650;letter-spacing:-.02em}h2{margin:0;font-size:15px;line-height:22px;font-weight:600}
+.muted{color:var(--muted)}.xs{font-size:12.5px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 13.5px Geist,system-ui,sans-serif;cursor:pointer;white-space:nowrap}
+.r a.btn{color:var(--ink)}.btn.pri,.r a.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff;font-weight:600}
+.btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;min-width:0}
+.ch{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.sh{display:flex;align-items:center;gap:14px}
+.favl{width:44px;height:44px;border-radius:11px;background:var(--pri-soft);color:var(--pri);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;flex:0 0 44px}
+.tabs{display:flex;gap:22px;border-bottom:1px solid var(--line)}
+.r .tabs a{padding:10px 0;color:var(--muted);font-weight:500;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;display:flex;gap:6px;align-items:center;font-size:13.5px}
+.r .tabs a.on{color:var(--ink);border-color:var(--pri)}
+.tabs .n{font-size:11.5px;padding:0 6px;border-radius:99px;background:var(--pri-soft);color:var(--pri)}
+.tabs .sep{width:1px;background:var(--line);margin:8px 0}
+.tabs svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.kpi{padding:16px 18px;display:flex;flex-direction:column;gap:4px}.kpi .k{font-size:13px;color:var(--muted)}
+.kpi .v{display:flex;align-items:baseline;gap:8px;font-size:26px;line-height:32px;font-weight:650;letter-spacing:-.02em}.kpi .v small{font-size:12.5px;font-weight:600;letter-spacing:0}
+.up{color:var(--ok)}.dn{color:var(--bad)}
+.g2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px;align-items:start}
+.ax{display:flex;justify-content:space-between;padding:0 18px 12px;font-size:11.5px;color:var(--muted)}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:12px;font-weight:500;color:var(--muted);padding:9px 18px;border-bottom:1px solid var(--line);background:#fafbfd}
+td{padding:10px 18px;border-bottom:1px solid var(--line-2);font-size:13.5px}tr:last-child td{border-bottom:0}
+.li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 18px;border-top:1px solid var(--line-2)}.li:first-child{border-top:0}
+.li small{display:block;color:var(--muted);font-size:12.5px}
+.b{width:30px;height:30px;border-radius:8px;background:var(--pri-soft);color:var(--pri);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:0 0 30px}
+.bd{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:500;background:var(--line-2);color:var(--muted);white-space:nowrap}
+.bd i{width:6px;height:6px;border-radius:99px;background:currentColor}
+.bd.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}.bd.wait{color:var(--warn);background:color-mix(in srgb,var(--warn) 13%,transparent)}.bd.pri{color:var(--pri);background:var(--pri-soft)}
+</style>
+</helmet>
+
+<div class="r" style="min-height:1160px">
+  <aside class="side">
+    <div class="logo"><i><svg width="15" height="15" viewBox="0 0 32 32" aria-hidden="true"><path d="M5 22l7-8 5 5 10-12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i>seo-autopilot</div>
+    <div class="ws"><span class="a">DA</span><b>Demo agency</b><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg></div>
+    <nav class="nav" aria-label="Primary">
+      <a href="Main.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>Portfolio</a>
+      <a class="on" href="Sites.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.5 3 2.5 13 0 16M12 4c-2.5 3-2.5 13 0 16"/></svg>Websites<span class="n">24</span></a>
+      <a href="Approvals.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Approvals<span class="n">17</span></a>
+      <a href="SiteOverview.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg>Reports</a>
+      <div class="h">Pinned websites</div>
+      <a class="s" href="SiteOverview.dc.html" aria-current="page" style="color:#fff"><span class="sd" aria-hidden="true"></span>Northwind Dental</a>
+      <a class="s" href="Sites.dc.html"><span class="sd" aria-hidden="true"></span>Brightpath Tutors</a>
+      <a class="s" href="Sites.dc.html"><span class="sd" aria-hidden="true"></span>Lumen Physio</a>
+      <div class="h">Agency</div>
+      <a href="Team.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5M16 11a3 3 0 0 0 0-6M21 20c0-2.5-2-4.3-4-4.8"/></svg>Team and brand</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <div class="crumb"><a href="Sites.dc.html">Websites</a><span aria-hidden="true">/</span><b>Northwind Dental</b></div>
+      <span class="av">BP</span>
+    </header>
+
+    <main class="page">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:16px">
+        <div class="sh"><span class="favl" aria-hidden="true">N</span><div><div style="display:flex;align-items:center;gap:10px"><h1>Northwind Dental</h1><span class="bd ok"><i></i>Live</span></div><div class="muted xs">northwinddental.co.uk · client Northwind Dental Ltd · last snapshot today 05:21</div></div></div>
+        <div style="display:flex;gap:8px"><a class="btn" href="ClientView.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>View as client</a><a class="btn pri" href="ClientAccess.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M12 3v13M7 8l5-5 5 5"/></svg>Share with client</a></div>
+      </div>
+
+      <nav class="tabs" aria-label="Website sections">
+        <a class="on" href="SiteOverview.dc.html" aria-current="page">Overview</a><a href="#">Traffic</a><a href="#">Keywords</a><a href="#">Pages</a><a href="#">Locations</a><a href="#">Coming next</a><a href="#">Weekly report</a>
+        <span class="sep" aria-hidden="true"></span>
+        <a href="Approvals.dc.html">Approvals<span class="n">5</span></a><a href="#">SEO team</a><a href="AddSite.dc.html">Connection</a><a href="ClientAccess.dc.html">Client access</a>
+      </nav>
+
+      <div class="kpis">
+        <div class="card kpi"><span class="k">Impressions</span><span class="v">182k<small class="up">+9.1%</small></span><span class="muted xs">Last 30 days</span></div>
+        <div class="card kpi"><span class="k">Clicks</span><span class="v">6,412<small class="up">+18.0%</small></span><span class="muted xs">3.5% click-through</span></div>
+        <div class="card kpi"><span class="k">Average position</span><span class="v">14.2<small class="up">↑ 2.3</small></span><span class="muted xs">Across 1,140 queries</span></div>
+        <div class="card kpi"><span class="k">Indexed pages</span><span class="v">231<small class="muted" style="font-weight:500">of 248</small></span><span class="muted xs">17 not indexed</span></div>
+      </div>
+
+      <div class="g2">
+        <section class="card">
+          <div class="ch" style="border-bottom:0;padding-bottom:4px"><h2>Daily impressions</h2><span class="muted xs">Last 30 days</span></div>
+          <svg viewBox="0 0 640 200" width="100%" height="200" preserveAspectRatio="none" role="img" aria-label="Daily impressions trending up">
+            <path d="M0 50H640M0 100H640M0 150H640" stroke="var(--line-2)" stroke-width="1"/>
+            <path d="M0 148 L32 140 L64 150 L96 132 L128 138 L160 120 L192 128 L224 112 L256 118 L288 100 L320 108 L352 92 L384 98 L416 84 L448 90 L480 74 L512 80 L544 66 L576 70 L608 58 L640 52 L640 200 L0 200Z" fill="var(--c1)" fill-opacity=".08"/>
+            <path d="M0 148 L32 140 L64 150 L96 132 L128 138 L160 120 L192 128 L224 112 L256 118 L288 100 L320 108 L352 92 L384 98 L416 84 L448 90 L480 74 L512 80 L544 66 L576 70 L608 58 L640 52" fill="none" stroke="var(--c1)" stroke-width="2.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+          </svg>
+          <div class="ax"><span>4 Oct</span><span>11 Oct</span><span>18 Oct</span><span>25 Oct</span><span>3 Nov</span></div>
+        </section>
+        <section class="card">
+          <div class="ch"><h2>Top keywords</h2><a class="xs" href="#" style="font-weight:500">All keywords</a></div>
+          <table>
+            <thead><tr><th>Keyword</th><th>Position</th><th>Change</th></tr></thead>
+            <tbody>
+              <tr><td>dentist leeds</td><td>4</td><td class="up">+2</td></tr>
+              <tr><td>dental implants leeds</td><td>7</td><td class="up">+5</td></tr>
+              <tr><td>teeth whitening leeds</td><td>9</td><td class="up">+1</td></tr>
+              <tr><td>emergency dentist leeds</td><td>18</td><td class="up">+11</td></tr>
+              <tr><td>nhs dentist near me</td><td>23</td><td class="dn">−3</td></tr>
+            </tbody>
+          </table>
+        </section>
+      </div>
+
+      <div class="g2">
+        <section class="card">
+          <div class="ch"><h2>Coming next</h2><span class="muted xs">Planned and proposed pages</span></div>
+          <div class="li"><span class="b">NP</span><span>Emergency dentist Leeds<small>New page · targets 3 keywords · release 6 Nov</small></span><span class="bd wait"><i></i>Needs approval</span></div>
+          <div class="li"><span class="b">RF</span><span>Dental implants guide<small>Refresh · last updated 14 months ago</small></span><span class="bd pri">Scheduled</span></div>
+          <div class="li"><span class="b">LP</span><span>Dentist in Harrogate<small>Location page · new area</small></span><span class="bd">Proposed</span></div>
+        </section>
+        <section class="card">
+          <div class="ch"><h2>SEO team, recent work</h2><span class="bd ok"><i></i>4 running</span></div>
+          <div class="li"><span class="b">CT</span><span>Drafted new page<small>Content agent</small></span><span class="muted xs">2m</span></div>
+          <div class="li"><span class="b">TA</span><span>Found 9 slow mobile pages<small>Technical audit</small></span><span class="muted xs">1h</span></div>
+          <div class="li"><span class="b">LK</span><span>Linked 14 orphan pages<small>Internal links</small></span><span class="muted xs">3h</span></div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1160}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

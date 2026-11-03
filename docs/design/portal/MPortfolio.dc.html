@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portfolio, mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0}
+.r{--shell:#0b1437;--shell-2:#1a2556;--bg:#f4f6fb;--surface:#fff;--line:#e3e7f0;--line-2:#eef1f6;--ink:#0b1437;--muted:#5b6482;--pri:#4f46e5;--pri-soft:#eef0ff;--c1:#4f46e5;--c2:#9aa3c2;--ok:#0f8a5f;--warn:#b45309;--bad:#c2261d;width:390px;display:flex;flex-direction:column;background:var(--bg);color:var(--ink);font:14px/20px Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+.r *{box-sizing:border-box}.r svg{display:block}.r a{color:var(--pri);text-decoration:none}
+.ab{height:56px;flex:0 0 56px;background:var(--shell);color:#fff;display:flex;align-items:center;gap:10px;padding:0 6px 0 16px;position:sticky;top:0;z-index:2}
+.ab .t{flex:1;font-weight:600;font-size:16px;min-width:0}
+.mk{width:28px;height:28px;border-radius:8px;background:var(--pri);display:flex;align-items:center;justify-content:center;flex:0 0 28px}
+.ic{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:10px;color:#fff;background:transparent;border:0;padding:0}
+.ic svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.av{width:32px;height:32px;border-radius:99px;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+.ws{display:flex;align-items:center;gap:6px;height:30px;padding:0 10px;border-radius:99px;background:var(--shell-2);font-size:12.5px;color:#e8ecff}
+.c{padding:16px;display:flex;flex-direction:column;gap:14px;flex:1}
+h1{margin:0;font-size:22px;line-height:28px;font-weight:650;letter-spacing:-.02em}h2{margin:0;font-size:15px;line-height:22px;font-weight:600}
+.muted{color:var(--muted)}.xs{font-size:12.5px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;min-width:0}
+.ch{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.k2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{padding:12px 14px;display:flex;flex-direction:column;gap:2px}.kpi .k{font-size:12.5px;color:var(--muted)}
+.kpi .v{font-size:22px;line-height:28px;font-weight:650;letter-spacing:-.02em}.kpi .d{font-size:12px;font-weight:600}
+.up{color:var(--ok)}.dn{color:var(--bad)}
+.row{display:flex;align-items:center;gap:12px;min-height:60px;padding:10px 14px;border-top:1px solid var(--line-2)}.row:first-child{border-top:0}
+.r a.row{color:var(--ink)}
+.row .tx{flex:1;min-width:0}.row .tx b{display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.row .tx small{display:block;color:var(--muted);font-size:12.5px}
+.chev{width:16px;height:16px;stroke:var(--muted);fill:none;stroke-width:2;flex:0 0 16px}
+.b{width:32px;height:32px;border-radius:9px;background:var(--pri-soft);color:var(--pri);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:0 0 32px}
+.b.bad{background:color-mix(in srgb,var(--bad) 11%,transparent);color:var(--bad)}.b.wait{background:color-mix(in srgb,var(--warn) 12%,transparent);color:var(--warn)}
+.bd{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:500;background:var(--line-2);color:var(--muted);white-space:nowrap}
+.bd i{width:6px;height:6px;border-radius:99px;background:currentColor}
+.bd.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}.bd.pri{color:var(--pri);background:var(--pri-soft)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);padding:3px;border-radius:10px;background:var(--line-2);border:1px solid var(--line)}
+.seg span{height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted);font-weight:500}
+.seg span.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(11,20,55,.1)}
+.run{display:flex;align-items:center;gap:14px;padding:14px;background:var(--shell);color:#fff;border-radius:14px}
+.run .big{font-size:24px;line-height:28px;font-weight:650}
+.run small{color:#a3acd4;font-size:12.5px;display:block}
+.tb{position:sticky;bottom:0;height:68px;flex:0 0 68px;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:6px;z-index:2}
+.r .tb a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11.5px;font-weight:500;color:var(--muted);position:relative}
+.r .tb a.on{color:var(--pri)}
+.tb svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tb .n{position:absolute;top:7px;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:99px;background:var(--bad);color:#fff;font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px}
+.fab{display:flex;align-items:center;justify-content:center;gap:8px;height:48px;border-radius:12px;background:var(--pri);color:#fff;font-weight:600;font-size:15px}
+.r a.fab{color:#fff}
+</style>
+</helmet>
+
+<div class="r" style="min-height:1320px">
+  <header class="ab">
+    <span class="mk" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 32 32"><path d="M5 22l7-8 5 5 10-12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="t">Portfolio</span>
+    <span class="ws">Demo agency<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg></span>
+    <button class="ic" type="button" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
+  </header>
+
+  <main class="c">
+    <div class="seg" role="group" aria-label="Period"><span>7 days</span><span class="on">30 days</span><span>90 days</span></div>
+
+    <div class="k2">
+      <div class="card kpi"><span class="k">Organic clicks</span><span class="v">48.2k</span><span class="d up">+12.4%</span></div>
+      <div class="card kpi"><span class="k">Live websites</span><span class="v">21<span class="muted" style="font-size:14px;font-weight:500"> / 24</span></span><span class="d muted" style="font-weight:500">2 connecting</span></div>
+      <div class="card kpi"><span class="k">To approve</span><span class="v">17</span><span class="d dn">+5 this week</span></div>
+      <div class="card kpi"><span class="k">Client links</span><span class="v">31</span><span class="d muted" style="font-weight:500">19 clients</span></div>
+    </div>
+
+    <div class="run"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><div style="flex:1"><small>Next daily run · 05:17 UTC</small><div class="big">7h 43m</div></div><div style="text-align:right"><small>Queued</small><b>9 decisions</b></div></div>
+
+    <section class="card" aria-labelledby="a-h">
+      <div class="ch"><h2 id="a-h">Needs attention</h2><span class="bd">4</span></div>
+      <a class="row" href="MSite.dc.html"><span class="b bad">OL</span><span class="tx"><b>Oakline Legal: no snapshot</b><small>Token rejected 2 days ago</small></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+      <a class="row" href="MApprovals.dc.html"><span class="b wait">LP</span><span class="tx"><b>Lumen Physio: 8 to approve</b><small>Oldest 2 days</small></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+      <a class="row" href="MSites.dc.html"><span class="b">CC</span><span class="tx"><b>Cedar &amp; Co: connecting</b><small>Waiting for first snapshot</small></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+      <a class="row" href="MShare.dc.html"><span class="b">HP</span><span class="tx"><b>Harbor Plumbing: not shared</b><small>No client link yet</small></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
+    </section>
+
+    <section class="card" aria-labelledby="c-h">
+      <div class="ch" style="border-bottom:0;padding-bottom:0"><h2 id="c-h">Clicks, all websites</h2><span class="up xs" style="font-weight:600">+12.4%</span></div>
+      <svg viewBox="0 0 358 130" width="100%" height="130" preserveAspectRatio="none" role="img" aria-label="Clicks rising over 30 days">
+        <path d="M0 40H358M0 80H358M0 120H358" stroke="var(--line-2)"/>
+        <path d="M0 110 L30 104 L60 108 L90 94 L120 98 L150 84 L180 88 L210 72 L240 76 L270 60 L300 64 L330 46 L358 40" fill="none" stroke="var(--c2)" stroke-width="1.5" stroke-dasharray="4 4" vector-effect="non-scaling-stroke" opacity=".6"/>
+        <path d="M0 104 L30 96 L60 100 L90 82 L120 86 L150 68 L180 72 L210 56 L240 60 L270 42 L300 46 L330 28 L358 22 L358 130 L0 130Z" fill="var(--c1)" fill-opacity=".08"/>
+        <path d="M0 104 L30 96 L60 100 L90 82 L120 86 L150 68 L180 72 L210 56 L240 60 L270 42 L300 46 L330 28 L358 22" fill="none" stroke="var(--c1)" stroke-width="2.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <div style="display:flex;justify-content:space-between;padding:4px 14px 12px" class="muted xs"><span>4 Oct</span><span>18 Oct</span><span>3 Nov</span></div>
+    </section>
+
+    <section class="card" aria-labelledby="t-h">
+      <div class="ch"><h2 id="t-h">SEO team activity</h2><span class="bd ok"><i></i>12 running</span></div>
+      <div class="row"><span class="b">CT</span><span class="tx"><b>Drafted new page</b><small>Northwind Dental</small></span><span class="muted xs">2m</span></div>
+      <div class="row"><span class="b">TA</span><span class="tx"><b>Audit finished, 9 issues</b><small>Harbor Plumbing</small></span><span class="muted xs">8m</span></div>
+      <div class="row"><span class="b">PB</span><span class="tx"><b>Merged 4 approved changes</b><small>Fernhill Vets</small></span><span class="muted xs">32m</span></div>
+    </section>
+
+    <a class="fab" href="MSites.dc.html">+ Connect a website</a>
+  </main>
+
+  <nav class="tb" aria-label="Main">
+    <a class="on" href="MPortfolio.dc.html" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>Portfolio</a>
+    <a href="MSites.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.5 3 2.5 13 0 16M12 4c-2.5 3-2.5 13 0 16"/></svg>Websites</a>
+    <a href="MApprovals.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Approvals<span class="n">17</span></a>
+    <a href="Team.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>More</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1320}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

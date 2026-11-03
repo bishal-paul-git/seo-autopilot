@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Portfolio</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0}
+.r{--shell:#0b1437;--shell-2:#1a2556;--shell-text:#e8ecff;--shell-muted:#939dc8;--bg:#f4f6fb;--surface:#fff;--line:#e3e7f0;--line-2:#eef1f6;--ink:#0b1437;--muted:#5b6482;--pri:#4f46e5;--pri-ink:#fff;--pri-soft:#eef0ff;--c1:#4f46e5;--c2:#9aa3c2;--ok:#0f8a5f;--warn:#b45309;--bad:#c2261d;width:1280px;display:flex;background:var(--bg);color:var(--ink);font:14px/20px Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+.r *{box-sizing:border-box}.r svg{display:block}.r a{color:var(--pri);text-decoration:none}
+.side{width:236px;flex:0 0 236px;background:var(--shell);color:var(--shell-text);padding:20px 14px;display:flex;flex-direction:column;gap:18px}
+.logo{display:flex;align-items:center;gap:10px;padding:2px 8px;font-weight:700;font-size:15px;color:#fff}
+.logo i{width:26px;height:26px;border-radius:7px;background:var(--pri);display:flex;align-items:center;justify-content:center}
+.ws{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;background:var(--shell-2);font-size:13px}
+.ws b{flex:1;font-weight:500}.ws .a{width:22px;height:22px;border-radius:6px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+.nav{display:flex;flex-direction:column;gap:2px}
+.r .nav a{display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:var(--shell-muted);font-size:13.5px;font-weight:500}
+.r .nav a:hover{color:#fff;background:rgba(255,255,255,.05)}.r .nav a.on{background:var(--shell-2);color:#fff}
+.nav svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav .n{margin-left:auto;font-size:12px;padding:1px 7px;border-radius:99px;background:rgba(255,255,255,.1);color:var(--shell-text)}
+.nav .h{padding:14px 10px 4px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--shell-muted)}
+.sb{margin-top:auto;display:flex;flex-direction:column;gap:12px}
+.use{padding:14px;border-radius:10px;background:var(--shell-2);font-size:12.5px;color:var(--shell-muted);display:flex;flex-direction:column;gap:8px}
+.use b{color:var(--shell-text);font-weight:500}.use span{height:5px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden;display:block}.use span i{display:block;height:100%;width:61%;background:#818cf8;border-radius:99px}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{height:60px;flex:0 0 60px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 28px;border-bottom:1px solid var(--line);background:var(--surface)}
+.crumb{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:13.5px}.crumb b{color:var(--ink);font-weight:600}.r .crumb a{color:var(--muted)}
+.search{width:300px;height:36px;border:1px solid var(--line);border-radius:9px;display:flex;align-items:center;gap:8px;padding:0 12px;color:var(--muted);font-size:13px;background:var(--bg)}
+.search kbd{margin-left:auto;font:11px "Geist Mono",monospace;padding:1px 6px;border:1px solid var(--line);border-radius:5px;background:var(--surface)}
+.tr{display:flex;align-items:center;gap:12px}
+.ib{width:36px;height:36px;border-radius:9px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted);background:var(--surface)}
+.av{width:34px;height:34px;border-radius:99px;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:0 0 34px}
+.page{padding:24px 28px 40px;display:flex;flex-direction:column;gap:18px}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+h1{margin:0;font-size:24px;line-height:30px;font-weight:650;letter-spacing:-.02em}h2{margin:0;font-size:15px;line-height:22px;font-weight:600}
+.muted{color:var(--muted)}.xs{font-size:12.5px}
+.seg{display:inline-flex;padding:3px;border-radius:9px;background:var(--line-2);border:1px solid var(--line)}
+.seg span{height:28px;padding:0 12px;border-radius:7px;display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);font-weight:500}
+.seg span.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(11,20,55,.1)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 13.5px Geist,system-ui,sans-serif;cursor:pointer;white-space:nowrap}
+.r a.btn{color:var(--ink)}.btn.pri,.r a.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff;font-weight:600}
+.btn.sm{height:30px;padding:0 10px;font-size:12.5px;border-radius:8px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;min-width:0}
+.ch{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.kpi{padding:16px 18px;display:flex;flex-direction:column;gap:4px}.kpi .k{font-size:13px;color:var(--muted)}
+.kpi .v{display:flex;align-items:baseline;gap:8px;font-size:26px;line-height:32px;font-weight:650;letter-spacing:-.02em}.kpi .v small{font-size:12.5px;font-weight:600;letter-spacing:0}
+.up{color:var(--ok)}.dn{color:var(--bad)}
+.g2{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:14px;align-items:start}
+.lg{display:flex;gap:14px;font-size:12.5px;color:var(--muted)}.lg i{display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.ax{display:flex;justify-content:space-between;padding:0 18px 12px;font-size:11.5px;color:var(--muted)}
+.li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 18px;border-top:1px solid var(--line-2)}.li:first-child{border-top:0}
+.li small{display:block;color:var(--muted);font-size:12.5px}
+.b{width:30px;height:30px;border-radius:8px;background:var(--pri-soft);color:var(--pri);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:0 0 30px}
+.b.bad{background:color-mix(in srgb,var(--bad) 11%,transparent);color:var(--bad)}.b.wait{background:color-mix(in srgb,var(--warn) 12%,transparent);color:var(--warn)}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:12px;font-weight:500;color:var(--muted);padding:9px 18px;border-bottom:1px solid var(--line);background:#fafbfd;white-space:nowrap}
+td{padding:11px 18px;border-bottom:1px solid var(--line-2);font-size:13.5px;vertical-align:middle}tr:last-child td{border-bottom:0}
+.site{display:flex;align-items:center;gap:10px}.site small{display:block;color:var(--muted);font-size:12px}
+.fav{width:30px;height:30px;border-radius:8px;background:var(--pri-soft);color:var(--pri);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:0 0 30px}
+.hb{display:flex;align-items:center;gap:8px}.hb span{width:64px;height:6px;border-radius:99px;background:var(--line-2);overflow:hidden;display:block}.hb i{display:block;height:100%;border-radius:99px;background:var(--c1)}
+.bd{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:500;background:var(--line-2);color:var(--muted);white-space:nowrap}
+.bd i{width:6px;height:6px;border-radius:99px;background:currentColor}
+.bd.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}.bd.wait{color:var(--warn);background:color-mix(in srgb,var(--warn) 13%,transparent)}.bd.bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}.bd.pri{color:var(--pri);background:var(--pri-soft)}
+.run{padding:18px;display:flex;flex-direction:column;gap:12px}
+.clock{font-size:28px;line-height:34px;font-weight:650;letter-spacing:-.02em}
+</style>
+</helmet>
+
+<div class="r" style="min-height:1180px">
+  <aside class="side">
+    <div class="logo"><i><svg width="15" height="15" viewBox="0 0 32 32" aria-hidden="true"><path d="M5 22l7-8 5 5 10-12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i>seo-autopilot</div>
+    <div class="ws"><span class="a">DA</span><b>Demo agency</b><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg></div>
+    <nav class="nav" aria-label="Primary">
+      <a class="on" href="Main.dc.html" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>Portfolio</a>
+      <a href="Sites.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.5 3 2.5 13 0 16M12 4c-2.5 3-2.5 13 0 16"/></svg>Websites<span class="n">24</span></a>
+      <a href="Approvals.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Approvals<span class="n">17</span></a>
+      <a href="SiteOverview.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg>Reports</a>
+      <div class="h">Agency</div>
+      <a href="Team.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5M16 11a3 3 0 0 0 0-6M21 20c0-2.5-2-4.3-4-4.8"/></svg>Team and brand</a>
+    </nav>
+    <div class="sb">
+      <a class="btn pri" href="AddSite.dc.html">+ Connect a website</a>
+      <div class="use"><b>Agent runs this month</b><span><i></i></span>1,840 of 3,000</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Search websites, clients, pages<kbd>⌘K</kbd></div>
+      <div class="tr"><span class="ib" aria-label="Notifications"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/></svg></span><span class="av">BP</span></div>
+    </header>
+
+    <main class="page">
+      <div class="head">
+        <div><h1>Portfolio</h1><div class="muted">Everything happening across your clients' websites</div></div>
+        <div style="display:flex;gap:10px;align-items:center"><div class="seg"><span>7d</span><span class="on">30d</span><span>90d</span></div><a class="btn pri" href="AddSite.dc.html">+ Connect a website</a></div>
+      </div>
+
+      <div class="kpis">
+        <div class="card kpi"><span class="k">Organic clicks</span><span class="v">48.2k<small class="up">+12.4%</small></span><span class="muted xs">All websites, vs previous 30 days</span></div>
+        <div class="card kpi"><span class="k">Live websites</span><span class="v">21<small class="muted" style="font-weight:500">of 24</small></span><span class="muted xs">2 connecting · 1 paused</span></div>
+        <div class="card kpi"><span class="k">Awaiting approval</span><span class="v">17<small class="dn">+5</small></span><span class="muted xs">Across 6 websites</span></div>
+        <div class="card kpi"><span class="k">Client links active</span><span class="v">31</span><span class="muted xs">Shared with 19 clients</span></div>
+      </div>
+
+      <div class="g2">
+        <section class="card">
+          <div class="ch" style="border-bottom:0;padding-bottom:4px"><h2>Organic clicks, all websites</h2><div class="lg"><span><i style="background:var(--c1)"></i>This period</span><span><i style="background:var(--c2)"></i>Previous</span></div></div>
+          <svg viewBox="0 0 640 210" width="100%" height="210" preserveAspectRatio="none" role="img" aria-label="Clicks rising over 30 days, above the previous period">
+            <path d="M0 52H640M0 105H640M0 158H640" stroke="var(--line-2)" stroke-width="1"/>
+            <path d="M0 160 L45 156 L90 160 L135 150 L180 152 L225 144 L270 148 L315 138 L360 140 L405 132 L450 136 L495 128 L540 130 L585 122 L640 118" fill="none" stroke="var(--c2)" stroke-width="1.6" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>
+            <path d="M0 150 L45 142 L90 146 L135 128 L180 132 L225 114 L270 120 L315 102 L360 106 L405 88 L450 94 L495 76 L540 80 L585 62 L640 54 L640 210 L0 210Z" fill="var(--c1)" fill-opacity=".08"/>
+            <path d="M0 150 L45 142 L90 146 L135 128 L180 132 L225 114 L270 120 L315 102 L360 106 L405 88 L450 94 L495 76 L540 80 L585 62 L640 54" fill="none" stroke="var(--c1)" stroke-width="2.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+          </svg>
+          <div class="ax"><span>4 Oct</span><span>11 Oct</span><span>18 Oct</span><span>25 Oct</span><span>3 Nov</span></div>
+        </section>
+        <section class="card">
+          <div class="ch"><h2>Next daily run</h2><span class="bd pri">05:17 UTC</span></div>
+          <div class="run">
+            <div><div class="clock">7h 43m</div><div class="muted xs">Each website sends one snapshot. Approvals made before then are applied on GitHub.</div></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="card" style="padding:12px"><div class="muted xs">Decisions queued</div><div style="font-weight:650;font-size:18px">9</div></div>
+              <div class="card" style="padding:12px"><div class="muted xs">Snapshots yesterday</div><div style="font-weight:650;font-size:18px">22 of 24</div></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="g2">
+        <section class="card">
+          <div class="ch"><h2>Needs attention</h2><span class="muted xs">4 items</span></div>
+          <div class="li"><span class="b bad">OL</span><span><b style="font-weight:500">Oakline Legal: no snapshot for 2 days</b><small>Portal token rejected. Rotate the token and update the repository secret.</small></span><a class="btn sm" href="AddSite.dc.html">Fix connection</a></div>
+          <div class="li"><span class="b wait">LP</span><span><b style="font-weight:500">Lumen Physio: 8 proposals waiting</b><small>Oldest opened 2 days ago</small></span><a class="btn sm" href="Approvals.dc.html">Review</a></div>
+          <div class="li"><span class="b">CC</span><span><b style="font-weight:500">Cedar &amp; Co: waiting for first snapshot</b><small>Connected yesterday. Secrets added to cedarco/website</small></span><a class="btn sm" href="AddSite.dc.html">View setup</a></div>
+          <div class="li"><span class="b">HP</span><span><b style="font-weight:500">Harbor Plumbing: not shared with client</b><small>No client link created yet</small></span><a class="btn sm" href="ClientAccess.dc.html">Share</a></div>
+        </section>
+        <section class="card">
+          <div class="ch"><h2>SEO team activity</h2><span class="bd ok"><i></i>12 running</span></div>
+          <div class="li"><span class="b">CT</span><span>Drafted new page<small>Northwind Dental</small></span><span class="muted xs">2m</span></div>
+          <div class="li"><span class="b">TA</span><span>Audit finished, 9 issues<small>Harbor Plumbing</small></span><span class="muted xs">8m</span></div>
+          <div class="li"><span class="b">RS</span><span>Keyword map updated<small>Brightpath Tutors</small></span><span class="muted xs">15m</span></div>
+          <div class="li"><span class="b">PB</span><span>Merged 4 approved changes<small>Fernhill Vets</small></span><span class="muted xs">32m</span></div>
+        </section>
+      </div>
+
+      <section class="card">
+        <div class="ch"><h2>Websites</h2><a class="xs" href="Sites.dc.html" style="font-weight:500">View all 24</a></div>
+        <table>
+          <thead><tr><th>Website</th><th>Client</th><th>Health</th><th>Clicks, 30d</th><th>Change</th><th>Client access</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><a class="site" href="SiteOverview.dc.html" style="color:var(--ink)"><span class="fav">N</span><span>Northwind Dental<small>northwinddental.co.uk</small></span></a></td><td class="muted">Northwind Dental Ltd</td><td><div class="hb"><span><i style="width:86%"></i></span>86</div></td><td>6,412</td><td class="up">+18.0%</td><td>2 links</td><td><span class="bd ok"><i></i>Live</span></td></tr>
+            <tr><td><div class="site"><span class="fav">B</span><span>Brightpath Tutors<small>brightpathtutors.co.uk</small></span></div></td><td class="muted">Brightpath Education</td><td><div class="hb"><span><i style="width:90%"></i></span>90</div></td><td>9,027</td><td class="up">+21.3%</td><td>1 link</td><td><span class="bd ok"><i></i>Live</span></td></tr>
+            <tr><td><div class="site"><span class="fav">L</span><span>Lumen Physio<small>lumenphysio.co.uk</small></span></div></td><td class="muted">Lumen Health</td><td><div class="hb"><span><i style="width:64%"></i></span>64</div></td><td>3,880</td><td class="up">+4.1%</td><td>3 links</td><td><span class="bd ok"><i></i>Live</span></td></tr>
+            <tr><td><div class="site"><span class="fav">O</span><span>Oakline Legal<small>oaklinelegal.com</small></span></div></td><td class="muted">Oakline LLP</td><td><div class="hb"><span><i style="width:41%"></i></span>41</div></td><td>2,104</td><td class="dn">−8.2%</td><td>1 link</td><td><span class="bd bad"><i></i>No snapshot</span></td></tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

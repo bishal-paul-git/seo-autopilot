@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.23.0
+
+The client portal gets a new look and a Portfolio home for the agency.
+
+- **New look:** a midnight navy sidebar, indigo actions, and green kept for good news only. Client links still use the agency's own brand colour. Dark mode is kept.
+- **Portfolio:** the agency home now shows:
+  - visits and impressions across all live websites;
+  - a "needs attention" list: websites that missed their daily snapshot, websites still connecting, and proposals waiting for review;
+  - a countdown to the next daily run;
+  - a websites table with status, last snapshot, clicks, pages in Google, proposals to review and a client-link button.
+- **Phones:** the websites table becomes cards. Away from a website, the agency gets a bottom tab bar: Portfolio, Connect, Team and Sign out.
+- **Designs:** the reference screens are in `docs/design/portal/`, including parts not built yet, such as client email invites and a list of client links.
+- Nothing changes in the database or the snapshot. Rebuild the page with `cloud/portal/build.mjs` to deploy it.
+
 ## 2.22.1
 
 Pages that state their own path are now seen at that path, so release dates work for hubs and nested pages.

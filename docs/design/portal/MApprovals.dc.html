@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Approvals, mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0}
+.r{--shell:#0b1437;--bg:#f4f6fb;--surface:#fff;--line:#e3e7f0;--line-2:#eef1f6;--ink:#0b1437;--muted:#5b6482;--pri:#4f46e5;--pri-soft:#eef0ff;--ok:#0f8a5f;--warn:#b45309;--bad:#c2261d;width:390px;display:flex;flex-direction:column;background:var(--bg);color:var(--ink);font:14px/20px Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.r *{box-sizing:border-box}.r svg{display:block}.r a{color:var(--pri);text-decoration:none}
+.ab{height:56px;flex:0 0 56px;background:var(--shell);color:#fff;display:flex;align-items:center;gap:10px;padding:0 6px 0 16px;position:sticky;top:0;z-index:2}
+.ab .t{flex:1;font-weight:600;font-size:16px}
+.mk{width:28px;height:28px;border-radius:8px;background:var(--pri);display:flex;align-items:center;justify-content:center;flex:0 0 28px}
+.ic{width:44px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:10px;color:#fff;background:transparent;border:0;padding:0}
+.ic svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.c{padding:16px;display:flex;flex-direction:column;gap:12px;flex:1}
+.muted{color:var(--muted)}.xs{font-size:12.5px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);padding:3px;border-radius:10px;background:var(--line-2);border:1px solid var(--line)}
+.seg span{height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--muted);font-weight:500}
+.seg span.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(11,20,55,.1)}
+.info{display:flex;gap:10px;padding:12px;border-radius:12px;background:var(--pri-soft);color:#2e2a9c;font-size:13px;line-height:19px}
+.info svg{flex:0 0 18px;margin-top:1px}
+.grp{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13.5px;padding:6px 2px 0}
+.grp small{font-weight:400;color:var(--muted)}
+.fav{width:24px;height:24px;border-radius:7px;background:var(--pri-soft);color:var(--pri);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.card b{font-weight:600;font-size:15px;line-height:21px}
+.tags{display:flex;gap:6px;flex-wrap:wrap}
+.bd{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:6px;font-size:12px;font-weight:500;background:var(--line-2);color:var(--muted);white-space:nowrap}
+.bd i{width:6px;height:6px;border-radius:99px;background:currentColor}
+.bd.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}.bd.wait{color:var(--warn);background:color-mix(in srgb,var(--warn) 13%,transparent)}.bd.pri{color:var(--pri);background:var(--pri-soft)}
+.acts{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px}
+.btn{height:44px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 14px Geist,system-ui,sans-serif;cursor:pointer}
+.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff;font-weight:600}
+.btn.ghost{color:var(--bad)}
+.tb{position:sticky;bottom:0;height:68px;flex:0 0 68px;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:6px;z-index:2}
+.r .tb a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11.5px;font-weight:500;color:var(--muted);position:relative}
+.r .tb a.on{color:var(--pri)}
+.tb svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tb .n{position:absolute;top:7px;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:99px;background:var(--bad);color:#fff;font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px}
+</style>
+</helmet>
+
+<div class="r" style="min-height:1260px">
+  <header class="ab">
+    <span class="mk" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 32 32"><path d="M5 22l7-8 5 5 10-12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <span class="t">Approvals</span>
+    <button class="ic" type="button" aria-label="Filter"><svg viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg></button>
+  </header>
+
+  <main class="c">
+    <div class="seg" role="group" aria-label="Filter"><span class="on">Pending 17</span><span>On hold 4</span><span>Decided</span></div>
+    <div class="info"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Decisions apply at the next daily run, <b>05:17 UTC</b>. Risky changes still wait for a person before going live.</span></div>
+
+    <div class="grp"><span class="fav">L</span>Lumen Physio<small>· 8 pending</small></div>
+    <article class="card">
+      <b>Rewrite titles on 6 treatment pages</b>
+      <div class="tags"><span class="bd pri">Content</span><span class="bd ok"><i></i>Routine</span><span class="bd">#214 · 2d</span></div>
+      <div class="acts"><button class="btn pri" type="button">Approve</button><button class="btn" type="button">Hold</button><button class="btn ghost" type="button">Decline</button></div>
+    </article>
+    <article class="card">
+      <b>New page: Sports massage Bristol</b>
+      <div class="tags"><span class="bd pri">New page</span><span class="bd wait"><i></i>Needs review</span><span class="bd">#217 · 1d</span></div>
+      <a href="#" class="xs" style="font-weight:600">Read the 820-word draft</a>
+      <div class="acts"><button class="btn pri" type="button">Approve</button><button class="btn" type="button">Hold</button><button class="btn ghost" type="button">Decline</button></div>
+    </article>
+
+    <div class="grp"><span class="fav">N</span>Northwind Dental<small>· 5 pending</small></div>
+    <article class="card">
+      <b>New page: Emergency dentist Leeds</b>
+      <div class="tags"><span class="bd pri">New page</span><span class="bd wait"><i></i>Needs review</span><span class="bd">#88 · 6h</span></div>
+      <a href="#" class="xs" style="font-weight:600">Read the 640-word draft</a>
+      <div class="acts"><button class="btn pri" type="button">Approve</button><button class="btn" type="button">Hold</button><button class="btn ghost" type="button">Decline</button></div>
+    </article>
+    <article class="card">
+      <b>Add LocalBusiness structured data</b>
+      <div class="tags"><span class="bd">Technical</span><span class="bd ok"><i></i>Routine</span><span class="bd">#84 · 1d</span></div>
+      <span class="bd ok" style="align-self:flex-start"><i></i>Approved · applies at 05:17 UTC</span>
+    </article>
+  </main>
+
+  <nav class="tb" aria-label="Main">
+    <a href="MPortfolio.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>Portfolio</a>
+    <a href="MSites.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.5 3 2.5 13 0 16M12 4c-2.5 3-2.5 13 0 16"/></svg>Websites</a>
+    <a class="on" href="MApprovals.dc.html" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Approvals<span class="n">17</span></a>
+    <a href="Team.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>More</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1260}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

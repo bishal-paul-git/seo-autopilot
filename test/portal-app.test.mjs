@@ -93,6 +93,19 @@ test("portal app: sign in, websites, connect a website, client link, client view
     assert.ok(await page.isVisible(`text=${origin}/functions/v1/ingest`));
     assert.equal(fake.calls.find((c) => c.path === "/rest/v1/rpc/create_site").body.p_url, "https://bakery.test/");
 
+    // Portfolio: the new site needs setup, the live one has a client-link button, and a phone gets cards, the agency
+    // tab bar and no sideways scroll.
+    await page.goto(`${origin}/#/`);
+    await page.waitForSelector("text=Bakery: waiting for its first snapshot");
+    assert.ok(await page.isVisible("h1 >> text=Portfolio"));
+    assert.ok(await page.isVisible('[data-share="11111111-1111-4111-8111-111111111111"]'));
+    await page.setViewportSize({ width: 390, height: 844 });
+    assert.ok(await page.isVisible(".scard >> text=Plumber"));
+    assert.ok(!(await page.isVisible(".sites-tbl")));
+    assert.ok(await page.isVisible("#tabbar >> text=Portfolio"));
+    assert.ok((await page.evaluate(() => document.documentElement.scrollWidth)) <= 390, "no sideways scroll on the phone portfolio");
+    await page.setViewportSize({ width: 1280, height: 860 });
+
     // A live site's dashboard and a client link.
     await page.goto(`${origin}/#/s/11111111-1111-4111-8111-111111111111/overview`);
     await page.waitForSelector("h1 >> text=Plumber");

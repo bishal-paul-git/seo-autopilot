@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Client view, mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0}
+.r{--brand:#0f9d74;--brand-soft:#e6f6f0;--bg:#f5f7f8;--surface:#fff;--line:#e3e8ea;--line-2:#eef2f3;--ink:#0d1b1e;--muted:#5a686c;--ok:#0f8a5f;--bad:#c2261d;width:390px;display:flex;flex-direction:column;background:var(--bg);color:var(--ink);font:14px/20px Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+.r *{box-sizing:border-box}.r svg{display:block}.r a{color:var(--brand);text-decoration:none}
+.hd{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:2}
+.bn{display:flex;align-items:center;gap:12px;height:64px;padding:0 16px}
+.bm{width:36px;height:36px;border-radius:10px;background:var(--brand);display:flex;align-items:center;justify-content:center;flex:0 0 36px}
+.bn b{display:block;font-weight:650;font-size:16px}.bn span{color:var(--muted);font-size:12.5px}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:0 16px 12px}
+.tabs a{height:34px;padding:0 12px;border-radius:99px;display:flex;align-items:center;font-size:13.5px;font-weight:500;white-space:nowrap;flex:0 0 auto}
+.r .tabs a{color:var(--muted);border:1px solid var(--line)}
+.r .tabs a.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.c{padding:18px 16px 24px;display:flex;flex-direction:column;gap:14px}
+h1{margin:0;font-size:24px;line-height:30px;font-weight:650;letter-spacing:-.02em}h2{margin:0;font-size:15px;line-height:22px;font-weight:600}
+.muted{color:var(--muted)}.xs{font-size:12.5px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;min-width:0}
+.ch{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.hero{background:var(--brand);color:#fff;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:4px}
+.hero small{color:rgba(255,255,255,.8);font-size:13px}
+.hero .big{font-size:34px;line-height:40px;font-weight:700;letter-spacing:-.02em}
+.hero .pill{align-self:flex-start;margin-top:6px;height:24px;padding:0 10px;border-radius:99px;background:rgba(255,255,255,.18);display:flex;align-items:center;font-size:12.5px;font-weight:600}
+.k2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{padding:12px 14px;display:flex;flex-direction:column;gap:2px}.kpi .k{font-size:12.5px;color:var(--muted);line-height:17px}
+.kpi .v{font-size:22px;line-height:28px;font-weight:650;letter-spacing:-.02em}.kpi .d{font-size:12px;font-weight:600}
+.up{color:var(--ok)}
+.wk{list-style:none;margin:0;padding:4px 14px 10px}
+.wk li{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line-2);font-size:14px}.wk li:last-child{border-bottom:0}
+.wk svg{flex:0 0 18px;margin-top:1px}
+.kw{display:flex;align-items:center;gap:12px;min-height:48px;padding:8px 14px;border-top:1px solid var(--line-2)}.kw:first-of-type{border-top:0}
+.kw span:first-child{flex:1;min-width:0}
+.pos{width:32px;height:28px;border-radius:7px;background:var(--brand-soft);color:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.nx{display:flex;align-items:center;gap:12px;min-height:56px;padding:10px 14px;border-top:1px solid var(--line-2)}.nx:first-of-type{border-top:0}
+.nx .tx{flex:1}.nx b{display:block;font-weight:500}.nx small{color:var(--muted);font-size:12.5px}
+.dt{height:24px;padding:0 9px;border-radius:6px;background:var(--brand-soft);color:var(--brand);font-size:12px;font-weight:600;display:flex;align-items:center}
+.ft{padding:4px 16px 28px;color:var(--muted);font-size:12.5px;text-align:center;line-height:18px}
+</style>
+</helmet>
+
+<div class="r" style="min-height:1560px">
+  <header class="hd">
+    <div class="bn"><span class="bm" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8"/><path d="M15 8h5v5"/></svg></span><span><b>Northwind Dental</b><span>SEO dashboard by Demo agency</span></span></div>
+    <nav class="tabs" aria-label="Dashboard sections"><a class="on" href="MClient.dc.html" aria-current="page">Overview</a><a href="#">Traffic</a><a href="#">Keywords</a><a href="#">Pages</a><a href="#">Locations</a><a href="#">Coming next</a><a href="#">Weekly report</a></nav>
+  </header>
+
+  <main class="c">
+    <div><h1>Your website this month</h1><div class="muted xs" style="margin-top:2px">Updated today at 05:21</div></div>
+
+    <div class="hero"><small>Visits from Google, last 30 days</small><span class="big">6,412</span><span class="pill">↑ 18% on last month</span></div>
+
+    <div class="k2">
+      <div class="card kpi"><span class="k">Seen in Google</span><span class="v">182k</span><span class="d up">+9.1%</span></div>
+      <div class="card kpi"><span class="k">Average position</span><span class="v">14.2</span><span class="d up">↑ 2.3 places</span></div>
+      <div class="card kpi"><span class="k">Pages in Google</span><span class="v">231</span><span class="d muted" style="font-weight:500">of 248</span></div>
+      <div class="card kpi"><span class="k">Searches you show for</span><span class="v">1,140</span><span class="d up">+96</span></div>
+    </div>
+
+    <section class="card">
+      <div class="ch" style="border-bottom:0;padding-bottom:0"><h2>Visits from Google</h2><span class="muted xs">30 days</span></div>
+      <svg viewBox="0 0 358 130" width="100%" height="130" preserveAspectRatio="none" role="img" aria-label="Visits rising">
+        <path d="M0 40H358M0 80H358M0 120H358" stroke="var(--line-2)"/>
+        <path d="M0 108 L30 100 L60 104 L90 90 L120 94 L150 80 L180 84 L210 68 L240 72 L270 56 L300 60 L330 42 L358 36 L358 130 L0 130Z" fill="var(--brand)" fill-opacity=".1"/>
+        <path d="M0 108 L30 100 L60 104 L90 90 L120 94 L150 80 L180 84 L210 68 L240 72 L270 56 L300 60 L330 42 L358 36" fill="none" stroke="var(--brand)" stroke-width="2.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <div style="display:flex;justify-content:space-between;padding:4px 14px 12px" class="muted xs"><span>4 Oct</span><span>18 Oct</span><span>3 Nov</span></div>
+    </section>
+
+    <section class="card">
+      <div class="ch"><h2>What we did this week</h2></div>
+      <ul class="wk">
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0f9d74" stroke-width="2.4" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Rewrote titles on 4 service pages</li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0f9d74" stroke-width="2.4" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Linked 14 pages that had no links to them</li>
+        <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0f9d74" stroke-width="2.4" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Found 9 pages that load slowly on phones</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <div class="ch"><h2>Searches you appear for</h2><a class="xs" href="#" style="font-weight:600">All</a></div>
+      <div class="kw"><span>dentist leeds</span><span class="up xs" style="font-weight:600">+2</span><span class="pos">4</span></div>
+      <div class="kw"><span>dental implants leeds</span><span class="up xs" style="font-weight:600">+5</span><span class="pos">7</span></div>
+      <div class="kw"><span>emergency dentist leeds</span><span class="up xs" style="font-weight:600">+11</span><span class="pos">18</span></div>
+    </section>
+
+    <section class="card">
+      <div class="ch"><h2>Coming next</h2></div>
+      <div class="nx"><span class="tx"><b>Emergency dentist Leeds</b><small>New page</small></span><span class="dt">6 Nov</span></div>
+      <div class="nx"><span class="tx"><b>Dental implants guide</b><small>Refresh</small></span><span class="dt">12 Nov</span></div>
+    </section>
+  </main>
+  <footer class="ft">Shared by Demo agency. This link shows this website only.<br>Data from Google Search Console and Analytics.</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1560}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

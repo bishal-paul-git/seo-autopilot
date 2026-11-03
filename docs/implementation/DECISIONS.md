@@ -83,6 +83,16 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-11-03 D25 Portal look "Style A" and a Portfolio home (owner: "Use A and continue building", "you do it from here")
+**Decision:** the portal page moves to the design the owner picked from four options: midnight navy shell, indigo actions, green only for good news. The agency home becomes a Portfolio. The designs are kept in `docs/design/portal/`.
+- **Portfolio contents:** totals across live sites, a "needs attention" list, the next default daily run, and a websites table. On a phone the table becomes cards and the agency gets a bottom tab bar.
+- **Data:** everything comes from the existing `my_sites` data. Nothing is estimated, and no database or RPC change was made.
+- **Kept:** every route, RPC, the client-link brand colour (it still replaces the accent) and the dark theme.
+- **Not built:** these parts of the designs need backend work: listing and revoking client links, client email invites, a cross-site approvals page and client-link counts. `docs/design/portal/README.md` lists what is built and what is not.
+- **Tradeoffs:**
+  - "Last snapshot over 36 hours ago" is a heuristic for a missed run.
+  - The countdown assumes the default 05:17 UTC schedule, and says so on the card.
+
 ## 2026-10-30 D24 Approvals from the portal are applied by the site's own run (owner: "do your works")
 **Decision:** the portal records a decision (approve, hold, decline). The site's daily `portal --push` receives the pending decisions in the push response, applies them on GitHub with its own `GITHUB_TOKEN`, then acknowledges them. For an approval, it adds the label and comment and starts `seo-implement` by workflow dispatch.
 - **Why:** the portal keeps no GitHub access, which matches D23's push model. The site's token can already label issues. GitHub does not start workflows from labels added by `GITHUB_TOKEN`, but it does honour workflow dispatch, hence the explicit dispatch.

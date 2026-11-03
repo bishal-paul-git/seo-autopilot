@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Connect a website</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0}
+.r{--shell:#0b1437;--shell-2:#1a2556;--shell-text:#e8ecff;--shell-muted:#939dc8;--bg:#f4f6fb;--surface:#fff;--line:#e3e7f0;--line-2:#eef1f6;--ink:#0b1437;--muted:#5b6482;--pri:#4f46e5;--pri-ink:#fff;--pri-soft:#eef0ff;--ok:#0f8a5f;--warn:#b45309;--bad:#c2261d;width:1280px;display:flex;background:var(--bg);color:var(--ink);font:14px/20px Geist,system-ui,sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+.r *{box-sizing:border-box}.r svg{display:block}.r a{color:var(--pri);text-decoration:none}
+.side{width:236px;flex:0 0 236px;background:var(--shell);color:var(--shell-text);padding:20px 14px;display:flex;flex-direction:column;gap:18px}
+.logo{display:flex;align-items:center;gap:10px;padding:2px 8px;font-weight:700;font-size:15px;color:#fff}
+.logo i{width:26px;height:26px;border-radius:7px;background:var(--pri);display:flex;align-items:center;justify-content:center}
+.ws{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;background:var(--shell-2);font-size:13px}
+.ws b{flex:1;font-weight:500}.ws .a{width:22px;height:22px;border-radius:6px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+.nav{display:flex;flex-direction:column;gap:2px}
+.r .nav a{display:flex;align-items:center;gap:10px;height:36px;padding:0 10px;border-radius:8px;color:var(--shell-muted);font-size:13.5px;font-weight:500}
+.r .nav a:hover{color:#fff;background:rgba(255,255,255,.05)}.r .nav a.on{background:var(--shell-2);color:#fff}
+.nav svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav .n{margin-left:auto;font-size:12px;padding:1px 7px;border-radius:99px;background:rgba(255,255,255,.1);color:var(--shell-text)}
+.nav .h{padding:14px 10px 4px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--shell-muted)}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{height:60px;flex:0 0 60px;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:0 28px;border-bottom:1px solid var(--line);background:var(--surface)}
+.crumb{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:13.5px}.crumb b{color:var(--ink);font-weight:600}.r .crumb a{color:var(--muted)}
+.av{width:34px;height:34px;border-radius:99px;background:var(--pri);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:0 0 34px}
+.page{padding:28px 28px 48px;display:flex;flex-direction:column;gap:20px;max-width:1020px;width:100%;margin:0 auto}
+h1{margin:0;font-size:24px;line-height:30px;font-weight:650;letter-spacing:-.02em}h2{margin:0;font-size:15px;line-height:22px;font-weight:600}
+.muted{color:var(--muted)}.xs{font-size:12.5px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 14px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:500 13.5px Geist,system-ui,sans-serif;cursor:pointer;white-space:nowrap}
+.r a.btn{color:var(--ink)}.btn.pri,.r a.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff;font-weight:600}
+.btn.sm{height:30px;padding:0 10px;font-size:12.5px;border-radius:8px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;min-width:0}
+.ch{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line)}
+.cb{padding:20px;display:flex;flex-direction:column;gap:14px}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:0;margin:0;list-style:none}
+.steps li{display:flex;align-items:center;gap:12px;padding:14px 18px;border-left:1px solid var(--line)}
+.steps li:first-child{border-left:0}
+.steps .n{width:26px;height:26px;border-radius:99px;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--muted);flex:0 0 26px}
+.steps .done .n{background:var(--pri);border-color:var(--pri);color:#fff}
+.steps .now .n{border-color:var(--pri);color:var(--pri)}
+.steps b{display:block;font-weight:600}.steps small{color:var(--muted);font-size:12.5px}
+.g{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.code{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:#f8f9fc;font:12.5px/18px "Geist Mono",ui-monospace,monospace}
+.code b{font-weight:500;color:var(--ink);flex:0 0 150px}
+.code span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.note{display:flex;gap:10px;padding:12px 14px;border-radius:10px;background:color-mix(in srgb,var(--warn) 9%,transparent);color:#7a3d06;font-size:13px}
+.ol{margin:0;padding:0 0 0 18px;display:flex;flex-direction:column;gap:8px;color:var(--ink)}
+.ol li::marker{color:var(--muted)}
+.kv{display:grid;grid-template-columns:90px minmax(0,1fr);gap:10px;margin:0}
+.kv dt{color:var(--muted)}.kv dd{margin:0;font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.wait{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px dashed var(--line);border-radius:10px}
+.pulse{width:10px;height:10px;border-radius:99px;background:var(--warn);flex:0 0 10px}
+.fld{display:flex;flex-direction:column;gap:6px}.fld label{font-weight:500;font-size:13.5px}
+.inp{height:38px;width:100%;padding:0 12px;border:1px solid var(--line);border-radius:9px;font:14px Geist,system-ui,sans-serif;color:var(--ink);background:#fff}
+.dim{opacity:.6}
+</style>
+</helmet>
+
+<div class="r" style="min-height:1080px">
+  <aside class="side">
+    <div class="logo"><i><svg width="15" height="15" viewBox="0 0 32 32" aria-hidden="true"><path d="M5 22l7-8 5 5 10-12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/></svg></i>seo-autopilot</div>
+    <div class="ws"><span class="a">DA</span><b>Demo agency</b><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 10l5 5 5-5"/></svg></div>
+    <nav class="nav" aria-label="Primary">
+      <a href="Main.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>Portfolio</a>
+      <a class="on" href="Sites.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c2.5 3 2.5 13 0 16M12 4c-2.5 3-2.5 13 0 16"/></svg>Websites<span class="n">24</span></a>
+      <a href="Approvals.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"/></svg>Approvals<span class="n">17</span></a>
+      <a href="SiteOverview.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg>Reports</a>
+      <div class="h">Agency</div>
+      <a href="Team.dc.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5M16 11a3 3 0 0 0 0-6M21 20c0-2.5-2-4.3-4-4.8"/></svg>Team and brand</a>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="top">
+      <div class="crumb"><a href="Sites.dc.html">Websites</a><span aria-hidden="true">/</span><b>Connect a website</b></div>
+      <span class="av">BP</span>
+    </header>
+
+    <main class="page">
+      <div><h1>Connect a website</h1><div class="muted">Add the site, connect its daily snapshot, then share it with the client.</div></div>
+
+      <ol class="card steps" aria-label="Progress">
+        <li class="done"><span class="n" aria-hidden="true">✓</span><span><b>Details</b><small>Name, address, client</small></span></li>
+        <li class="now"><span class="n" aria-hidden="true">2</span><span><b>Connect</b><small>Add two repository secrets</small></span></li>
+        <li><span class="n" aria-hidden="true">3</span><span><b>Share with client</b><small>Link or email invite</small></span></li>
+      </ol>
+
+      <div class="g">
+        <section class="card" aria-labelledby="c-h">
+          <div class="ch"><h2 id="c-h">Add these secrets to the website's repository</h2><span class="muted xs">Settings › Secrets › Actions</span></div>
+          <div class="cb">
+            <div class="code"><b>SEO_PORTAL_URL</b><span>https://portal.demo-agency.co.uk/functions/v1/ingest</span><span class="btn sm" style="flex:0 0 auto">Copy</span></div>
+            <div class="code"><b>SEO_PORTAL_TOKEN</b><span>spt_7f3c9a1e4b2d8f60c5a9e7d1b3f4a2c8</span><span class="btn sm" style="flex:0 0 auto">Copy</span></div>
+            <div class="note"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 9v4M12 17h.01M10.3 3.9L2 18a2 2 0 0 0 1.7 3h16.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>The token is shown once. If you lose it, make a new one: the old token stops working straight away.</span></div>
+            <div><div style="font-weight:600;margin-bottom:8px">Then</div>
+              <ol class="ol">
+                <li>Existing installs: run <code style="font:12.5px 'Geist Mono',monospace;background:#f1f3f8;padding:1px 6px;border-radius:5px">seo-autopilot upgrade --apply</code> to get the push step.</li>
+                <li>The daily workflow sends one snapshot at 05:17 UTC.</li>
+                <li>The site turns Live when the first snapshot arrives.</li>
+              </ol>
+            </div>
+            <div class="wait"><span class="pulse" aria-hidden="true"></span><span style="flex:1"><b style="font-weight:500">Waiting for first snapshot</b><div class="muted xs">We'll notify you when it arrives</div></span><span class="btn sm">Make new token</span></div>
+          </div>
+        </section>
+
+        <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+          <section class="card" aria-labelledby="d-h">
+            <div class="ch"><h2 id="d-h">Details</h2><span class="btn sm">Edit</span></div>
+            <div class="cb">
+              <dl class="kv">
+                <dt>Name</dt><dd>Cedar &amp; Co Interiors</dd>
+                <dt>Address</dt><dd>cedarandco.design</dd>
+                <dt>Repository</dt><dd>cedarco/website</dd>
+                <dt>Client</dt><dd>Cedar &amp; Co</dd>
+              </dl>
+            </div>
+          </section>
+          <section class="card dim" aria-labelledby="s-h">
+            <div class="ch"><h2 id="s-h">3 · Share with client</h2></div>
+            <div class="cb">
+              <div class="fld"><label for="ce">Client email</label><input id="ce" class="inp" type="email" placeholder="owner@cedarandco.design" disabled></div>
+              <div class="muted xs">Or skip and create a client link later. Clients see this site only, with your brand.</div>
+            </div>
+          </section>
+          <div style="display:flex;justify-content:flex-end;gap:8px"><a class="btn" href="Sites.dc.html">Finish later</a><a class="btn pri" href="ClientAccess.dc.html">Continue</a></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
