@@ -2,6 +2,11 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-03 (config and docs only: smaller session context)
+- **Config, no code change:** `.claude/settings.json` (new) denies MCP connectors this repo never uses: duplicate GitHub connectors, unrelated Supabase projects (matched by project URL), Whop, Gumroad, Stripe, Shopify, Lovable, ElevenLabs, Twilio, n8n, Vercel, Render and personal apps. Same kind of file added to keel, excel-error-finder, erudience-flow-engine, feed-to-site-magic, marketingmouse and tenanthousingdisrepair (each with its own list).
+- **Docs:** `STATUS.md` cut from 30 KB to about 4 KB; the full previous version is `history/STATUS-to-2026-11-03.md`.
+- **Checks:** settings files parse as JSON. Not yet checked: that denied tools leave the context (`/context` next session).
+
 ## 2026-10-31 (deployment: portal live on Supabase seo-autopilot)
 - **Deployment only, no code change:**
   - Remaining portal SQL run by the owner; seed applied (org, 3 sites, 2 client links, owner-claim trigger).
