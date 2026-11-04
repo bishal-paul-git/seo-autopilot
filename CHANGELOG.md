@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+Connect any website to the client portal with just its address.
+
+- **New:** "Add and scan" in the portal. The `scan` Edge Function (Supabase, `cloud/portal/supabase/functions/scan`) crawls the site daily with the product's own crawler and audit rules, with no repository and no GitHub Actions minutes. pg_cron wakes it every 10 minutes; "Scan now" wakes it at once.
+- **New:** `src/analysis/discover.mjs` reads what a site states about itself (business name and type, phones, emails, address, opening hours, social profiles, key pages, main topics), each with the page it came from; nothing is guessed. Shown as "About this website" on the overview.
+- **New:** `src/hosted/scan.mjs` builds a portal snapshot from an address alone; `cloud/portal/build-scan.mjs` copies it into the function.
+- **Migration:** `20261104000000_portal_url_sites.sql` (site `mode`, scan state, `add_site_by_url`, `scan_now`, and service-only `claim_scan`, `finish_scan`, `scan_secret_ok`).
+- **Changed:** the seo-backlinks template runs weekly (Thursdays) instead of daily: it was the biggest user of Actions minutes.
+
 ## 2.22.1
 
 Pages that state their own path are now seen at that path, so release dates work for hubs and nested pages.

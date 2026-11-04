@@ -25,6 +25,7 @@ const SNAP = buildSnapshot({
     gsc: { countries: [{ key: "gbr", clicks: 2, impressions: 90 }], devices: [{ key: "MOBILE", clicks: 2, impressions: 80 }] },
   },
 });
+SNAP.discovered = { name: { value: "Leeds Plumbing Co", source: `${U}/` }, businessTypes: ["Plumber"], phones: [{ value: "0113 496 0000", source: `${U}/contact/` }], emails: [], addresses: [], hours: [], socials: [], keyPages: { contact: `${U}/contact/` }, topics: [{ value: "Boiler repair", source: `${U}/boilers/` }], stats: { pagesRead: 2, pagesFailed: 0, sitemapUrls: 2, robotsTxt: true, avgWords: 500 } };
 
 function fakeSupabase() {
   const calls = [];
@@ -45,6 +46,8 @@ function fakeSupabase() {
       if (!signed) return send(401, { message: "JWT required" });
       if (fn === "my_sites") return send(200, sites);
       if (fn === "create_site") { const s = { id: "22222222-2222-4222-8222-222222222222", name: b.p_name, url: b.p_url, status: "connecting", last_snapshot_at: null }; sites.push({ site: s, data: null }); return send(200, { site: s, token: "spt_" + "a".repeat(64) }); }
+      if (fn === "add_site_by_url") { const s = { id: "33333333-3333-4333-8333-333333333333", name: "corner-shop.test", url: b.p_url, mode: "url", status: "scanning", scan_state: "queued", last_snapshot_at: null }; sites.push({ site: s, data: null }); return send(200, s); }
+      if (fn === "scan_now") return send(200, { ok: true, state: "queued" });
       if (fn === "create_share_link") return send(200, "c123");
       if (fn === "my_org") return send(200, { id: "org-a", name: "alice", brand_name: null, brand_color: null, role: "owner" });
       if (fn === "site_growth") return send(200, growth);
@@ -86,17 +89,28 @@ test("portal app: sign in, websites, connect a website, client link, client view
 
     // Connect a website: the token appears once, with the ingest address to paste into GitHub.
     await page.click("text=Connect a website >> nth=0");
-    await page.fill("input[name=name]", "Bakery");
-    await page.fill("input[name=url]", "https://bakery.test");
+    await page.click("text=Or connect through GitHub");
+    await page.fill("#add-form input[name=name]", "Bakery");
+    await page.fill("#add-form input[name=url]", "https://bakery.test");
     await page.click("#add-form button[type=submit]");
     await page.waitForSelector(`text=${"spt_" + "a".repeat(64)}`);
     assert.ok(await page.isVisible(`text=${origin}/functions/v1/ingest`));
     assert.equal(fake.calls.find((c) => c.path === "/rest/v1/rpc/create_site").body.p_url, "https://bakery.test/");
 
+    // Connect by address only: no token, the site shows as scanning with a Scan now button.
+    await page.goto(`${origin}/#/add`);
+    await page.fill("#url-form input[name=url]", "corner-shop.test");
+    await page.click("#url-form button[type=submit]");
+    await page.waitForSelector("text=Reading corner-shop.test now");
+    assert.equal(fake.calls.find((c) => c.path === "/rest/v1/rpc/add_site_by_url").body.p_url, "https://corner-shop.test");
+    assert.ok(await page.isVisible("#scan-now"));
+
     // A live site's dashboard and a client link.
     await page.goto(`${origin}/#/s/11111111-1111-4111-8111-111111111111/overview`);
     await page.waitForSelector("h1 >> text=Plumber");
     await page.waitForSelector("text=Growth over time");
+    await page.waitForSelector("text=About this website");
+    assert.ok(await page.isVisible("text=Leeds Plumbing Co") && await page.isVisible("text=0113 496 0000"));
     assert.ok(await page.isVisible("text=2 daily snapshots since 2026-09-29"));
     await page.click("#share");
     await page.waitForFunction(() => document.body.innerText.includes("Client link copied") || true);

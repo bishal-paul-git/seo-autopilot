@@ -233,7 +233,7 @@ const rpc = (fn, args = {}, opts = {}) => api(`rpc/${fn}`, { method: "POST", bod
 const EMPTY = { history: [], issues: [], decisions: [], growth: [], keywords: [], targets: [], pages: [], locations: [], proposals: [], priorities: [], plan: [], runs: [], coverage: [], notIndexed: [], integrations: [], period: { cur: {}, prev: {} }, audit: null, digest: "" };
 function toSite(row, data, key, extra = {}) {
   const d = data || {};
-  return { ...EMPTY, ...d, ...extra, key, id: row.id, name: row.name, url: row.url, repo: row.repo, status: data ? "live" : row.status === "live" ? "live" : "connecting", lastAt: row.last_snapshot_at, market: d.site?.market, platform: d.site?.platform, period: d.period || EMPTY.period };
+  return { ...EMPTY, ...d, ...extra, key, id: row.id, name: row.name, url: row.url, repo: row.repo, status: data ? "live" : row.status === "live" ? "live" : row.status === "scanning" ? "scanning" : "connecting", byUrl: row.mode === "url", scanState: row.scan_state || null, scanError: row.scan_error || null, nextScan: row.next_scan_at || null, lastAt: row.last_snapshot_at, market: d.site?.market, platform: d.site?.platform, period: d.period || EMPTY.period };
 }
 let SITES = [], loaded = false;
 let ORG = null;
@@ -337,6 +337,7 @@ function pOverview(s) {
     <div class="card pad0"><div class="ch"><h2>Coming next</h2><a class="r btn" href="${link(s, "plan")}">Plan</a></div><div class="list">${next.map((t) => `<div class="row"><div><div class="t">${esc(t)}</div></div><span class="pill info">Planned</span></div>`).join("") || '<div class="empty">Nothing planned yet.</div>'}</div></div>
     <div class="card"><div class="ch"><h2>Where visitors come from</h2></div>${sourcesBlock(s)}</div>
   </div>
+  ${aboutCard(s)}
   ${growthCard(s)}`;
 }
 // Growth across stored daily snapshots: the average page score and the searches the site shows up for.
@@ -482,7 +483,49 @@ function pTeam(s) {
 }
 
 const ingestUrl = () => `${CFG.supabaseUrl}/functions/v1/ingest`;
+// Websites connected by address: scanned from the portal's own servers, no repository needed.
+function pConnectUrl(s) {
+  const st = s.scanState === "failed" ? `<span class="pill bad"><i></i>Last scan failed</span>` : s.scanState === "running" ? `<span class="pill warn"><i></i>Scanning now</span>` : s.scanState === "queued" ? `<span class="pill warn"><i></i>Waiting to scan</span>` : `<span class="pill ok"><i></i>Scanned daily</span>`;
+  return `<div><h1>Connection</h1><p class="lead">${esc(host(s.url))} is connected by its address. Our servers read the live site every day, so nothing needs installing. ${s.lastAt ? `Last scan: <b>${esc(new Date(s.lastAt).toLocaleString("en-GB"))}</b>.` : ""}</p></div>
+  <div class="card"><div class="ch"><h2>Daily scan</h2>${st}</div>
+    ${s.scanError ? `<div class="callout">The last scan stopped: ${esc(s.scanError)}. It tries again within 6 hours.</div>` : ""}
+    <p class="xs muted" style="margin-top:0">Reads up to 60 pages the way a search engine does (the HTML before JavaScript): technical and on-page issues, the platform, and the business details the site states about itself.</p>
+    <button class="btn primary" id="scan-now">Scan now</button></div>
+  <div class="card"><div class="ch"><h2>Get more from it</h2><p>Optional, one at a time</p></div>
+    <ol class="steps">
+      <li><b>Search Console and Analytics</b>: clicks, rankings and visits need access to Google's data. Coming next for address-only websites; until then, connect through GitHub below for these.</li>
+      <li><b>Changes on autopilot</b>: to let the team fix things (not only advise), connect the website's GitHub repository with SEO Autopilot installed. WordPress and other builders follow.</li>
+    </ol></div>
+  <div class="card"><div class="ch"><h2>Client link</h2><p>No sign-in needed</p></div><p class="xs muted" style="margin-top:0">Anyone with the link sees this website's dashboard (not your other websites, not the SEO team page).</p><button class="btn primary" id="share2">${I.share}Make and copy a client link</button></div>`;
+}
+
+// What the website says about itself, from the daily scan. Every value links to the page it was read from.
+function aboutCard(s) {
+  const d = s.discovered;
+  if (!d) return "";
+  const src = (x) => (x && x.source ? ` <a class="xs muted" href="${esc(x.source)}" target="_blank" rel="noopener">source</a>` : "");
+  const rows = [
+    ["Business", d.name ? esc(d.name.value) + src(d.name) : null],
+    ["Type", d.businessTypes && d.businessTypes.length ? esc(d.businessTypes.join(", ")) : null],
+    ["Description", d.description ? esc(d.description.value) : null],
+    ["Phone", (d.phones || []).map((x) => esc(x.value) + src(x)).join("<br>") || null],
+    ["Email", (d.emails || []).map((x) => esc(x.value) + src(x)).join("<br>") || null],
+    ["Address", (d.addresses || []).map((x) => esc(x.value) + src(x)).join("<br>") || null],
+    ["Opening hours", (d.hours || []).map((x) => esc(x.value)).join("<br>") || null],
+    ["Social profiles", (d.socials || []).map((x) => `<a href="${esc(x.value)}" target="_blank" rel="noopener">${esc(x.platform)}</a>`).join(" · ") || null],
+    ["Key pages", Object.entries(d.keyPages || {}).map(([k, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(k)}</a>`).join(" · ") || null],
+    ["Platform", s.platform ? esc(s.platform) : null],
+    ["Language", d.language ? esc(d.language.value) : null],
+    ["Pages read", d.stats ? `${fmt(d.stats.pagesRead)}${d.stats.pagesFailed ? ` (${fmt(d.stats.pagesFailed)} failed)` : ""} · sitemap ${d.stats.sitemapUrls ? `${fmt(d.stats.sitemapUrls)} URLs` : "not found"}` : null],
+  ];
+  const missing = rows.filter(([, v]) => !v).map(([k]) => k.toLowerCase());
+  return `<div class="card pad0"><div class="ch"><h2>About this website</h2><p>What the site states about itself</p></div><div class="list">${rows.filter(([, v]) => v).map(([k, v]) => `<div class="row" style="align-items:flex-start"><div class="xs muted" style="min-width:120px">${k}</div><div style="flex:1;min-width:0;overflow-wrap:anywhere">${v}</div></div>`).join("")}
+    ${(d.topics || []).length ? `<div class="row" style="align-items:flex-start"><div class="xs muted" style="min-width:120px">Main topics</div><div style="flex:1">${d.topics.map((t) => `<span class="pill">${esc(t.value)}</span>`).join(" ")}</div></div>` : ""}</div>
+    ${missing.length ? `<p class="xs muted" style="padding:0 16px 14px;margin:0">Not stated on the site: ${esc(missing.join(", "))}. Adding them (with LocalBusiness or Organization markup) helps search engines and AI answers.</p>` : ""}</div>`;
+}
+
 function pConnect(s) {
+  if (s.byUrl) return pConnectUrl(s);
   const t = state.newToken && state.newToken.site === s.id ? state.newToken.token : null;
   return `<div><h1>Connection</h1><p class="lead">${esc(host(s.url))} sends a fresh snapshot every day from its own SEO Autopilot run. ${s.lastAt ? `Last snapshot: <b>${esc(new Date(s.lastAt).toLocaleString("en-GB"))}</b>.` : "No snapshot has arrived yet."}</p></div>
   <div class="card"><div class="ch"><h2>Set up the daily push</h2><p>Once per website</p></div>
@@ -521,6 +564,8 @@ function pTeamPage() {
 }
 
 function pSetup(s) {
+  if (s.byUrl) return `<div class="card hero">${ring(0).replace(">0<", ">–<")}<div><h1>${esc(s.name)}</h1><p class="lead">${s.scanState === "failed" ? `The first scan of ${esc(host(s.url))} did not finish${s.scanError ? `: ${esc(s.scanError)}` : ""}.` : `Reading ${esc(host(s.url))} now. The first scan usually takes a few minutes; this page refreshes by itself.`}</p></div></div>
+  ${mode === "agency" ? pConnectUrl(s) : '<div class="callout info">Your SEO team is connecting this website. Check back soon.</div>'}`;
   return `<div class="card hero">${ring(0).replace(">0<", ">–<")}<div><h1>${esc(s.name)}</h1><p class="lead">${esc(host(s.url))} is being connected. The dashboard fills in after its first daily run.</p></div></div>
   ${mode === "agency" ? pConnect(s) : '<div class="callout info">Your SEO team is connecting this website. Check back after its first daily report.</div>'}`;
 }
@@ -529,16 +574,20 @@ function pHome() {
   return `<div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap"><div style="flex:1;min-width:220px"><h1>Websites</h1><p class="lead">Every connected site. Open one to see its dashboard, or share a client link.</p></div><a class="btn primary" href="#/add">${I.plus}Connect a website</a></div>
   ${SITES.length ? `<div class="sites">${SITES.map((s) => s.status === "live" ? `<a class="card site-card" href="#/s/${s.key}/overview"><div style="display:flex;gap:12px;align-items:center"><span class="score ${tone(health(s))}">${health(s)}</span><div style="min-width:0"><b>${esc(s.name)}</b><div class="xs muted">${esc(host(s.url))}</div></div></div>
     <div class="grid g3" style="grid-template-columns:repeat(3,1fr);gap:8px">${[["Impressions", s.period.cur.impressions], ["Clicks", s.period.cur.clicks], ["In Google", last(s).indexed]].map(([t, v]) => `<div><div class="xs muted">${t}</div><div class="mono" style="font-weight:600">${fmt(v)}</div></div>`).join("")}</div></a>`
-    : `<a class="card site-card" href="#/s/${s.key}/connect"><div style="display:flex;gap:12px;align-items:center"><span class="score warn">–</span><div><b>${esc(s.name)}</b><div class="xs muted">${esc(host(s.url))}</div></div></div><span class="pill warn"><i></i>Connecting</span></a>`).join("")}</div>`
+    : `<a class="card site-card" href="#/s/${s.key}/connect"><div style="display:flex;gap:12px;align-items:center"><span class="score warn">–</span><div><b>${esc(s.name)}</b><div class="xs muted">${esc(host(s.url))}</div></div></div><span class="pill warn"><i></i>${s.byUrl ? (s.scanState === "failed" ? "Scan failed" : "Scanning") : "Connecting"}</span></a>`).join("")}</div>`
     : `<div class="card"><h2 style="margin-top:0">Connect your first website</h2><p class="muted">Add a website, then paste two values into its GitHub repository. Its dashboard fills in after the first daily run.</p><a class="btn primary" href="#/add">${I.plus}Connect a website</a></div>`}`;
 }
 
 function pAdd() {
-  return `<div><h1>Connect a website</h1><p class="lead">Add the website here, then follow the steps to send its reports.</p></div>
-  <form class="card form" id="add-form"><label>Name<input name="name" required maxlength="120" placeholder="Acme Plumbing"></label>
+  return `<div><h1>Connect a website</h1><p class="lead">Paste the address. We read the live site from our servers and fill in its dashboard within minutes, then every day. Nothing to install.</p></div>
+  <form class="card form" id="url-form"><label>Website address<input name="url" required inputmode="url" placeholder="https://www.example.com/"></label>
+  <label>Name (optional)<input name="name" maxlength="120" placeholder="Taken from the address if empty"></label>
+  <div class="err" id="url-err"></div><button class="btn primary" type="submit">Add and scan</button></form>
+  <details class="card"><summary style="cursor:pointer"><b>Or connect through GitHub</b> <span class="xs muted">for the full autopilot: Search Console, agents that edit, approvals</span></summary>
+  <form class="form" id="add-form" style="margin-top:12px"><label>Name<input name="name" required maxlength="120" placeholder="Acme Plumbing"></label>
   <label>Website address<input name="url" required type="url" placeholder="https://www.example.com/"></label>
   <label>GitHub repository (optional)<input name="repo" placeholder="owner/repository" pattern="[A-Za-z0-9_.\\-]+/[A-Za-z0-9_.\\-]+"></label>
-  <div class="err" id="add-err"></div><button class="btn primary" type="submit">Add website</button></form>`;
+  <div class="err" id="add-err"></div><button class="btn" type="submit">Add website</button></form></details>`;
 }
 
 function pLogin() {
@@ -625,6 +674,17 @@ function wire(s) {
     e.preventDefault(); const err = $("#brand-err"); err.textContent = "";
     try { const r = await api(`orgs?id=eq.${ORG.id}`, { method: "PATCH", body: { brand_name: $("#brand-name").value.trim() || null, brand_color: $("#brand-color").value } }); ORG = { ...ORG, ...(r?.[0] || {}) }; toast("Brand saved"); }
     catch (x) { err.textContent = x.message; }
+  };
+  const sn = $("#scan-now");
+  if (sn && s) sn.onclick = async () => { sn.disabled = true; try { await rpc("scan_now", { p_site: s.id }); toast("Scan started. Results arrive in a few minutes."); loaded = false; setTimeout(render, 1500); } catch (e) { toast(e.message); sn.disabled = false; } };
+  if (s && s.byUrl && s.status !== "live" && s.scanState !== "failed") { clearTimeout(state.poll); state.poll = setTimeout(() => { if (location.hash.includes(s.key)) { loaded = false; render(); } }, 20000); }
+  const uf = $("#url-form");
+  if (uf) uf.onsubmit = async (e) => {
+    e.preventDefault(); const f = new FormData(uf), err = $("#url-err"); err.textContent = "";
+    let url = String(f.get("url")).trim(); if (!/^https?:\/\//i.test(url)) url = `https://${url}`; url = url.replace(/^http:\/\//i, "https://");
+    const btn = uf.querySelector("button"); btn.disabled = true;
+    try { const j = await rpc("add_site_by_url", { p_url: url, p_name: f.get("name") || null }); loaded = false; location.hash = `#/s/${j.id}/overview`; }
+    catch (x) { err.textContent = x.message; btn.disabled = false; }
   };
   const af = $("#add-form");
   if (af) af.onsubmit = async (e) => {

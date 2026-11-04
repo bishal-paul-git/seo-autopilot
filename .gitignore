@@ -9,3 +9,4 @@ engines/go/seo-crawl
 engines/go/seo-crawl.exe
 .venv/
 cloud/portal/dist/
+cloud/portal/supabase/functions/scan/lib/

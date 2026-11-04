@@ -52,6 +52,14 @@ Only signed-in agency members can decide; client links cannot. Approved changes 
 
    The `seo-daily` workflow then runs `portal --push` every day. Existing installs need `seo-autopilot upgrade --apply` first to get that step.
 
+## Websites connected by address (D25)
+"Connect a website" now starts with just the address. The `scan` Edge Function reads the live site from Supabase every day (up to 60 pages), runs the audit rules, detects the platform, reads the business details the site states (name, phone, email, address, hours, social profiles, key pages, topics, each with its source page) and stores a snapshot. No repository, token or GitHub Actions minutes. GitHub stays the way to get Search Console, agents and edits.
+
+Deploy, once per project:
+1. Apply `supabase/migrations/20261104000000_portal_url_sites.sql` (it enables pg_cron and pg_net and schedules the 10-minute wake-up).
+2. Add the two Vault secrets it names (`scan_url`, `scan_secret`; the secret is generated in SQL, nobody needs to see it).
+3. `node cloud/portal/build-scan.mjs`, then deploy `supabase/functions/scan` with JWT verification off (it checks the Vault secret itself).
+
 ## Test locally
 - `npm test` runs the snapshot tests, and the browser test when Playwright is installed.
 - The access rules need a Postgres 16 server:
