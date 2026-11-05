@@ -10,7 +10,7 @@
 # Manual run inputs: live (really submit), only (one target id), mark ("<id> done|skipped|submitted [listing-url]").
 name: seo-backlinks
 on:
-  schedule: [{ cron: "30 9 * * *" }]   # 09:30 UTC daily
+  schedule: [{ cron: "30 9 * * 4" }]   # 09:30 UTC Thursdays (weekly: this browser job is the biggest user of Actions minutes)
   workflow_dispatch:
     inputs:
       live: { description: "Really submit (not a dry run)", type: boolean, default: false }

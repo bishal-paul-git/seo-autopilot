@@ -105,6 +105,21 @@ export function extractPage(html, pageUrl) {
 
   const imgs = html.match(/<img\b[^>]*>/gi) || [];
   const imagesNoAlt = imgs.filter((t) => !/\balt\s*=/i.test(t)).length;
+  // Image details: missing width/height (layout shift), the image sources (for broken-image checks and file names), and
+  // whether the first image of the main content is lazy-loaded (often the largest image, which should load first).
+  const realImgs = imgs.map((t) => ({ t, a: attrs(t) })).filter(({ a }) => a.src && !/^data:/i.test(a.src));
+  const imagesNoSize = realImgs.filter(({ a }) => !(a.width && a.height) && !/\.svg(\?|$)/i.test(a.src)).length;
+  const imageSrcs = [...new Set(realImgs.map(({ a }) => normalizeUrl(a.src, pageUrl)).filter(Boolean))].slice(0, 40);
+  const firstMainImg = (mainScope(html).match(/<img\b[^>]*>/i) || [])[0];
+  const heroLazy = firstMainImg ? /\bloading\s*=\s*["']?lazy/i.test(firstMainImg) : false;
+  // Tracking tags: the same tag loaded twice counts visits twice.
+  const tagLoads = [...html.matchAll(/googletagmanager\.com\/(?:gtm\.js|gtag\/js)\?id=((?:GTM|G|AW|UA)-[A-Z0-9-]+)/gi)].map((m) => m[1].toUpperCase());
+  const gtagConfigs = [...html.matchAll(/gtag\(\s*['"]config['"]\s*,\s*['"]((?:G|AW|UA)-[A-Z0-9-]+)['"]/gi)].map((m) => m[1].toUpperCase());
+  const dupTags = [...new Set([...tagLoads, ...gtagConfigs].filter((id, i, all) => all.indexOf(id) !== i && (tagLoads.filter((x) => x === id).length > 1 || gtagConfigs.filter((x) => x === id).length > 1)))];
+  // Calls to action: forms, phone and email links, and buttons or links that ask for an action.
+  const ctaWords = /\b(contact|call|book|quote|enquir|inquir|get started|sign ?up|subscribe|buy|order|add to (cart|basket)|request|demo|apply|download|register|free (trial|consultation)|whatsapp)\b/i;
+  const ctas = (html.match(/<form\b/gi) || []).length + (html.match(/href\s*=\s*["'](?:tel|mailto):/gi) || []).length
+    + [...html.matchAll(/<(button|a)\b[^>]*>([\s\S]*?)<\/\1>/gi)].filter((m) => ctaWords.test(stripTags(m[2]))).length;
   const https = /^https:/i.test(pageUrl);
   const mixed = https ? [...html.matchAll(/<(?:script|link|img|iframe|source)\b[^>]*?(?:src|href)=["'](http:\/\/[^"']+)["']/gi)].map((m) => m[1]).filter((u) => !/rel=["']?(?:alternate|canonical)/i.test(u)).slice(0, 5) : [];
 
@@ -114,7 +129,7 @@ export function extractPage(html, pageUrl) {
     title, description: metas.description ?? null, robots: (metas.robots || "").toLowerCase(), viewport: metas.viewport ?? null,
     canonical, alternates, h1s, h2s, headings, lang: (html.match(/<html\b[^>]*\blang=["']?([A-Za-z-]+)/i) || [])[1] || null,
     og: { title: props["og:title"] ?? null, image: props["og:image"] ?? null },
-    jsonld, links, images: imgs.length, imagesNoAlt, mixed, words, text,
+    jsonld, links, images: imgs.length, imagesNoAlt, imagesNoSize, imageSrcs, heroLazy, dupTags, ctas, mixed, words, text,
   };
 }
 

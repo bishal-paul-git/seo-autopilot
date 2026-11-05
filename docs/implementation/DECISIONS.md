@@ -83,6 +83,12 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-11-04 D25 Websites connected by address, scanned on Supabase (owner: "a simple or straightforward way to connect any site", "triggers outside GitHub", "cheapest, free if possible")
+**Decision:** a site can be added to the portal with only its address. A `scan` Edge Function in the portal's Supabase project crawls it (the product's own crawler, audit rules, platform detection and snapshot builder, copied in by `cloud/portal/build-scan.mjs`), reads what the site states about itself (`src/analysis/discover.mjs`) and stores a snapshot. pg_cron wakes it every 10 minutes; adding a site or pressing "Scan now" wakes it at once; each site is due once a day.
+**Why:** it works for any website (WordPress, Shopify, Wix, hand-built) with nothing to install, uses no GitHub Actions minutes, and runs on the free Supabase plan: 144 wake-ups a day, each scanning as many due sites as fit in 100 seconds. Claude already reaches the same database through the Supabase MCP.
+**Tradeoffs:** reads at most 60 pages per site per day, and only the HTML before JavaScript; no Search Console, GA4, agents or edits for address-only sites yet (they need access the owner of the site grants, which comes next). The free plan pauses a project after a week with no API traffic; the daily scans call the API, which should keep it awake, but that is not yet observed. The scanner refuses bare IPs, localhost and private suffixes.
+**Alternatives:** Render cron (unchanged Node, about $1–5 a month), Cloudflare Workers ($5 a month plan for the CPU time), a VPS. Rejected for now on cost; the scan module is plain Node, so moving it is a copy.
+
 ## 2026-10-30 D24 Approvals from the portal are applied by the site's own run (owner: "do your works")
 **Decision:** the portal records a decision (approve, hold, decline). The site's daily `portal --push` receives the pending decisions in the push response, applies them on GitHub with its own `GITHUB_TOKEN`, then acknowledges them. For an approval, it adds the label and comment and starts `seo-implement` by workflow dispatch.
 - **Why:** the portal keeps no GitHub access, which matches D23's push model. The site's token can already label issues. GitHub does not start workflows from labels added by `GITHUB_TOKEN`, but it does honour workflow dispatch, hence the explicit dispatch.

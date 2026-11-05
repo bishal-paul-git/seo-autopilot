@@ -120,5 +120,37 @@ export async function crawlSite(site, opts = {}) {
   const probe = [...unknownTargets].filter((u) => !/\.(pdf|jpe?g|png|gif|svg|webp|zip|xml|json|txt|ico|css|js|mp3|mp4)(\?|$)/i.test(u)).slice(0, 150);
   await pool(probe, 6, async (u) => { const r = await fetchPage(u, { method: "HEAD", fetchImpl }); if (r.status >= 400 || r.status === 0) brokenTargets.set(u, r.status); }, 100);
 
-  return { pages: list, ctx: { robotsTxt: robots, sitemapUrls, brokenTargets, siteHost: host } };
+  // Images the pages use: check they load (HEAD; a server that refuses HEAD with 405 is not counted as broken), capped.
+  const brokenImages = new Map();
+  const images = [...new Set(list.flatMap((p) => p.imageSrcs || []))].slice(0, opts.maxImages ?? 80);
+  await pool(images, 6, async (u) => { const r = await fetchPage(u, { method: "HEAD", fetchImpl, timeout: 10000 }); if ((r.status >= 400 && r.status !== 405) || r.status === 0) brokenImages.set(u, r.status || "no response"); }, 50);
+
+  // The other addresses of the home page (http://, and www or not) should redirect to the address the site uses.
+  const home = new URL(site.url);
+  const alt = home.hostname.startsWith("www.") ? home.hostname.slice(4) : `www.${home.hostname}`;
+  const hostVariants = [];
+  for (const v of [`http://${home.hostname}/`, `https://${alt}/`]) {
+    const r = await fetchPage(v, { fetchImpl, timeout: 10000 });
+    if (r.status === 0 && !r.chain.length) continue; // that name does not resolve: nothing to redirect
+    let final; try { final = new URL(r.finalUrl); } catch { continue; }
+    hostVariants.push({ from: v, to: r.finalUrl, status: r.status, ok: final.protocol === "https:" && final.hostname === home.hostname });
+  }
+
+  return { pages: list, ctx: { robotsTxt: robots, sitemapUrls, brokenTargets, brokenImages, hostVariants, tls: opts.checkTls === false ? null : await tlsDaysLeft(home.hostname), siteHost: host } };
+}
+
+/** Days until the site's TLS certificate expires, or null when it cannot be read here (some runtimes do not expose it). */
+export async function tlsDaysLeft(hostname, { timeout = 8000 } = {}) {
+  try {
+    const tls = await import("node:tls");
+    return await new Promise((resolve) => {
+      const done = (v) => { try { sock.destroy(); } catch { /* closed */ } resolve(v); };
+      const sock = tls.connect({ host: hostname, port: 443, servername: hostname, timeout }, () => {
+        const c = sock.getPeerCertificate?.();
+        const end = c && c.valid_to ? Date.parse(c.valid_to) : NaN;
+        done(Number.isFinite(end) ? { daysLeft: Math.floor((end - Date.now()) / 864e5), validTo: new Date(end).toISOString().slice(0, 10) } : null);
+      });
+      sock.on("error", () => done(null)); sock.on("timeout", () => done(null));
+    });
+  } catch { return null; }
 }

@@ -2,6 +2,17 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-05 (code: plan completion without new scope)
+- **Code:** 12 audit rules from the existing gap list (`src/audit/rules.mjs`, `extract.mjs`, `crawl.mjs`: host variants, TLS expiry, broken images; recipes in `knowledge/audit-fix-recipes.md`); URL inspection four at a time (`src/jobs/daily.mjs`); address-only scans add Search Console rows and priorities (`src/hosted/scan.mjs`), and the `scan` function signs a Google token with Web Crypto from the optional `GOOGLE_KEY_JSON` secret; portal shows the Search Console step.
+- **Checks:** `npm test` 490/490 (new `test/audit-more.test.mjs`, 8 tests; Search Console fallback test). Web Crypto JWT signature verified against Node's verifier with a generated key. Not run: a real Google token, a real scan (the D25 migration is still not applied).
+- **Not done, needs keys or access:** AEO extras (query fan-out, local citations), WordPress changes, real-key provider tests. Measured and dropped: npm caching (install takes 2-3 s of the 8-minute daily run).
+
+## 2026-11-04 (code: websites connected by address; config: fewer Actions minutes)
+- **Code:** `src/analysis/discover.mjs` (business details a site states, with sources), `src/hosted/scan.mjs` (snapshot from an address alone), `cloud/portal/supabase/functions/scan/index.ts` (Edge Function: claim, scan, store), `cloud/portal/build-scan.mjs` (copies the modules in), migration `20261104000000_portal_url_sites.sql`, portal "Add and scan", scanning state, "Scan now", "About this website". Decision D25.
+- **Config:** seo-backlinks template weekly; the same change merged in erudience-flow-engine#118, tenanthousingdisrepair#41 and excel-error-finder#15. Token-diet PRs merged in all 7 repos.
+- **Checks:** `npm test` 481/481.
+- **Deployment (2026-11-05):** `scan` Edge Function v1 deployed (verify_jwt off; POST without the secret returns 403, GET 405). Portal page built with the anon key and pushed to erudience-flow-engine `seo-portal` `660aadb`; Hostinger build `01a1a90b` completed 00:11 UTC. Migration not applied: `apply_migration` waited twice for a confirmation that was not answered, and the Management API returned "Invalid access token"; the owner runs it in the SQL Editor.
+
 ## 2026-11-03 (config and docs only: smaller session context)
 - **Config, no code change:** `.claude/settings.json` (new) denies MCP connectors this repo never uses: duplicate GitHub connectors, unrelated Supabase projects (matched by project URL), Whop, Gumroad, Stripe, Shopify, Lovable, ElevenLabs, Twilio, n8n, Vercel, Render and personal apps. Same kind of file added to keel, excel-error-finder, erudience-flow-engine, feed-to-site-magic, marketingmouse and tenanthousingdisrepair (each with its own list).
 - **Docs:** `STATUS.md` cut from 30 KB to about 4 KB; the full previous version is `history/STATUS-to-2026-11-03.md`.
