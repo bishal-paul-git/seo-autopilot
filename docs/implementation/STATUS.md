@@ -16,7 +16,7 @@ Architecture: dependency-free Node core (`src/jobs`, `src/analysis`, `src/audit`
 |---|---|---|
 | Jobs, agents, research suite, site intelligence, MCP server | `npm test` 481/481 (unit, fixture, mocked providers) | npm-free install via GitHub Action tags `v2` / `v2-stable` |
 | Portal: snapshot `portal --push`, ingest, RLS, approvals, invites, branding | RLS SQL tests on local Postgres 16; live curl smoke of ingest and `shared_site` (2026-10-31) | Supabase `seo-autopilot` (`ymwwwhdlyjnqbxxhtcew`) + seo.erudience.com (Hostinger, erudience-flow-engine `seo-portal` `69f0d00`) |
-| Address-only sites (D25): scan worker, discovery, Add and scan | 7 unit/offline tests (fake fetch) + portal browser test; **Deno runtime not run locally** | **not deployed**: migration waits for the owner's confirmation in Supabase |
+| Address-only sites (D25): scan worker, discovery, Add and scan | 7 unit/offline tests (fake fetch) + portal browser test; **Deno runtime not run locally** | `scan` function deployed 2026-11-05 (v1, imports `src/hosted/scan.mjs` at `45e718f`; 403 without the secret, checked); portal page live (erudience-flow-engine `seo-portal` `660aadb`, Hostinger build `01a1a90b`). **Migration not applied**: the owner runs it in the SQL Editor |
 | Hosted connector (D20) | unit tests + `wrangler dev` only | **not deployed** |
 | Live provider calls (Brave, SerpAPI, DataForSEO, Bing, OPR, CrUX, AI engines) | **mocked only** | n/a |
 
@@ -29,7 +29,7 @@ Architecture: dependency-free Node core (`src/jobs`, `src/analysis`, `src/audit`
 3. Seed snapshots show 2026-10-31 but hold 24 Oct data (backdate not applied).
 4. Not checked: portal page in a real browser, live sign-up/sign-in.
 5. Hosted connector needs the owner's GitHub App, Cloudflare deploy and secrets (`cloud/connector/README.md`).
-6. **Approve the D25 migration** in Supabase (or run `cloud/portal/supabase/migrations/20261104000000_portal_url_sites.sql` in the SQL editor); then Claude adds the Vault secrets, deploys `scan` and the portal page.
+6. **Run the D25 migration** `cloud/portal/supabase/migrations/20261104000000_portal_url_sites.sql` in the Supabase SQL Editor, then the two `vault.create_secret` lines from `cloud/portal/README.md` (the MCP `apply_migration` prompt went unanswered twice; the Management API token was rejected). Until then "Add and scan" shows an error; the GitHub route works.
 7. Turn off unused connectors and plugins at claude.ai (repo settings can only deny connector tools; plugins/skills are account-level).
 
 ## 6. Cost

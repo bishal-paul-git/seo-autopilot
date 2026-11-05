@@ -5,7 +5,8 @@ Dated session entries; history is preserved. Product release notes are in the ro
 ## 2026-11-04 (code: websites connected by address; config: fewer Actions minutes)
 - **Code:** `src/analysis/discover.mjs` (business details a site states, with sources), `src/hosted/scan.mjs` (snapshot from an address alone), `cloud/portal/supabase/functions/scan/index.ts` (Edge Function: claim, scan, store), `cloud/portal/build-scan.mjs` (copies the modules in), migration `20261104000000_portal_url_sites.sql`, portal "Add and scan", scanning state, "Scan now", "About this website". Decision D25.
 - **Config:** seo-backlinks template weekly; the same change merged in erudience-flow-engine#118, tenanthousingdisrepair#41 and excel-error-finder#15. Token-diet PRs merged in all 7 repos.
-- **Checks:** `npm test` 481/481. Not deployed: the migration's `apply_migration` call timed out waiting for the owner's confirmation; the function was not deployed.
+- **Checks:** `npm test` 481/481.
+- **Deployment (2026-11-05):** `scan` Edge Function v1 deployed (verify_jwt off; POST without the secret returns 403, GET 405). Portal page built with the anon key and pushed to erudience-flow-engine `seo-portal` `660aadb`; Hostinger build `01a1a90b` completed 00:11 UTC. Migration not applied: `apply_migration` waited twice for a confirmation that was not answered, and the Management API returned "Invalid access token"; the owner runs it in the SQL Editor.
 
 ## 2026-11-03 (config and docs only: smaller session context)
 - **Config, no code change:** `.claude/settings.json` (new) denies MCP connectors this repo never uses: duplicate GitHub connectors, unrelated Supabase projects (matched by project URL), Whop, Gumroad, Stripe, Shopify, Lovable, ElevenLabs, Twilio, n8n, Vercel, Render and personal apps. Same kind of file added to keel, excel-error-finder, erudience-flow-engine, feed-to-site-magic, marketingmouse and tenanthousingdisrepair (each with its own list).
