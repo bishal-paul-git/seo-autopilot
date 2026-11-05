@@ -493,7 +493,7 @@ function pConnectUrl(s) {
     <button class="btn primary" id="scan-now">Scan now</button></div>
   <div class="card"><div class="ch"><h2>Get more from it</h2><p>Optional, one at a time</p></div>
     <ol class="steps">
-      <li><b>Search Console and Analytics</b>: clicks, rankings and visits need access to Google's data. Coming next for address-only websites; until then, connect through GitHub below for these.</li>
+      <li><b>Search Console</b>: clicks and the searches the site appears for. ${(() => { const g = (s.integrations || []).find((i) => i.name === "Google Search Console"); return g && g.ok ? `<span class="pill ok"><i></i>Connected</span> ${esc(g.note)}` : `In Search Console › Settings › Users and permissions, add the scanning email as a user (Restricted is enough). ${g && /add (\S+@\S+)/.test(g.note) ? `Email: <code>${esc(/add (\S+@\S+)/.exec(g.note)[1])}</code>` : "The email appears here after the first scan."} The next daily scan picks it up.`; })()}</li>
       <li><b>Changes on autopilot</b>: to let the team fix things (not only advise), connect the website's GitHub repository with SEO Autopilot installed. WordPress and other builders follow.</li>
     </ol></div>
   <div class="card"><div class="ch"><h2>Client link</h2><p>No sign-in needed</p></div><p class="xs muted" style="margin-top:0">Anyone with the link sees this website's dashboard (not your other websites, not the SEO team page).</p><button class="btn primary" id="share2">${I.share}Make and copy a client link</button></div>`;

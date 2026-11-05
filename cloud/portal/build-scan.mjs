@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "../..");
 const out = join(root, "cloud/portal/supabase/functions/scan/lib");
-export const FILES = ["hosted/scan.mjs", "audit/crawl.mjs", "audit/extract.mjs", "audit/rules.mjs", "analysis/scope.mjs", "analysis/site-profile.mjs", "analysis/discover.mjs", "analysis/portal.mjs", "core/util.mjs"];
+export const FILES = ["hosted/scan.mjs", "audit/crawl.mjs", "audit/extract.mjs", "audit/rules.mjs", "analysis/scope.mjs", "analysis/site-profile.mjs", "analysis/discover.mjs", "analysis/portal.mjs", "analysis/priorities.mjs", "core/util.mjs"];
 
 /** Relative imports of a module, so a test can check the list above is complete. */
 export const importsOf = (src) => [...src.matchAll(/^import\s[^;]*?from\s+"(\.[^"]+)"/gm)].map((m) => m[1]);

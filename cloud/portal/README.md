@@ -58,7 +58,8 @@ Only signed-in agency members can decide; client links cannot. Approved changes 
 Deploy, once per project:
 1. Apply `supabase/migrations/20261104000000_portal_url_sites.sql` (it enables pg_cron and pg_net and schedules the 10-minute wake-up).
 2. Add the two Vault secrets it names (`scan_url`, `scan_secret`; the secret is generated in SQL, nobody needs to see it).
-3. `node cloud/portal/build-scan.mjs`, then deploy `supabase/functions/scan` with JWT verification off (it checks the Vault secret itself). Without the CLI (for example through the Supabase MCP), deploy `index.ts` alone with its import changed to `https://raw.githubusercontent.com/bishal-paul-git/seo-autopilot/<commit>/src/hosted/scan.mjs`, pinned to a commit: the platform bundles the modules at deploy time.
+3. Optional, for Search Console on address-only sites: set the function secret `GOOGLE_KEY_JSON` to a service account's JSON key (Supabase › Edge Functions › Secrets). Site owners add that account's email as a user in their Search Console; the portal shows the email.
+4. `node cloud/portal/build-scan.mjs`, then deploy `supabase/functions/scan` with JWT verification off (it checks the Vault secret itself). Without the CLI (for example through the Supabase MCP), deploy `index.ts` alone with its import changed to `https://raw.githubusercontent.com/bishal-paul-git/seo-autopilot/<commit>/src/hosted/scan.mjs`, pinned to a commit: the platform bundles the modules at deploy time.
 
 ## Test locally
 - `npm test` runs the snapshot tests, and the browser test when Playwright is installed.

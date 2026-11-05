@@ -89,3 +89,18 @@ test("the scan Edge Function bundle copies every module scan.mjs needs", async (
     assert.ok(FILES.includes(join(dirname(f), i).replace(/\\/g, "/")), `${f} imports ${i}, missing from build-scan.mjs FILES`);
   }
 });
+
+test("searchConsoleRows tries the domain property, then the URL prefix, and gives null when neither is shared", async () => {
+  const { searchConsoleRows } = await import("../src/hosted/scan.mjs");
+  const seen = [];
+  const fetchImpl = async (u) => {
+    seen.push(decodeURIComponent(String(u)));
+    if (String(u).includes("sc-domain")) return new Response(JSON.stringify({ error: { message: "User does not have sufficient permission" } }), { status: 403 });
+    return new Response(JSON.stringify({ rows: [{ keys: ["plumber leeds", "https://acme.test/"], clicks: 3, impressions: 90, position: 7.26 }] }), { status: 200 });
+  };
+  const r = await searchConsoleRows("https://www.acme.test/", "tok", { fetchImpl, now: Date.parse("2026-11-05") });
+  assert.equal(r.property, "https://www.acme.test/");
+  assert.deepEqual(r.rows[0], { query: "plumber leeds", page: "https://acme.test/", clicks: 3, impressions: 90, position: 7.3 });
+  assert.ok(seen[0].includes("sc-domain:acme.test"));
+  assert.equal(await searchConsoleRows("https://x.test/", "tok", { fetchImpl: async () => new Response("{}", { status: 403 }) }), null);
+});
