@@ -14,9 +14,9 @@ Architecture: dependency-free Node core (`src/jobs`, `src/analysis`, `src/audit`
 ## 3. Capabilities
 | Implemented | Verified | Deployed |
 |---|---|---|
-| Jobs, agents, research suite, site intelligence, MCP server | `npm test` 481/481 (unit, fixture, mocked providers) | npm-free install via GitHub Action tags `v2` / `v2-stable` |
+| Jobs, agents, research suite, site intelligence, MCP server | `npm test` 490/490 (unit, fixture, mocked providers) | npm-free install via GitHub Action tags `v2` / `v2-stable` |
 | Portal: snapshot `portal --push`, ingest, RLS, approvals, invites, branding | RLS SQL tests on local Postgres 16; live curl smoke of ingest and `shared_site` (2026-10-31) | Supabase `seo-autopilot` (`ymwwwhdlyjnqbxxhtcew`) + seo.erudience.com (Hostinger, erudience-flow-engine `seo-portal` `69f0d00`) |
-| Address-only sites (D25): scan worker, discovery, Add and scan | 7 unit/offline tests (fake fetch) + portal browser test; **Deno runtime not run locally** | `scan` function deployed 2026-11-05 (v1, imports `src/hosted/scan.mjs` at `45e718f`; 403 without the secret, checked); portal page live (erudience-flow-engine `seo-portal` `660aadb`, Hostinger build `01a1a90b`). **Migration not applied**: the owner runs it in the SQL Editor |
+| Address-only sites (D25): scan worker, discovery, Add and scan | 7 unit/offline tests (fake fetch) + portal browser test; **Deno runtime not run locally** | `scan` function v2 deployed 2026-11-05 (imports `src/hosted/scan.mjs` at `82c5009`; 403 without the secret, checked); portal page live (erudience-flow-engine `seo-portal` `1daf25f`). **Migration not applied**: the owner runs it in the SQL Editor |
 | Hosted connector (D20) | unit tests + `wrangler dev` only | **not deployed** |
 | Live provider calls (Brave, SerpAPI, DataForSEO, Bing, OPR, CrUX, AI engines) | **mocked only** | n/a |
 
