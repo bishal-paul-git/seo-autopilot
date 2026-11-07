@@ -49,7 +49,18 @@ Evidence:
   - After approval the planner chose 7 agents (link builder, content pruner, entity reputation, reporter, strategist, snippet optimizer, technical fixer). All 7 are deferred because no agent runner exists yet.
 
 Not built yet:
-- an agent runner (the Python runtime with the user's own AI key);
 - the apply step for approved changes (R1-E1);
 - a schedule for `god-run.mjs` (Supabase cron or GitHub Actions; needs the owner's go-ahead);
 - portal views for jobs, costs and approvals (R1-P2).
+
+## Agent runner (R1-A2, D29)
+`src/god/agent-runner.mjs` runs `agent:<name>` jobs in advise mode. It uses the agent's own definition plus advise-only rules, and wraps the site data as data. It calls the user's own key, sizes `max_tokens` so the worst case fits the job's remaining budget, and records cost from the API's usage report. The agency gets a proposal with up to 8 recommendations, each with evidence, plus sourced claims and questions.
+
+The worker now also:
+- sends an escalation straight to a person;
+- gives each retry only the budget earlier attempts left;
+- stops review-driven retries at the attempt cap.
+
+`scripts/god-run.mjs` enables the runner only when `ANTHROPIC_API_KEY` is set.
+
+Evidence: `test/agent-runner.test.mjs` (7 tests, mocked API). No live model call has been made yet: this session has no key. A live run on one site with the owner's key, and grading the advice, is the next check.

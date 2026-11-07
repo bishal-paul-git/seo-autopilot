@@ -2,6 +2,11 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (R1-A2 agent runner, D29; branch claude/r1-agent-runner)
+- **Code:** `src/god/agent-runner.mjs` (advise-only agent runs on the user's key, budget-bounded, cost from API usage, refusal fallback); worker escalation outcome, cumulative per-job budget, retry cap on review-driven retries; `scripts/god-run.mjs` enables agents when a key is set.
+- **Tests:** `test/agent-runner.test.mjs` 7/7 (mocked API); `npm test` 526/526; six SQL suites and `god-pg-e2e.mjs` pass.
+- **Not done:** no live model call (no key in this environment). No production change.
+
 ## 2026-11-08 (R1-A2 scheduler, D28; branch claude/r1-scheduler)
 - **Code:** `src/god/tick.mjs` (advance agency decisions, plan per site, budget reservation, bounded run); `scripts/god-run.mjs` (Supabase or in-memory dry run); worker stores outputs and costs, review fails overspending; stores gain `listJobs`, `recordOutput`, `spendSince`, `listSites`; scan handler keeps a compact audit and profile in memory.
 - **Migration (not applied):** `20261108020000_r1_scheduler.sql` (job_costs, record_job_output, site_spend, site_jobs, god_sites; memory kinds report and setting).

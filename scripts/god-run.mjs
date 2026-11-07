@@ -5,11 +5,13 @@
 // --approve only exists in memory mode: it plays the agency (approves each waiting job) to show the full flow. It is
 // refused against Supabase, where approvals only come from agency people in the portal.
 // Settings: SEO_GOD_PAUSED=true (kill switch), SEO_GOD_DAILY_BUDGET_USD (per site, default 0: free work only),
-// SEO_GOD_AGENT_RUN_USD (estimate per agent run, default 0.5), SEO_GOD_MAX_JOBS (per tick, default 5).
+// SEO_GOD_AGENT_RUN_USD (budget per agent run, default 0.5), SEO_GOD_MAX_JOBS (per tick, default 5).
+// Agent jobs run only when ANTHROPIC_API_KEY (the user's own key) is set; SEO_GOD_MODEL, SEO_GOD_EFFORT choose the model.
 // Prints one JSON report per tick. Nothing is scheduled by this script; it is not deployed anywhere.
 import { MemoryStore, SupabaseStore } from "../src/god/stores.mjs";
 import { makeHandlers } from "../src/god/handlers.mjs";
 import { tick } from "../src/god/tick.mjs";
+import { makeAgentHandler } from "../src/god/agent-runner.mjs";
 
 const args = process.argv.slice(2);
 const env = process.env;
@@ -24,7 +26,8 @@ if (args[0] === "--memory") {
   if (!urls.length) { console.error("usage: node scripts/god-run.mjs --memory <url> [url...] [--approve]"); process.exit(2); }
   const store = new MemoryStore();
   store.sites = urls.map((url, i) => ({ id: `site-${i + 1}`, name: new URL(url).hostname, url }));
-  const handlers = makeHandlers({ store, siteOf: async (id) => store.sites.find((s) => s.id === id) });
+  const siteOf = async (id) => store.sites.find((s) => s.id === id);
+  const handlers = withAgents(makeHandlers({ store, siteOf }), store, siteOf);
   for (let round = 1; round <= (approve ? 4 : 1); round++) {
     const t0 = Date.now(), r = await tick({ store, handlers, ...opts });
     console.log(JSON.stringify({ round, ms: Date.now() - t0, ...r }, null, 1));
@@ -37,6 +40,11 @@ if (args[0] === "--memory") {
   if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE_KEY) { console.error("set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY, or use --memory"); process.exit(2); }
   const store = new SupabaseStore({ url: env.SUPABASE_URL, key: env.SUPABASE_SERVICE_ROLE_KEY });
   const sites = await store.listSites();
-  const handlers = makeHandlers({ store, siteOf: async (id) => sites.find((s) => s.id === id) });
+  const siteOf = async (id) => sites.find((s) => s.id === id);
+  const handlers = withAgents(makeHandlers({ store, siteOf }), store, siteOf);
   console.log(JSON.stringify(await tick({ store, sites, handlers, ...opts }), null, 1));
+}
+
+function withAgents(handlers, store, siteOf) {
+  return env.ANTHROPIC_API_KEY ? { ...handlers, "agent:*": makeAgentHandler({ store, siteOf }) } : handlers;
 }

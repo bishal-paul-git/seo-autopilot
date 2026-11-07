@@ -14,20 +14,32 @@ export async function runOnce({ store, handlers, worker = "worker-1", timeoutMs 
   const handler = handlers[job.kind] || handlers[job.kind.split(":")[0] + ":*"];
   try {
     if (!handler) throw new Error(`no handler for ${job.kind}`);
-    const output = await Promise.race([handler(job, { worker, budgetUsd: Number(job.budgetUsd) || 0 }), new Promise((_, rej) => setTimeout(() => rej(new Error(`timed out after ${timeoutMs} ms`)), timeoutMs).unref?.())]);
+    // Budget is per job, across all its attempts: a retry only gets what earlier attempts left.
+    const prior = Number(job.costUsd) || 0, budget = Number(job.budgetUsd) || 0;
+    const output = await Promise.race([handler(job, { worker, budgetUsd: Math.max(0, budget - prior) }), new Promise((_, rej) => setTimeout(() => rej(new Error(`timed out after ${timeoutMs} ms`)), timeoutMs).unref?.())]);
     // Keep what was produced (the agency approves exactly this) and what it cost, before anything else can fail.
     const costUsd = Math.max(0, Number(output.costUsd) || 0);
     await store.recordOutput?.(job.id, { outputs: { proposal: output.proposal ?? null, changes: output.changes || [], claims: output.claims || [], questions: output.questions || [], evidence: output.evidence || [] }, costUsd, note: job.kind });
-    const overBudget = costUsd > (Number(job.budgetUsd) || 0) + 1e-9;
+    const spent = prior + costUsd, overBudget = spent > budget + 1e-9;
+    // A handler that cannot or must not continue (no key, budget too small, model refusal) hands the job to a person
+    // at once: retrying would repeat the same outcome and may spend again.
+    if (output.escalate) {
+      await store.transition(job.id, "failed", worker, String(output.escalate).slice(0, 300));
+      await store.transition(job.id, "escalated", "system", "needs a person");
+      log(`escalated ${job.kind}: ${output.escalate}`); return { job: job.id, outcome: "escalated", reason: output.escalate };
+    }
     if (job.risk === "low" && !job.requiresApproval && !(output.changes || []).length && !overBudget) {
       await store.transition(job.id, "completed", worker, "done", { evidence: output.evidence || [] });
       log(`completed ${job.kind}`); return { job: job.id, outcome: "completed" };
     }
     await store.transition(job.id, "awaiting_review", worker, "ready for review", { evidence: output.evidence || [], changes: (output.changes || []).length });
-    const review = reviewOutput(job, output, { siteHost: siteHostOf(job) });
+    const review = reviewOutput(job, { ...output, costUsd: spent }, { siteHost: siteHostOf(job) });
     await store.recordReview(job.id, review);
     if (review.verdict !== "pass") {
-      await store.transition(job.id, review.verdict === "fail" ? "failed" : "queued", review.reviewer, review.reasons.join("; "));
+      // Changes asked for are retried within the attempt cap; after it, or on a hard failure, the job stops.
+      const retry = review.verdict === "needs_changes" && (job.attempts ?? 0) < (job.maxAttempts ?? 3);
+      await store.transition(job.id, retry ? "queued" : "failed", review.reviewer, review.reasons.join("; "));
+      if (!retry && review.verdict === "needs_changes") await store.transition(job.id, "escalated", "system", "review still asks for changes after the last attempt");
       log(`review ${review.verdict} ${job.kind}`); return { job: job.id, outcome: `review_${review.verdict}`, reasons: review.reasons };
     }
     if (job.requiresApproval) { await store.transition(job.id, "awaiting_approval", review.reviewer, "reviewed; waiting for the agency"); return { job: job.id, outcome: "awaiting_approval" }; }

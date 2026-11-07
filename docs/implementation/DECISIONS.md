@@ -83,6 +83,16 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-11-08 D29 Hosted agent runs advise only, on the user's own key, inside the job's budget
+**Decisions:**
+1. Hosted agent jobs (`agent:<name>`, `src/god/agent-runner.mjs`) use the agent's own definition from `departments/`. They see only the site's compact reports, approved strategy and stated facts. They return recommendations for the agency and change nothing on a website. Edits stay with repository-connected sites and the R1-E1 apply step.
+2. The call goes straight to the Messages API with the user's own `ANTHROPIC_API_KEY` (rules 5 and 6). The default model is `claude-opus-5-5` at effort `medium`; `SEO_GOD_MODEL` and `SEO_GOD_EFFORT` change it. Server-side refusal fallback (`fallbacks: "default"`) is on.
+3. Budget is enforced before the call. `max_tokens` is set so the worst case fits what is left of the job's budget: input estimated at one token per three characters, priced at the most expensive model a fallback could reach. Cost is computed from the API's own usage report, per attempt when a fallback ran. A model without a known price is refused.
+4. Some outcomes go to a person at once instead of being retried: no key, a budget too small, a refusal, an unreadable reply. The job's budget covers all its attempts together, and reviews that keep asking for changes stop at the attempt cap.
+
+**Why:** the planner was choosing agents that nothing could run. Unbounded retries of paid calls were possible, both review-driven (needs_changes requeued without a cap) and per-attempt (budgets were not cumulative).
+**Tradeoffs:** advice is weaker than a reviewed change, but it is safe on any site and needs no integration. Prices are the published first-party rates as of 2026-10; Bedrock, Vertex and Foundry users would need their own price table. Agent output quality is ungraded until runs on real sites with a real key.
+
 ## 2026-11-08 D28 SEO God scheduler: two agency decisions per strategy, budgets reserved before work is queued
 **Decisions:**
 1. A scheduler tick (`src/god/tick.mjs`) carries out decisions the agency has already recorded and never makes one. An approved job that has not run is queued. An approved strategy proposal that has run becomes the site's strategy (`status: approved` in site memory) and its job completes. So the strategy needs **two** agency decisions: "start drafting" and "accept this draft". The agency approves the exact draft that is stored on the job (`jobs.outputs`), not a regenerated one.
