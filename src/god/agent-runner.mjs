@@ -29,10 +29,11 @@ export function costOf(model, usage = {}) {
 
 /** The agent's instructions, without its front matter. Only agents from this product's own departments folder. */
 export function agentPrompt(name, agents = listAgents()) {
-  const a = agents.find((x) => x.name === name);
-  if (!a) throw new Error(`unknown agent ${name}`);
-  return readFileSync(a.file, "utf8").replace(/\r\n/g, "\n").replace(/^---\n[\s\S]*?\n---\n/, "").trim();
+  return stripFrontMatter(readFileSync(findAgent(name, agents).file, "utf8"));
 }
+const findAgent = (name, agents) => { const a = agents.find((x) => x.name === name); if (!a) throw new Error(`unknown agent ${name}`); return a; };
+/** An agent definition without its front matter (also used by the Worker build to bundle prompts). */
+export const stripFrontMatter = (text) => String(text).replace(/\r\n/g, "\n").replace(/^---\n[\s\S]*?\n---\n/, "").trim();
 
 const SYSTEM_TAIL = `
 You are running in the hosted SEO God for an agency, in ADVISE mode: you cannot read or edit the site's files, run
@@ -79,7 +80,8 @@ export function parseReply(text) {
  * The "agent:*" handler. deps: { store, siteOf, apiKey, model, effort, fetchImpl, agents }. A job without budget, an
  * unknown price or a refusal escalates to a person instead of retrying; nothing is spent on a run that cannot fit.
  */
-export function makeAgentHandler({ store, siteOf, apiKey = process.env.ANTHROPIC_API_KEY, model = process.env.SEO_GOD_MODEL || "claude-opus-5-5", effort = process.env.SEO_GOD_EFFORT || "medium", fetchImpl = fetch, agents = listAgents() }) {
+// promptOf(name) supplies agent instructions where there is no file system (the Cloudflare Worker bundles them).
+export function makeAgentHandler({ store, siteOf, apiKey = globalThis.process?.env?.ANTHROPIC_API_KEY, model = globalThis.process?.env?.SEO_GOD_MODEL || "claude-opus-5-5", effort = globalThis.process?.env?.SEO_GOD_EFFORT || "medium", fetchImpl = (...a) => fetch(...a), agents = null, promptOf = null, baseUrl = "https://api.anthropic.com" }) {
   return async (job, ctx = {}) => {
     const name = job.inputs?.agent || job.kind.slice("agent:".length);
     if (!apiKey) return { escalate: "no AI key configured for this workspace (bring your own key)", evidence: [], costUsd: 0 };
@@ -87,7 +89,9 @@ export function makeAgentHandler({ store, siteOf, apiKey = process.env.ANTHROPIC
     if (!price) return { escalate: `no price known for model ${model}: cannot enforce the budget`, evidence: [], costUsd: 0 };
     const site = await siteOf(job.siteId);
     const memory = (await store.readMemory(job.siteId)) || [];
-    const system = `${agentPrompt(name, agents)}\n${SYSTEM_TAIL}`, user = agentInput(job, memory, site);
+    const own = promptOf ? promptOf(name) : agentPrompt(name, agents || listAgents());
+    if (!own) return { escalate: `unknown agent ${name}`, evidence: [], costUsd: 0 };
+    const system = `${own}\n${SYSTEM_TAIL}`, user = agentInput(job, memory, site);
     // Worst case must fit the budget: input counted at 1 token per 3 characters, priced at the worst fallback model.
     const worst = NO_SERVER_FALLBACK.has(model) ? price : { in: Math.max(price.in, FALLBACK_WORST.in), out: Math.max(price.out, FALLBACK_WORST.out) };
     const budget = Number(ctx.budgetUsd ?? job.budgetUsd) || 0;
@@ -97,7 +101,7 @@ export function makeAgentHandler({ store, siteOf, apiKey = process.env.ANTHROPIC
     const body = { model, max_tokens: maxTokens, system, messages: [{ role: "user", content: user }], output_config: { effort } };
     const headers = { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" };
     if (!NO_SERVER_FALLBACK.has(model)) { body.fallbacks = "default"; headers["anthropic-beta"] = "server-side-fallback-2026-07-01"; }
-    const res = await fetchImpl("https://api.anthropic.com/v1/messages", { method: "POST", headers, body: JSON.stringify(body) });
+    const res = await fetchImpl(`${baseUrl.replace(/\/$/, "")}/v1/messages`, { method: "POST", headers, body: JSON.stringify(body) });
     if (!res.ok) throw new Error(`model call failed: HTTP ${res.status}`); // retried by the worker, capped, then escalated
     const r = await res.json();
     const costUsd = costOf(r.model && PRICES[r.model] ? r.model : model, r.usage || {});

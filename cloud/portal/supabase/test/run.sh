@@ -13,4 +13,5 @@ p -f shim.sql -f ../migrations/20261030000000_portal.sql -f rls.sql \
   -f shim3.sql -f <(grep -v '^create extension if not exists pg_\(net\|cron\);' ../migrations/20261104000000_portal_url_sites.sql) -f rls3.sql \
   -f shim4.sql -f ../migrations/20261108000000_r1_contracts.sql -f rls4.sql \
   -f ../migrations/20261108010000_r1_memory.sql -f rls5.sql \
-  -f ../migrations/20261108020000_r1_scheduler.sql -f rls6.sql
+  -f ../migrations/20261108020000_r1_scheduler.sql -f rls6.sql \
+  -f ../migrations/20261108030000_cloudflare_execution.sql -f rls7.sql

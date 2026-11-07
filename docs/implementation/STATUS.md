@@ -3,7 +3,7 @@
 Kept short; read at the start of every session. History: [history/STATUS-to-2026-11-03.md](history/STATUS-to-2026-11-03.md). Detail: [CHANGELOG.md](CHANGELOG.md), [DECISIONS.md](DECISIONS.md). Deployed state: [../deployment-status.md](../deployment-status.md). Tests: [../test-matrix.md](../test-matrix.md).
 
 ## 1. Snapshot
-- Last updated: 2026-11-08 UTC. Branch `claude/r1-agent-runner` (stacked: #33 → #34 → #36 → #37 → #38 → #39 → #40 → this); base `main` `e982f64`; release `v2.22.1`. Requirements: PR #35 (`docs/product/`).
+- Last updated: 2026-11-08 UTC. Branch `claude/cloudflare-execution` (stacked: #33 → #34 → #36 → #37 → #38 → #39 → #40 → #41 → this; includes PR #42's plan); base `main` `e982f64`; release `v2.22.1`. Requirements: PR #35 (`docs/product/`).
 - Environment: Linux cloud container, Node 22, Postgres 16 (local SQL checks); network allowed to Supabase, GitHub and the owner's three websites.
 
 ## 2. Goal and phase
@@ -23,9 +23,17 @@ Architecture: [../system-architecture.md](../system-architecture.md). Every job 
 | R1 onboarding (dossier, questions, strategy proposal, site memory) | `src/god/onboarding.mjs`, `handlers.mjs`, memory migration | `onboarding.test.mjs`, `rls5.sql`; live runs on 2 sites (in-memory store) | not deployed |
 | R1 scheduler (tick, budgets, costs, two-step strategy approval; D28) | `src/god/tick.mjs`, `scripts/god-run.mjs`, scheduler migration | `tick.test.mjs`, `rls6.sql`, `god-pg-e2e.mjs`; live dry run on 2 sites | not scheduled or deployed |
 | R1 agent runner (advise only, user's key, budget-bounded; D29) | `src/god/agent-runner.mjs` | `agent-runner.test.mjs` (mocked API only) | no live model call yet |
+| Cloudflare execution (Worker scheduler, scan job mode, pause, lease recovery, run log; D30) | `cloud/worker/`, scan function, migration 030000 | `cf-worker.test.mjs`, `rls7.sql`, `cf-local-e2e.mjs` in workerd, `scan-fn-local.mjs` in Deno on a real site | **not deployed**; see `docs/cloudflare/README.md` |
 
 ## 4. Checks this session
-`npm test` 526/526. `bash cloud/portal/supabase/test/run.sh` (as the postgres user): all six suites pass. `node scripts/god-pg-e2e.mjs`: passes, including two scheduler ticks. Live: in-memory scheduler dry run on erudience.com and manchesterdisrepairclaims.co.uk (both scanned in 29.6 s, strategy accepted after two simulated approvals). Earlier: hosted scans of the 3 owner sites; Supabase advisors (intended `SECURITY DEFINER` warnings; leaked-password protection off).
+- `npm test`: 535/535.
+- `bash cloud/portal/supabase/test/run.sh`: 7 suites pass.
+- `god-pg-e2e.mjs`: passes.
+- `cf-local-e2e.mjs`: the Worker ran in workerd against the real migrations; 18 checks pass.
+- `scan-fn-local.mjs`: the scan function ran in Deno on a real site; 8 checks pass.
+- `cf-measure.mjs`: CPU measured on 3 real sites. A scan costs 0.8-1.6 s of CPU; Worker steps cost 0.4-2.5 ms.
+- Cloudflare and Supabase limits were read from the official docs.
+- Read-only Supabase check: production is unchanged.
 
 ## 5. Blockers and owner items
 1. Go-ahead to: redeploy `scan` from the audit commit, apply the D25 migration and Vault secrets, publish the portal page.
@@ -37,6 +45,7 @@ Architecture: [../system-architecture.md](../system-architecture.md). Every job 
 No provider spend. Hosted scan within the Supabase free plan (about 3 sites per wake, 144 wakes a day).
 
 ## 7. Next
+Cloudflare: follow `docs/cloudflare/README.md` (account setup, secrets, deploy paused, one pilot site). Confirm CPU p99 in the Workers dashboard before un-pausing all sites.
 Next check needing the owner: one live agent run on a pilot site with the owner's own Anthropic key (set it as an environment secret, never in chat), then grade the advice. Needs a decision: the R1-P2 portal (build on #31 or not), a schedule for `god-run.mjs`.
 R1 order: owner merges #33/#34 → #35/#36 → contracts PR; then R1-P2 (client portal + submission inbox) and R1-A2 (SEO God planner and queue worker) in parallel.
 

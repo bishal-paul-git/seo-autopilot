@@ -4,7 +4,8 @@ import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const DEPARTMENTS_DIR = fileURLToPath(new URL("../../departments/", import.meta.url));
+// null where modules are bundled without the repository (the Cloudflare Worker bundles agent prompts instead).
+export const DEPARTMENTS_DIR = (() => { try { return fileURLToPath(new URL("../../departments/", import.meta.url)); } catch { return null; } })();
 
 /** Departments in pipeline order: plan, find, fix, write, earn, answer engines, special sites, then the checks before approval. */
 export const DEPARTMENTS = ["command", "research", "technical", "content", "authority", "ai-search", "verticals", "quality"];

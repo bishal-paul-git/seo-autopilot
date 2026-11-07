@@ -83,6 +83,30 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-11-08 D30 Cloudflare-first execution: a stateless Worker scheduler, crawling in the Supabase scan function, CLI jobs stay in GitHub Actions (owner: PR #42)
+**Decisions:**
+1. **Scheduler and light work in a Cloudflare Worker.** One Worker (`cloud/worker/`) with one Cron Trigger every 15 min. Each site's planning and each job run in a new invocation of the same Worker through a self service binding. Each invocation gets its own 10 ms CPU and 50-subrequest Free allowance.
+   - Measured CPU per step: 0.4-2.5 ms for planning, onboarding and agent prompts.
+   - The Worker keeps no state: Supabase is the source of truth for jobs, approvals, memory, leases, retries, costs and the run log.
+2. **Crawling in the existing Supabase `scan` Edge Function**, in a new job mode: one site per request, at most 40 pages.
+   - A 60-page crawl and audit measured 0.8-1.6 s of CPU. That is far over the Worker's 10 ms, and a single page alone is 13-27 ms.
+   - The Supabase limit is 2 s CPU per request. The function's older loop scanned several sites in one request and could exceed it, so it now scans one.
+3. **The 52 CLI jobs stay in the site repositories' GitHub Actions.** Every one reads or writes the site's state files, and 6 spawn processes. In Workers, `child_process` is a non-functional stub and `/tmp` is cleared per request. Moving a job requires moving its state to Supabase first. `scripts/cf-runtime-audit.mjs` keeps the classification generated from the code.
+4. **No Cloudflare Workflows for now.** The Supabase job ledger already gives durable steps, leases, retries and approval waits. Workflows Free has the same 10 ms per step and a 3,000-step daily cap.
+5. **Fails safe.**
+   - The Worker deploys paused (`SEO_GOD_PAUSED`), and a database switch (`set_god_paused`) pauses it with no deploy.
+   - If the database cannot be read, the scheduler pauses.
+   - Expired leases are recovered through the normal capped retry path.
+   - Internal routes need a token, and the only public route is `/health`.
+6. **One scheduler.** When Cloudflare goes live, the 10-minute pg_cron scan from D25 is unscheduled. The scan function's job mode stores the portal snapshot itself.
+
+**Supersedes:** the part of D13 that put engine jobs in a separate Node container or VM. The hosted path now needs no VM: Worker plus the Supabase function. The CLI path keeps GitHub Actions.
+**Tradeoffs:**
+- The Worker holds the service-role key; tenant safety rests on the SQL functions.
+- CPU inside Cloudflare is estimated from Node, not yet measured in production.
+- Hosted sites get audits, strategy and advice, not file edits.
+- Fan-out costs Worker requests: about 350 a day for 25 sites, against 100,000.
+
 ## 2026-11-08 D29 Hosted agent runs advise only, on the user's own key, inside the job's budget
 **Decisions:**
 1. Hosted agent jobs (`agent:<name>`, `src/god/agent-runner.mjs`) use the agent's own definition from `departments/`. They see only the site's compact reports, approved strategy and stated facts. They return recommendations for the agency and change nothing on a website. Edits stay with repository-connected sites and the R1-E1 apply step.

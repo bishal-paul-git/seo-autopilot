@@ -33,7 +33,7 @@ export async function runOnce({ store, handlers, worker = "worker-1", timeoutMs 
       log(`completed ${job.kind}`); return { job: job.id, outcome: "completed" };
     }
     await store.transition(job.id, "awaiting_review", worker, "ready for review", { evidence: output.evidence || [], changes: (output.changes || []).length });
-    const review = reviewOutput(job, { ...output, costUsd: spent }, { siteHost: siteHostOf(job) });
+    const review = reviewOutput(job, { ...output, costUsd: spent }, { siteHost: await siteHostOf(job) });
     await store.recordReview(job.id, review);
     if (review.verdict !== "pass") {
       // Changes asked for are retried within the attempt cap; after it, or on a hard failure, the job stops.

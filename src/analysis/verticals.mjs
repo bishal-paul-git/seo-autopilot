@@ -3,7 +3,8 @@
 // A site's own `verticals` setting wins over detection: ["local"] forces the local pack on, [] turns every pack off.
 import { readFileSync } from "node:fs";
 
-export const PACKS = JSON.parse(readFileSync(new URL("../../departments/verticals/packs.json", import.meta.url), "utf8"));
+// Where there are no repository files (the Cloudflare Worker), the build provides the same packs on globalThis.
+export const PACKS = globalThis.SEO_AUTOPILOT_PACKS || JSON.parse(readFileSync(new URL("../../departments/verticals/packs.json", import.meta.url), "utf8"));
 
 const LOCAL_TYPES = /LocalBusiness|Dentist|Physician|MedicalClinic|Store|Restaurant|ProfessionalService|LegalService|Attorney|HomeAndConstructionBusiness|AutomotiveBusiness|FoodEstablishment|HealthAndBeautyBusiness|LodgingBusiness|RealEstateAgent/;
 const SHOP_TYPES = /^(Product|Offer|AggregateOffer|ProductGroup)$/;

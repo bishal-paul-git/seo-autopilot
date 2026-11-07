@@ -1,0 +1,61 @@
+{
+ "measuredAt": "2026-11-07T23:41:18.393Z",
+ "node": "v22.22.0",
+ "note": "CPU from process.cpuUsage in Node (same V8 as Workers); an estimate of Workers CPU, includes first-call JIT warm-up",
+ "results": [
+  {
+   "url": "owner site A (real production website)",
+   "pages": 59,
+   "wallMs": 17355,
+   "cpuMs": {
+    "scanTotal": 1103.65,
+    "scanPerPage": 18.71,
+    "dossierAndMemory": 1.04,
+    "compactReportParse": 0.04,
+    "planSite": 2.53,
+    "agentPromptBuild": 1.08,
+    "agentReplyParse": 0.17
+   },
+   "compactReportBytes": 2003,
+   "plannedJobs": 5
+  },
+  {
+   "url": "owner site B (real production website)",
+   "pages": 60,
+   "wallMs": 10871,
+   "cpuMs": {
+    "scanTotal": 792.41,
+    "scanPerPage": 13.21,
+    "dossierAndMemory": 0.69,
+    "compactReportParse": 0.06,
+    "planSite": 0.92,
+    "agentPromptBuild": 0.63,
+    "agentReplyParse": 0.08
+   },
+   "compactReportBytes": 3427,
+   "plannedJobs": 5
+  },
+  {
+   "url": "owner site C (real production website)",
+   "pages": 60,
+   "wallMs": 28457,
+   "cpuMs": {
+    "scanTotal": 1598.81,
+    "scanPerPage": 26.65,
+    "dossierAndMemory": 0.39,
+    "compactReportParse": 0.08,
+    "planSite": 0.62,
+    "agentPromptBuild": 0.73,
+    "agentReplyParse": 0.1
+   },
+   "compactReportBytes": 14248,
+   "plannedJobs": 8
+  }
+ ],
+ "scanFunctionInDeno": {
+  "pages": 39,
+  "wallMs": 11216,
+  "responseBytes": 4222,
+  "note": "scripts/scan-fn-local.mjs, job mode, Deno 2.9.6, owner site A"
+ }
+}

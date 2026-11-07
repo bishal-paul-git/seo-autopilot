@@ -13,7 +13,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const GO_DIR = fileURLToPath(new URL("../../engines/go/", import.meta.url));
+const GO_DIR = (() => { try { return fileURLToPath(new URL("../../engines/go/", import.meta.url)); } catch { return null; } })(); // null when bundled
 const exe = process.platform === "win32" ? ".exe" : "";
 
 const works = (cmd, args = ["--version"]) => { const r = spawnSync(cmd, args, { encoding: "utf8", timeout: 20000 }); return !r.error && r.status === 0; };

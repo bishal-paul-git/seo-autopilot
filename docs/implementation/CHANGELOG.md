@@ -2,6 +2,28 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (Cloudflare execution, D30; branch claude/cloudflare-execution)
+- **Code:**
+  - `cloud/worker/`: the Worker. A Cron run, per-site planning and per-job runs through the SELF binding, a remote scan, the internal token, fail-safe settings and a build that bundles the agent prompts and packs.
+  - The scan function gets job mode, scans one site per request (fixes a CPU-limit risk), caps scans at 40 pages and stores the portal snapshot.
+  - Agent runner: injectable prompts and base URL.
+  - The strategy step reuses the scan kept in memory.
+  - The crawler is imported lazily.
+  - Module-level file reads in `core/agents.mjs`, `audit/engines.mjs` and `analysis/verticals.mjs` no longer crash a bundled Worker. Found by running in workerd.
+- **Migration (not applied):** `20261108030000_cloudflare_execution.sql` (pause switch, due-site rotation, lease reaper, run log, usage).
+- **Tools:** `scripts/cf-measure.mjs` (CPU per step on real sites), `cf-runtime-audit.mjs` (generated runtime matrix), `cf-local-e2e.mjs` (Worker in workerd against the real migrations), `scan-fn-local.mjs` (scan function in Deno).
+- **Tests:**
+  - `npm test` 535/535.
+  - 7 SQL suites, including the new `rls7.sql`.
+  - `god-pg-e2e.mjs` passes.
+  - `cf-local-e2e.mjs` in workerd: 18 checks pass.
+  - `scan-fn-local.mjs` in Deno on a real site: 8 checks pass.
+- **Docs:** `docs/cloudflare/` (setup, rollback, runtime matrix, usage estimate, measurements); D30; PR #42's plan merged in.
+- **Live:**
+  - Read-only Supabase check: still 3 migrations, `scan` v2, no jobs tables.
+  - The Cloudflare account could not be read from this session (no credential applied to the API).
+  - **No deployment and no production change.**
+
 ## 2026-11-08 (R1-A2 agent runner, D29; branch claude/r1-agent-runner)
 - **Code:** `src/god/agent-runner.mjs` (advise-only agent runs on the user's key, budget-bounded, cost from API usage, refusal fallback); worker escalation outcome, cumulative per-job budget, retry cap on review-driven retries; `scripts/god-run.mjs` enables agents when a key is set.
 - **Tests:** `test/agent-runner.test.mjs` 7/7 (mocked API); `npm test` 526/526; six SQL suites and `god-pg-e2e.mjs` pass.
