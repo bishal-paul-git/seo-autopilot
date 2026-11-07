@@ -83,6 +83,17 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-11-08 D28 SEO God scheduler: two agency decisions per strategy, budgets reserved before work is queued
+**Decisions:**
+1. A scheduler tick (`src/god/tick.mjs`) carries out decisions the agency has already recorded and never makes one. An approved job that has not run is queued. An approved strategy proposal that has run becomes the site's strategy (`status: approved` in site memory) and its job completes. So the strategy needs **two** agency decisions: "start drafting" and "accept this draft". The agency approves the exact draft that is stored on the job (`jobs.outputs`), not a regenerated one.
+2. Approved changes that have run are not applied by the tick. They wait for an apply step that uses an authorized integration (R1-E1), so the content deployed is the reviewed content.
+3. Each site has a daily budget (default $0: free read-only work only). The remaining budget of open jobs counts as spent when planning, so one tick cannot queue more than the day allows. Every charge is a row in `job_costs`. Work that spends more than its budget fails review and is not retried.
+4. Only kinds with a runner are queued. Planned agent work without one is reported as deferred, not queued to fail.
+5. Kill switch `SEO_GOD_PAUSED`; a site with status `paused` is not planned.
+
+**Why:** the planner and worker existed but nothing ran them, approvals had no path forward, and there was no cost limit (master spec: budgets and costs per job; owner: agency-only approvals).
+**Tradeoffs:** two approvals per strategy is one more click for the agency, but it means drafting work (later model calls) is never started without consent. Agent cost estimates ($0.50 per run by default) are estimates until agents are graded on real runs. The queue is global; a site over budget can still run work already queued within its reservation.
+
 ## 2026-11-08 D27 Release 1 contracts in the existing Supabase schema (owner: master spec PR #35, Q07, Q27-Q30)
 **Decision:** add clients, client viewers, jobs with a database-enforced lifecycle, append-only job events, independent reviews, agency-only approvals, untrusted client submissions, private site memory, integration records and an audit log to the existing portal schema (`20261108000000_r1_contracts.sql`), with the same lifecycle mirrored in `src/core/job-lifecycle.mjs`.
 **Why:** every later workstream (SEO God orchestration, onboarding, client portal, verified changes, learning) needs these records, and the owner's hardest rules (agency-only approval, submissions never execute, client results only) belong in the database so no UI or worker bug can bypass them.

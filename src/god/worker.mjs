@@ -14,8 +14,12 @@ export async function runOnce({ store, handlers, worker = "worker-1", timeoutMs 
   const handler = handlers[job.kind] || handlers[job.kind.split(":")[0] + ":*"];
   try {
     if (!handler) throw new Error(`no handler for ${job.kind}`);
-    const output = await Promise.race([handler(job, { worker }), new Promise((_, rej) => setTimeout(() => rej(new Error(`timed out after ${timeoutMs} ms`)), timeoutMs).unref?.())]);
-    if (job.risk === "low" && !job.requiresApproval && !(output.changes || []).length) {
+    const output = await Promise.race([handler(job, { worker, budgetUsd: Number(job.budgetUsd) || 0 }), new Promise((_, rej) => setTimeout(() => rej(new Error(`timed out after ${timeoutMs} ms`)), timeoutMs).unref?.())]);
+    // Keep what was produced (the agency approves exactly this) and what it cost, before anything else can fail.
+    const costUsd = Math.max(0, Number(output.costUsd) || 0);
+    await store.recordOutput?.(job.id, { outputs: { proposal: output.proposal ?? null, changes: output.changes || [], claims: output.claims || [], questions: output.questions || [], evidence: output.evidence || [] }, costUsd, note: job.kind });
+    const overBudget = costUsd > (Number(job.budgetUsd) || 0) + 1e-9;
+    if (job.risk === "low" && !job.requiresApproval && !(output.changes || []).length && !overBudget) {
       await store.transition(job.id, "completed", worker, "done", { evidence: output.evidence || [] });
       log(`completed ${job.kind}`); return { job: job.id, outcome: "completed" };
     }

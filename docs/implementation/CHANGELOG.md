@@ -2,6 +2,12 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (R1-A2 scheduler, D28; branch claude/r1-scheduler)
+- **Code:** `src/god/tick.mjs` (advance agency decisions, plan per site, budget reservation, bounded run); `scripts/god-run.mjs` (Supabase or in-memory dry run); worker stores outputs and costs, review fails overspending; stores gain `listJobs`, `recordOutput`, `spendSince`, `listSites`; scan handler keeps a compact audit and profile in memory.
+- **Migration (not applied):** `20261108020000_r1_scheduler.sql` (job_costs, record_job_output, site_spend, site_jobs, god_sites; memory kinds report and setting).
+- **Tests:** `test/tick.test.mjs` 6/6; `npm test` 519/519; `rls6.sql` added to `run.sh` (six suites pass); `god-pg-e2e.mjs` extended with two scheduler ticks (passes).
+- **Live evidence:** in-memory dry run on erudience.com and manchesterdisrepairclaims.co.uk (29.6 s for both scans; strategy accepted after two simulated agency approvals; 7 planned agent jobs deferred: no runner). No production change.
+
 ## 2026-11-08 (R1-B1 onboarding; branch claude/r1-onboarding)
 - **Code:** `src/god/onboarding.mjs`, `src/god/handlers.mjs`, store memory methods; migration `20261108010000_r1_memory.sql` (not applied).
 - **Tests:** `test/onboarding.test.mjs` 3/3; `rls5.sql` (memory: supersede, history, per-site privacy, client and other agency refused); five SQL suites pass.

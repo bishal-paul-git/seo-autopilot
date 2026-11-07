@@ -30,3 +30,26 @@ Live evidence (2026-11-08, from this session, through the worker with an in-memo
 manchesterdisrepairclaims.co.uk in 10 s, each scanned, 8-9 stated facts with sources, 8 relevant questions, strategy
 proposal reviewed and held for agency approval. A bug found on the first run (three social profiles stored as one) is
 fixed and tested.
+
+## Scheduler (R1-A2, D28)
+| Part | File | What it does |
+|---|---|---|
+| Tick | `src/god/tick.mjs` | For each site that is not paused: carry out the agency's recorded decisions (`advance`), work out the strategy status, plan with the site's own planner, queue only kinds with a runner and within the day's budget (open jobs' remaining budget is reserved), then run up to `maxJobs` jobs. Each site is handled on its own; one site's error is reported and the others continue. Kill switch: `paused`. |
+| Runner | `scripts/god-run.mjs` | Against Supabase with the service key, or `--memory <urls>` as a dry run on real sites (`--approve` plays the agency, in memory only; refused against Supabase). Not scheduled or deployed. |
+| Costs and outputs | migration `20261108020000_r1_scheduler.sql` | `job_costs` (one row per charge; agency members read their own), `record_job_output`, `site_spend`, `site_jobs`, `god_sites` (service role only); site memory kinds `report` and `setting`. |
+| Worker changes | `src/god/worker.mjs`, `review.mjs` | Stores each run's output (proposal, changes, claims, questions, evidence) and cost before review; overspending fails review without retry. |
+
+Evidence:
+- `test/tick.test.mjs`: 6 tests.
+- `cloud/portal/supabase/test/rls6.sql`.
+- `node scripts/god-pg-e2e.mjs` against all six migrations: two ticks take an approved proposal through drafting, review, a second agency approval and acceptance, while the other agency's site keeps waiting.
+- Live dry run (2026-11-08, in memory): `node scripts/god-run.mjs --memory https://erudience.com https://manchesterdisrepairclaims.co.uk --approve`.
+  - Both sites were scanned in 29.6 s, with 10 and 9 sourced facts and 8 questions each.
+  - Both proposals were drafted, reviewed and accepted after the two approvals.
+  - After approval the planner chose 7 agents (link builder, content pruner, entity reputation, reporter, strategist, snippet optimizer, technical fixer). All 7 are deferred because no agent runner exists yet.
+
+Not built yet:
+- an agent runner (the Python runtime with the user's own AI key);
+- the apply step for approved changes (R1-E1);
+- a schedule for `god-run.mjs` (Supabase cron or GitHub Actions; needs the owner's go-ahead);
+- portal views for jobs, costs and approvals (R1-P2).

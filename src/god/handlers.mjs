@@ -15,7 +15,7 @@ export function makeHandlers({ store, siteOf, scan = scanSite, scanOptions = {} 
       const r = await scan(site, scanOptions);
       last.set(job.siteId, r);
       const dossier = buildDossier({ site, discovered: r.discovered, profile: r.profile, audit: r.audit, answers: await answersOf(store, job.siteId) });
-      await store.writeMemory(job.siteId, dossierMemory(dossier).filter((m) => m.kind !== "strategy" && m.kind !== "question"));
+      await store.writeMemory(job.siteId, [...dossierMemory(dossier).filter((m) => m.kind !== "strategy" && m.kind !== "question"), ...reportMemory(r)]);
       return { evidence: [`${r.audit.summary.pagesCrawled} pages read from ${site.url}`, `${r.audit.issues.length} findings`, `${dossier.facts.length} facts with sources`], snapshot: r.snapshot };
     },
     async strategy_proposal(job) {
@@ -30,6 +30,17 @@ export function makeHandlers({ store, siteOf, scan = scanSite, scanOptions = {} 
       };
     },
   };
+}
+
+/** The compact reports the planner needs on its next tick (audit age and findings, site profile), kept in site memory. */
+export function reportMemory(r) {
+  const a = r.audit || {}, p = r.profile || {};
+  const audit = { generatedAt: a.generatedAt || new Date().toISOString(), summary: a.summary || {}, issues: (a.issues || []).slice(0, 200).map((i) => ({ rule: i.rule, severity: i.severity, url: i.url })) };
+  const profile = { mode: p.mode || null, platform: p.platform?.name ? { name: p.platform.name } : null, rendering: p.rendering || null, inRepository: !!p.inRepository };
+  return [
+    { kind: "report", key: "audit", value: audit, basis: "verified", confidence: null, source: "scan" },
+    { kind: "report", key: "profile", value: profile, basis: "inferred", confidence: null, source: "scan" },
+  ];
 }
 
 async function answersOf(store, siteId) {

@@ -21,6 +21,9 @@ export function reviewOutput(job, output = {}, { siteHost = null, maxChanges = {
   if (siteHost) for (const c of changes) { try { if (new URL(c.url).hostname.replace(/^www\./, "") !== siteHost.replace(/^www\./, "")) reasons.push(`change outside the site: ${c.url}`); } catch { reasons.push(`change without a valid URL: ${c.url}`); } }
   for (const c of output.claims || []) if (/\d/.test(c.text || "") && !c.source) reasons.push(`number without a source: "${String(c.text).slice(0, 80)}"`);
   for (const a of output.actions || []) if (INJECTION.test(a)) reasons.push("an action repeats instruction-like text from untrusted input");
-  const verdict = reasons.length === 0 ? "pass" : reasons.some((r) => /outside the site|instruction-like|own work/.test(r)) ? "fail" : "needs_changes";
+  const cost = Number(output.costUsd) || 0, budget = Number(job.budgetUsd) || 0;
+  if (cost > budget + 1e-9) reasons.push(`over budget: spent $${cost.toFixed(4)} of $${budget.toFixed(4)}`);
+  // Hard failures are not retried: retrying an out-of-scope, manipulated or overspending run would repeat it.
+  const verdict = reasons.length === 0 ? "pass" : reasons.some((r) => /outside the site|instruction-like|own work|over budget/.test(r)) ? "fail" : "needs_changes";
   return { reviewer: REVIEWER, producer, verdict, reasons };
 }
