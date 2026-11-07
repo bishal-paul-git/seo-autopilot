@@ -2,6 +2,12 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (R1 audit and contracts; branches claude/r1-audit-plan, claude/r1-contracts)
+- **Docs:** `docs/product/R1-AUDIT-AND-PLAN.md` (gap and traceability matrix against PR #35, PR integration plan, milestones, readiness scorecard); `docs/product/R1-CONTRACTS.md`; D27.
+- **Code (not applied anywhere):** migration `20261108000000_r1_contracts.sql`; `src/core/job-lifecycle.mjs`.
+- **Tests:** `cloud/portal/supabase/test/rls4.sql` (+ `shim4.sql`), run by `run.sh`: client isolation, client projection, untrusted submissions, crafted calls refused, agency-only approval, review independence, retry cap, idempotency, anonymous refused, existing renames still work. `test/job-lifecycle.test.mjs` (JS and SQL tables identical). All four SQL suites pass on Postgres 16.
+- **Live:** read-only checks of Supabase only. No production change.
+
 ## 2026-11-07 (audit and hardening, D26; branch claude/audit-refinement)
 - **Code:** `src/hosted/safe-fetch.mjs` (SSRF guard), robots.txt in hosted crawls (`src/audit/crawl.mjs`, `src/hosted/scan.mjs`), `host-variant-canonical-only` rule, `scripts/build-registry.mjs`.
 - **Migration (not applied):** D25 hardened: host-only lower-casing, `sites_url_public` constraint, 20 adds per org per day.

@@ -83,6 +83,12 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-11-08 D27 Release 1 contracts in the existing Supabase schema (owner: master spec PR #35, Q07, Q27-Q30)
+**Decision:** add clients, client viewers, jobs with a database-enforced lifecycle, append-only job events, independent reviews, agency-only approvals, untrusted client submissions, private site memory, integration records and an audit log to the existing portal schema (`20261108000000_r1_contracts.sql`), with the same lifecycle mirrored in `src/core/job-lifecycle.mjs`.
+**Why:** every later workstream (SEO God orchestration, onboarding, client portal, verified changes, learning) needs these records, and the owner's hardest rules (agency-only approval, submissions never execute, client results only) belong in the database so no UI or worker bug can bypass them.
+**Tradeoffs:** one Postgres project for everything (no new infrastructure); gates live in SQL functions, so the engine must call them rather than write rows. Same-org rules are triggers, not CHECK constraints, so existing member updates keep working. Client accounts come only from an agency invitation; anyone else who signs up still gets an agency workspace (open sign-up stays an owner decision).
+**Not decided here:** whether share links stay alongside client accounts; email provider; file upload storage and scanning.
+
 ## 2026-11-07 D26 Audit outcomes: guarded fetch for hosted scans, robots.txt, a generated registry (owner: "a working, secure and measurable system before additional features")
 **Decisions:**
 1. Every address a user types is fetched only through `src/hosted/safe-fetch.mjs`, checked again at every redirect hop, with DNS answers checked where the runtime can resolve. The database also refuses private addresses for address-only sites, on insert and on update.
