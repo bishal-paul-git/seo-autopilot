@@ -83,7 +83,9 @@ export async function buildRegistry() {
     const llm = /llmAvailable|ANTHROPIC_API_KEY|OPENAI_API_KEY/.test(src);
     const risk = submits ? "external" : gh ? "github-write" : "read-only";
     const triggers = wfs.filter((w) => w.jobs.includes(name)).map((w) => ({ workflow: w.file, cron: w.cron, events: w.events, gatedBy: w.jobGates[name] || [] }));
-    const tested = new RegExp(`["'\`]${name.replace(/-/g, "\\-")}["'\`]|jobs/${file.replace(".mjs", "")}`).test(tests);
+    // A job counts as tested only when a test runs it (runJob("name")) or imports its module, not when a string that
+    // happens to equal its name appears somewhere.
+    const tested = new RegExp(`runJob\\(\\s*["'\`]${name.replace(/-/g, "\\-")}["'\`]|jobs/${file.replace(".mjs", "").replace(/-/g, "\\-")}\\.mjs`).test(tests);
     jobs.push({
       name, purpose: mod.description || "", source: rel, owner: "maintainers (product core)",
       mode: !triggers.length ? "manual (CLI, MCP or workflow_dispatch)" : triggers.some((t) => !t.gatedBy.length) ? "scheduled (on by default)" : "scheduled (off until an opt-in variable is set)",

@@ -3,7 +3,7 @@
 Kept short; read at the start of every session. History: [history/STATUS-to-2026-11-03.md](history/STATUS-to-2026-11-03.md). Detail: [CHANGELOG.md](CHANGELOG.md), [DECISIONS.md](DECISIONS.md). Deployed state: [../deployment-status.md](../deployment-status.md). Tests: [../test-matrix.md](../test-matrix.md).
 
 ## 1. Snapshot
-- Last updated: 2026-11-08 UTC. Branch `claude/r1-contracts` (stacked: #33 → #34 → #36 audit plan → this); base `main` `e982f64`; release `v2.22.1`. Requirements: PR #35 (`docs/product/`).
+- Last updated: 2026-11-08 UTC. Branch `claude/r1-orchestration` (stacked: #33 → #34 → #36 → #37 → this); base `main` `e982f64`; release `v2.22.1`. Requirements: PR #35 (`docs/product/`).
 - Environment: Linux cloud container, Node 22, Postgres 16 (local SQL checks); network allowed to Supabase, GitHub and the owner's three websites.
 
 ## 2. Goal and phase
@@ -19,6 +19,7 @@ Architecture: [../system-architecture.md](../system-architecture.md). Every job 
 | Address-only sites (D25) with SSRF guard and robots (D26) | yes | `rls3.sql`, `safe-fetch.test.mjs`, real scans of 3 live sites | `scan` v2 (pre-guard) deployed, migration **not applied** |
 | Live providers (research, AEO/GEO, backlinks) | yes | mocked only | no keys |
 | R1 contracts (clients, jobs, reviews, agency-only approvals, submissions, memory, audit) | migration + `job-lifecycle.mjs` | `rls4.sql`, `job-lifecycle.test.mjs` | **not applied** |
+| R1 orchestration (per-site planner, reviewer, worker) | `src/god/` | `god.test.mjs`, `scripts/god-pg-e2e.mjs` on Postgres 16 | not deployed; no live handlers |
 
 ## 4. Checks this session
 `npm test` 498/498. `bash cloud/portal/supabase/test/run.sh`: all three suites pass. Real hosted scans: erudience.com (59 pages, 19 s), manchesterdisrepairclaims.co.uk (60, 13 s), www.excelerrorfinder.com (60, 31 s); one false-high fixed. Supabase advisors: intended `SECURITY DEFINER` warnings, leaked-password protection off.

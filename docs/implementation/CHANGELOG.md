@@ -2,6 +2,12 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (R1-A2 orchestration; branch claude/r1-orchestration)
+- **Code:** `src/god/` (departments, per-site planner, independent reviewer, memory and Supabase stores, worker); `scripts/god-pg-e2e.mjs`.
+- **Tests:** `test/god.test.mjs` 8/8; `god-pg-e2e.mjs` passes against the four migrations on Postgres 16. Not deployed; no live handlers.
+- **Docs:** `docs/product/R1-ORCHESTRATION.md`.
+- **Fix:** the registry counted a job as tested whenever its name appeared as a string in any test; it now requires `runJob("name")` or an import of the job module. Untested jobs: 10 (was reported as 5).
+
 ## 2026-11-08 (R1 audit and contracts; branches claude/r1-audit-plan, claude/r1-contracts)
 - **Docs:** `docs/product/R1-AUDIT-AND-PLAN.md` (gap and traceability matrix against PR #35, PR integration plan, milestones, readiness scorecard); `docs/product/R1-CONTRACTS.md`; D27.
 - **Code (not applied anywhere):** migration `20261108000000_r1_contracts.sql`; `src/core/job-lifecycle.mjs`.

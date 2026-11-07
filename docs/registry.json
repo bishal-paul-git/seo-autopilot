@@ -351,7 +351,7 @@
    "permissions": "read-only",
    "usesLLM": false,
    "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
-   "verification": "unit/fixture tests only (external calls mocked)"
+   "verification": "untested (no test names the job; its analysis module may be tested)"
   },
   {
    "name": "schedule",
@@ -883,7 +883,7 @@
    "permissions": "read-only",
    "usesLLM": false,
    "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
-   "verification": "unit/fixture tests only (external calls mocked)"
+   "verification": "untested (no test names the job; its analysis module may be tested)"
   },
   {
    "name": "ymyl",
@@ -913,7 +913,7 @@
    "permissions": "read-only",
    "usesLLM": false,
    "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
-   "verification": "unit/fixture tests only (external calls mocked)"
+   "verification": "untested (no test names the job; its analysis module may be tested)"
   },
   {
    "name": "pace",
@@ -943,7 +943,7 @@
    "permissions": "read-only",
    "usesLLM": false,
    "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
-   "verification": "unit/fixture tests only (external calls mocked)"
+   "verification": "untested (no test names the job; its analysis module may be tested)"
   },
   {
    "name": "citations",
@@ -984,7 +984,7 @@
    "permissions": "read-only",
    "usesLLM": false,
    "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
-   "verification": "unit/fixture tests only (external calls mocked)"
+   "verification": "untested (no test names the job; its analysis module may be tested)"
   },
   {
    "name": "quality",
