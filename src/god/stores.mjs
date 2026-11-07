@@ -48,6 +48,19 @@ export class MemoryStore {
     return this.transition(id, decision === "approve" ? "authorized" : decision === "reject" ? "rejected" : "scoped", user, decision, null, "agency");
   }
   release(id) { const j = this.jobs.get(id); if (j) j.lease = null; }
+  // Site memory: a new value for the same (kind, key) supersedes the old one; history is kept (like public.remember).
+  writeMemory(siteId, items) {
+    this.memory ||= [];
+    let n = 0;
+    for (const it of items) {
+      const cur = this.memory.find((m) => m.siteId === siteId && m.kind === it.kind && m.key === it.key && !m.supersededAt);
+      if (cur && JSON.stringify(cur.value) === JSON.stringify(it.value)) continue;
+      if (cur) cur.supersededAt = Date.now();
+      this.memory.push({ siteId, ...it }); n++;
+    }
+    return n;
+  }
+  readMemory(siteId, kind = null) { return (this.memory || []).filter((m) => m.siteId === siteId && !m.supersededAt && (!kind || m.kind === kind)); }
 }
 
 /** Supabase adapter: PostgREST RPC calls with the service role key (never shipped to a browser). */
@@ -64,5 +77,7 @@ export class SupabaseStore {
   async claimJob(worker) { return SupabaseStore.#job(await this.#rpc("claim_job", { p_worker: worker })); }
   async transition(id, to, actor, note = null, data = null) { return SupabaseStore.#job(await this.#rpc("transition_job", { p_job: id, p_to: to, p_actor: actor, p_note: note, p_data: data })); }
   async recordReview(id, rv) { return this.#rpc("record_review", { p_job: id, p_reviewer: rv.reviewer, p_verdict: rv.verdict, p_rationale: (rv.reasons || []).join("; ") || null, p_evidence: rv.evidence || null }); }
+  async writeMemory(siteId, items) { return this.#rpc("remember", { p_site: siteId, p_items: items }); }
+  async readMemory(siteId, kind = null) { return this.#rpc("recall", { p_site: siteId, p_kind: kind }); }
   async failJob(id, actor, error) { return SupabaseStore.#job(await this.#rpc("fail_job", { p_job: id, p_actor: actor, p_error: error })); }
 }

@@ -11,4 +11,5 @@ p() { psql -q -v ON_ERROR_STOP=1 -d "$DB" "$@"; }
 p -f shim.sql -f ../migrations/20261030000000_portal.sql -f rls.sql \
   -f ../migrations/20261030120000_portal_approvals_team_brand.sql -f rls2.sql \
   -f shim3.sql -f <(grep -v '^create extension if not exists pg_\(net\|cron\);' ../migrations/20261104000000_portal_url_sites.sql) -f rls3.sql \
-  -f shim4.sql -f ../migrations/20261108000000_r1_contracts.sql -f rls4.sql
+  -f shim4.sql -f ../migrations/20261108000000_r1_contracts.sql -f rls4.sql \
+  -f ../migrations/20261108010000_r1_memory.sql -f rls5.sql

@@ -18,3 +18,15 @@ cross-agency approval refused, every move recorded.
 Not built yet: handlers that call the existing jobs and agents for real (scan → `src/hosted/scan.mjs`, agent jobs → the
 Python agent runtime), a scheduler that runs the planner and worker (Supabase cron or GitHub Actions), costs per job,
 strategy content generation, and portal views of jobs.
+
+## Onboarding (R1-B1)
+| Part | File | What it does |
+|---|---|---|
+| Dossier, questions, strategy draft | `src/god/onboarding.mjs` | Facts the site states (with source and basis stated/inferred/answered), questions only for what is unknown and relevant to this kind of site (local business, shop, several services), and a strategy draft from the audit's top priorities, marked `approval: agency`. Site text is stored as data; it never becomes an action. |
+| Handlers | `src/god/handlers.mjs` | `scan` (the hardened hosted scanner; writes stated facts to site memory) and `strategy_proposal` (drafts the proposal and questions; reviewed, then back to the agency). |
+| Site memory writes | migration `20261108010000_r1_memory.sql` (`remember`, `recall`, service role only) and the stores' `writeMemory`/`readMemory` | A new value supersedes the old; history kept; several values of one fact get their own keys. |
+
+Live evidence (2026-11-08, from this session, through the worker with an in-memory store): erudience.com in 16 s and
+manchesterdisrepairclaims.co.uk in 10 s, each scanned, 8-9 stated facts with sources, 8 relevant questions, strategy
+proposal reviewed and held for agency approval. A bug found on the first run (three social profiles stored as one) is
+fixed and tested.

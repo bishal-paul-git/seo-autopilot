@@ -2,6 +2,11 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (R1-B1 onboarding; branch claude/r1-onboarding)
+- **Code:** `src/god/onboarding.mjs`, `src/god/handlers.mjs`, store memory methods; migration `20261108010000_r1_memory.sql` (not applied).
+- **Tests:** `test/onboarding.test.mjs` 3/3; `rls5.sql` (memory: supersede, history, per-site privacy, client and other agency refused); five SQL suites pass.
+- **Live evidence:** onboarding through the worker on erudience.com (16 s) and manchesterdisrepairclaims.co.uk (10 s); one bug found and fixed (multi-value facts).
+
 ## 2026-11-08 (R1-A2 orchestration; branch claude/r1-orchestration)
 - **Code:** `src/god/` (departments, per-site planner, independent reviewer, memory and Supabase stores, worker); `scripts/god-pg-e2e.mjs`.
 - **Tests:** `test/god.test.mjs` 8/8; `god-pg-e2e.mjs` passes against the four migrations on Postgres 16. Not deployed; no live handlers.
