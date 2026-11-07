@@ -36,16 +36,24 @@ returns boolean language sql immutable set search_path = '' as $$
      and substring(p_url from '^https://([^/:]+)') !~ '(^localhost$|\.local$|\.internal$|\.localhost$|^[0-9.]+$)';
 $$;
 
+-- Address-only sites must keep a public address even when a member edits the url column directly (members may update
+-- name, url, repo and status; see the first migration), so the rule lives in the table, not only in add_site_by_url.
+alter table public.sites add constraint sites_url_public check (mode <> 'url' or private.public_host(url));
+
 create or replace function public.add_site_by_url(p_url text, p_name text default null, p_org uuid default null)
 returns jsonb language plpgsql security definer set search_path = '' as $$
-declare v_org uuid; v_site public.sites; v_url text := lower(trim(p_url)); v_name text;
+declare v_org uuid; v_site public.sites; v_raw text := trim(coalesce(p_url, '')); v_url text; v_name text;
 begin
+  -- Lower-case the scheme and host only; paths can be case-sensitive.
+  if v_raw !~* '^https://[^/\s]+' then raise exception 'use the public https:// address of the website'; end if;
+  v_url := 'https://' || lower(substring(v_raw from '(?i)^https://([^/]+)')) || coalesce(substring(v_raw from '(?i)^https://[^/]+(/.*)$'), '');
   if (select auth.uid()) is null then raise exception 'sign in first'; end if;
   v_org := coalesce(p_org, (select m.org_id from public.org_members m where m.user_id = (select auth.uid()) order by m.created_at limit 1));
   if v_org is null or not private.is_member(v_org) then raise exception 'not a member of that org'; end if;
   if v_url !~ '/$' and v_url !~ '^https://[^/]+/.+' then v_url := v_url || '/'; end if;
   if not private.public_host(v_url) then raise exception 'use the public https:// address of the website'; end if;
   if (select count(*) from public.sites where org_id = v_org and mode = 'url') >= 50 then raise exception 'this workspace already has 50 websites connected by address'; end if;
+  if (select count(*) from public.sites where org_id = v_org and mode = 'url' and created_at > now() - interval '1 day') >= 20 then raise exception 'at most 20 websites can be added by address per day'; end if;
   if exists (select 1 from public.sites where org_id = v_org and url = v_url) then raise exception 'that website is already in this workspace'; end if;
   v_name := coalesce(nullif(trim(coalesce(p_name, '')), ''), regexp_replace(substring(v_url from '^https://([^/:]+)'), '^www\.', ''));
   insert into public.sites (org_id, name, url, mode, status, next_scan_at, scan_state)

@@ -83,6 +83,15 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-11-07 D26 Audit outcomes: guarded fetch for hosted scans, robots.txt, a generated registry (owner: "a working, secure and measurable system before additional features")
+**Decisions:**
+1. Every address a user types is fetched only through `src/hosted/safe-fetch.mjs`, checked again at every redirect hop, with DNS answers checked where the runtime can resolve. The database also refuses private addresses for address-only sites, on insert and on update.
+2. Hosted scans follow robots.txt for `*`: the site's owner may not be the person who added it.
+3. The registry of jobs, agents, skills, MCP tools and workflows is generated from the code (`scripts/build-registry.mjs`) and checked by a test, instead of a hand-written list that drifts.
+4. No agent is merged or removed now. Overlaps (AI visibility x3, research x4, planning x2, local umbrella x5 specialists, review x3) are recorded; consolidation waits until agents are graded on real sites.
+**Why:** the D25 scanner fetched any URL a site linked to, including redirects to internal addresses; docs claimed things the code and deployment did not show (departments "not implemented", agents "running").
+**Tradeoffs:** DNS rebinding is reduced, not eliminated (documented in `docs/security.md`). Hosted scans read fewer pages on sites with strict robots.txt.
+
 ## 2026-11-04 D25 Websites connected by address, scanned on Supabase (owner: "a simple or straightforward way to connect any site", "triggers outside GitHub", "cheapest, free if possible")
 **Decision:** a site can be added to the portal with only its address. A `scan` Edge Function in the portal's Supabase project crawls it (the product's own crawler, audit rules, platform detection and snapshot builder, copied in by `cloud/portal/build-scan.mjs`), reads what the site states about itself (`src/analysis/discover.mjs`) and stores a snapshot. pg_cron wakes it every 10 minutes; adding a site or pressing "Scan now" wakes it at once; each site is due once a day.
 **Why:** it works for any website (WordPress, Shopify, Wix, hand-built) with nothing to install, uses no GitHub Actions minutes, and runs on the free Supabase plan: 144 wake-ups a day, each scanning as many due sites as fit in 100 seconds. Claude already reaches the same database through the Supabase MCP.

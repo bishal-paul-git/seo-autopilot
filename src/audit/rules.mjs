@@ -14,6 +14,7 @@ const HREFLANG = /^(x-default|[a-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|\d{3}))?)$
 
 export const RULES = {
   "host-variant-not-redirected": { severity: "high", title: "Another address of the site does not redirect", why: "If http:// or the www (or non-www) address serves the site instead of redirecting, search engines see two copies of every page and split links and signals between them.", fix: "Send a permanent (301) redirect from every other address to the one https:// address the site uses, in one hop." },
+  "host-variant-canonical-only": { severity: "low", title: "Another address serves the site, with a canonical to the main one", why: "Search engines usually follow the canonical, so this is not urgent, but links and shares to the other address count less cleanly than with a redirect.", fix: "Add a permanent (301) redirect from that address to the main https:// address." },
   "ssl-expiring": { severity: "high", title: "HTTPS certificate expires soon", why: "When the certificate expires, browsers show a full-page security warning and most visitors and crawlers stop there.", fix: "Renew the certificate now, and turn on automatic renewal at the host (Let's Encrypt renews every 60-90 days)." },
   "pagination-canonical-first": { severity: "medium", title: "Paginated page points its canonical at page 1", why: "Page 2 onwards lists different items. Pointing their canonical at page 1 tells search engines to ignore them, so items only linked from later pages can drop out of the index.", fix: "Give each paginated page a self-referencing canonical, and link the pages with normal <a href> links." },
   "tracking-duplicate": { severity: "medium", title: "The same analytics tag loads twice", why: "A tag loaded twice counts every visit and conversion twice, so traffic and conversion figures are wrong.", fix: "Load each Google tag once: either through Google Tag Manager or directly in the page, not both, and remove repeated snippets." },
@@ -127,7 +128,7 @@ export function runChecks(pages, ctx = {}) {
   // Content checks run on real pages only: a URL that redirects is judged by where it lands, not as a page of its own.
   const html = pages.filter((p) => p.status === 200 && p.isHtml && !(p.chain && p.chain.length));
 
-  for (const v of ctx.hostVariants || []) if (!v.ok && v.status === 200) add("host-variant-not-redirected", v.from, `serves ${v.to} without redirecting to the main address`);
+  for (const v of ctx.hostVariants || []) if (!v.ok && v.status === 200) add(v.canonicalOk ? "host-variant-canonical-only" : "host-variant-not-redirected", v.from, `serves ${v.to} without redirecting to the main address${v.canonicalOk ? " (its canonical points to the main address)" : ""}`);
   if (ctx.tls && ctx.tls.daysLeft != null && ctx.tls.daysLeft < 21) add("ssl-expiring", ctx.siteHost || "", `expires ${ctx.tls.validTo} (${ctx.tls.daysLeft} days)`);
   if (ctx.robotsTxt != null) {
     if (/^\s*Disallow:\s*\/\s*$/im.test(ctx.robotsTxt.split(/User-agent:/i).find((b) => /^\s*\*/.test(b)) || "")) add("robots-blocks-all", ctx.siteHost || "");

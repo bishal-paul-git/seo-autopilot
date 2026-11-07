@@ -8,6 +8,8 @@ import { detectProfile } from "../analysis/site-profile.mjs";
 import { discoverSite, pagesToRead } from "../analysis/discover.mjs";
 import { buildSnapshot } from "../analysis/portal.mjs";
 import { buildPriorities } from "../analysis/priorities.mjs";
+import { robotsDisallows } from "../audit/rules.mjs";
+import { guardedFetch, defaultResolver, urlProblem } from "./safe-fetch.mjs";
 
 const UA = "seo-autopilot-scan/2 (+https://github.com/bishal-paul-git/seo-autopilot)";
 
@@ -54,13 +56,17 @@ export async function searchConsoleRows(siteUrl, token, { fetchImpl = fetch, now
  * opts: { fetchImpl, maxPages (default 60), concurrency, now, googleToken: async () => token (optional), googleEmail }
  */
 export async function scanSite(site, opts = {}) {
-  const fetchImpl = opts.fetchImpl ?? fetch;
+  // Every request goes through the SSRF guard (private addresses, redirects, body size). Tests pass guard: false only
+  // with a fake fetch that cannot reach a network.
+  const problem = urlProblem(site.url); if (problem) throw new Error(`address refused: ${problem}`);
+  const fetchImpl = opts.guard === false ? (opts.fetchImpl ?? fetch) : guardedFetch(opts.fetchImpl ?? fetch, { resolve: opts.resolve !== undefined ? opts.resolve : await defaultResolver() });
   const now = opts.now ?? new Date().toISOString();
   const get = (u) => fetchImpl(u, { headers: { "User-Agent": UA } }).then(async (r) => ({ ok: r.ok, status: r.status, text: r.ok ? await r.text() : "", headers: Object.fromEntries(r.headers.entries()) })).catch(() => ({ ok: false, status: 0, text: "", headers: {} }));
 
   const robots = await get(new URL("/robots.txt", site.url).toString());
   const sitemap = sitemapFrom(robots.ok ? robots.text : "", site.url);
-  const { pages, ctx } = await crawlSite({ url: site.url, sitemap, audit: { engine: "node" } }, { engine: "node", maxPages: opts.maxPages ?? 60, concurrency: opts.concurrency ?? 6, fetchImpl });
+  if (robots.ok && robotsDisallows(robots.text, new URL(site.url).pathname)) throw new Error("robots.txt asks crawlers not to read this site, so it is not scanned");
+  const { pages, ctx } = await crawlSite({ url: site.url, sitemap, audit: { engine: "node" } }, { engine: "node", maxPages: opts.maxPages ?? 60, concurrency: opts.concurrency ?? 4, fetchImpl, respectRobots: true, maxImages: 40 });
   if (!pages.some((p) => p.status === 200 && p.isHtml)) throw new Error(`could not read ${site.url}: ${pages[0]?.status ? `HTTP ${pages[0].status}` : "no response"}`);
 
   const issues = runChecks(pages, { ...ctx });

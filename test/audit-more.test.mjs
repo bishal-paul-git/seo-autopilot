@@ -55,6 +55,7 @@ test("site level: other addresses that do not redirect, and a certificate about 
   const got = runChecks([], { siteHost: "a.test", hostVariants: [{ from: "http://a.test/", to: "http://a.test/", status: 200, ok: false }, { from: "https://www.a.test/", to: "https://a.test/", status: 200, ok: true }], tls: { daysLeft: 9, validTo: "2026-11-14" } });
   assert.deepEqual(rules(got).sort(), ["host-variant-not-redirected", "ssl-expiring"]);
   assert.equal(runChecks([], { tls: { daysLeft: 60, validTo: "x" } }).length, 0);
+  assert.deepEqual(rules(runChecks([], { hostVariants: [{ from: "https://www.a.test/", to: "https://www.a.test/", status: 200, ok: false, canonicalOk: true }] })), ["host-variant-canonical-only"]);
 });
 
 test("crawlSite checks images and the http/www addresses through the same fetch", async () => {

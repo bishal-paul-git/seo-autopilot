@@ -1,0 +1,3774 @@
+{
+ "generatedFrom": "code (scripts/build-registry.mjs)",
+ "counts": {
+  "jobs": 58,
+  "agents": 38,
+  "skills": 7,
+  "mcpTools": 6,
+  "workflows": 12
+ },
+ "jobs": [
+  {
+   "name": "daily",
+   "purpose": "Search Console report, URL inspection of the next sitemap URLs, and proposal candidates",
+   "source": "src/jobs/daily.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-daily.yml",
+     "cron": [
+      "17 5 * * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "GOOGLE_KEY_FILE",
+    "GOOGLE_KEY_JSON"
+   ],
+   "hosts": [
+    "searchconsole.googleapis.com",
+    "www.googleapis.com"
+   ],
+   "writes": [
+    "gsc-rows.json",
+    "daily-summary.md",
+    "proposals.json"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "real: erudience-flow-engine seo-daily runs (e.g. 2026-11-04 run 41834364691, success)"
+  },
+  {
+   "name": "propose",
+   "purpose": "Open approval-gated GitHub issues for near-miss queries, no-click pages and undiscovered pages",
+   "source": "src/jobs/propose.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-daily.yml",
+     "cron": [
+      "17 5 * * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "GH_TOKEN",
+    "GITHUB_TOKEN"
+   ],
+   "hosts": [
+    "api.github.com"
+   ],
+   "writes": [],
+   "permissions": "github-write",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "real: same seo-daily runs"
+  },
+  {
+   "name": "indexnow",
+   "purpose": "Send up to N URLs a day to Bing, Yandex and others through IndexNow",
+   "source": "src/jobs/indexnow.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-daily.yml",
+     "cron": [
+      "17 5 * * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [
+    "api.indexnow.org"
+   ],
+   "writes": [],
+   "permissions": "external",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "real: same seo-daily runs"
+  },
+  {
+   "name": "news",
+   "purpose": "Read RSS/Atom feeds, rank relevant news, and propose at most one topic a day",
+   "source": "src/jobs/news.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-daily.yml",
+     "cron": [
+      "17 5 * * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "ANTHROPIC_API_KEY",
+    "GH_TOKEN",
+    "GITHUB_TOKEN",
+    "OPENAI_API_KEY"
+   ],
+   "hosts": [
+    "api.anthropic.com",
+    "api.github.com",
+    "api.openai.com",
+    "github.com"
+   ],
+   "writes": [
+    "news-digest.md"
+   ],
+   "permissions": "github-write",
+   "usesLLM": true,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "real: same seo-daily runs"
+  },
+  {
+   "name": "research",
+   "purpose": "Weekly keyword research from Search Console, a keyword backlog, and topic proposals",
+   "source": "src/jobs/research.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "ANTHROPIC_API_KEY",
+    "GH_TOKEN",
+    "GITHUB_TOKEN",
+    "GOOGLE_KEY_FILE",
+    "GOOGLE_KEY_JSON",
+    "OPENAI_API_KEY"
+   ],
+   "hosts": [
+    "api.anthropic.com",
+    "api.github.com",
+    "api.openai.com",
+    "www.googleapis.com"
+   ],
+   "writes": [
+    "keyword-research.md"
+   ],
+   "permissions": "github-write",
+   "usesLLM": true,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "untested (no test names the job; its analysis module may be tested)"
+  },
+  {
+   "name": "digest",
+   "purpose": "Weekly digest: search changes, index status, pipeline, backlinks, GA4 and next actions",
+   "source": "src/jobs/digest.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "ANTHROPIC_API_KEY",
+    "GH_TOKEN",
+    "GITHUB_TOKEN",
+    "GOOGLE_KEY_FILE",
+    "GOOGLE_KEY_JSON",
+    "OPENAI_API_KEY"
+   ],
+   "hosts": [
+    "analyticsdata.googleapis.com",
+    "api.anthropic.com",
+    "api.github.com",
+    "api.openai.com",
+    "www.googleapis.com"
+   ],
+   "writes": [
+    "weekly-digest.md",
+    "digest-state.json"
+   ],
+   "permissions": "github-write",
+   "usesLLM": true,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "backlinks",
+   "purpose": "Fill and (when live) submit up to 5 free listing forms a day, with one retry; logs everything",
+   "source": "src/jobs/backlinks-submit.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-backlinks.yml",
+     "cron": [
+      "30 9 * * 4"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "BROWSER_WS_ENDPOINT"
+   ],
+   "hosts": [],
+   "writes": [],
+   "permissions": "external",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "real: erudience-flow-engine seo-backlinks runs (dry by default)"
+  },
+  {
+   "name": "backlinks-queue",
+   "purpose": "Open one issue listing up to 5 backlink listings for a person to do by hand, with paste-ready text",
+   "source": "src/jobs/backlinks-queue.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "GH_TOKEN",
+    "GITHUB_TOKEN"
+   ],
+   "hosts": [
+    "api.github.com"
+   ],
+   "writes": [],
+   "permissions": "external",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "untested (no test names the job; its analysis module may be tested)"
+  },
+  {
+   "name": "mentions",
+   "purpose": "Find pages that mention your brand without linking to it, and draft a polite request",
+   "source": "src/jobs/mentions.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-daily.yml",
+     "cron": [
+      "17 5 * * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "ANTHROPIC_API_KEY",
+    "GH_TOKEN",
+    "GITHUB_TOKEN",
+    "OPENAI_API_KEY"
+   ],
+   "hosts": [
+    "api.anthropic.com",
+    "api.github.com",
+    "api.openai.com"
+   ],
+   "writes": [],
+   "permissions": "github-write",
+   "usesLLM": true,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "real: same seo-daily runs"
+  },
+  {
+   "name": "mark",
+   "purpose": "Record a hand-done backlink listing: mark <target-id> done|skipped|submitted [listing-url]",
+   "source": "src/jobs/mark.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-backlinks.yml",
+     "cron": [
+      "30 9 * * 4"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "schedule",
+   "purpose": "Give approved (queued) pages release dates, N per day; --dry shows the plan without editing",
+   "source": "src/jobs/schedule.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-release.yml",
+     "cron": [
+      "40 5 * * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "real: erudience-flow-engine seo-release runs"
+  },
+  {
+   "name": "release",
+   "purpose": "Find pages that are due but not yet live, and trigger a rebuild (deploy hook or empty commit)",
+   "source": "src/jobs/release.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-release.yml",
+     "cron": [
+      "40 5 * * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "real: erudience-flow-engine seo-release runs"
+  },
+  {
+   "name": "indexing-queue",
+   "purpose": "Write the weekly list of up to 10 URLs to request indexing for by hand, with Search Console links",
+   "source": "src/jobs/indexing-queue.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "GH_TOKEN",
+    "GITHUB_TOKEN"
+   ],
+   "hosts": [
+    "api.github.com",
+    "search.google.com"
+   ],
+   "writes": [
+    "request-indexing.md"
+   ],
+   "permissions": "github-write",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "dashboard",
+   "purpose": "Build a single-file HTML dashboard from the saved data (open it in a browser)",
+   "source": "src/jobs/dashboard.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-daily.yml",
+     "cron": [
+      "17 5 * * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "real: same seo-daily runs"
+  },
+  {
+   "name": "audit",
+   "purpose": "Crawl the site like a search engine: technical and on-page issues, link graph, internal-link opportunities",
+   "source": "src/jobs/audit.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-daily.yml",
+     "cron": [
+      "17 5 * * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    },
+    {
+     "workflow": "seo-monthly.yml",
+     "cron": [
+      "11 6 1 * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [
+    "github.com"
+   ],
+   "writes": [
+    "audit.json",
+    "audit.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "real: same seo-daily runs; hosted scan of 3 live sites on 2026-11-07"
+  },
+  {
+   "name": "analyze",
+   "purpose": "Analyse saved Search Console rows: cannibalisation, striking distance, CTR gaps, decay, intent, topics",
+   "source": "src/jobs/analyze.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-daily.yml",
+     "cron": [
+      "17 5 * * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [
+    "insights.json",
+    "insights.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "real: same seo-daily runs"
+  },
+  {
+   "name": "refresh",
+   "purpose": "Open refresh proposals for your own pages that lost search visibility (you approve, the agent updates the page)",
+   "source": "src/jobs/refresh.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "GH_TOKEN",
+    "GITHUB_TOKEN"
+   ],
+   "hosts": [
+    "api.github.com"
+   ],
+   "writes": [],
+   "permissions": "github-write",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "deepdive",
+   "purpose": "Python analysis: query topics, unusual days, trends and pages losing visibility",
+   "source": "src/jobs/deepdive.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (off until an opt-in variable is set)",
+   "triggers": [
+    {
+     "workflow": "seo-agent.yml",
+     "cron": [
+      "47 7 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": [
+      "SEO_AGENT"
+     ]
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "agent",
+   "purpose": "Run a tool-using AI agent (strategist or researcher) over your SEO data; proposals go to you for approval",
+   "source": "src/jobs/agent.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (off until an opt-in variable is set)",
+   "triggers": [
+    {
+     "workflow": "seo-agent.yml",
+     "cron": [
+      "47 7 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": [
+      "SEO_AGENT"
+     ]
+    }
+   ],
+   "credentials": [
+    "GH_TOKEN",
+    "GITHUB_TOKEN"
+   ],
+   "hosts": [
+    "api.github.com"
+   ],
+   "writes": [],
+   "permissions": "github-write",
+   "usesLLM": true,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "geo",
+   "purpose": "AI search readiness (GEO/AEO): AI-crawler access, llms.txt, answer-first structure, entity and trust signals",
+   "source": "src/jobs/geo.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [
+    "github.com"
+   ],
+   "writes": [
+    "geo.json",
+    "geo.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "speed",
+   "purpose": "Core Web Vitals and performance for your top pages (PageSpeed Insights, lab and field data)",
+   "source": "src/jobs/speed.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "PAGESPEED_API_KEY"
+   ],
+   "hosts": [
+    "www.googleapis.com"
+   ],
+   "writes": [
+    "speed.json",
+    "speed.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "priorities",
+   "purpose": "Rank every finding and opportunity by impact x confidence / effort into one to-do list",
+   "source": "src/jobs/priorities.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-daily.yml",
+     "cron": [
+      "17 5 * * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    },
+    {
+     "workflow": "seo-monthly.yml",
+     "cron": [
+      "11 6 1 * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    },
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "GH_TOKEN",
+    "GITHUB_TOKEN"
+   ],
+   "hosts": [
+    "api.github.com"
+   ],
+   "writes": [
+    "priorities.json",
+    "priorities.md"
+   ],
+   "permissions": "github-write",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "real: same seo-daily runs"
+  },
+  {
+   "name": "experiments",
+   "purpose": "Log an SEO change and measure the 14 days before vs after (directional, no control group)",
+   "source": "src/jobs/experiments.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [
+    "experiments.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "profile",
+   "purpose": "Detect the site's platform, rendering and where content, redirects and robots live, so agents adapt to it",
+   "source": "src/jobs/profile.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [
+    "site-profile.json",
+    "site-profile.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "untested (no test names the job; its analysis module may be tested)"
+  },
+  {
+   "name": "team",
+   "purpose": "Decide which of the agents to run next, in order, with a ready-to-paste instruction for each",
+   "source": "src/jobs/team.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "GH_TOKEN",
+    "GITHUB_TOKEN"
+   ],
+   "hosts": [
+    "api.github.com"
+   ],
+   "writes": [
+    "agent-plan.json",
+    "work-orders.json",
+    "agent-plan.md"
+   ],
+   "permissions": "github-write",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "consent",
+   "purpose": "Consent and measurement check: tracking without a consent tool, policy claims the site does not meet",
+   "source": "src/jobs/consent.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [
+    "consent.json",
+    "consent.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "ymyl",
+   "purpose": "Sensitive-topic review gate: health, legal, tax, money, safety pages that lack an author or reviewer",
+   "source": "src/jobs/ymyl.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [
+    "ymyl.json",
+    "ymyl.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "pace",
+   "purpose": "Content-pace governor: pages going live per day and week, and a recommended calmer schedule (report only; --apply writes the new dates)",
+   "source": "src/jobs/pace.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [
+    "pace.json",
+    "pace.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "citations",
+   "purpose": "Track whether the site is cited in search results and AI answers for your key questions (needs a SERP provider key)",
+   "source": "src/jobs/citations.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "BRAVE_API_KEY",
+    "DATAFORSEO_LOGIN",
+    "DATAFORSEO_PASSWORD",
+    "SERPAPI_KEY"
+   ],
+   "hosts": [
+    "api.dataforseo.com",
+    "api.search.brave.com",
+    "brave.com",
+    "dataforseo.com",
+    "serpapi.com"
+   ],
+   "writes": [
+    "citations.json",
+    "citations.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "quality",
+   "purpose": "On-page quality: top query vs title, H1 and description, and heading structure per site section",
+   "source": "src/jobs/quality.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [
+    "quality.json",
+    "quality.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "redirects",
+   "purpose": "Redirect map: check it (targets live, no chains or loops), generate server rules, smoke-test the live site",
+   "source": "src/jobs/redirects.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [
+    "redirects-smoke.json",
+    "redirects-smoke.md",
+    "redirects-check.json",
+    "redirects-check.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "facts",
+   "purpose": "Facts guard: numbers, prices, awards and client claims must be in verified-facts.json or sourced",
+   "source": "src/jobs/facts.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-check.yml",
+     "cron": [],
+     "events": [
+      "workflow_call",
+      "pull_request"
+     ],
+     "gatedBy": []
+    },
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [
+    "facts.json",
+    "facts.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "conversions",
+   "purpose": "GA4 conversions: events received, which are key events, expected conversions missing or unmarked",
+   "source": "src/jobs/conversions.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "GOOGLE_KEY_FILE",
+    "GOOGLE_KEY_JSON"
+   ],
+   "hosts": [
+    "analyticsadmin.googleapis.com",
+    "analyticsdata.googleapis.com",
+    "www.googleapis.com"
+   ],
+   "writes": [
+    "conversions.json",
+    "conversions.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "untested (no test names the job; its analysis module may be tested)"
+  },
+  {
+   "name": "links",
+   "purpose": "Internal links to add for weakly linked pages: mentions, missing link-backs and same-section siblings",
+   "source": "src/jobs/links.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [
+    "links.json",
+    "links.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "render",
+   "purpose": "Rendered vs delivered HTML (optional headless browser): prerendered text not on the page, JS-only content",
+   "source": "src/jobs/render.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (off until an opt-in variable is set)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": [
+      "SEO_RENDER"
+     ]
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [
+    "render.json",
+    "render.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "work",
+   "purpose": "Track the agents' work orders: what may start now (dependencies, page locks), and which checks passed",
+   "source": "src/jobs/work.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "manual (CLI, MCP or workflow_dispatch)",
+   "triggers": [],
+   "credentials": [],
+   "hosts": [],
+   "writes": [
+    "work-status.json"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "exits non-zero; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "inbound",
+   "purpose": "Inbound links audit from a Search Console or backlink-tool export: links to reclaim, new and lost linking sites, patterns to review",
+   "source": "src/jobs/inbound.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [
+    "inbound.json",
+    "inbound-snapshot.json",
+    "inbound.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "logs",
+   "purpose": "Crawler log analysis: what Googlebot and AI crawlers requested, crawl wasted on errors and redirects, sitemap pages not crawled",
+   "source": "src/jobs/logs.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "manual (CLI, MCP or workflow_dispatch)",
+   "triggers": [],
+   "credentials": [],
+   "hosts": [],
+   "writes": [
+    "logs.json",
+    "logs.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "exits non-zero; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "autopilot",
+   "purpose": "Autopilot policy: which changes publish by themselves (with checks, limits and undo) and which wait for a person",
+   "source": "src/jobs/autopilot.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-automerge.yml",
+     "cron": [],
+     "events": [
+      "workflow_call",
+      "workflow_run"
+     ],
+     "gatedBy": []
+    },
+    {
+     "workflow": "seo-autopilot.yml",
+     "cron": [
+      "23 7,15 * * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": [
+      "SEO_AUTOPILOT"
+     ]
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [],
+   "permissions": "read-only",
+   "usesLLM": true,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "watch",
+   "purpose": "Watch autopilot changes after they publish and say which to revert (errors, an added noindex, clicks falling against the rest of the site)",
+   "source": "src/jobs/watch.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (off until an opt-in variable is set)",
+   "triggers": [
+    {
+     "workflow": "seo-watch.yml",
+     "cron": [
+      "47 8 * * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": [
+      "SEO_AUTOPILOT"
+     ]
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [
+    "watch.json",
+    "watch.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "monthly",
+   "purpose": "Monthly report: autopilot changes and rollbacks, 28-day traffic, audit findings vs last month, experiments",
+   "source": "src/jobs/monthly.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-monthly.yml",
+     "cron": [
+      "11 6 1 * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "GH_TOKEN",
+    "GITHUB_TOKEN"
+   ],
+   "hosts": [
+    "api.github.com"
+   ],
+   "writes": [
+    "monthly.json",
+    "monthly.md",
+    "monthly-snapshot.json"
+   ],
+   "permissions": "github-write",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "real: erudience-flow-engine seo-monthly 2026-11-01"
+  },
+  {
+   "name": "keywords",
+   "purpose": "Keyword explorer: topics, intent, demand, difficulty, gaps and questions from Search Console plus any keys you add",
+   "source": "src/jobs/keywords.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "BING_WEBMASTER_API_KEY",
+    "BRAVE_API_KEY",
+    "DATAFORSEO_LOGIN",
+    "DATAFORSEO_PASSWORD",
+    "GOOGLE_ADS_CLIENT_ID",
+    "GOOGLE_ADS_CLIENT_SECRET",
+    "GOOGLE_ADS_CUSTOMER_ID",
+    "GOOGLE_ADS_DEVELOPER_TOKEN",
+    "GOOGLE_ADS_LOGIN_CUSTOMER_ID",
+    "GOOGLE_ADS_REFRESH_TOKEN",
+    "GOOGLE_KEY_FILE",
+    "GOOGLE_KEY_JSON",
+    "OPENPAGERANK_API_KEY",
+    "SERPAPI_KEY",
+    "STACKEXCHANGE_KEY",
+    "YOUTUBE_API_KEY"
+   ],
+   "hosts": [
+    "api.dataforseo.com",
+    "api.search.brave.com",
+    "api.stackexchange.com",
+    "brave.com",
+    "dataforseo.com",
+    "github.com",
+    "googleads.googleapis.com",
+    "meta.wikimedia.org",
+    "oauth2.googleapis.com",
+    "openpagerank.com",
+    "serpapi.com",
+    "ssl.bing.com",
+    "suggestqueries.google.com",
+    "wikimedia.org",
+    "www.googleapis.com",
+    "www.youtube.com"
+   ],
+   "writes": [
+    "keywords.json",
+    "keywords.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "rank",
+   "purpose": "Rank tracker: tracked query positions over time from Search Console, movers and visibility; --serp adds live features and share of voice",
+   "source": "src/jobs/rank.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-daily.yml",
+     "cron": [
+      "17 5 * * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    },
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": [
+      "SEO_RANK_LIVE"
+     ]
+    }
+   ],
+   "credentials": [
+    "BING_WEBMASTER_API_KEY",
+    "BRAVE_API_KEY",
+    "DATAFORSEO_LOGIN",
+    "DATAFORSEO_PASSWORD",
+    "GOOGLE_ADS_CLIENT_ID",
+    "GOOGLE_ADS_CLIENT_SECRET",
+    "GOOGLE_ADS_CUSTOMER_ID",
+    "GOOGLE_ADS_DEVELOPER_TOKEN",
+    "GOOGLE_ADS_LOGIN_CUSTOMER_ID",
+    "GOOGLE_ADS_REFRESH_TOKEN",
+    "GOOGLE_KEY_FILE",
+    "GOOGLE_KEY_JSON",
+    "OPENPAGERANK_API_KEY",
+    "SERPAPI_KEY",
+    "STACKEXCHANGE_KEY",
+    "YOUTUBE_API_KEY"
+   ],
+   "hosts": [
+    "api.dataforseo.com",
+    "api.search.brave.com",
+    "api.stackexchange.com",
+    "brave.com",
+    "dataforseo.com",
+    "github.com",
+    "googleads.googleapis.com",
+    "meta.wikimedia.org",
+    "oauth2.googleapis.com",
+    "openpagerank.com",
+    "serpapi.com",
+    "ssl.bing.com",
+    "suggestqueries.google.com",
+    "wikimedia.org",
+    "www.googleapis.com",
+    "www.youtube.com"
+   ],
+   "writes": [
+    "rank.json",
+    "rank.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "real: same seo-daily runs"
+  },
+  {
+   "name": "gap",
+   "purpose": "Competitor and keyword gap: queries competitors win that you do not, by topic, with their winning pages (full gap needs DataForSEO)",
+   "source": "src/jobs/gap.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "BING_WEBMASTER_API_KEY",
+    "BRAVE_API_KEY",
+    "DATAFORSEO_LOGIN",
+    "DATAFORSEO_PASSWORD",
+    "GOOGLE_ADS_CLIENT_ID",
+    "GOOGLE_ADS_CLIENT_SECRET",
+    "GOOGLE_ADS_CUSTOMER_ID",
+    "GOOGLE_ADS_DEVELOPER_TOKEN",
+    "GOOGLE_ADS_LOGIN_CUSTOMER_ID",
+    "GOOGLE_ADS_REFRESH_TOKEN",
+    "GOOGLE_KEY_FILE",
+    "GOOGLE_KEY_JSON",
+    "OPENPAGERANK_API_KEY",
+    "SERPAPI_KEY",
+    "STACKEXCHANGE_KEY",
+    "YOUTUBE_API_KEY"
+   ],
+   "hosts": [
+    "api.dataforseo.com",
+    "api.search.brave.com",
+    "api.stackexchange.com",
+    "brave.com",
+    "dataforseo.com",
+    "github.com",
+    "googleads.googleapis.com",
+    "meta.wikimedia.org",
+    "oauth2.googleapis.com",
+    "openpagerank.com",
+    "serpapi.com",
+    "ssl.bing.com",
+    "suggestqueries.google.com",
+    "wikimedia.org",
+    "www.googleapis.com",
+    "www.youtube.com"
+   ],
+   "writes": [
+    "gap.json",
+    "gap.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "optimize",
+   "purpose": "Content optimiser: score a page or draft against top-ranking pages (terms, sections, questions, length, readability)",
+   "source": "src/jobs/optimize.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "manual (CLI, MCP or workflow_dispatch)",
+   "triggers": [],
+   "credentials": [
+    "BING_WEBMASTER_API_KEY",
+    "BRAVE_API_KEY",
+    "DATAFORSEO_LOGIN",
+    "DATAFORSEO_PASSWORD",
+    "GOOGLE_ADS_CLIENT_ID",
+    "GOOGLE_ADS_CLIENT_SECRET",
+    "GOOGLE_ADS_CUSTOMER_ID",
+    "GOOGLE_ADS_DEVELOPER_TOKEN",
+    "GOOGLE_ADS_LOGIN_CUSTOMER_ID",
+    "GOOGLE_ADS_REFRESH_TOKEN",
+    "GOOGLE_KEY_FILE",
+    "GOOGLE_KEY_JSON",
+    "OPENPAGERANK_API_KEY",
+    "SERPAPI_KEY",
+    "STACKEXCHANGE_KEY",
+    "YOUTUBE_API_KEY"
+   ],
+   "hosts": [
+    "a.com",
+    "api.dataforseo.com",
+    "api.search.brave.com",
+    "api.stackexchange.com",
+    "b.com",
+    "brave.com",
+    "dataforseo.com",
+    "github.com",
+    "googleads.googleapis.com",
+    "meta.wikimedia.org",
+    "oauth2.googleapis.com",
+    "openpagerank.com",
+    "serpapi.com",
+    "ssl.bing.com",
+    "suggestqueries.google.com",
+    "wikimedia.org",
+    "www.googleapis.com",
+    "www.youtube.com"
+   ],
+   "writes": [
+    "${name}.json",
+    "${name}.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "exits non-zero; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "ai-visibility",
+   "purpose": "AI visibility: how often ChatGPT, Claude, Gemini and Perplexity mention and cite you on your real questions (needs at least one AI key)",
+   "source": "src/jobs/ai-visibility.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (off until an opt-in variable is set)",
+   "triggers": [
+    {
+     "workflow": "seo-monthly.yml",
+     "cron": [
+      "11 6 1 * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": [
+      "SEO_AI_VISIBILITY"
+     ]
+    }
+   ],
+   "credentials": [
+    "ANTHROPIC_API_KEY",
+    "BRAVE_API_KEY",
+    "DATAFORSEO_LOGIN",
+    "DATAFORSEO_PASSWORD",
+    "GEMINI_API_KEY",
+    "OPENAI_API_KEY",
+    "PERPLEXITY_API_KEY",
+    "SERPAPI_KEY"
+   ],
+   "hosts": [
+    "api.anthropic.com",
+    "api.dataforseo.com",
+    "api.openai.com",
+    "api.perplexity.ai",
+    "api.search.brave.com",
+    "brave.com",
+    "dataforseo.com",
+    "generativelanguage.googleapis.com",
+    "serpapi.com"
+   ],
+   "writes": [
+    "ai-visibility.json",
+    "ai-visibility.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": true,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "authority",
+   "purpose": "Backlink and authority profile: referring domains with authority, new and lost, you vs competitors, link intersect",
+   "source": "src/jobs/authority.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "BING_WEBMASTER_API_KEY",
+    "BRAVE_API_KEY",
+    "DATAFORSEO_LOGIN",
+    "DATAFORSEO_PASSWORD",
+    "OPENPAGERANK_API_KEY",
+    "SERPAPI_KEY"
+   ],
+   "hosts": [
+    "api.dataforseo.com",
+    "api.search.brave.com",
+    "brave.com",
+    "dataforseo.com",
+    "openpagerank.com",
+    "serpapi.com",
+    "ssl.bing.com",
+    "suggestqueries.google.com"
+   ],
+   "writes": [
+    "authority.json",
+    "authority-snapshot.json",
+    "authority.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "forecast",
+   "purpose": "Python forecast: were the last 28 days within the normal range for clicks, impressions and each page?",
+   "source": "src/jobs/forecast.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-monthly.yml",
+     "cron": [
+      "11 6 1 * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "untested (no test names the job; its analysis module may be tested)"
+  },
+  {
+   "name": "linkgraph",
+   "purpose": "Internal link graph: internal PageRank, click depth, orphans, leaked links, and under-linked pages with search demand",
+   "source": "src/jobs/linkgraph.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-daily.yml",
+     "cron": [
+      "17 5 * * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [],
+   "hosts": [],
+   "writes": [
+    "linkgraph.json",
+    "linkgraph.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "real: same seo-daily runs"
+  },
+  {
+   "name": "vitals",
+   "purpose": "Real-user Core Web Vitals from the Chrome UX Report: site and top pages, 25-week history, regressions (free Google key)",
+   "source": "src/jobs/vitals.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "CRUX_API_KEY",
+    "PAGESPEED_API_KEY"
+   ],
+   "hosts": [
+    "chromeuxreport.googleapis.com"
+   ],
+   "writes": [
+    "vitals.json",
+    "vitals.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "changes",
+   "purpose": "Page change monitor: what changed on your key pages and competitor pages since the last check",
+   "source": "src/jobs/changes.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "BING_WEBMASTER_API_KEY",
+    "BRAVE_API_KEY",
+    "DATAFORSEO_LOGIN",
+    "DATAFORSEO_PASSWORD",
+    "GOOGLE_ADS_CLIENT_ID",
+    "GOOGLE_ADS_CLIENT_SECRET",
+    "GOOGLE_ADS_CUSTOMER_ID",
+    "GOOGLE_ADS_DEVELOPER_TOKEN",
+    "GOOGLE_ADS_LOGIN_CUSTOMER_ID",
+    "GOOGLE_ADS_REFRESH_TOKEN",
+    "GOOGLE_KEY_FILE",
+    "GOOGLE_KEY_JSON",
+    "OPENPAGERANK_API_KEY",
+    "SERPAPI_KEY",
+    "STACKEXCHANGE_KEY",
+    "YOUTUBE_API_KEY"
+   ],
+   "hosts": [
+    "a.com",
+    "api.dataforseo.com",
+    "api.search.brave.com",
+    "api.stackexchange.com",
+    "b.com",
+    "brave.com",
+    "dataforseo.com",
+    "github.com",
+    "googleads.googleapis.com",
+    "meta.wikimedia.org",
+    "oauth2.googleapis.com",
+    "openpagerank.com",
+    "serpapi.com",
+    "ssl.bing.com",
+    "suggestqueries.google.com",
+    "wikimedia.org",
+    "www.googleapis.com",
+    "www.youtube.com"
+   ],
+   "writes": [
+    "page-snapshots.json",
+    "changes.json",
+    "changes.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "schema",
+   "purpose": "Structured data: check existing markup against requirements and the visible page; draft missing markup from page facts",
+   "source": "src/jobs/schema.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "BING_WEBMASTER_API_KEY",
+    "BRAVE_API_KEY",
+    "DATAFORSEO_LOGIN",
+    "DATAFORSEO_PASSWORD",
+    "GOOGLE_ADS_CLIENT_ID",
+    "GOOGLE_ADS_CLIENT_SECRET",
+    "GOOGLE_ADS_CUSTOMER_ID",
+    "GOOGLE_ADS_DEVELOPER_TOKEN",
+    "GOOGLE_ADS_LOGIN_CUSTOMER_ID",
+    "GOOGLE_ADS_REFRESH_TOKEN",
+    "GOOGLE_KEY_FILE",
+    "GOOGLE_KEY_JSON",
+    "OPENPAGERANK_API_KEY",
+    "SERPAPI_KEY",
+    "STACKEXCHANGE_KEY",
+    "YOUTUBE_API_KEY"
+   ],
+   "hosts": [
+    "a.com",
+    "api.dataforseo.com",
+    "api.search.brave.com",
+    "api.stackexchange.com",
+    "b.com",
+    "brave.com",
+    "dataforseo.com",
+    "github.com",
+    "googleads.googleapis.com",
+    "meta.wikimedia.org",
+    "oauth2.googleapis.com",
+    "openpagerank.com",
+    "serpapi.com",
+    "ssl.bing.com",
+    "suggestqueries.google.com",
+    "wikimedia.org",
+    "www.googleapis.com",
+    "www.youtube.com"
+   ],
+   "writes": [
+    "schema.json",
+    "schema.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "local",
+   "purpose": "Local business: name, address and phone consistency, LocalBusiness markup, thin or duplicate location pages",
+   "source": "src/jobs/local.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "BING_WEBMASTER_API_KEY",
+    "BRAVE_API_KEY",
+    "DATAFORSEO_LOGIN",
+    "DATAFORSEO_PASSWORD",
+    "GOOGLE_ADS_CLIENT_ID",
+    "GOOGLE_ADS_CLIENT_SECRET",
+    "GOOGLE_ADS_CUSTOMER_ID",
+    "GOOGLE_ADS_DEVELOPER_TOKEN",
+    "GOOGLE_ADS_LOGIN_CUSTOMER_ID",
+    "GOOGLE_ADS_REFRESH_TOKEN",
+    "GOOGLE_KEY_FILE",
+    "GOOGLE_KEY_JSON",
+    "OPENPAGERANK_API_KEY",
+    "SERPAPI_KEY",
+    "STACKEXCHANGE_KEY",
+    "YOUTUBE_API_KEY"
+   ],
+   "hosts": [
+    "a.com",
+    "api.dataforseo.com",
+    "api.search.brave.com",
+    "api.stackexchange.com",
+    "b.com",
+    "brave.com",
+    "dataforseo.com",
+    "github.com",
+    "googleads.googleapis.com",
+    "meta.wikimedia.org",
+    "oauth2.googleapis.com",
+    "openpagerank.com",
+    "serpapi.com",
+    "ssl.bing.com",
+    "suggestqueries.google.com",
+    "wikimedia.org",
+    "www.googleapis.com",
+    "www.youtube.com"
+   ],
+   "writes": [
+    "local.json",
+    "local.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "shop",
+   "purpose": "Online shop: Product markup and price match, stock handling, thin categories, filter-parameter crawl traps",
+   "source": "src/jobs/shop.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "BING_WEBMASTER_API_KEY",
+    "BRAVE_API_KEY",
+    "DATAFORSEO_LOGIN",
+    "DATAFORSEO_PASSWORD",
+    "GOOGLE_ADS_CLIENT_ID",
+    "GOOGLE_ADS_CLIENT_SECRET",
+    "GOOGLE_ADS_CUSTOMER_ID",
+    "GOOGLE_ADS_DEVELOPER_TOKEN",
+    "GOOGLE_ADS_LOGIN_CUSTOMER_ID",
+    "GOOGLE_ADS_REFRESH_TOKEN",
+    "GOOGLE_KEY_FILE",
+    "GOOGLE_KEY_JSON",
+    "OPENPAGERANK_API_KEY",
+    "SERPAPI_KEY",
+    "STACKEXCHANGE_KEY",
+    "YOUTUBE_API_KEY"
+   ],
+   "hosts": [
+    "a.com",
+    "api.dataforseo.com",
+    "api.search.brave.com",
+    "api.stackexchange.com",
+    "b.com",
+    "brave.com",
+    "dataforseo.com",
+    "github.com",
+    "googleads.googleapis.com",
+    "meta.wikimedia.org",
+    "oauth2.googleapis.com",
+    "openpagerank.com",
+    "serpapi.com",
+    "ssl.bing.com",
+    "suggestqueries.google.com",
+    "wikimedia.org",
+    "www.googleapis.com",
+    "www.youtube.com"
+   ],
+   "writes": [
+    "shop.json",
+    "shop.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "gsc",
+   "purpose": "Search Console beyond web search: sitemaps, Discover/News/image/video clicks, search appearance, countries, devices, fresh days",
+   "source": "src/jobs/gsc.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "GOOGLE_KEY_FILE",
+    "GOOGLE_KEY_JSON"
+   ],
+   "hosts": [
+    "www.googleapis.com"
+   ],
+   "writes": [
+    "gsc.json",
+    "gsc.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "listings",
+   "purpose": "Google listings: Business Profile against the site and review replies (local pack); Merchant Center product issues (e-commerce pack)",
+   "source": "src/jobs/listings.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-weekly.yml",
+     "cron": [
+      "10 6 * * 1"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "GBP_CLIENT_ID",
+    "GBP_CLIENT_SECRET",
+    "GBP_LOCATION",
+    "GBP_REFRESH_TOKEN",
+    "GOOGLE_KEY_FILE",
+    "GOOGLE_KEY_JSON",
+    "MERCHANT_ACCOUNT_ID"
+   ],
+   "hosts": [
+    "merchantapi.googleapis.com",
+    "mybusiness.googleapis.com",
+    "mybusinessbusinessinformation.googleapis.com",
+    "oauth2.googleapis.com",
+    "www.googleapis.com"
+   ],
+   "writes": [
+    "listings.json",
+    "listings.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "entity",
+   "purpose": "Entity check: Google Knowledge Graph and Wikidata, confirmed by official website, against your sameAs links",
+   "source": "src/jobs/entity.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-monthly.yml",
+     "cron": [
+      "11 6 1 * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "BING_WEBMASTER_API_KEY",
+    "BRAVE_API_KEY",
+    "DATAFORSEO_LOGIN",
+    "DATAFORSEO_PASSWORD",
+    "GOOGLE_ADS_CLIENT_ID",
+    "GOOGLE_ADS_CLIENT_SECRET",
+    "GOOGLE_ADS_CUSTOMER_ID",
+    "GOOGLE_ADS_DEVELOPER_TOKEN",
+    "GOOGLE_ADS_LOGIN_CUSTOMER_ID",
+    "GOOGLE_ADS_REFRESH_TOKEN",
+    "GOOGLE_KEY_FILE",
+    "GOOGLE_KEY_JSON",
+    "GOOGLE_KG_API_KEY",
+    "OPENPAGERANK_API_KEY",
+    "SERPAPI_KEY",
+    "STACKEXCHANGE_KEY",
+    "YOUTUBE_API_KEY"
+   ],
+   "hosts": [
+    "a.com",
+    "api.dataforseo.com",
+    "api.search.brave.com",
+    "api.stackexchange.com",
+    "b.com",
+    "brave.com",
+    "dataforseo.com",
+    "en.wikipedia.org",
+    "github.com",
+    "googleads.googleapis.com",
+    "kgsearch.googleapis.com",
+    "meta.wikimedia.org",
+    "oauth2.googleapis.com",
+    "openpagerank.com",
+    "serpapi.com",
+    "ssl.bing.com",
+    "suggestqueries.google.com",
+    "wikimedia.org",
+    "www.googleapis.com",
+    "www.wikidata.org",
+    "www.youtube.com"
+   ],
+   "writes": [
+    "entity.json",
+    "entity.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "portal",
+   "purpose": "Client portal snapshot (portal.json) from the latest reports; --push sends it to the hosted portal",
+   "source": "src/jobs/portal.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-daily.yml",
+     "cron": [
+      "17 5 * * *"
+     ],
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "GH_TOKEN",
+    "GITHUB_TOKEN",
+    "GOOGLE_KEY_FILE",
+    "GOOGLE_KEY_JSON",
+    "SEO_PORTAL_TOKEN",
+    "SEO_PORTAL_URL"
+   ],
+   "hosts": [
+    "analyticsadmin.googleapis.com",
+    "analyticsdata.googleapis.com",
+    "api.github.com",
+    "www.googleapis.com"
+   ],
+   "writes": [
+    "portal.json"
+   ],
+   "permissions": "github-write",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "real: snapshot built in seo-daily runs; push not configured (no SEO_PORTAL_TOKEN)"
+  }
+ ],
+ "agents": [
+  {
+   "name": "seo-coordinator",
+   "department": "command",
+   "purpose": "Runs the whole agent team for one site or a portfolio of sites. Reads the site profile and the agent plan (`team` job), decides which specialist to call next and in what order, hands each one a precise brief, checks what comes back, and keeps one running status. Use when you say \"work on the SEO for this site\" or \"what should the team do this week\" and do not want to pick the agents yourself.",
+   "source": "departments/command/agents/seo-coordinator.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "WebFetch",
+    "Agent"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-onboarder",
+   "department": "command",
+   "purpose": "Sets up seo-autopilot and the agent team for any website. Profiles the platform (WordPress, Shopify, a framework, a static site, a hosted builder), decides whether agents can edit files or only advise, confirms the business facts, fills in each agent's Project rules, and lists what access is still missing. Use first on any new site, or after a redesign or platform change.",
+   "source": "departments/command/agents/seo-onboarder.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "WebFetch",
+    "Edit",
+    "Write"
+   ],
+   "mayEdit": true,
+   "mayRunShell": false,
+   "reads": [
+    "site-platforms.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "medium (edits files on a seo/* branch; a person or the autopilot policy merges)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-reporter",
+   "department": "command",
+   "purpose": "Writes the plain-English weekly or monthly SEO report - what moved, what was done, which past changes appear to have worked, what to do next - from the project's own data and experiment log, with honest uncertainty. Use for regular owner updates and for judging whether a specific change worked. Reports only.",
+   "source": "departments/command/agents/seo-reporter.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "seo-reporting.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-strategist",
+   "department": "command",
+   "purpose": "Reads this project's SEO data (priorities, audit, search insights, AI search readiness, speed, experiments, pipeline) and produces a short ranked plan for the week with evidence, owner, expected effect and risk. Use when asked \"what should we work on\", \"why is traffic flat\", or before a planning session. Does not edit files.",
+   "source": "departments/command/agents/seo-strategist.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "traffic-potential"
+   ],
+   "mode": "workflow (seo-agent.yml)",
+   "triggers": [
+    {
+     "workflow": "seo-agent.yml",
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": [
+      "SEO_AGENT"
+     ]
+    }
+   ],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-competitor-analyst",
+   "department": "research",
+   "purpose": "Studies who ranks above the site for target queries and what those pages do better - intent, page type, depth, evidence, format, freshness, search features - and turns it into specific, honest content and structure gaps the site can fill with its own material. Use for queries just off page one, new topics and before a big content push. Reports only.",
+   "source": "departments/research/agents/seo-competitor-analyst.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "competitor-analysis.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-researcher",
+   "department": "research",
+   "purpose": "Finds topics this site can credibly rank for and writes a content brief for each (primary query, intent, evidence, page type, must-answer questions, links, risks). Use before any new page is proposed or drafted, or when asked \"what should we write about\" or \"is there a gap for X\". Does not edit files.",
+   "source": "departments/research/agents/seo-researcher.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "keyword-research-and-clustering.md",
+    "question-mining",
+    "search-intent-labelling"
+   ],
+   "mode": "workflow (seo-agent.yml)",
+   "triggers": [
+    {
+     "workflow": "seo-agent.yml",
+     "events": [
+      "schedule",
+      "workflow_dispatch"
+     ],
+     "gatedBy": [
+      "SEO_AGENT"
+     ]
+    }
+   ],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-serp-analyst",
+   "department": "research",
+   "purpose": "Tracks where the site ranks for the queries that matter and what the results page looks like - positions over time, search features (snippets, People Also Ask, local, video, images, AI answers) and who holds them, and share of voice across a tracked query set. Use weekly or monthly, after a drop, or before choosing which pages to improve. Reports only.",
+   "source": "departments/research/agents/seo-serp-analyst.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "keyword-research-and-clustering.md",
+    "search-intent-labelling",
+    "traffic-potential"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-topic-mapper",
+   "department": "research",
+   "purpose": "Maps the whole site's topics - groups real queries into parent topics and clusters, labels intent, estimates each topic's potential from real data, and assigns one page per cluster (hub and supporting pages) - so gaps, overlaps and missing links show up at a glance. Use before a content plan, after big changes, or when pages compete with each other. Reports only.",
+   "source": "departments/research/agents/seo-topic-mapper.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "keyword-research-and-clustering.md",
+    "search-intent-labelling",
+    "traffic-potential",
+    "question-mining"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-indexing-monitor",
+   "department": "technical",
+   "purpose": "Tracks which pages Google has and has not indexed, diagnoses why each group is missing, keeps the request-indexing list honest (drops pages already indexed, flags pages that should not be requested), and recommends fixes grouped by cause. Use when pages are not appearing in search or a \"request indexing\" list looks stale. Reports only.",
+   "source": "departments/technical/agents/seo-indexing-monitor.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "indexing-and-crawl-diagnosis.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-international",
+   "department": "technical",
+   "purpose": "Checks and fixes language and country targeting end to end - whether separate versions are needed, URL structure, hreflang return links and codes, canonicals, translation quality, structured data and Search Console setup. Use for sites in more than one language or region, or before adding one. Edits templates or config on a branch when the site is in edit mode.",
+   "source": "departments/technical/agents/seo-international.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Edit",
+    "Write",
+    "WebFetch",
+    "Bash(git checkout -b seo/*)",
+    "Bash(git add:*)",
+    "Bash(git commit:*)",
+    "Bash(git push origin seo/*)",
+    "Bash(git status)",
+    "Bash(git diff:*)",
+    "Bash(gh pr create:*)"
+   ],
+   "mayEdit": true,
+   "mayRunShell": false,
+   "reads": [
+    "international-seo.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "medium (edits files on a seo/* branch; a person or the autopilot policy merges)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-log-analyst",
+   "department": "technical",
+   "purpose": "Reads the logs job's report of what Googlebot, Bingbot and AI crawlers actually requested - crawl spent on errors, redirects and parameter URLs, sitemap pages never requested, noindex pages crawled again and again, fake crawlers - and turns it into a few specific fixes for the technical and content agents. Advises only; the owner supplies the logs, and only totals are ever reported.",
+   "source": "departments/technical/agents/seo-log-analyst.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "indexing-and-crawl-diagnosis.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-media-optimizer",
+   "department": "technical",
+   "purpose": "Audits and improves images, video and documents for search and speed - alt text, file names, formats and sizes, dimensions, lazy-loading, responsive images, crawlability, Open Graph images, video markup and transcripts. Use when the audit reports missing alt text, speed reports flag images, or pages rely on media. Edits templates or content files on a branch in edit mode; otherwise gives exact ins",
+   "source": "departments/technical/agents/seo-media-optimizer.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Edit",
+    "Write",
+    "WebFetch",
+    "Bash(git checkout -b seo/*)",
+    "Bash(git add:*)",
+    "Bash(git commit:*)",
+    "Bash(git push origin seo/*)",
+    "Bash(git status)",
+    "Bash(git diff:*)",
+    "Bash(gh pr create:*)"
+   ],
+   "mayEdit": true,
+   "mayRunShell": false,
+   "reads": [
+    "media-and-image-seo.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "medium (edits files on a seo/* branch; a person or the autopilot policy merges)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-migration-planner",
+   "department": "technical",
+   "purpose": "Plans and checks a site move so search visibility survives it - platform change, redesign, domain or protocol change, URL restructure, or merging sites. Builds the URL inventory and one-to-one redirect map, the pre-launch checklist, the launch-day checks and the monitoring plan. Use before any move, and again right after launch. Plans and reviews; the redirect guardian and technical fixer implemen",
+   "source": "departments/technical/agents/seo-migration-planner.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "redirects-canonicals-migrations.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-performance-fixer",
+   "department": "technical",
+   "purpose": "Turns page speed and Core Web Vitals findings (LCP, INP, CLS, render-blocking scripts, oversized images, fonts, third-party code) into specific code changes in the site's templates and assets, one fix at a time, ranked by effect. Use when speed.md shows slow pages or Search Console reports poor Core Web Vitals. Edits on a branch; the change is measured afterwards.",
+   "source": "departments/technical/agents/seo-performance-fixer.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Edit",
+    "Write",
+    "WebFetch",
+    "Bash(git checkout -b seo/*)",
+    "Bash(git add:*)",
+    "Bash(git commit:*)",
+    "Bash(git push origin seo/*)",
+    "Bash(git status)",
+    "Bash(git diff:*)",
+    "Bash(gh pr create:*)"
+   ],
+   "mayEdit": true,
+   "mayRunShell": false,
+   "reads": [
+    "technical-seo-checklist.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "medium (edits files on a seo/* branch; a person or the autopilot policy merges)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-redirect-guardian",
+   "department": "technical",
+   "purpose": "Keeps URL changes safe - maintains the redirect map, finds redirect chains, loops, broken internal links and 404s, checks that retired or renamed URLs reach their closest replacement in one hop, and reviews any change that adds, moves or removes pages. Use after restructures, content merges or deploys, or when the crawl reports errors. Edits redirect config on a branch, one change at a time.",
+   "source": "departments/technical/agents/seo-redirect-guardian.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Edit",
+    "Write",
+    "WebFetch",
+    "Bash(git checkout -b seo/*)",
+    "Bash(git add:*)",
+    "Bash(git commit:*)",
+    "Bash(git push origin seo/*)",
+    "Bash(git status)",
+    "Bash(git diff:*)",
+    "Bash(gh pr create:*)"
+   ],
+   "mayEdit": true,
+   "mayRunShell": false,
+   "reads": [
+    "redirects-canonicals-migrations.md",
+    "broken-link-reclamation"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "medium (edits files on a seo/* branch; a person or the autopilot policy merges)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-schema-engineer",
+   "department": "technical",
+   "purpose": "Designs, adds and validates structured data (Organization, WebSite, Service, Article, FAQPage, BreadcrumbList, LocalBusiness, Product and others) in the site's templates, making sure every property matches the visible page. Use when the audit reports schema findings, a page type has no markup, or markup shows errors in Search Console. Edits templates on a branch, one change at a time.",
+   "source": "departments/technical/agents/seo-schema-engineer.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Edit",
+    "Write",
+    "WebFetch",
+    "Bash(git checkout -b seo/*)",
+    "Bash(git add:*)",
+    "Bash(git commit:*)",
+    "Bash(git push origin seo/*)",
+    "Bash(git status)",
+    "Bash(git diff:*)",
+    "Bash(gh pr create:*)"
+   ],
+   "mayEdit": true,
+   "mayRunShell": false,
+   "reads": [
+    "structured-data.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "medium (edits files on a seo/* branch; a person or the autopilot policy merges)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-technical-fixer",
+   "department": "technical",
+   "purpose": "Fixes technical SEO findings from the audit in the site's code and configuration (templates, redirects, robots, sitemap, structured data, meta tags) using the audit-fix recipes, one finding at a time, with tests and a verification re-run. Use locally in Claude Code with a developer present; it is deliberately NOT wired into the unattended GitHub workflows.",
+   "source": "departments/technical/agents/seo-technical-fixer.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Edit",
+    "Write",
+    "Bash",
+    "WebFetch"
+   ],
+   "mayEdit": true,
+   "mayRunShell": true,
+   "reads": [
+    "audit-fix-recipes.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "high (unrestricted shell, supervised only)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-cannibalization-resolver",
+   "department": "content",
+   "purpose": "Finds pages on the same site that compete for the same query, decides whether to merge, redirect, re-target or differentiate them, and writes a precise consolidation plan with the redirect map. Use when two pages swap rankings, impressions are split, or the primary-keyword check reports overlap. Plans only; the refresher, redirect guardian or you carry it out.",
+   "source": "departments/content/agents/seo-cannibalization-resolver.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "cannibalization-and-consolidation.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-content-pruner",
+   "department": "content",
+   "purpose": "Audits existing pages for thin, stale, duplicate or low-value content and decides keep, refresh, merge, redirect or remove for each, with evidence and a safe order of work. Use for periodic content reviews or when many pages sit unindexed or earn nothing. Recommends only; changes are made through the refresher, the cannibalisation resolver or by you.",
+   "source": "departments/content/agents/seo-content-pruner.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "refreshing-and-pruning-content.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-drafter",
+   "department": "content",
+   "purpose": "Writes ONE new page from an approved topic issue or brief, in the site's exact content format, marked queued, and opens a pull request. Edits content files only and never touches the default branch. Used by the seo-implement workflow for issues labelled seo-topic, or by you in Claude Code (\"draft the page for this brief\").",
+   "source": "departments/content/agents/seo-drafter.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Edit",
+    "Write",
+    "WebSearch",
+    "WebFetch",
+    "Bash(git checkout -b seo/*)",
+    "Bash(git add:*)",
+    "Bash(git commit:*)",
+    "Bash(git push origin seo/*)",
+    "Bash(git status)",
+    "Bash(git diff:*)",
+    "Bash(gh pr create:*)",
+    "Bash(gh issue view:*)",
+    "Bash(gh issue comment:*)"
+   ],
+   "mayEdit": true,
+   "mayRunShell": false,
+   "reads": [
+    "answer-first-copy"
+   ],
+   "mode": "workflow (seo-implement.yml)",
+   "triggers": [
+    {
+     "workflow": "seo-implement.yml",
+     "events": [
+      "workflow_dispatch",
+      "workflow_call",
+      "issues"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "risk": "medium (edits files on a seo/* branch; a person or the autopilot policy merges)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-internal-linker",
+   "department": "content",
+   "purpose": "Owns internal linking - orphan pages, pages buried many clicks deep, and related pages that mention a topic another page covers without linking to it. Works from the links job and the audit, proposes the few links that help a reader with descriptive anchor text, and edits content files only when asked, one page per pull request, on a branch.",
+   "source": "departments/content/agents/seo-internal-linker.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Edit",
+    "Write",
+    "Bash(git checkout -b seo/*)",
+    "Bash(git add:*)",
+    "Bash(git commit:*)",
+    "Bash(git push origin seo/*)",
+    "Bash(git status)",
+    "Bash(git diff:*)",
+    "Bash(gh pr create:*)"
+   ],
+   "mayEdit": true,
+   "mayRunShell": false,
+   "reads": [
+    "topical-authority-and-internal-linking.md"
+   ],
+   "mode": "workflow (seo-implement.yml)",
+   "triggers": [
+    {
+     "workflow": "seo-implement.yml",
+     "events": [
+      "workflow_dispatch",
+      "workflow_call",
+      "issues"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "risk": "medium (edits files on a seo/* branch; a person or the autopilot policy merges)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-refresher",
+   "department": "content",
+   "purpose": "Updates ONE existing page in place (same URL) when it lost search visibility or went out of date - re-checks facts against sources, moves the direct answer first, fixes outdated parts - and opens a pull request. Content files only. Used by the seo-implement workflow for issues labelled seo-refresh, or by you in Claude Code.",
+   "source": "departments/content/agents/seo-refresher.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Edit",
+    "Write",
+    "WebSearch",
+    "WebFetch",
+    "Bash(git checkout -b seo/*)",
+    "Bash(git add:*)",
+    "Bash(git commit:*)",
+    "Bash(git push origin seo/*)",
+    "Bash(git status)",
+    "Bash(git diff:*)",
+    "Bash(gh pr create:*)",
+    "Bash(gh issue view:*)",
+    "Bash(gh issue comment:*)"
+   ],
+   "mayEdit": true,
+   "mayRunShell": false,
+   "reads": [
+    "refreshing-and-pruning-content.md",
+    "answer-first-copy"
+   ],
+   "mode": "workflow (seo-implement.yml)",
+   "triggers": [
+    {
+     "workflow": "seo-implement.yml",
+     "events": [
+      "workflow_dispatch",
+      "workflow_call",
+      "issues"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "risk": "medium (edits files on a seo/* branch; a person or the autopilot policy merges)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-snippet-optimizer",
+   "department": "content",
+   "purpose": "Improves how a page appears in search and reads at a glance - title, meta description, the heading outline and the opening answer paragraph - for pages that get impressions but few clicks, or that could win featured snippets and AI answers. Proposes tested wording with the reason for each change; edits content files only when asked, one page per task, on a branch.",
+   "source": "departments/content/agents/seo-snippet-optimizer.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Edit",
+    "Write",
+    "WebSearch",
+    "WebFetch",
+    "Bash(git checkout -b seo/*)",
+    "Bash(git add:*)",
+    "Bash(git commit:*)",
+    "Bash(git push origin seo/*)",
+    "Bash(git status)",
+    "Bash(git diff:*)",
+    "Bash(gh pr create:*)"
+   ],
+   "mayEdit": true,
+   "mayRunShell": false,
+   "reads": [
+    "titles-descriptions-and-ctr.md",
+    "answer-first-copy"
+   ],
+   "mode": "workflow (seo-implement.yml)",
+   "triggers": [
+    {
+     "workflow": "seo-implement.yml",
+     "events": [
+      "workflow_dispatch",
+      "workflow_call",
+      "issues"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "risk": "medium (edits files on a seo/* branch; a person or the autopilot policy merges)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-backlink-auditor",
+   "department": "authority",
+   "purpose": "Audits the links pointing to the site from a Search Console or backlink-tool export - links into broken pages to reclaim, new and lost linking sites, and patterns a person should review - and says plainly when nothing needs doing. Advises only; never contacts anyone and never recommends a disavow file without a manual action or clear evidence of arranged links.",
+   "source": "departments/authority/agents/seo-backlink-auditor.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "link-building-and-digital-pr.md",
+    "broken-link-reclamation"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-entity-reputation",
+   "department": "authority",
+   "purpose": "Builds and protects the business as an entity search engines and AI tools can recognise and trust - one consistent description, About and author pages, Organization or Person markup with real sameAs profiles, branded-search monitoring, and honest review and reputation practice. Use for new brands, weak branded results, wrong AI answers about the business, or before a push for authority. Advises; d",
+   "source": "departments/authority/agents/seo-entity-reputation.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "entity-and-reputation.md",
+    "digital-pr"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-link-builder",
+   "department": "authority",
+   "purpose": "Finds genuine link opportunities (unlinked brand mentions, relevant resource pages, partners, associations, real directories, broken links with a fitting replacement) and drafts short personal outreach for a person to review and send. Never sends anything and never recommends paid or exchanged links that pass ranking signals. Use once pages are indexed and worth linking to.",
+   "source": "departments/authority/agents/seo-link-builder.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "link-building-and-digital-pr.md",
+    "digital-pr",
+    "broken-link-reclamation"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-ai-search-agent",
+   "department": "ai-search",
+   "purpose": "Checks how the site is understood and cited by AI answers and answer engines - tests real questions in the site's topic, records which sources are cited, finds gaps, and fixes them with answer-first content, clear entities, structured data and an accurate llms.txt. Use when you want to appear in AI answers or the AI readiness report shows gaps. Advises, and edits content files only when asked.",
+   "source": "departments/ai-search/agents/seo-ai-search-agent.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Edit",
+    "Write",
+    "WebSearch",
+    "WebFetch",
+    "Bash(git checkout -b seo/*)",
+    "Bash(git add:*)",
+    "Bash(git commit:*)",
+    "Bash(git push origin seo/*)",
+    "Bash(git status)",
+    "Bash(git diff:*)",
+    "Bash(gh pr create:*)"
+   ],
+   "mayEdit": true,
+   "mayRunShell": false,
+   "reads": [
+    "ai-search-visibility.md",
+    "answer-first-copy",
+    "ai-answer-testing",
+    "question-mining"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "medium (edits files on a seo/* branch; a person or the autopilot policy merges)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-ai-visibility-tracker",
+   "department": "ai-search",
+   "purpose": "Measures how often and how accurately AI answer engines and AI search mention and cite the business, over a fixed set of real questions repeated over time - brand mentions and aliases, cited pages, competitors cited instead, and errors about the business. Use monthly, after a content push, or when AI referral traffic changes. Reports only; the AI search agent fixes the gaps.",
+   "source": "departments/ai-search/agents/seo-ai-visibility-tracker.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "ai-search-visibility.md",
+    "ai-answer-testing",
+    "question-mining"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-ecommerce",
+   "department": "verticals",
+   "purpose": "Improves category, product and faceted-navigation pages for online shops - product and offer markup that matches the page, unique descriptions, variant and canonical strategy, out-of-stock handling, filter and parameter control, reviews and merchant data consistency. Use on any site that sells products, on any platform. Advises, and edits templates only in edit mode, on a branch.",
+   "source": "departments/verticals/agents/seo-ecommerce.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Edit",
+    "Write",
+    "WebSearch",
+    "WebFetch",
+    "Bash(git checkout -b seo/*)",
+    "Bash(git add:*)",
+    "Bash(git commit:*)",
+    "Bash(git push origin seo/*)",
+    "Bash(git status)",
+    "Bash(git diff:*)",
+    "Bash(gh pr create:*)"
+   ],
+   "mayEdit": true,
+   "mayRunShell": false,
+   "reads": [
+    "ecommerce-seo.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "medium (edits files on a seo/* branch; a person or the autopilot policy merges)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-local-agent",
+   "department": "verticals",
+   "purpose": "Handles local and regional search - Google Business Profile completeness, name-address-phone consistency, local business structured data, genuine location or service-area pages, review requests and local links. Use for any business with premises or a defined area served. Advises and drafts; the owner changes the profile, and content edits are made through the normal pull-request flow.",
+   "source": "departments/verticals/agents/seo-local-agent.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Edit",
+    "Write",
+    "WebSearch",
+    "WebFetch",
+    "Bash(git checkout -b seo/*)",
+    "Bash(git add:*)",
+    "Bash(git commit:*)",
+    "Bash(git push origin seo/*)",
+    "Bash(git status)",
+    "Bash(git diff:*)",
+    "Bash(gh pr create:*)"
+   ],
+   "mayEdit": true,
+   "mayRunShell": false,
+   "reads": [
+    "local-seo.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "medium (edits files on a seo/* branch; a person or the autopilot policy merges)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-local-ai-visibility",
+   "department": "verticals",
+   "purpose": "Optimises local businesses for visibility in AI search results - Google AI Overviews, ChatGPT, Perplexity, Claude and Gemini. Covers GEO (Generative Engine Optimization), entity building, structured data for AI extraction, and monitoring AI citations.",
+   "source": "departments/verticals/agents/seo-local-ai-visibility.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Edit",
+    "Write",
+    "WebSearch",
+    "WebFetch",
+    "Bash(git checkout -b seo/*)",
+    "Bash(git add:*)",
+    "Bash(git commit:*)",
+    "Bash(git push origin seo/*)",
+    "Bash(git status)",
+    "Bash(git diff:*)",
+    "Bash(gh pr create:*)"
+   ],
+   "mayEdit": true,
+   "mayRunShell": false,
+   "reads": [
+    "local-seo-ai-visibility.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "medium (edits files on a seo/* branch; a person or the autopilot policy merges)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-local-citation-auditor",
+   "department": "verticals",
+   "purpose": "Audits name-address-phone consistency across directories and the website, identifies citation gaps on high-authority platforms, and produces a prioritised fix-and-build plan. Covers general directories, industry-specific directories and data aggregators.",
+   "source": "departments/verticals/agents/seo-local-citation-auditor.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "local-seo.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-local-content-writer",
+   "department": "verticals",
+   "purpose": "Creates and optimises location pages, local blog content and service-area content for local businesses. Writes genuinely local content with real detail, avoids doorway pages, and builds internal linking between location, service and blog pages. Works on a branch.",
+   "source": "departments/verticals/agents/seo-local-content-writer.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Edit",
+    "Write",
+    "WebSearch",
+    "WebFetch",
+    "Bash(git checkout -b seo/*)",
+    "Bash(git add:*)",
+    "Bash(git commit:*)",
+    "Bash(git push origin seo/*)",
+    "Bash(git status)",
+    "Bash(git diff:*)",
+    "Bash(gh pr create:*)"
+   ],
+   "mayEdit": true,
+   "mayRunShell": false,
+   "reads": [
+    "local-seo.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "medium (edits files on a seo/* branch; a person or the autopilot policy merges)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-local-gbp-optimizer",
+   "department": "verticals",
+   "purpose": "Audits and optimises Google Business Profile for local businesses - category selection, completeness scoring, post strategy, review response drafts, Q&A management, photo and attribute coverage. Produces a prioritised action plan the owner can apply in the profile dashboard.",
+   "source": "departments/verticals/agents/seo-local-gbp-optimizer.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "local-seo.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-local-review-manager",
+   "department": "verticals",
+   "purpose": "Plans and monitors review acquisition across Google, Trustpilot, and industry directories. Drafts review request templates, response templates, and tracks review velocity against competitors. Never generates, purchases or gates reviews.",
+   "source": "departments/verticals/agents/seo-local-review-manager.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "local-seo.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-compliance-auditor",
+   "department": "quality",
+   "purpose": "Audits a site and its planned SEO work against search engine spam policies and quality expectations - scaled or thin content, doorway and location-page clones, hidden text, link schemes, cloaking, fake reviews, unsupported claims on sensitive topics, missing disclosures for ads and affiliate links, and cookie and consent effects on measurement. Use before a content push, after a penalty or sudden ",
+   "source": "departments/quality/agents/seo-compliance-auditor.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "content-quality-and-eeat.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-editor",
+   "department": "quality",
+   "purpose": "Reviews a drafted or refreshed page as an editor - checks for unsupported claims, bad sources, wrong files, format breakage, duplicated targets and weak openings - then labels the pull request seo-review-passed or lists the blocking problems. Read-only on files. Used by the seo-review workflow, or by you (\"review this draft\").",
+   "source": "departments/quality/agents/seo-editor.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Bash(git diff:*)",
+    "Bash(git log:*)",
+    "Bash(gh pr view:*)",
+    "Bash(gh pr diff:*)",
+    "Bash(gh pr comment:*)",
+    "Bash(gh pr edit:*)",
+    "Bash(gh label create:*)",
+    "WebFetch"
+   ],
+   "mayEdit": true,
+   "mayRunShell": false,
+   "reads": [
+    "editorial-review-checklist.md",
+    "answer-first-copy"
+   ],
+   "mode": "workflow (seo-review.yml)",
+   "triggers": [
+    {
+     "workflow": "seo-review.yml",
+     "events": [
+      "workflow_call",
+      "pull_request"
+     ],
+     "gatedBy": [
+      "SEO_REVIEW"
+     ]
+    }
+   ],
+   "risk": "medium (edits files on a seo/* branch; a person or the autopilot policy merges)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  },
+  {
+   "name": "seo-fact-checker",
+   "department": "quality",
+   "purpose": "Checks every factual claim in a drafted or refreshed page (numbers, prices, percentages, dates, legal and regulatory statements, named clients, quotes, awards) against the project's verified facts and a real source, and blocks or fixes anything unsupported. Run before the editor on every draft, or on any existing page you doubt. Reports only; the page author or you apply the fixes.",
+   "source": "departments/quality/agents/seo-fact-checker.md",
+   "tools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "WebSearch",
+    "WebFetch"
+   ],
+   "mayEdit": false,
+   "mayRunShell": false,
+   "reads": [
+    "content-quality-and-eeat.md"
+   ],
+   "mode": "on request in Claude Code (plugin) or via the team/agent jobs",
+   "triggers": [],
+   "risk": "low (reads and reports)",
+   "verification": "definition tests only (test/agents.test.mjs); output quality never graded on a real site"
+  }
+ ],
+ "skills": [
+  {
+   "name": "ai-answer-testing",
+   "usedBy": [
+    "seo-ai-visibility-tracker",
+    "seo-ai-search-agent"
+   ],
+   "source": "departments/skills/ai-answer-testing/SKILL.md"
+  },
+  {
+   "name": "answer-first-copy",
+   "usedBy": [
+    "seo-drafter",
+    "seo-refresher",
+    "seo-snippet-optimizer",
+    "seo-ai-search-agent",
+    "seo-editor"
+   ],
+   "source": "departments/skills/answer-first-copy/SKILL.md"
+  },
+  {
+   "name": "broken-link-reclamation",
+   "usedBy": [
+    "seo-link-builder",
+    "seo-backlink-auditor",
+    "seo-redirect-guardian"
+   ],
+   "source": "departments/skills/broken-link-reclamation/SKILL.md"
+  },
+  {
+   "name": "digital-pr",
+   "usedBy": [
+    "seo-link-builder",
+    "seo-entity-reputation"
+   ],
+   "source": "departments/skills/digital-pr/SKILL.md"
+  },
+  {
+   "name": "question-mining",
+   "usedBy": [
+    "seo-researcher",
+    "seo-ai-search-agent",
+    "seo-topic-mapper",
+    "seo-ai-visibility-tracker"
+   ],
+   "source": "departments/skills/question-mining/SKILL.md"
+  },
+  {
+   "name": "search-intent-labelling",
+   "usedBy": [
+    "seo-researcher",
+    "seo-topic-mapper",
+    "seo-serp-analyst"
+   ],
+   "source": "departments/skills/search-intent-labelling/SKILL.md"
+  },
+  {
+   "name": "traffic-potential",
+   "usedBy": [
+    "seo-topic-mapper",
+    "seo-serp-analyst",
+    "seo-strategist"
+   ],
+   "source": "departments/skills/traffic-potential/SKILL.md"
+  }
+ ],
+ "mcpTools": [
+  "list_sites",
+  "site_overview",
+  "list_reports",
+  "read_report",
+  "search_queries",
+  "page_report"
+ ],
+ "workflows": [
+  {
+   "file": "seo-agent.yml",
+   "cron": [
+    "47 7 * * 1"
+   ],
+   "events": [
+    "schedule",
+    "workflow_dispatch"
+   ],
+   "gatedBy": [
+    "SEO_AGENT"
+   ],
+   "jobGates": {
+    "deepdive": [
+     "SEO_AGENT"
+    ],
+    "agent": [
+     "SEO_AGENT"
+    ]
+   },
+   "agentGate": [
+    "SEO_AGENT"
+   ],
+   "jobs": [
+    "deepdive",
+    "agent"
+   ],
+   "agents": [
+    "seo-strategist",
+    "seo-researcher"
+   ],
+   "continueOnError": 3
+  },
+  {
+   "file": "seo-automerge.yml",
+   "cron": [],
+   "events": [
+    "workflow_call",
+    "workflow_run"
+   ],
+   "gatedBy": [
+    "SEO_AUTOMERGE"
+   ],
+   "jobGates": {
+    "autopilot": []
+   },
+   "agentGate": [],
+   "jobs": [
+    "autopilot"
+   ],
+   "agents": [],
+   "continueOnError": 0
+  },
+  {
+   "file": "seo-autopilot.yml",
+   "cron": [
+    "23 7,15 * * *"
+   ],
+   "events": [
+    "schedule",
+    "workflow_dispatch"
+   ],
+   "gatedBy": [
+    "SEO_AUTOPILOT"
+   ],
+   "jobGates": {
+    "autopilot": [
+     "SEO_AUTOPILOT"
+    ]
+   },
+   "agentGate": [
+    "SEO_AUTOPILOT"
+   ],
+   "jobs": [
+    "autopilot"
+   ],
+   "agents": [],
+   "continueOnError": 0
+  },
+  {
+   "file": "seo-backlinks.yml",
+   "cron": [
+    "30 9 * * 4"
+   ],
+   "events": [
+    "schedule",
+    "workflow_dispatch"
+   ],
+   "gatedBy": [],
+   "jobGates": {
+    "mark": [],
+    "backlinks": []
+   },
+   "agentGate": [],
+   "jobs": [
+    "mark",
+    "backlinks"
+   ],
+   "agents": [],
+   "continueOnError": 0
+  },
+  {
+   "file": "seo-check.yml",
+   "cron": [],
+   "events": [
+    "workflow_call",
+    "pull_request"
+   ],
+   "gatedBy": [],
+   "jobGates": {
+    "facts": []
+   },
+   "agentGate": [],
+   "jobs": [
+    "facts"
+   ],
+   "agents": [],
+   "continueOnError": 0
+  },
+  {
+   "file": "seo-daily.yml",
+   "cron": [
+    "17 5 * * *"
+   ],
+   "events": [
+    "schedule",
+    "workflow_dispatch"
+   ],
+   "gatedBy": [],
+   "jobGates": {
+    "daily": [],
+    "rank": [],
+    "propose": [],
+    "news": [],
+    "mentions": [],
+    "audit": [],
+    "analyze": [],
+    "priorities": [],
+    "linkgraph": [],
+    "indexnow": [],
+    "dashboard": [],
+    "portal": []
+   },
+   "agentGate": [],
+   "jobs": [
+    "daily",
+    "rank",
+    "propose",
+    "news",
+    "mentions",
+    "audit",
+    "analyze",
+    "priorities",
+    "linkgraph",
+    "indexnow",
+    "dashboard",
+    "portal"
+   ],
+   "agents": [],
+   "continueOnError": 8
+  },
+  {
+   "file": "seo-implement.yml",
+   "cron": [],
+   "events": [
+    "workflow_dispatch",
+    "workflow_call",
+    "issues"
+   ],
+   "gatedBy": [],
+   "jobGates": {},
+   "agentGate": [],
+   "jobs": [],
+   "agents": [
+    "seo-drafter",
+    "seo-refresher",
+    "seo-snippet-optimizer",
+    "seo-internal-linker"
+   ],
+   "continueOnError": 0
+  },
+  {
+   "file": "seo-monthly.yml",
+   "cron": [
+    "11 6 1 * *"
+   ],
+   "events": [
+    "schedule",
+    "workflow_dispatch"
+   ],
+   "gatedBy": [
+    "SEO_AI_VISIBILITY"
+   ],
+   "jobGates": {
+    "audit": [],
+    "priorities": [],
+    "forecast": [],
+    "ai-visibility": [
+     "SEO_AI_VISIBILITY"
+    ],
+    "entity": [],
+    "monthly": []
+   },
+   "agentGate": [],
+   "jobs": [
+    "audit",
+    "priorities",
+    "forecast",
+    "ai-visibility",
+    "entity",
+    "monthly"
+   ],
+   "agents": [],
+   "continueOnError": 5
+  },
+  {
+   "file": "seo-release.yml",
+   "cron": [
+    "40 5 * * *"
+   ],
+   "events": [
+    "schedule",
+    "workflow_dispatch"
+   ],
+   "gatedBy": [],
+   "jobGates": {
+    "schedule": [],
+    "release": []
+   },
+   "agentGate": [],
+   "jobs": [
+    "schedule",
+    "release"
+   ],
+   "agents": [],
+   "continueOnError": 0
+  },
+  {
+   "file": "seo-review.yml",
+   "cron": [],
+   "events": [
+    "workflow_call",
+    "pull_request"
+   ],
+   "gatedBy": [
+    "SEO_REVIEW"
+   ],
+   "jobGates": {},
+   "agentGate": [],
+   "jobs": [],
+   "agents": [
+    "seo-editor"
+   ],
+   "continueOnError": 0
+  },
+  {
+   "file": "seo-watch.yml",
+   "cron": [
+    "47 8 * * *"
+   ],
+   "events": [
+    "schedule",
+    "workflow_dispatch"
+   ],
+   "gatedBy": [
+    "SEO_AUTOPILOT"
+   ],
+   "jobGates": {
+    "watch": [
+     "SEO_AUTOPILOT"
+    ]
+   },
+   "agentGate": [
+    "SEO_AUTOPILOT"
+   ],
+   "jobs": [
+    "watch"
+   ],
+   "agents": [],
+   "continueOnError": 0
+  },
+  {
+   "file": "seo-weekly.yml",
+   "cron": [
+    "10 6 * * 1"
+   ],
+   "events": [
+    "schedule",
+    "workflow_dispatch"
+   ],
+   "gatedBy": [
+    "SEO_RENDER",
+    "SEO_RANK_LIVE"
+   ],
+   "jobGates": {
+    "research": [],
+    "profile": [],
+    "geo": [],
+    "speed": [],
+    "refresh": [],
+    "priorities": [],
+    "redirects": [],
+    "conversions": [],
+    "facts": [],
+    "render": [
+     "SEO_RENDER"
+    ],
+    "links": [],
+    "inbound": [],
+    "quality": [],
+    "consent": [],
+    "ymyl": [],
+    "pace": [],
+    "citations": [],
+    "keywords": [],
+    "rank": [
+     "SEO_RANK_LIVE"
+    ],
+    "gap": [],
+    "authority": [],
+    "gsc": [],
+    "schema": [],
+    "local": [],
+    "shop": [],
+    "listings": [],
+    "changes": [],
+    "vitals": [],
+    "team": [],
+    "experiments": [],
+    "digest": [],
+    "backlinks-queue": [],
+    "indexing-queue": []
+   },
+   "agentGate": [],
+   "jobs": [
+    "research",
+    "profile",
+    "geo",
+    "speed",
+    "refresh",
+    "priorities",
+    "redirects",
+    "conversions",
+    "facts",
+    "render",
+    "links",
+    "inbound",
+    "quality",
+    "consent",
+    "ymyl",
+    "pace",
+    "citations",
+    "keywords",
+    "rank",
+    "gap",
+    "authority",
+    "gsc",
+    "schema",
+    "local",
+    "shop",
+    "listings",
+    "changes",
+    "vitals",
+    "team",
+    "experiments",
+    "digest",
+    "backlinks-queue",
+    "indexing-queue"
+   ],
+   "agents": [],
+   "continueOnError": 33
+  }
+ ]
+}

@@ -45,6 +45,7 @@ What to actually do about each finding in the technical audit. Rule names match 
 - **lang-missing:** set `lang` on the `<html>` element.
 - **mixed-content:** load every resource over HTTPS.
 - **host-variant-not-redirected:** one 301 from `http://` and from the www (or non-www) address to the single `https://` address the site uses.
+- **host-variant-canonical-only:** the canonical already covers it; add the 301 redirect when convenient.
 - **ssl-expiring:** renew the certificate and switch on automatic renewal at the host.
 - **pagination-canonical-first:** each paginated page gets a self-referencing canonical; link the pages with plain `<a href>` links.
 - **tracking-duplicate:** load each Google tag once (Tag Manager or the page, not both).

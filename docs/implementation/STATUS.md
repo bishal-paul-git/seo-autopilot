@@ -1,43 +1,35 @@
 # Implementation status
 
-Kept short on purpose: it is read at the start of every session. Full history up to 2026-11-03: [history/STATUS-to-2026-11-03.md](history/STATUS-to-2026-11-03.md). Session detail: [CHANGELOG.md](CHANGELOG.md). Decisions: [DECISIONS.md](DECISIONS.md).
+Kept short; read at the start of every session. History: [history/STATUS-to-2026-11-03.md](history/STATUS-to-2026-11-03.md). Detail: [CHANGELOG.md](CHANGELOG.md), [DECISIONS.md](DECISIONS.md). Deployed state: [../deployment-status.md](../deployment-status.md). Tests: [../test-matrix.md](../test-matrix.md).
 
 ## 1. Snapshot
-- Last updated: 2026-11-04 UTC, branch `claude/hopeful-euler-662mu5`, base `main` `e982f64` (v2.22.1 + token diet).
-- Latest release: `v2.22.1` (`v2`, `v2-stable` at `f2301b4`). Environment: Linux cloud container, Node 22.
-- This session (code): websites connected by address only (D25): `src/analysis/discover.mjs`, `src/hosted/scan.mjs`, `cloud/portal/supabase/functions/scan`, `cloud/portal/build-scan.mjs`, migration `20261104000000_portal_url_sites.sql`, portal "Add and scan" + "About this website". seo-backlinks template weekly. Site repos: backlinks weekly (erudience-flow-engine#118, tenanthousingdisrepair#41, excel-error-finder#15, merged).
+- Last updated: 2026-11-07 UTC. Branch `claude/audit-refinement` (audit, stacked on PR #33's branch `claude/hopeful-euler-662mu5`); base `main` `e982f64`; release `v2.22.1`.
+- Environment: Linux cloud container, Node 22, Postgres 16 (local SQL checks); network allowed to Supabase, GitHub and the owner's three websites.
 
 ## 2. Goal and phase
-A sellable SEO product for agencies and site owners (`SEO-PRODUCT-BUILD-BRIEF.md`). Current milestone: **client portal in real use** (D23/D24), then real-key tests of the research suite.
-Architecture: dependency-free Node core (`src/jobs`, `src/analysis`, `src/audit`), 38 agents (`departments/`), playbooks (`knowledge/`), workflow templates (`templates/workflows`), MCP server (`src/mcp`), hosted connector (`cloud/connector`, not deployed), portal (`cloud/portal`: Supabase schema, `ingest` Edge Function, static page).
+Production-ready SEO automation with an agency/client portal. Phase: **audit and hardening** (D26), before new features.
+Architecture: [../system-architecture.md](../system-architecture.md). Every job and agent: [../registry.md](../registry.md).
 
 ## 3. Capabilities
-| Implemented | Verified | Deployed |
-|---|---|---|
-| Jobs, agents, research suite, site intelligence, MCP server | `npm test` 490/490 (unit, fixture, mocked providers) | npm-free install via GitHub Action tags `v2` / `v2-stable` |
-| Portal: snapshot `portal --push`, ingest, RLS, approvals, invites, branding | RLS SQL tests on local Postgres 16; live curl smoke of ingest and `shared_site` (2026-10-31) | Supabase `seo-autopilot` (`ymwwwhdlyjnqbxxhtcew`) + seo.erudience.com (Hostinger, erudience-flow-engine `seo-portal` `69f0d00`) |
-| Address-only sites (D25): scan worker, discovery, Add and scan | 7 unit/offline tests (fake fetch) + portal browser test; **Deno runtime not run locally** | `scan` function v2 deployed 2026-11-05 (imports `src/hosted/scan.mjs` at `82c5009`; 403 without the secret, checked); portal page live (erudience-flow-engine `seo-portal` `1daf25f`). **Migration not applied**: the owner runs it in the SQL Editor |
-| Hosted connector (D20) | unit tests + `wrangler dev` only | **not deployed** |
-| Live provider calls (Brave, SerpAPI, DataForSEO, Bing, OPR, CrUX, AI engines) | **mocked only** | n/a |
+| Area | Built | Verified | Deployed |
+|---|---|---|---|
+| Engine (58 jobs, 57 audit rules) | yes | `npm test` 498/498 (mocked network); 16 jobs observed in real runs | v2.22.1 on 3 sites; new rules unreleased |
+| Agents (38) | definitions | definition tests only; output never graded | 7 wired to workflows, but `SEO_AGENT`/`SEO_AUTOPILOT` off: none runs in production |
+| Portal (auth, tenancy, approvals, invites, brand, share links) | yes | SQL checks `rls.sql`, `rls2.sql`; browser test | live; no site pushes snapshots yet |
+| Address-only sites (D25) with SSRF guard and robots (D26) | yes | `rls3.sql`, `safe-fetch.test.mjs`, real scans of 3 live sites | `scan` v2 (pre-guard) deployed, migration **not applied** |
+| Live providers (research, AEO/GEO, backlinks) | yes | mocked only | no keys |
 
 ## 4. Checks this session
-`npm test` 481/481 pass (includes `test/discover.test.mjs`, 7 tests, and the updated portal browser test). `node cloud/portal/build-scan.mjs` copies 9 modules with no missing import. Not run: the function under Deno, a real scan of a live site, the migration on Supabase (its `apply_migration` call waited for a confirmation that was not answered).
+`npm test` 498/498. `bash cloud/portal/supabase/test/run.sh`: all three suites pass. Real hosted scans: erudience.com (59 pages, 19 s), manchesterdisrepairclaims.co.uk (60, 13 s), www.excelerrorfinder.com (60, 31 s); one false-high fixed. Supabase advisors: intended `SECURITY DEFINER` warnings, leaked-password protection off.
 
-## 5. Known issues and owner items
-1. Sign up at seo.erudience.com (contact.bishalpaul@gmail.com), then per site: Connect → new token (replaces the temporary seed tokens).
-2. Add repository secrets `SEO_PORTAL_URL` (`https://ymwwwhdlyjnqbxxhtcew.supabase.co/functions/v1/ingest`) and `SEO_PORTAL_TOKEN` on each site repo; Excel Error Finder also needs `GOOGLE_KEY_JSON` and Search Console access.
-3. Seed snapshots show 2026-10-31 but hold 24 Oct data (backdate not applied).
-4. Not checked: portal page in a real browser, live sign-up/sign-in.
-5. Hosted connector needs the owner's GitHub App, Cloudflare deploy and secrets (`cloud/connector/README.md`).
-6. **Run the D25 migration** `cloud/portal/supabase/migrations/20261104000000_portal_url_sites.sql` in the Supabase SQL Editor, then the two `vault.create_secret` lines from `cloud/portal/README.md` (the MCP `apply_migration` prompt went unanswered twice; the Management API token was rejected). Until then "Add and scan" shows an error; the GitHub route works.
-7. Turn off unused connectors and plugins at claude.ai (repo settings can only deny connector tools; plugins/skills are account-level).
+## 5. Blockers and owner items
+1. Go-ahead to: redeploy `scan` from the audit commit, apply the D25 migration and Vault secrets, publish the portal page.
+2. Portal secrets on each site repository (E2E-GH flow).
+3. Keys for live-provider tests (`docs/runbook.md` lists names); `SEO_AGENT=true` on one site to grade agents.
+4. Supabase Auth: leaked-password protection on; decide invite-only sign-up before public launch.
 
 ## 6. Cost
-No paid API calls. Provider costs unknown until real-key tests.
+No provider spend. Hosted scan within the Supabase free plan (about 3 sites per wake, 144 wakes a day).
 
 ## 7. Next
-Milestone A (D25): add a real website by address and see its scan in the portal. Acceptance: the migration is applied, `scan` is deployed, adding a site shows its pages, issues and "About this website" within 10 minutes, and the next day's cron scan adds a second snapshot.
-Milestone B: one real site pushing daily to the portal with its own token. Acceptance: a `seo-daily` run on a site repo shows a new snapshot in the portal, and an approval made in the portal is applied by the next run.
-Then: real-key tests of the research suite, one provider at a time; grade agents on real sites; cost per agent run.
-
-Resume prompt: "seo-autopilot: read docs/implementation/STATUS.md. Check `/context`; then continue the Next milestone."
+Milestone: **both end-to-end flows pass on real sites** (test-matrix rows E2E-URL and E2E-GH), then live-provider tests and agent grading. Resume prompt: "seo-autopilot: read AGENTS.md and docs/implementation/STATUS.md; continue the blockers in order."

@@ -2,6 +2,13 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-07 (audit and hardening, D26; branch claude/audit-refinement)
+- **Code:** `src/hosted/safe-fetch.mjs` (SSRF guard), robots.txt in hosted crawls (`src/audit/crawl.mjs`, `src/hosted/scan.mjs`), `host-variant-canonical-only` rule, `scripts/build-registry.mjs`.
+- **Migration (not applied):** D25 hardened: host-only lower-casing, `sites_url_public` constraint, 20 adds per org per day.
+- **Tests:** `test/safe-fetch.test.mjs`, `test/registry.test.mjs`, `cloud/portal/supabase/test/shim3.sql`, `rls3.sql`, `run.sh`. `npm test` 498/498; SQL suites pass.
+- **Docs:** `AGENTS.md`, `docs/system-architecture.md`, `docs/registry.md`/`.json`, `docs/security.md`, `docs/deployment-status.md`, `docs/test-matrix.md`, `docs/runbook.md`, `docs/release-checklist.md`; DEPARTMENTS.md status corrected.
+- **Live evidence:** real hosted scans of the three owner sites (network allowlist for them added to the session environment with the owner's approval). Production state read only; **no production change** in this session.
+
 ## 2026-11-05 (code: plan completion without new scope)
 - **Code:** 12 audit rules from the existing gap list (`src/audit/rules.mjs`, `extract.mjs`, `crawl.mjs`: host variants, TLS expiry, broken images; recipes in `knowledge/audit-fix-recipes.md`); URL inspection four at a time (`src/jobs/daily.mjs`); address-only scans add Search Console rows and priorities (`src/hosted/scan.mjs`), and the `scan` function signs a Google token with Web Crypto from the optional `GOOGLE_KEY_JSON` secret; portal shows the Search Console step.
 - **Checks:** `npm test` 490/490 (new `test/audit-more.test.mjs`, 8 tests; Search Console fallback test). Web Crypto JWT signature verified against Node's verifier with a generated key. Not run: a real Google token, a real scan (the D25 migration is still not applied).

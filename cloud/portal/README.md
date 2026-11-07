@@ -62,6 +62,7 @@ Deploy, once per project:
 4. `node cloud/portal/build-scan.mjs`, then deploy `supabase/functions/scan` with JWT verification off (it checks the Vault secret itself). Without the CLI (for example through the Supabase MCP), deploy `index.ts` alone with its import changed to `https://raw.githubusercontent.com/bishal-paul-git/seo-autopilot/<commit>/src/hosted/scan.mjs`, pinned to a commit: the platform bundles the modules at deploy time.
 
 ## Test locally
+- All portal SQL checks in one go (Postgres 16, as a superuser): `bash cloud/portal/supabase/test/run.sh`. It loads stand-ins for Supabase roles, pg_net, pg_cron and Vault, then the three migrations and `rls.sql`, `rls2.sql`, `rls3.sql`.
 - `npm test` runs the snapshot tests, and the browser test when Playwright is installed.
 - The access rules need a Postgres 16 server:
   `createdb portal && psql -v ON_ERROR_STOP=1 -d portal -f cloud/portal/supabase/test/shim.sql -f cloud/portal/supabase/migrations/20261030000000_portal.sql -f cloud/portal/supabase/test/rls.sql`
