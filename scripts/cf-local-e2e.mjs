@@ -28,6 +28,8 @@ psql([readFileSync(join(t, "shim.sql"), "utf8"), readFileSync(join(m, "202610300
   readFileSync(join(t, "shim3.sql"), "utf8"), strip(join(m, "20261104000000_portal_url_sites.sql")), readFileSync(join(t, "shim4.sql"), "utf8"),
   ...["20261108000000_r1_contracts.sql", "20261108010000_r1_memory.sql", "20261108020000_r1_scheduler.sql", "20261108030000_cloudflare_execution.sql", "20261108040000_agency_console.sql", "20261108050000_client_portal.sql", "20261108060000_learning.sql", "20261108070000_operations.sql", "20261108080000_security_fixes.sql", "20261108090000_strategy_draft.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
 psql(`insert into auth.users (id, email) values ('00000000-0000-0000-0000-00000000000a', 'alice@a.test'), ('00000000-0000-0000-0000-00000000000b', 'bob@b.test');`);
+// Existing users first, then the invite-only gate and GitHub execution (as production would get them).
+psql([readFileSync(join(m, "20261108100000_invite_only.sql"), "utf8"), readFileSync(join(t, "shim5.sql"), "utf8"), readFileSync(join(m, "20261108110000_github_execution.sql"), "utf8")].join("\n"));
 const asUser = (user, sql) => psql(`set role authenticated; set request.jwt.claim.sub = '${user}'; set request.jwt.claim.role = 'authenticated'; ${sql}`).split("\n").pop();
 const A_USER = "00000000-0000-0000-0000-00000000000a", B_USER = "00000000-0000-0000-0000-00000000000b";
 const A = JSON.parse(asUser(A_USER, `select public.create_site('Plumber', 'https://plumber.test/')->'site';`)).id;
@@ -36,6 +38,7 @@ const B = JSON.parse(asUser(B_USER, `select public.create_site('Bakery', 'https:
 // --- stand-ins: Supabase RPC (real SQL), scan function, Anthropic ----------------------------------------------------
 const fnInfo = new Map(JSON.parse(psql(`select coalesce(jsonb_agg(jsonb_build_array(p.proname, p.proretset, t.typtype, t.typname)), '[]') from pg_proc p join pg_type t on t.oid = p.prorettype where p.pronamespace = 'public'::regnamespace;`)).map(([n, set, typ, name]) => [n, { set, typ, name }]));
 const calls = { rpc: 0, scan: 0, anthropic: 0, badKey: 0 };
+const gh = { issues: [], dispatches: [], pulls: {}, auth: [], fixed: false };
 let lastBody = "";
 const rpc = (fn, args) => {
   const info = fnInfo.get(fn); if (!info || !/^[a-z_]+$/.test(fn)) return [404, { message: `function ${fn} not found` }];
@@ -54,10 +57,20 @@ const server = createServer(async (req, res) => {
     if (req.headers.apikey !== KEY || req.headers.authorization !== `Bearer ${KEY}`) { calls.badKey++; return send(401, { message: "bad key" }); }
     calls.rpc++; const [code, out] = rpc(u.pathname.split("/").pop(), JSON.parse(body || "{}")); return send(code, out);
   }
+  // GitHub stand-in for one repository (acme/plumber): issues, the seo-implement dispatch, pull requests by branch.
+  if (u.pathname.startsWith("/gh/repos/")) {
+    gh.auth.push(req.headers.authorization || "");
+    const p = u.pathname.slice(3);
+    if (req.method === "GET" && p === "/repos/acme/plumber") return send(200, { default_branch: "main" });
+    if (req.method === "POST" && p === "/repos/acme/plumber/issues") { gh.issues.push(JSON.parse(body)); return send(201, { number: 40 + gh.issues.length, html_url: `https://github.com/acme/plumber/issues/${40 + gh.issues.length}` }); }
+    if (req.method === "POST" && p === "/repos/acme/plumber/actions/workflows/seo-implement.yml/dispatches") { gh.dispatches.push(JSON.parse(body)); res.writeHead(204); return res.end(); }
+    if (req.method === "GET" && p === "/repos/acme/plumber/pulls") { const pr = gh.pulls[u.searchParams.get("head")]; return send(200, pr ? [pr] : []); }
+    return send(404, { message: "Not Found" });
+  }
   if (u.pathname === "/functions/v1/scan") {
     if (req.headers["x-scan-secret"] !== SCAN_SECRET) return send(403, { error: "forbidden" });
     calls.scan++; const { site } = JSON.parse(body);
-    return send(200, { ok: true, discovered: { name: { value: site.name, source: site.url }, phones: [], emails: [], addresses: [], hours: [], socials: [], topics: [] }, profile: { platform: { name: "WordPress" }, mode: "advise" }, audit: { generatedAt: new Date().toISOString(), summary: { pagesCrawled: 4, bySeverity: { high: 1 } }, issues: [{ rule: "title-missing", severity: "high", url: `${site.url}x` }], pages: [] } });
+    return send(200, { ok: true, discovered: { name: { value: site.name, source: site.url }, phones: [], emails: [], addresses: [], hours: [], socials: [], topics: [] }, profile: { platform: { name: "WordPress" }, mode: "advise" }, audit: { generatedAt: new Date().toISOString(), summary: { pagesCrawled: 4, bySeverity: { high: gh.fixed ? 0 : 1 } }, issues: gh.fixed ? [] : [{ rule: "title-missing", severity: "high", url: `${site.url}x` }], crawled: [site.url, `${site.url}x`], pages: [] } });
   }
   if (u.pathname === "/v1/messages") {
     calls.anthropic++; lastBody = JSON.parse(body).messages[0].content; return send(200, { model: "claude-opus-5-5", stop_reason: "end_turn", content: [{ type: "text", text: JSON.stringify(REPLY) }], usage: { input_tokens: 4000, output_tokens: 800 } });
@@ -69,7 +82,7 @@ const base = `http://127.0.0.1:${server.address().port}`;
 
 // --- the Worker in workerd -------------------------------------------------------------------------------------------
 const devVars = join(w, ".dev.vars");
-writeFileSync(devVars, [`SEO_GOD_PAUSED=false`, `SUPABASE_URL=${base}`, `SUPABASE_SERVICE_ROLE_KEY=${KEY}`, `INTERNAL_TOKEN=${TOKEN}`, `SCAN_FUNCTION_URL=${base}/functions/v1/scan`, `SCAN_SECRET=${SCAN_SECRET}`, `ANTHROPIC_API_KEY=fake-user-key`, `ANTHROPIC_BASE_URL=${base}`, `SEO_GOD_DAILY_BUDGET_USD=1`, `SITE_MIN_AGE_HOURS=1`].join("\n"));
+writeFileSync(devVars, [`SEO_GOD_PAUSED=false`, `SUPABASE_URL=${base}`, `SUPABASE_SERVICE_ROLE_KEY=${KEY}`, `INTERNAL_TOKEN=${TOKEN}`, `SCAN_FUNCTION_URL=${base}/functions/v1/scan`, `SCAN_SECRET=${SCAN_SECRET}`, `ANTHROPIC_API_KEY=fake-user-key`, `ANTHROPIC_BASE_URL=${base}`, `SEO_GOD_DAILY_BUDGET_USD=1`, `SITE_MIN_AGE_HOURS=1`, `GITHUB_API_URL=${base}/gh`].join("\n"));
 const PORT = 18787 + (process.pid % 1000);
 execFileSync("node", ["build.mjs"], { cwd: w, stdio: "ignore" });
 const env = { ...process.env }; for (const k of ["HTTPS_PROXY", "HTTP_PROXY", "https_proxy", "http_proxy"]) delete env[k];
@@ -147,6 +160,30 @@ try {
   const exps = JSON.parse(psql(`select public.recall(${lit(A)}, 'experiment')`, "service_role"));
   check(exps.length >= 1 && exps[0].value.items[0].baseline.includes("title-missing"), `learning: ${exps.length} accepted pieces of advice are being checked against later scans, with their baseline`);
   check(JSON.parse(asUser(A_USER, `select public.god_console(${lit(A)});`)).experiments.length === exps.length, "the agency console shows them");
+
+  // D37: an accepted recommendation implemented through the site's own GitHub workflow, then verified by a scan.
+  const due = async () => { psql(`delete from public.god_site_ticks where site_id = ${lit(A)};`); await cron(); };
+  const TOKEN_GH = "github_pat_" + "e".repeat(30);
+  asUser(A_USER, `select public.connect_github(${lit(A)}, 'acme/plumber', ${lit(TOKEN_GH)});`);
+  const impl = asUser(A_USER, `select (public.request_implementation(${lit(reqJob)}, 0)).id;`);
+  await due();
+  check(psql(`select status from public.jobs where id = ${lit(impl)};`) === "awaiting_approval" && psql(`select outputs->'proposal'->'workOrder'->>'url' from public.jobs where id = ${lit(impl)};`) === "https://plumber.test/x" && gh.issues.length === 0,
+    "implementation: the work order was drafted in the Worker and waits for the agency; nothing reached GitHub");
+  asUser(A_USER, `select public.approve_job(${lit(impl)}, 'approve', 'send it');`);
+  await due();
+  check(psql(`select status from public.jobs where id = ${lit(impl)};`) === "deploying" && gh.issues.length === 1 && gh.dispatches.length === 1 && gh.dispatches[0].inputs.issue === "41" && gh.issues[0].labels.includes("seo-proposal"),
+    "approved: issue #41 opened in the site's repository and seo-implement started");
+  check(gh.auth.every((a) => a === `Bearer ${TOKEN_GH}`), "every GitHub call carried the agency's own token");
+  gh.pulls["acme:seo/issue-41"] = { number: 7, html_url: "https://github.com/acme/plumber/pull/7", state: "closed", merged_at: new Date(Date.now() - 60e3).toISOString() };
+  gh.fixed = true; // the merged change fixed the page
+  await due();
+  check(["verifying", "completed"].includes(psql(`select status from public.jobs where id = ${lit(impl)};`)) && psql(`select count(*) from public.jobs where site_id = ${lit(A)} and idempotency_key = ${lit("scan:verify:" + impl)};`) === "1",
+    "pull request #7 merged: verifying, with a fresh scan requested");
+  await due();
+  const verified = JSON.parse(psql(`select to_jsonb(j) from public.jobs j where id = ${lit(impl)};`));
+  check(verified.status === "completed" && /fixed \(title-missing\)/.test(verified.outputs.verification.summary), `verified by the scan after the merge: ${verified.outputs.verification.summary}`);
+  check(psql(`select count(*) from public.jobs where outputs::text like '%github_pat%';`) === "0" && psql(`select count(*) from public.god_runs where errors::text like '%github_pat%';`) === "0", "the token is in no job, output or run log");
+  check(JSON.parse(asUser(A_USER, `select public.site_integrations(${lit(A)});`))[0].lastOkAt !== null, "the agency sees GitHub working");
 
   // Pause without a deploy.
   psql(`select public.set_god_paused(true, 'e2e');`, "service_role");

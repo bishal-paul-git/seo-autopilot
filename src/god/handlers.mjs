@@ -2,6 +2,7 @@
 // product's existing modules and write the site's private memory through the store. Handlers never deploy anything;
 // work that changes a website gets its own handler per authorized integration (R1-E1).
 import { buildDossier, dossierMemory } from "./onboarding.mjs";
+import { workOrder } from "./github.mjs";
 
 // The crawler loads only where it runs (Node, the Supabase scan function); the Cloudflare Worker passes a remote scan.
 const scanSite = (...a) => import("../hosted/scan.mjs").then((m) => m.scanSite(...a));
@@ -34,6 +35,16 @@ export function makeHandlers({ store, siteOf, scan = scanSite, scanOptions = {} 
         proposal: dossier.strategyDraft, questions: dossier.questions,
         adopt: true, // the agency must approve this result before it becomes the site's strategy
       };
+    },
+    // D37: draft the exact GitHub work order for one accepted recommendation. No side effects: nothing reaches GitHub
+    // until the agency approves this result; the scheduler then opens the issue and starts the site's own workflow.
+    async implement(job) {
+      const site = await siteOf(job.siteId);
+      const rec = job.inputs?.recommendation;
+      if (!rec || typeof rec !== "object" || !rec.title) return { evidence: [], escalate: "the recommendation to implement is missing" };
+      const order = workOrder(job, site || {});
+      const evidence = [`work order for ${order.url || "the site"} (${order.kind})`, ...(Array.isArray(rec.evidence) ? rec.evidence.slice(0, 5).map((e) => `recommendation evidence: ${String(e).slice(0, 200)}`) : [])];
+      return { evidence, proposal: { workOrder: order, recommendation: rec, sourceJob: job.inputs?.sourceJob || null }, adopt: true };
     },
   };
 }

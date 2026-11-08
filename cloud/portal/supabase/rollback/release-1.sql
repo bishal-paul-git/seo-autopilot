@@ -1,4 +1,4 @@
--- Rollback for Release 1 database migrations (20261104000000 through 20261108100000, including 090000 if applied).
+-- Rollback for Release 1 database migrations (20261104000000 through 20261108110000).
 -- Returns the schema to what production had on 2026-11-08 (the portal migrations only). Generated from a catalog diff
 -- and checked locally: after the full chain and this script, every table, column, constraint, index, trigger,
 -- function, policy, grant and row-level-security flag matches the original (see docs/implementation/RELEASE-1-PRODUCTION-CHANGE-MANIFEST.md).
@@ -67,7 +67,18 @@ drop table if exists public.god_runs cascade;
 drop table if exists public.platform_admins cascade;
 drop table if exists private.platform_settings cascade;
 
--- 6. New functions.
+-- 6. New functions (GitHub tokens stored by 110000 are removed first: they belong to no remaining feature).
+do $$ begin
+  if exists (select 1 from pg_namespace where nspname = 'vault') and to_regclass('vault.secrets') is not null then
+    delete from vault.secrets where name like 'github_token:%';
+  end if;
+end $$;
+drop function if exists public.connect_github(uuid, text, text);
+drop function if exists public.disconnect_github(uuid);
+drop function if exists public.site_integrations(uuid);
+drop function if exists public.github_target(uuid);
+drop function if exists public.record_integration_status(uuid, text, boolean, text);
+drop function if exists public.request_implementation(uuid, integer);
 drop function if exists private.public_host(p_url text);
 drop function if exists private.kick_scan();
 drop function if exists public.add_site_by_url(p_url text, p_name text, p_org uuid);

@@ -6,6 +6,7 @@ import { planSite } from "./planner.mjs";
 import { enqueue, runOnce } from "./worker.mjs";
 import { learn, applyLessons } from "./learning.mjs";
 import { trafficDue } from "./search-console.mjs";
+import { rulesOnPage, verifyChange, WAIT_FOR_PR_DAYS } from "./github.mjs";
 
 const OPEN = new Set(["proposed", "scoped", "queued", "running", "awaiting_review", "awaiting_approval", "authorized", "deploying", "verifying", "failed", "escalated"]);
 
@@ -31,8 +32,11 @@ export function reportsFrom(memory) {
  * proposal that has run is accepted (the strategy becomes "approved" in memory and the job completes). An approved
  * change that has run waits for its apply step, which needs an authorized integration (R1-E1): reported, not touched.
  */
-export async function advance(store, site, jobs, memory, actor = "seo-god") {
+export async function advance(store, site, jobs, memory, actor = "seo-god", { github = null, now = new Date().toISOString() } = {}) {
   const moved = [], waiting = [];
+  // D37: approved work orders reach GitHub here, and the pull requests they lead to are followed and verified.
+  const ex = await executeChanges(store, site, jobs, memory, actor, github, now);
+  moved.push(...ex.moved); waiting.push(...ex.waiting);
   // Work created outside the planner (an accepted client request, a job an agency member added) enters the lifecycle
   // here: gated work goes to the agency for approval, never straight to the queue.
   for (const j of jobs.filter((x) => x.status === "proposed")) {
@@ -49,6 +53,7 @@ export async function advance(store, site, jobs, memory, actor = "seo-god") {
   }
   for (const j of jobs.filter((x) => x.status === "authorized")) {
     if (!j.attempts) { await store.transition(j.id, "queued", actor, "approved by the agency: run it"); moved.push({ job: j.id, kind: j.kind, to: "queued" }); continue; }
+    if (j.kind === "implement") continue; // handled by executeChanges
     if (j.kind === "strategy_proposal") {
       const draft = memory.find((m) => m.kind === "strategy" && m.key === "initial")?.value || j.outputs?.proposal || {};
       await store.writeMemory(site.id, [{ kind: "strategy", key: "initial", value: { ...draft, status: "approved", approvedJob: j.id }, basis: "verified", confidence: null, source: "agency approval" }]);
@@ -65,6 +70,94 @@ export async function advance(store, site, jobs, memory, actor = "seo-god") {
   return { moved, waiting };
 }
 
+const DAY = 864e5;
+const ageDays = (from, now) => (Date.parse(now) - Date.parse(from || now)) / DAY;
+
+/**
+ * Verified execution (D37). For each implement job:
+ * - authorized (the agency approved the exact work order): open the issue in the site's repository and start the site's
+ *   seo-implement workflow, then move to deploying. The issue number is saved before the workflow is started, so a
+ *   failure in between never opens a second issue.
+ * - deploying: follow the pull request on branch seo/issue-<n>. Merged: move to verifying and ask for a fresh scan.
+ *   Closed without merging, or no pull request after WAIT_FOR_PR_DAYS: hand to a person. Open: wait (people decide).
+ * - verifying: compare the page's problems in the first scan after the merge with the baseline taken when the work order
+ *   was sent. New high-severity problems: hand to a person with the pull request to revert. Otherwise: completed.
+ * github: async (site) => client from github.mjs (makeGitHub) or null when the site has no connected repository.
+ * Nothing here merges, approves or edits anything: the merge stays with a person or the site's own policy (D17).
+ */
+export async function executeChanges(store, site, jobs, memory, actor, github, now) {
+  const moved = [], waiting = [];
+  const mine = jobs.filter((j) => j.kind === "implement" && ((j.status === "authorized" && j.attempts) || j.status === "deploying" || j.status === "verifying"));
+  if (!mine.length) return { moved, waiting };
+  let gh = null, ghError = null;
+  if (mine.some((j) => j.status !== "verifying")) {
+    try { gh = github ? await github(site) : null; } catch (e) { ghError = String(e.message || e); }
+  }
+  const status = async (ok, err) => { try { await store.recordIntegrationStatus?.(site.id, "github", ok, err || null); } catch { /* best effort */ } };
+  const stop = async (j, why) => {
+    await store.transition(j.id, "failed", actor, why.slice(0, 300));
+    await store.transition(j.id, "escalated", "system", "needs a person");
+    moved.push({ job: j.id, kind: j.kind, to: "escalated", why });
+  };
+  const audit = reportsFrom(memory).audit || null;
+  for (const j of mine) {
+    const d = j.outputs?.deploy || {};
+    try {
+      if (j.status === "verifying") {
+        const v = verifyChange(d, audit, now);
+        if (!v.done) { waiting.push({ job: j.id, kind: j.kind, reason: `verifying: waiting for a scan after pull request #${d.pr} was merged` }); continue; }
+        await store.recordOutput(j.id, { outputs: { ...j.outputs, verification: { ...v, at: now, auditAt: audit?.generatedAt || null } } });
+        if (!v.ok) { await stop(j, `${v.summary}; if the pull request caused it, revert #${d.pr} in GitHub`); continue; }
+        await store.transition(j.id, "completed", actor, v.summary.slice(0, 300), { pr: d.prUrl || null });
+        moved.push({ job: j.id, kind: j.kind, to: "completed", why: v.summary });
+        continue;
+      }
+      if (!gh) { waiting.push({ job: j.id, kind: j.kind, reason: ghError ? `GitHub: ${ghError}` : "approved; connect GitHub for this website to open the pull request" }); continue; }
+      if (j.status === "authorized") {
+        const order = j.outputs?.proposal?.workOrder;
+        if (!order?.title) { waiting.push({ job: j.id, kind: j.kind, reason: "approved, but the work order is missing: ask for it again" }); continue; }
+        let deploy = d;
+        if (!deploy.issue) {
+          const issue = await gh.createIssue(order);
+          deploy = { repo: gh.repo, issue: issue.number, issueUrl: issue.url, url: order.url || null, baseline: order.url ? rulesOnPage(audit, order.url) : [], baselineAuditAt: audit?.generatedAt || null, openedAt: now };
+          await store.recordOutput(j.id, { outputs: { ...j.outputs, deploy } });
+        }
+        await gh.dispatch(deploy.issue, await gh.defaultBranch());
+        await store.recordOutput(j.id, { outputs: { ...j.outputs, deploy: { ...deploy, dispatchedAt: now } } });
+        await store.transition(j.id, "deploying", actor, `issue #${deploy.issue} opened in ${deploy.repo}; seo-implement started`, { issue: deploy.issueUrl });
+        await status(true);
+        moved.push({ job: j.id, kind: j.kind, to: "deploying" });
+        continue;
+      }
+      // deploying
+      const pr = await gh.pullForIssue(d.issue);
+      await status(true);
+      if (pr?.merged) {
+        await store.recordOutput(j.id, { outputs: { ...j.outputs, deploy: { ...d, pr: pr.number, prUrl: pr.url, mergedAt: pr.mergedAt } } });
+        await store.transition(j.id, "verifying", actor, `pull request #${pr.number} merged; verifying with the next scan`, { pr: pr.url });
+        // A fresh read of the site soon after the merge is the verification's evidence.
+        const scan = await store.createJob({ siteId: site.id, kind: "scan", title: "Read the site to verify a merged change", source: "seo_god", risk: "low", priority: 1, requiresApproval: false, idempotencyKey: `scan:verify:${j.id}`, inputs: { site: site.id, verifies: j.id } });
+        if (scan.status === "proposed") { await store.transition(scan.id, "scoped", actor, "verify a merged change"); await store.transition(scan.id, "queued", actor, "queued"); }
+        moved.push({ job: j.id, kind: j.kind, to: "verifying" });
+      } else if (pr && pr.state === "closed") {
+        await stop(j, `pull request #${pr.number} was closed without merging`);
+      } else if (pr) {
+        waiting.push({ job: j.id, kind: j.kind, reason: `pull request #${pr.number} is waiting for review in GitHub` });
+      } else if (ageDays(d.dispatchedAt, now) > WAIT_FOR_PR_DAYS) {
+        const issue = await gh.issue(d.issue).catch(() => null);
+        await stop(j, issue?.state === "closed" ? `issue #${d.issue} was closed without a pull request` : `no pull request ${WAIT_FOR_PR_DAYS} days after issue #${d.issue}: check that seo-implement is installed and can run`);
+      } else {
+        waiting.push({ job: j.id, kind: j.kind, reason: `waiting for seo-implement to open a pull request for issue #${d.issue}` });
+      }
+    } catch (e) {
+      const m = String(e.message || e).slice(0, 300);
+      await status(false, m);
+      waiting.push({ job: j.id, kind: j.kind, reason: `GitHub: ${m}` });
+    }
+  }
+  return { moved, waiting };
+}
+
 /** Jobs that wait on a person, with the decision each one needs. */
 export const waitingOn = (jobs) => jobs.filter((j) => ["awaiting_approval", "escalated"].includes(j.status))
   .map((j) => ({ job: j.id, kind: j.kind, reason: j.status === "escalated" ? "failed repeatedly: needs a person" : j.attempts ? "waiting for the agency to approve the result" : "waiting for the agency to approve starting it" }));
@@ -76,7 +169,7 @@ export const waitingOn = (jobs) => jobs.filter((j) => ["awaiting_approval", "esc
  * agentRunUsd, maxJobs (per tick, all sites), agents (registry entries), worker, timeoutMs, log }.
  * Returns a plain report of what happened for each site and each job run.
  */
-export async function tick({ store, sites = null, handlers = {}, now = new Date().toISOString(), paused = false, dailyBudgetUsd = 0, budgets = {}, agentRunUsd = 0.5, maxJobs = 5, agents = [], worker = "seo-god-worker", timeoutMs = 120_000, log = () => {} }) {
+export async function tick({ store, sites = null, handlers = {}, now = new Date().toISOString(), paused = false, dailyBudgetUsd = 0, budgets = {}, agentRunUsd = 0.5, maxJobs = 5, agents = [], worker = "seo-god-worker", timeoutMs = 120_000, log = () => {}, github = null }) {
   if (paused) return { now, paused: true, sites: [], runs: [] };
   const list = sites || (await store.listSites());
   const dayStart = `${now.slice(0, 10)}T00:00:00.000Z`;
@@ -89,7 +182,7 @@ export async function tick({ store, sites = null, handlers = {}, now = new Date(
     try {
       let jobs = await store.listJobs(site.id);
       let memory = (await store.readMemory(site.id)) || [];
-      const adv = await advance(store, site, jobs, memory);
+      const adv = await advance(store, site, jobs, memory, "seo-god", { github, now });
       entry.moved = adv.moved; entry.waiting = adv.waiting;
       if (adv.moved.length) { jobs = await store.listJobs(site.id); memory = (await store.readMemory(site.id)) || []; }
       // Learn from what happened since the last run, before deciding what to do next.

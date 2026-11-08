@@ -14,6 +14,7 @@ import { makeAgentHandler, makeClientRequestHandler } from "../../../src/god/age
 import { tick } from "../../../src/god/tick.mjs";
 import { makeSearchConsoleHandler, googleToken } from "../../../src/god/search-console.mjs";
 import { runOnce } from "../../../src/god/worker.mjs";
+import { makeGitHub } from "../../../src/god/github.mjs";
 import { PROMPTS } from "./agents.generated.mjs";
 
 export const VERSION = "0.1.0";
@@ -76,7 +77,9 @@ export function context(env, fetchImpl) {
 /** Plan ONE site (its own invocation). The site comes from the scheduler, never from a public request. */
 export async function tickSite(env, site, fetchImpl) {
   const { s, store, handlers } = context(env, fetchImpl);
-  const r = await tick({ store, sites: [site], handlers, maxJobs: 0, dailyBudgetUsd: s.dailyBudgetUsd, agentRunUsd: s.agentRunUsd });
+  // D37: the site's own repository, when an agency owner connected it; the token stays in this invocation.
+  const github = async (x) => { const t = await store.githubTarget(x.id); return t?.repo && t?.token ? makeGitHub({ repo: t.repo, token: t.token, fetchImpl, api: env.GITHUB_API_URL || undefined }) : null; }; // GITHUB_API_URL: local tests only
+  const r = await tick({ store, sites: [site], handlers, maxJobs: 0, dailyBudgetUsd: s.dailyBudgetUsd, agentRunUsd: s.agentRunUsd, github });
   const e = r.sites[0] || {};
   const outcome = { strategy: e.strategy ?? null, queued: (e.queued || []).length, deferred: (e.deferred || []).length, waiting: (e.waiting || []).length, error: e.error || null };
   await rpc(env, fetchImpl, "record_site_tick", { p_site: site.id, p_outcome: outcome });

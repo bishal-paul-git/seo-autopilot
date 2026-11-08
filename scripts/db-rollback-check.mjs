@@ -8,7 +8,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 const R = fileURLToPath(new URL("..", import.meta.url));
 const M = R + "cloud/portal/supabase/migrations/", T = R + "cloud/portal/supabase/test/";
-export const CHAIN = ["20261108000000_r1_contracts.sql", "20261108010000_r1_memory.sql", "20261108020000_r1_scheduler.sql", "20261108030000_cloudflare_execution.sql", "20261108040000_agency_console.sql", "20261108050000_client_portal.sql", "20261108060000_learning.sql", "20261108070000_operations.sql", "20261108080000_security_fixes.sql", "20261108090000_strategy_draft.sql", "20261108100000_invite_only.sql"];
+export const CHAIN = ["20261108000000_r1_contracts.sql", "20261108010000_r1_memory.sql", "20261108020000_r1_scheduler.sql", "20261108030000_cloudflare_execution.sql", "20261108040000_agency_console.sql", "20261108050000_client_portal.sql", "20261108060000_learning.sql", "20261108070000_operations.sql", "20261108080000_security_fixes.sql", "20261108090000_strategy_draft.sql", "20261108100000_invite_only.sql", "20261108110000_github_execution.sql"];
 const { existsSync } = await import("node:fs");
 const chain = CHAIN.filter((f) => existsSync(M + f));
 const sh = (c, a, o = {}) => execFileSync(c, a, { encoding: "utf8", ...o });
