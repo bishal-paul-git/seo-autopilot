@@ -49,6 +49,20 @@ begin
          from public.integrations i where i.site_id = p_site), '[]'::jsonb);
 end $$;
 
+-- Changes on their way to the website, for agency members: the issue, the pull request, the verification. No secrets.
+create or replace function public.site_deployments(p_site uuid)
+returns jsonb language plpgsql stable security definer set search_path = '' as $$
+declare v_org uuid := private.site_org(p_site);
+begin
+  if v_org is null or not private.is_member(v_org) then raise exception 'not allowed'; end if;
+  return coalesce((select jsonb_agg(x order by x->>'updatedAt' desc) from (
+    select jsonb_build_object('id', j.id, 'title', j.title, 'status', j.status, 'updatedAt', j.updated_at,
+             'page', j.outputs->'deploy'->>'url', 'issue', j.outputs->'deploy'->'issue', 'issueUrl', j.outputs->'deploy'->>'issueUrl',
+             'pr', j.outputs->'deploy'->'pr', 'prUrl', j.outputs->'deploy'->>'prUrl', 'mergedAt', j.outputs->'deploy'->>'mergedAt',
+             'verification', j.outputs->'verification'->>'summary', 'error', j.error) x
+      from public.jobs j where j.site_id = p_site and j.kind = 'implement' order by j.updated_at desc limit 20) t), '[]'::jsonb);
+end $$;
+
 -- The Worker's view: the repository and token of a connected site, or nothing.
 create or replace function public.github_target(p_site uuid)
 returns jsonb language sql stable security definer set search_path = '' as $$
@@ -86,6 +100,6 @@ begin
 end $$;
 
 revoke all on function public.connect_github(uuid, text, text), public.disconnect_github(uuid), public.site_integrations(uuid), public.github_target(uuid),
-  public.record_integration_status(uuid, text, boolean, text), public.request_implementation(uuid, int) from public, anon, authenticated;
-grant execute on function public.connect_github(uuid, text, text), public.disconnect_github(uuid), public.site_integrations(uuid), public.request_implementation(uuid, int) to authenticated;
+  public.record_integration_status(uuid, text, boolean, text), public.request_implementation(uuid, int), public.site_deployments(uuid) from public, anon, authenticated;
+grant execute on function public.connect_github(uuid, text, text), public.disconnect_github(uuid), public.site_integrations(uuid), public.request_implementation(uuid, int), public.site_deployments(uuid) to authenticated;
 grant execute on function public.github_target(uuid), public.record_integration_status(uuid, text, boolean, text) to service_role;

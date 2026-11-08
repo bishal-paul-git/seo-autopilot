@@ -79,6 +79,7 @@ drop function if exists public.site_integrations(uuid);
 drop function if exists public.github_target(uuid);
 drop function if exists public.record_integration_status(uuid, text, boolean, text);
 drop function if exists public.request_implementation(uuid, integer);
+drop function if exists public.site_deployments(uuid);
 drop function if exists private.public_host(p_url text);
 drop function if exists private.kick_scan();
 drop function if exists public.add_site_by_url(p_url text, p_name text, p_org uuid);

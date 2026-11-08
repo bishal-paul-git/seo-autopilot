@@ -67,6 +67,8 @@ do $$ declare j public.jobs; j2 public.jobs; begin
   assert j.inputs->'recommendation'->>'title' = 'Shorten the home page title' and (j.inputs->>'sourceJob')::uuid = (select v from ids where k = 'advice_done');
   j2 := public.request_implementation((select v from ids where k = 'advice_done'), 0);
   assert j2.id = j.id, 'idempotent';
+  assert jsonb_array_length(public.site_deployments((select v from ids where k = 'alice_site'))) = 1, 'members see the change on its way';
+  assert (public.site_deployments((select v from ids where k = 'alice_site')))::text not like '%github_pat%', 'no token in deployments';
   begin perform public.request_implementation((select v from ids where k = 'advice_done'), 5); raise exception 'missing recommendation accepted';
   exception when raise_exception then if sqlerrm <> 'no such recommendation' then raise; end if; end;
   begin perform public.request_implementation((select id from public.jobs where site_id = (select v from ids where k = 'alice_site') and status <> 'completed' limit 1), 0); raise exception 'unfinished job accepted';
