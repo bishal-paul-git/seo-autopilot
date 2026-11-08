@@ -37,7 +37,7 @@ Where every job runs: [runtime-matrix.md](runtime-matrix.md). Free-tier usage: [
 ## Account setup (owner actions, in this order)
 Nothing here has been done. Each step needs the owner.
 
-1. **Review and merge the PR chain:** #33 → #34 → #35/#36 → #37 → #38 → #39 → #40 → #41 → #43, then the agency console PR.
+1. **Review and merge the PR chain:** #33 → #34 → #35/#36 → #37 → #38 → #39 → #40 → #41 → #43 → #44 → the client portal PR.
 2. **Supabase migrations.** Apply them in order to project `ymwwwhdlyjnqbxxhtcew`, Dashboard → SQL, or `supabase db push` from a reviewed checkout:
    - `20261104000000_portal_url_sites.sql`
    - `20261108000000_r1_contracts.sql`
@@ -45,6 +45,7 @@ Nothing here has been done. Each step needs the owner.
    - `20261108020000_r1_scheduler.sql`
    - `20261108030000_cloudflare_execution.sql`
    - `20261108040000_agency_console.sql` (the SEO God page in the portal)
+   - `20261108050000_client_portal.sql` (client requests and the agency inbox)
 
    The first one (D25) needs the `pg_cron` and `pg_net` extensions. It also **schedules its own 10-minute scan** (`seo-autopilot-scan`). With Cloudflare as the only scheduler, remove that schedule straight after applying, so sites are not crawled twice:
 

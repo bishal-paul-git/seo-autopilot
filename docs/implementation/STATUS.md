@@ -3,7 +3,7 @@
 Kept short; read at the start of every session. History: [history/STATUS-to-2026-11-03.md](history/STATUS-to-2026-11-03.md). Detail: [CHANGELOG.md](CHANGELOG.md), [DECISIONS.md](DECISIONS.md). Deployed state: [../deployment-status.md](../deployment-status.md). Tests: [../test-matrix.md](../test-matrix.md).
 
 ## 1. Snapshot
-- Last updated: 2026-11-08 UTC. Branch `claude/agency-console` (stacked: #33 → #34 → #36 → #37 → #38 → #39 → #40 → #41 → #43 → this; includes PR #42's plan); base `main` `e982f64`; release `v2.22.1`. Requirements: PR #35 (`docs/product/`).
+- Last updated: 2026-11-08 UTC. Branch `claude/client-portal` (stacked: #33 → #34 → #36 → #37 → #38 → #39 → #40 → #41 → #43 → #44 → this; includes PR #42's plan); base `main` `e982f64`; release `v2.22.1`. Requirements: PR #35 (`docs/product/`).
 - Environment: Linux cloud container, Node 22, Postgres 16 (local SQL checks); network allowed to Supabase, GitHub and the owner's three websites.
 
 ## 2. Goal and phase
@@ -25,12 +25,13 @@ Architecture: [../system-architecture.md](../system-architecture.md). Every job 
 | R1 agent runner (advise only, user's key, budget-bounded; D29) | `src/god/agent-runner.mjs` | `agent-runner.test.mjs` (mocked API only) | no live model call yet |
 | Cloudflare execution (Worker scheduler, scan job mode, pause, lease recovery, run log; D30) | `cloud/worker/`, scan function, migration 030000 | `cf-worker.test.mjs`, `rls7.sql`, `cf-local-e2e.mjs` in workerd, `scan-fn-local.mjs` in Deno on a real site | **not deployed**; see `docs/cloudflare/README.md` |
 | Agency console: the SEO God page (approvals, questions, escalations, results, spend) | `cloud/portal/app/index.html`, migration 040000 | `rls8.sql`, `portal-god.test.mjs` (Chromium) | not deployed (portal unchanged) |
+| Client portal: client accounts with reports and requests; agency inbox and client access; requests assessed as advice after agency approval | portal, migration 050000, `tick.mjs`, `agent-runner.mjs` | `rls9.sql`, `portal-requests.test.mjs`, `client-request.test.mjs`, workerd e2e (24 checks) | not deployed |
 
 ## 4. Checks this session
-- `npm test`: 537/537.
-- `bash cloud/portal/supabase/test/run.sh`: 8 suites pass.
+- `npm test`: 543/543.
+- `bash cloud/portal/supabase/test/run.sh`: 9 suites pass.
 - `god-pg-e2e.mjs`: passes.
-- `cf-local-e2e.mjs`: the Worker ran in workerd against the real migrations; 18 checks pass.
+- `cf-local-e2e.mjs`: the Worker ran in workerd against the real migrations; 24 checks pass, including the client request path.
 - `scan-fn-local.mjs`: the scan function ran in Deno on a real site; 8 checks pass.
 - `cf-measure.mjs`: CPU measured on 3 real sites. A scan costs 0.8-1.6 s of CPU; Worker steps cost 0.4-2.5 ms.
 - Cloudflare and Supabase limits were read from the official docs.

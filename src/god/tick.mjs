@@ -31,12 +31,25 @@ export function reportsFrom(memory) {
  */
 export async function advance(store, site, jobs, memory, actor = "seo-god") {
   const moved = [], waiting = [];
+  // Work created outside the planner (an accepted client request, a job an agency member added) enters the lifecycle
+  // here: gated work goes to the agency for approval, never straight to the queue.
+  for (const j of jobs.filter((x) => x.status === "proposed")) {
+    await store.transition(j.id, "scoped", actor, j.source === "client_submission" ? "client request accepted by the agency" : "scoped");
+    const to = j.requiresApproval ? "awaiting_approval" : "queued";
+    await store.transition(j.id, to, actor, j.requiresApproval ? "needs agency approval" : "queued");
+    moved.push({ job: j.id, kind: j.kind, to });
+  }
   for (const j of jobs.filter((x) => x.status === "authorized")) {
     if (!j.attempts) { await store.transition(j.id, "queued", actor, "approved by the agency: run it"); moved.push({ job: j.id, kind: j.kind, to: "queued" }); continue; }
     if (j.kind === "strategy_proposal") {
       const draft = memory.find((m) => m.kind === "strategy" && m.key === "initial")?.value || j.outputs?.proposal || {};
       await store.writeMemory(site.id, [{ kind: "strategy", key: "initial", value: { ...draft, status: "approved", approvedJob: j.id }, basis: "verified", confidence: null, source: "agency approval" }]);
       await store.transition(j.id, "completed", actor, "strategy accepted by the agency");
+      moved.push({ job: j.id, kind: j.kind, to: "completed" }); continue;
+    }
+    // Advice only (no changes to a website): approving the result is the end of it.
+    if (!(j.outputs?.changes || []).length) {
+      await store.transition(j.id, "completed", actor, "result accepted by the agency");
       moved.push({ job: j.id, kind: j.kind, to: "completed" }); continue;
     }
     waiting.push({ job: j.id, kind: j.kind, reason: "approved; its apply step needs an authorized integration (R1-E1)" });

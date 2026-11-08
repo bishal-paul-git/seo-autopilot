@@ -235,11 +235,14 @@ function toSite(row, data, key, extra = {}) {
   const d = data || {};
   return { ...EMPTY, ...d, ...extra, key, id: row.id, name: row.name, url: row.url, repo: row.repo, status: data ? "live" : row.status === "live" ? "live" : row.status === "scanning" ? "scanning" : "connecting", byUrl: row.mode === "url", scanState: row.scan_state || null, scanError: row.scan_error || null, nextScan: row.next_scan_at || null, lastAt: row.last_snapshot_at, market: d.site?.market, platform: d.site?.platform, period: d.period || EMPTY.period };
 }
-let SITES = [], loaded = false;
+let SITES = [], CLIENT_SITES = [], loaded = false;
 let ORG = null;
 async function loadAgency() {
   SITES = (await rpc("my_sites")).map((x) => toSite(x.site, x.data, x.site.id, { decisions: x.decisions || [] }));
-  ORG = await rpc("my_org").catch(() => null); loaded = true;
+  ORG = await rpc("my_org").catch(() => null);
+  // Client accounts (invited by their agency) have no agency sites: they get the reporting view of their own sites.
+  CLIENT_SITES = SITES.length ? [] : (await rpc("client_sites").catch(() => [])).map((x) => toSite(x.site, x.data, x.site.id, { brand: x.brand || null, growth: [], growthLoaded: true }));
+  loaded = true;
 }
 async function loadGrowth(s) { if (!s.growthLoaded) { s.growth = await rpc("site_growth", { p_site: s.id }).catch(() => []); s.growthLoaded = true; } }
 const shared = new Map();
@@ -266,9 +269,10 @@ const I = {
   grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>',
   plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   spark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/></svg>',
+  inbox: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13l2.5-7h11L20 13v6H4z"/><path d="M4 13h5l1 2h4l1-2h5"/></svg>',
   out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg>',
 };
-const PAGES = [["overview", "Overview", I.home], ["traffic", "Traffic", I.trend], ["keywords", "Keywords", I.key], ["pages", "Pages", I.page], ["locations", "Locations", I.pin], ["plan", "Coming next", I.plan], ["report", "Weekly report", I.report], ["god", "SEO God", I.spark], ["approvals", "Approvals", I.check], ["team", "SEO team", I.team], ["connect", "Connection", I.plug]];
+const PAGES = [["overview", "Overview", I.home], ["traffic", "Traffic", I.trend], ["keywords", "Keywords", I.key], ["pages", "Pages", I.page], ["locations", "Locations", I.pin], ["plan", "Coming next", I.plan], ["report", "Weekly report", I.report], ["god", "SEO God", I.spark], ["requests", "Requests", I.inbox], ["approvals", "Approvals", I.check], ["team", "SEO team", I.team], ["connect", "Connection", I.plug]];
 const AGENCY_ONLY = new Set(["god", "approvals", "team", "connect"]); // never shown to clients (D27: reporting only)
 const MOBILE_TABS = ["overview", "traffic", "keywords", "pages"];
 let state = { kwTab: "ranking", kwQ: "", pgFilter: "all", newToken: null };
@@ -600,6 +604,56 @@ function pGod(s) {
   </div>`;
 }
 
+/* ---------- Client requests: the agency's inbox and the client's own requests (R1-P2) ---------- */
+// Owner decisions: clients get reporting plus requests to their agency; a request never changes the website or starts
+// work by itself; the agency decides. Request text is client input: always escaped.
+const REQ_KINDS = [["suggestion", "Suggestion"], ["keyword", "A search term to rank for"], ["plan", "A plan or campaign"], ["feedback", "Feedback"], ["document", "Information about the business"]];
+const REQ_ST = { received: ["Sent", "info"], analyzing: ["Being reviewed", "info"], awaiting_agency: ["With your agency", "info"], accepted: ["Accepted", "ok"], rejected: ["Declined", "bad"], needs_clarification: ["Agency has a question", "warn"] };
+const reqPill = (st) => { const p = REQ_ST[st] || [st, ""]; return `<span class="pill ${p[1]}">${esc(p[0])}</span>`; };
+async function loadInbox(s) { try { s.inbox = await rpc("agency_inbox", { p_site: s.id }); s.inboxError = null; } catch (e) { s.inbox = null; s.inboxError = e.message; } }
+async function loadRequests(s) { try { s.requests = await rpc("my_submissions", { p_site: s.id }); s.requestsError = null; } catch (e) { s.requests = []; s.requestsError = e.message; } }
+
+function pInbox(s) {
+  const head = `<div><h1>Client requests</h1><p class="lead">Requests your client sent about ${esc(host(s.url))}. Accepting one hands it to the SEO God to assess; nothing runs until you also approve it on the SEO God page, and the website is never changed by a request.</p></div>`;
+  const b = s.inbox;
+  if (!b) return head + `<div class="callout">Client requests are not switched on for this workspace yet. ${esc(s.inboxError || "")}</div>`;
+  const c = b.client;
+  const access = c ? `<div class="card"><div class="ch"><h2>Client access</h2><span class="pill ok">${esc(c.name)}</span></div>
+      <p class="xs muted" style="margin:0 0 8px">People who sign in see this website's reports and can send requests. They never see approvals, costs or the SEO God.</p>
+      <div class="list">${(c.members || []).map((m) => `<div class="row"><div class="t">${esc(m)}</div><span class="pill ok">Can sign in</span></div>`).join("")}${(c.invites || []).filter((i) => !i.accepted).map((i) => `<div class="row"><div class="t">${esc(i.email)}</div><span class="pill warn">Invited</span></div>`).join("") || ((c.members || []).length ? "" : '<div class="empty">Nobody yet.</div>')}</div>
+      <form class="form" id="cl-invite" style="max-width:none;margin-top:10px"><label>Invite someone from ${esc(c.name)}<input name="email" type="email" required placeholder="name@client.com"></label><button class="btn primary" type="submit">Invite</button></form></div>`
+    : `<div class="card"><div class="ch"><h2>Client access</h2></div><p class="xs muted" style="margin:0 0 8px">Give your client their own sign-in for this website (reports and requests only).</p>
+      <form class="form" id="cl-assign" style="max-width:none">${(b.clients || []).length ? `<label>Existing client<select name="client"><option value="">New client…</option>${b.clients.map((x) => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")}</select></label>` : ""}
+        <label>New client name<input name="name" maxlength="120" placeholder="Client business name"></label><button class="btn primary" type="submit">Set up client access</button></form></div>`;
+  const list = (b.submissions || []).map((r) => {
+    const open = !["accepted", "rejected"].includes(r.status);
+    return `<div class="row" style="display:block"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><div class="t" style="flex:1;min-width:200px">${esc(r.title)}</div>${reqPill(r.status)}</div>
+      <div class="s">${esc((REQ_KINDS.find(([k]) => k === r.kind) || [r.kind, r.kind])[1])} · from ${esc(r.by || "your team")} · ${esc(String(r.createdAt || "").slice(0, 10))}${r.job ? ` · work ${esc(r.job.status)} (<a href="${link(s, "god")}">SEO God</a>)` : ""}</div>
+      ${r.body ? `<div class="xs" style="white-space:pre-wrap;margin-top:6px;padding:8px 10px;border-radius:8px;background:var(--bg2,rgba(127,127,127,.08))">${esc(r.body)}</div>` : ""}
+      ${r.agencyNote ? `<div class="xs muted" style="margin-top:6px">Your note: ${esc(r.agencyNote)}</div>` : ""}
+      ${open ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center"><input id="rnote-${esc(r.id)}" placeholder="Note to the client (they see it)" style="flex:1;min-width:200px">
+        <label class="xs" style="display:flex;gap:4px;align-items:center">Budget $<input id="rbud-${esc(r.id)}" type="number" min="0" max="50" step="0.25" value="0.5" style="width:70px"></label>
+        <button class="btn primary" data-rdec="accepted" data-req="${esc(r.id)}">Accept</button><button class="btn" data-rdec="needs_clarification" data-req="${esc(r.id)}">Ask a question</button><button class="btn" data-rdec="rejected" data-req="${esc(r.id)}">Decline</button></div>` : ""}</div>`;
+  }).join("") || '<div class="empty">No requests yet.</div>';
+  return head + access + `<div class="card pad0"><div class="ch"><h2>Requests</h2></div><div class="list">${list}</div></div>`;
+}
+
+function pRequests(s) {
+  const mine = s.requests || [];
+  return `<div><h1>Requests</h1><p class="lead">Send ideas, search terms or information to your SEO team. They review every request and reply here. Sending one does not change anything on your website.</p></div>
+  <div class="card"><form class="form" id="req-form" style="max-width:none">
+    <label>What is it about?<select name="kind">${REQ_KINDS.map(([k, t]) => `<option value="${k}">${esc(t)}</option>`).join("")}</select></label>
+    <label>Title<input name="title" required maxlength="200" placeholder="For example: we want more boiler repair calls in Leeds"></label>
+    <label>Details (optional)<textarea name="body" maxlength="20000" rows="4" placeholder="Anything that helps your SEO team"></textarea></label>
+    <div class="err" id="req-err"></div><button class="btn primary" type="submit">Send to my SEO team</button></form></div>
+  <div class="card pad0"><div class="ch"><h2>Your requests</h2></div><div class="list">${mine.map((r) => `<div class="row" style="display:block"><div style="display:flex;gap:8px;align-items:center"><div class="t" style="flex:1">${esc(r.title)}</div>${reqPill(r.status)}</div>
+    <div class="s">${esc(String(r.created_at || "").slice(0, 10))}</div>${r.agency_note ? `<div class="xs" style="margin-top:6px"><b>Your SEO team:</b> ${esc(r.agency_note)}</div>` : ""}</div>`).join("") || `<div class="empty">${esc(s.requestsError || "No requests yet.")}</div>`}</div></div>`;
+}
+
+function pClientHome() {
+  return `<div><h1>Your websites</h1><p class="lead">Reports from your SEO team.</p></div><div class="sites">${CLIENT_SITES.map((s) => `<a class="card site-card" href="#/k/${s.key}/overview"><div style="display:flex;gap:12px;align-items:center"><span class="score ${s.status === "live" ? tone(health(s)) : "warn"}">${s.status === "live" ? health(s) : "–"}</span><div><b>${esc(s.name)}</b><div class="xs muted">${esc(host(s.url))}</div></div></div></a>`).join("") || '<div class="card">No websites have been shared with you yet. Ask your SEO team.</div>'}</div>`;
+}
+
 function pTeamPage() {
   const owner = ORG?.role === "owner";
   return `<div><h1>Team and brand</h1><p class="lead">People in ${esc(ORG?.name || "your agency")}, and how your client links look.</p></div>
@@ -650,13 +704,15 @@ function pLogin() {
 }
 
 /* ---------- Shell ---------- */
-let mode = "agency";
-const link = (s, page) => `#/${mode === "client" ? "c" : "s"}/${s.key}/${page}`;
+let mode = "agency", clientAccount = false;
+const link = (s, page) => `#/${mode === "client" ? (clientAccount ? "k" : "c") : "s"}/${s.key}/${page}`;
+const visible = ([k]) => !(mode === "client" && AGENCY_ONLY.has(k)) && !(k === "requests" && mode === "client" && !clientAccount);
 const brandMark = '<span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#052a1e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8"/><path d="M15 8h5v5"/></svg></span>';
 function shell(s, page) {
-  const pages = PAGES.filter(([k]) => !(mode === "client" && AGENCY_ONLY.has(k)));
+  const pages = PAGES.filter(visible).map(([k, t, ic]) => [k, k === "requests" && mode === "agency" ? "Client requests" : t, ic]);
   $("#rail").innerHTML = `<a class="brand" href="${mode === "client" && s ? link(s, "overview") : "#/"}">${brandMark}<span><b>${mode === "client" && s ? esc(s.name) : "SEO Autopilot"}</b><span>${mode === "client" ? (s?.brand?.name ? `SEO dashboard by ${esc(s.brand.name)}` : "SEO dashboard") : "Workspace"}</span></span></a>
     ${s ? `<div><div class="lbl">Dashboard</div><nav>${pages.map(([k, t, ic]) => `<a href="${link(s, k)}" aria-current="${k === page ? "page" : "false"}">${ic}${t}</a>`).join("")}</nav></div>` : ""}
+    ${mode === "client" && clientAccount ? `<div><div class="lbl">Account</div><nav>${CLIENT_SITES.length > 1 ? `<a href="#/">${I.grid}Your websites</a>` : ""}<a href="#/logout">${I.out}Sign out</a></nav></div>` : ""}
     ${mode === "agency" && session ? `<div><div class="lbl">Websites</div><nav><a href="#/" aria-current="${!s && page !== "add" ? "page" : "false"}">${I.grid}All websites</a>${SITES.map((x) => `<a href="#/s/${x.key}/overview" aria-current="${s && x.key === s.key ? "page" : "false"}"><span class="dot ${x.status === "live" ? "live" : "setup"}"></span>${esc(x.name)}</a>`).join("")}<a href="#/add" aria-current="${page === "add" ? "page" : "false"}">${I.plus}Connect a website</a><a href="#/team" aria-current="${page === "teampage" ? "page" : "false"}">${I.people}Team and brand</a><a href="#/logout">${I.out}Sign out</a></nav></div>` : ""}
     <div class="foot">${s ? `Data from Google Search Console${s.ga4 && !s.ga4.error ? ", Google Analytics" : ""} and the site audit. Updated ${esc(s.lastAt ? s.lastAt.slice(0, 10) : last(s).day || "–")}.` : session ? esc(session.email || "") : ""}</div>`;
   const title = s ? (PAGES.find(([k]) => k === page) || PAGES[0])[1] : { add: "Connect a website", login: "Sign in", teampage: "Team and brand" }[page] || "Websites";
@@ -722,6 +778,31 @@ function wire(s) {
     consoleAction("answer_question", { p_site: s.id, p_key: k, p_value: v }, "Answer saved. The next strategy draft uses it.");
   }));
   document.querySelectorAll("[data-retry]").forEach((b) => (b.onclick = () => consoleAction("retry_job", { p_job: b.dataset.retry, p_note: null }, "Queued again.")));
+  const inboxAction = async (fn, args, done) => { try { await rpc(fn, args); toast(done); await loadInbox(s); render(); } catch (e) { toast(e.message); } };
+  document.querySelectorAll("[data-rdec]").forEach((b) => (b.onclick = () => {
+    const d = b.dataset.rdec, id = b.dataset.req, note = ($(`#rnote-${CSS.escape(id)}`)?.value || "").trim() || null;
+    if (d === "rejected" && !confirm("Decline this request? The client sees your note.")) return;
+    const budget = Number($(`#rbud-${CSS.escape(id)}`)?.value || 0.5);
+    inboxAction("review_submission", { p_submission: id, p_decision: d, p_note: note, p_job_kind: "client_request", p_risk: "medium", p_budget_usd: budget },
+      { accepted: "Accepted. Approve it on the SEO God page to start.", rejected: "Declined.", needs_clarification: "Question sent to the client." }[d]);
+  }));
+  const clInv = $("#cl-invite");
+  if (clInv && s?.inbox?.client) clInv.onsubmit = (e) => { e.preventDefault(); inboxAction("invite_client_user", { p_client: s.inbox.client.id, p_email: new FormData(clInv).get("email") }, "Invite saved. They can sign in with that email."); };
+  const asg = $("#cl-assign");
+  if (asg && s) asg.onsubmit = async (e) => {
+    e.preventDefault(); const f = new FormData(asg);
+    try {
+      let id = f.get("client");
+      if (!id) { const name = String(f.get("name") || "").trim(); if (!name) return toast("Type the client's name."); id = (await rpc("create_client", { p_name: name, p_org: ORG?.id || null })).id; }
+      await rpc("assign_site_client", { p_site: s.id, p_client: id }); toast("Client access set up."); await loadInbox(s); render();
+    } catch (x) { toast(x.message); }
+  };
+  const rf = $("#req-form");
+  if (rf && s) rf.onsubmit = async (e) => {
+    e.preventDefault(); const f = new FormData(rf), err = $("#req-err"); err.textContent = "";
+    try { await rpc("submit_to_agency", { p_site: s.id, p_kind: f.get("kind"), p_title: String(f.get("title") || "").trim(), p_body: String(f.get("body") || "").trim() || null }); toast("Sent to your SEO team."); await loadRequests(s); render(); }
+    catch (x) { err.textContent = x.message; }
+  };
   const people = $("#people");
   if (people) rpc("org_people").then((list) => { people.innerHTML = list.filter((p) => !ORG || p.org === ORG.id).map((p) => `<div class="row"><div><div class="t">${esc(p.email)}</div><div class="s">since ${esc(String(p.since).slice(0, 10))}</div></div><span class="pill ${p.role === "owner" ? "ok" : ""}">${esc(p.role)}</span></div>`).join("") || '<div class="empty">Only you so far.</div>'; }).catch((e) => (people.innerHTML = `<div class="empty">${esc(e.message)}</div>`));
   const inv = $("#invite-form");
@@ -759,23 +840,37 @@ function wire(s) {
   };
 }
 
-const PAGE_FN = { overview: pOverview, traffic: pTraffic, keywords: pKeywords, pages: pPages, locations: pLocations, plan: pPlan, report: pReport, team: pTeam, connect: pConnect, approvals: pApprovals, god: pGod };
+const PAGE_FN = { overview: pOverview, traffic: pTraffic, keywords: pKeywords, pages: pPages, locations: pLocations, plan: pPlan, report: pReport, team: pTeam, connect: pConnect, approvals: pApprovals, god: pGod, requests: (s) => (mode === "agency" ? pInbox(s) : pRequests(s)) };
 async function render() {
   const h = location.hash || "#/";
   $("#overlay").innerHTML = "";
   if (!CFG.supabaseUrl || !CFG.anonKey) { shell(null); $("#page").innerHTML = '<div class="callout">This portal is not configured yet (no Supabase address or key at build time).</div>'; return; }
   if (h === "#/logout") { saveSession(null); SITES = []; loaded = false; location.hash = "#/login"; return; }
-  const m = h.match(/^#\/(s|c)\/([\w-]+)(?:\/(\w+))?/);
+  const m = h.match(/^#\/(s|c|k)\/([\w-]+)(?:\/(\w+))?/);
   try {
     if (m && m[1] === "c") {
       mode = "client";
       $("#page").innerHTML = '<div class="empty">Loading…</div>';
       const s = await loadShared(m[2]);
       if (!s) { shell(null); $("#page").innerHTML = '<div class="callout">This link is not valid any more. Ask your SEO team for a new one.</div>'; return; }
-      let page = m[3] || "overview"; if (AGENCY_ONLY.has(page)) page = "overview";
+      let page = m[3] || "overview"; if (AGENCY_ONLY.has(page) || page === "requests") page = "overview"; // share links are anonymous: no requests
       if (/^#[0-9a-f]{6}$/i.test(s.brand?.color || "")) { document.documentElement.style.setProperty("--accent", s.brand.color); document.documentElement.style.setProperty("--chart", s.brand.color); }
       shell(s, page); document.title = `${s.name} · SEO dashboard`;
       $("#page").innerHTML = s.status !== "live" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
+      return wire(s);
+    }
+    clientAccount = false;
+    if (m && m[1] === "k") {
+      mode = "client"; clientAccount = true;
+      if (!(await token())) { location.hash = "#/login"; return; }
+      if (!loaded) { $("#page").innerHTML = '<div class="empty">Loading…</div>'; await loadAgency(); }
+      const s = CLIENT_SITES.find((x) => x.key === m[2]);
+      if (!s) { location.hash = "#/"; return; }
+      let page = m[3] || "overview"; if (AGENCY_ONLY.has(page)) page = "overview";
+      if (/^#[0-9a-f]{6}$/i.test(s.brand?.color || "")) { document.documentElement.style.setProperty("--accent", s.brand.color); document.documentElement.style.setProperty("--chart", s.brand.color); }
+      if (page === "requests") await loadRequests(s);
+      shell(s, page); document.title = `${s.name} · SEO dashboard`;
+      $("#page").innerHTML = page === "requests" ? pRequests(s) : s.status !== "live" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
       return wire(s);
     }
     mode = "agency";
@@ -784,14 +879,19 @@ async function render() {
     if (!loaded) { $("#page").innerHTML = '<div class="empty">Loading…</div>'; await loadAgency(); }
     if (h === "#/team") { shell(null, "teampage"); document.title = "Team and brand · SEO Autopilot"; $("#page").innerHTML = pTeamPage(); return wire(null); }
     if (h === "#/add") { shell(null, "add"); document.title = "Connect a website · SEO Autopilot"; $("#page").innerHTML = pAdd(); return wire(null); }
+    if (!m && !SITES.length && CLIENT_SITES.length) {
+      if (CLIENT_SITES.length === 1) { location.hash = `#/k/${CLIENT_SITES[0].key}/overview`; return; }
+      mode = "client"; clientAccount = true; shell(null); document.title = "Your websites"; $("#page").innerHTML = pClientHome(); return wire(null);
+    }
     if (!m) { shell(null); document.title = "Websites · SEO Autopilot"; $("#page").innerHTML = pHome(); return wire(null); }
     const s = SITES.find((x) => x.key === m[2]);
     if (!s) { location.hash = "#/"; return; }
     const page = m[3] || "overview";
     if (page === "overview" && s.status === "live") await loadGrowth(s);
     if (page === "god") await loadConsole(s);
+    if (page === "requests") await loadInbox(s);
     shell(s, page); document.title = `${s.name} · SEO dashboard`;
-    $("#page").innerHTML = s.status !== "live" && page !== "connect" && page !== "god" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
+    $("#page").innerHTML = s.status !== "live" && page !== "connect" && page !== "god" && page !== "requests" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
     wire(s);
   } catch (e) { $("#page").innerHTML = `<div class="callout">${esc(e.message)}</div>`; }
 }

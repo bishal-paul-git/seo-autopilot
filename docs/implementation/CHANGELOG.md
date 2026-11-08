@@ -2,6 +2,27 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (R1-P2 client portal; branch claude/client-portal)
+- **Code (portal):**
+  - Agency page **Client requests**. It shows every request in full with who sent it, and offers accept (with a budget), ask a question or decline, each with a note the client sees. It also covers client access: create or assign a client, invite people, and see members and pending invites.
+  - **Signed-in client accounts:** reports plus a **Requests** page to send requests and see the status and the agency's notes. Clients never see agency pages, and their session never calls agency functions.
+  - Share links stay anonymous and reporting-only, with no Requests page. The tests found that the share-link route would have shown the form, and that is fixed.
+- **Code (engine):**
+  - Work created outside the planner (accepted requests) enters the lifecycle through the scheduler and always goes to agency approval first.
+  - `client_request` jobs are assessed by the SEO strategist in advise mode, with the client's text passed only as data.
+  - Approving advice-only results completes them instead of parking them for an apply step.
+- **Migration (not applied):** `20261108050000_client_portal.sql`
+  - `agency_inbox`;
+  - `review_submission` now gives accepted work a budget (it was 0, so it could never run) and checks risk and budget;
+  - `submission_for_job` (service only);
+  - `god_due_sites` treats a fresh request as due.
+- **Tests:**
+  - `rls9.sql`.
+  - `test/client-request.test.mjs` (2 tests).
+  - `test/portal-requests.test.mjs` (4 tests, including a page-script compile check that runs without a browser).
+  - The workerd end-to-end run now covers the full client request path: 24 checks.
+  - `npm test` 543/543; 9 SQL suites pass.
+
 ## 2026-11-08 (R1-P2 agency console; branch claude/agency-console)
 - **Code:** portal page **SEO God**, agency only and never shown to clients. It covers:
   - the strategy draft and its status;

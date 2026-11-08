@@ -11,7 +11,7 @@
 import { MemoryStore, SupabaseStore } from "../src/god/stores.mjs";
 import { makeHandlers } from "../src/god/handlers.mjs";
 import { tick } from "../src/god/tick.mjs";
-import { makeAgentHandler } from "../src/god/agent-runner.mjs";
+import { makeAgentHandler, makeClientRequestHandler } from "../src/god/agent-runner.mjs";
 
 const args = process.argv.slice(2);
 const env = process.env;
@@ -46,5 +46,7 @@ if (args[0] === "--memory") {
 }
 
 function withAgents(handlers, store, siteOf) {
-  return env.ANTHROPIC_API_KEY ? { ...handlers, "agent:*": makeAgentHandler({ store, siteOf }) } : handlers;
+  if (!env.ANTHROPIC_API_KEY) return handlers;
+  const agent = makeAgentHandler({ store, siteOf });
+  return { ...handlers, "agent:*": agent, client_request: makeClientRequestHandler({ store, agentHandler: agent }) };
 }

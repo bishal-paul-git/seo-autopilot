@@ -60,6 +60,7 @@ export class MemoryStore {
   }
   spendSince(siteId, since) { return (this.costs || []).filter((c) => c.siteId === siteId && c.at >= since).reduce((a, c) => a + c.usd, 0); }
   listSites() { return this.sites || []; }
+  submissionForJob(id) { const j = this.jobs.get(id); return (this.submissions || []).find((s) => s.id === j?.inputs?.submission && s.siteId === j.siteId) || null; }
   // Site memory: a new value for the same (kind, key) supersedes the old one; history is kept (like public.remember).
   writeMemory(siteId, items) {
     this.memory ||= [];
@@ -94,6 +95,7 @@ export class SupabaseStore {
   async listJobs(siteId) { return ((await this.#rpc("site_jobs", { p_site: siteId })) || []).map((r) => SupabaseStore.#job(r)); }
   async recordOutput(id, { outputs = null, costUsd = 0, note = null } = {}) { return SupabaseStore.#job(await this.#rpc("record_job_output", { p_job: id, p_outputs: outputs, p_cost: costUsd, p_note: note })); }
   async spendSince(siteId, since) { return Number(await this.#rpc("site_spend", { p_site: siteId, p_since: since })) || 0; }
+  async submissionForJob(id) { return this.#rpc("submission_for_job", { p_job: id }); }
   async listSites() { return ((await this.#rpc("god_sites", {})) || []).map((r) => ({ id: r.id, orgId: r.org_id, name: r.name, url: r.url })); }
   async failJob(id, actor, error) { return SupabaseStore.#job(await this.#rpc("fail_job", { p_job: id, p_actor: actor, p_error: error })); }
 }
