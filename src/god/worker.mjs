@@ -42,7 +42,7 @@ export async function runOnce({ store, handlers, worker = "worker-1", timeoutMs 
       if (!retry && review.verdict === "needs_changes") await store.transition(job.id, "escalated", "system", "review still asks for changes after the last attempt");
       log(`review ${review.verdict} ${job.kind}`); return { job: job.id, outcome: `review_${review.verdict}`, reasons: review.reasons };
     }
-    if (job.requiresApproval) { await store.transition(job.id, "awaiting_approval", review.reviewer, "reviewed; waiting for the agency"); return { job: job.id, outcome: "awaiting_approval" }; }
+    if (job.requiresApproval || output.adopt) { await store.transition(job.id, "awaiting_approval", review.reviewer, output.adopt ? "reviewed; waiting for the agency to adopt it" : "reviewed; waiting for the agency"); return { job: job.id, outcome: "awaiting_approval" }; }
     await store.transition(job.id, "authorized", review.reviewer, "reviewed");
     if (!output.deploy) { await store.transition(job.id, "completed", worker, "no deployment needed"); return { job: job.id, outcome: "completed" }; }
     await store.transition(job.id, "deploying", worker, "deploying");

@@ -44,7 +44,7 @@ Apply in this order, in the SQL editor, one file at a time, each in its own tran
 | 8 | `20261108060000_learning.sql` | console adds lessons | none |
 | 9 | `20261108070000_operations.sql` | platform admins, overview, health | none |
 | 10 | `20261108080000_security_fixes.sql` | Search Console confirmation, job limits | `sites.gsc_allowed*`, trigger `sites_gsc_reset` |
-| 11 | `20261108090000_strategy_draft.sql` | **only if D35 / PR #50 is confirmed** | none |
+| 11 | `20261108090000_strategy_draft.sql` | one agency approval adopts the drafted strategy (D35; owner confirmed D1) | none (redefines `transition_job`, which #2 adds) |
 | 12 | `20261108100000_invite_only.sql` | invite-only sign-up gate (Q8) | trigger `on_auth_user_gate_signup` (before insert on `auth.users`) |
 
 **Immediately after #1, in the same session:** `select cron.unschedule('seo-autopilot-scan');`. Cloudflare is the only scheduler (D30). Until the Vault secrets exist, that job does nothing anyway (`kick_scan` returns early).
@@ -146,9 +146,9 @@ This needs a separate approval after a day of healthy paused runs. It will be sc
 | 11 | Usage | Worker requests a day; Supabase function invocations | dashboards vs `docs/cloudflare/usage-estimate.md` |
 
 ## 4. Checks behind this manifest (local, this session; mocked providers only)
-- `npm test`: 564/564.
-- `bash cloud/portal/supabase/test/run.sh`: 14 suites, including `rls14.sql` (invite-only) and `rls15.sql`. The second calls every outsider-callable function against another agency's records (956 calls; nothing leaked or changed).
-- `node scripts/db-rollback-check.mjs`: rollback exact; re-apply clean.
+- `npm test`: 565/565.
+- `bash cloud/portal/supabase/test/run.sh`: 15 suites, including `rls13.sql` (one-approval strategy), `rls14.sql` (invite-only) and `rls15.sql`. The last calls every outsider-callable function against another agency's records (1,050 calls; nothing leaked or changed).
+- `node scripts/db-rollback-check.mjs`: after all 12 migrations, the rollback is exact and re-apply is clean.
 - `node scripts/god-pg-e2e.mjs`.
 - `node scripts/cf-local-e2e.mjs` (workerd).
 - Production: read-only queries listed in section 0.

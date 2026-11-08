@@ -44,20 +44,19 @@ test("dossier: answers close questions and become facts", () => {
   assert.deepEqual(store.readMemory("A", "identity").filter((m) => m.key.startsWith("social_profile")).map((m) => m.key), ["social_profile#1", "social_profile#2"]);
 });
 
-test("handlers through the worker: scan writes stated facts; the strategy proposal is reviewed and waits for the agency", async () => {
+test("handlers through the worker: scan writes stated facts; the strategy draft is made at once, reviewed, and waits for the agency to adopt it", async () => {
   const store = new MemoryStore();
   const scan = async () => ({ discovered: DISCOVERED, profile: { platform: { name: "WordPress" } }, audit: AUDIT, snapshot: {} });
   const handlers = makeHandlers({ store, siteOf: async () => SITE, scan });
   await enqueue(store, "A", planSite({ site: SITE, reports: {}, strategy: { status: "none" }, now: "2026-11-08T10:00:00Z" }));
   const sp = [...store.jobs.values()].find((j) => j.kind === "strategy_proposal");
-  assert.equal(sp.status, "awaiting_approval", "the plan itself needs approval before the proposal is even drafted");
-  assert.equal((await runOnce({ store, handlers })).outcome, "completed", "scan ran");
+  assert.equal(sp.status, "queued", "drafting is free and needs no approval (D35)");
+  assert.equal((await runOnce({ store, handlers })).outcome, "completed", "scan ran first");
   assert.equal(store.readMemory("A", "identity").find((m) => m.key === "business_name").value.value, "Leeds Plumbing Co");
-  store.approve(sp.id, "approve", "alice@agency"); store.transition(sp.id, "queued", "seo-god", "draft the proposal");
-  assert.equal((await runOnce({ store, handlers })).outcome, "awaiting_approval", "drafted, reviewed, back to the agency");
+  assert.equal((await runOnce({ store, handlers })).outcome, "awaiting_approval", "drafted, reviewed, sent to the agency to adopt");
   assert.ok(store.reviews.some((r) => r.jobId === sp.id && r.verdict === "pass"));
   assert.equal(store.readMemory("A", "strategy")[0].value.approval, "agency");
   assert.ok(store.readMemory("A", "question").length > 0);
   store.approve(sp.id, "approve", "alice@agency");
-  assert.equal(store.get(sp.id).status, "authorized", "only the agency's second approval accepts the strategy");
+  assert.equal(store.get(sp.id).status, "authorized", "one agency approval adopts the strategy");
 });

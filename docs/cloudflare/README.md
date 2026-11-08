@@ -37,7 +37,7 @@ Where every job runs: [runtime-matrix.md](runtime-matrix.md). Free-tier usage: [
 ## Account setup (owner actions, in this order)
 Nothing here has been done. Each step needs the owner.
 
-1. **Review and merge the consolidated Release 1 PR (#51)**, which carries #33–#49 (owner decision Q1). Every production step below is listed, with verification and rollback, in [`docs/implementation/RELEASE-1-PRODUCTION-CHANGE-MANIFEST.md`](../implementation/RELEASE-1-PRODUCTION-CHANGE-MANIFEST.md); each needs the owner's approval.
+1. **Review and merge the consolidated Release 1 PR (#51)**, which carries #33–#50 (owner decision Q1). Every production step below is listed, with verification and rollback, in [`docs/implementation/RELEASE-1-PRODUCTION-CHANGE-MANIFEST.md`](../implementation/RELEASE-1-PRODUCTION-CHANGE-MANIFEST.md); each needs the owner's approval.
 2. **Supabase migrations.** Apply them in order to project `ymwwwhdlyjnqbxxhtcew`, Dashboard → SQL, or `supabase db push` from a reviewed checkout:
    - `20261104000000_portal_url_sites.sql`
    - `20261108000000_r1_contracts.sql`
@@ -49,7 +49,7 @@ Nothing here has been done. Each step needs the owner.
    - `20261108060000_learning.sql` (what the SEO God learned, in the console)
    - `20261108070000_operations.sql` (Operations page; platform admins)
    - `20261108080000_security_fixes.sql` (security review fixes, D34)
-   - `20261108090000_strategy_draft.sql`, only with PR #50 (D35), if the owner confirms it
+   - `20261108090000_strategy_draft.sql` (the strategy is drafted at once; only the agency adopts it, D35, owner-confirmed). The preflight check cannot see this one, because it only redefines `transition_job`: confirm it in Dashboard → Database → Migrations.
    - `20261108100000_invite_only.sql` (invite-only sign-up until launch, Q8 and D36; no Supabase Auth setting change needed)
 
    Rollback: `cloud/portal/supabase/rollback/release-1.sql` (checked by `node scripts/db-rollback-check.mjs`).

@@ -32,6 +32,7 @@ export function makeHandlers({ store, siteOf, scan = scanSite, scanOptions = {} 
         evidence: [`dossier: ${dossier.facts.length} facts, ${dossier.questions.length} open questions`, `first steps from ${r.audit.summary.pagesCrawled} audited pages`],
         claims: dossier.strategyDraft.firstSteps.map((s) => ({ text: s.title, source: "audit" })),
         proposal: dossier.strategyDraft, questions: dossier.questions,
+        adopt: true, // the agency must approve this result before it becomes the site's strategy
       };
     },
   };

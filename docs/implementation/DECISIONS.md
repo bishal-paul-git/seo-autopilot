@@ -100,6 +100,20 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Evidence:** `rls14.sql`, `portal-invite-only.test.mjs`, `cf-worker.test.mjs` (paused routes), `scripts/db-rollback-check.mjs`.
 
+## 2026-11-08 D35 One agency approval per strategy (replaces the two-step flow of D28)
+**Context:** REVIEW-QUESTIONS D1. Under D28 the strategy needed one approval to start drafting and a second to accept the draft. Drafting is deterministic and free: it reads the scan, the site's own statements and the audit, with no AI call. The master spec requires approval only before a strategy is executed.
+
+**Decision:**
+- The planner queues the strategy draft right after the scan, ungated (risk medium, priority 2, created after the scan so the scan runs first and the draft reuses it).
+- The draft handler marks its result `adopt: true`. After review the worker sends such a result to the agency (`awaiting_approval`) even though starting it needed no approval.
+- One `approve_job` adopts it: the scheduler writes the strategy as approved and completes the job. Nothing else executes for the site until then, as before.
+- "Request changes" on ungated work (the job moves to `scoped`) makes the scheduler redo it. Gated work still waits for a new approval to start.
+- Only the agency decides work that waits for it: the worker may not authorize or reject a job in `awaiting_approval`, gated or not. This is enforced twice: `src/core/job-lifecycle.mjs` and `transition_job` in migration `20261108090000_strategy_draft.sql`.
+
+**Tradeoffs:** the agency sees a draft at once and decides once. A draft is made for every new site even if the agency never looks at it; it costs only the database writes. High-risk changes keep their own approvals (D17).
+
+**Owner input:** confirmed by the owner in REVIEW-QUESTIONS D1 (2026-11-08): one agency approval; the draft is generated automatically after the initial scan; agency approval is required before the strategy is adopted or executed; high-risk website changes keep their own approvals.
+
 ## 2026-11-08 D34 Fixes from the independent security review
 An independent review of the whole stack found three exploitable defects. All are fixed, with regression tests (`rls12.sql`, `test/security-fixes.test.mjs`).
 

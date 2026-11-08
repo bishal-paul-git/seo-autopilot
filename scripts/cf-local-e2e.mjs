@@ -26,7 +26,7 @@ execFileSync("createdb", [DB]);
 const strip = (f) => readFileSync(f, "utf8").replace(/^create extension if not exists pg_(net|cron);$/gm, "");
 psql([readFileSync(join(t, "shim.sql"), "utf8"), readFileSync(join(m, "20261030000000_portal.sql"), "utf8"), readFileSync(join(m, "20261030120000_portal_approvals_team_brand.sql"), "utf8"),
   readFileSync(join(t, "shim3.sql"), "utf8"), strip(join(m, "20261104000000_portal_url_sites.sql")), readFileSync(join(t, "shim4.sql"), "utf8"),
-  ...["20261108000000_r1_contracts.sql", "20261108010000_r1_memory.sql", "20261108020000_r1_scheduler.sql", "20261108030000_cloudflare_execution.sql", "20261108040000_agency_console.sql", "20261108050000_client_portal.sql", "20261108060000_learning.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
+  ...["20261108000000_r1_contracts.sql", "20261108010000_r1_memory.sql", "20261108020000_r1_scheduler.sql", "20261108030000_cloudflare_execution.sql", "20261108040000_agency_console.sql", "20261108050000_client_portal.sql", "20261108060000_learning.sql", "20261108070000_operations.sql", "20261108080000_security_fixes.sql", "20261108090000_strategy_draft.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
 psql(`insert into auth.users (id, email) values ('00000000-0000-0000-0000-00000000000a', 'alice@a.test'), ('00000000-0000-0000-0000-00000000000b', 'bob@b.test');`);
 const asUser = (user, sql) => psql(`set role authenticated; set request.jwt.claim.sub = '${user}'; set request.jwt.claim.role = 'authenticated'; ${sql}`).split("\n").pop();
 const A_USER = "00000000-0000-0000-0000-00000000000a", B_USER = "00000000-0000-0000-0000-00000000000b";
@@ -95,21 +95,18 @@ try {
   await cron();
   let run = lastRun();
   check(run.sites_planned === 2 && run.invocations >= 3, `Cron planned both sites in separate invocations (${run.invocations} invocations, ${run.subrequests} subrequests)`);
-  check(jobs(A) === "scan:completed,strategy_proposal:awaiting_approval" && jobs(B) === "scan:completed,strategy_proposal:awaiting_approval", "each site: scan ran through the scan function, strategy proposal waits for its agency");
-  check(calls.scan === 2 && calls.badKey === 0, "one scan per site; every database call carried the service key");
+  check(jobs(A) === "scan:completed,strategy_proposal:awaiting_approval" && jobs(B) === "scan:completed,strategy_proposal:awaiting_approval", "each site: scan ran through the scan function, strategy drafted at once and waits for its agency (D35)");
+  check(calls.scan === 2 && calls.badKey === 0, "one scan per site (the draft reused it); every database call carried the service key");
   check(JSON.parse(psql(`select public.recall(${lit(A)}, 'report')`, "service_role")).some((r) => r.key === "audit"), "scan results kept in site A's memory");
 
-  // Agency A approves starting the draft; B does nothing. Approval goes through approve_job as agency staff.
+  // Agency A adopts the draft with one approval; B does nothing. Approval goes through approve_job as agency staff.
   const spA = psql(`select id from public.jobs where site_id = ${lit(A)} and kind = 'strategy_proposal';`);
+  check(psql(`select outputs->'proposal'->>'approval' from public.jobs where id = ${lit(spA)};`) === "agency", "the draft is stored on the job for agency A to read");
   let refused = ""; try { asUser(B_USER, `select public.approve_job(${lit(spA)}, 'approve');`); } catch (e) { refused = String(e.stderr || e.message); }
   check(/not allowed/.test(refused), "agency B cannot approve agency A's work");
-  asUser(A_USER, `select public.approve_job(${lit(spA)}, 'approve', 'start drafting');`);
+  asUser(A_USER, `select public.approve_job(${lit(spA)}, 'approve', 'adopt');`);
   await cron(); run = lastRun();
-  check(psql(`select status from public.jobs where id = ${lit(spA)};`) === "awaiting_approval" && psql(`select outputs->'proposal'->>'approval' from public.jobs where id = ${lit(spA)};`) === "agency", "approved: drafted in a new invocation, reviewed, stored on the job, back to agency A");
-  check(calls.scan === 2, "the draft reused the scan kept in memory (no second crawl)");
-  asUser(A_USER, `select public.approve_job(${lit(spA)}, 'approve', 'accept');`);
-  await cron(); run = lastRun();
-  check(JSON.parse(psql(`select public.recall(${lit(A)}, 'strategy')`, "service_role"))[0]?.value?.status === "approved", "second approval: site A's strategy accepted");
+  check(JSON.parse(psql(`select public.recall(${lit(A)}, 'strategy')`, "service_role"))[0]?.value?.status === "approved" && psql(`select status from public.jobs where id = ${lit(spA)};`) === "completed", "one approval: site A's strategy adopted");
   check(/strategy_proposal:awaiting_approval/.test(jobs(B)), "site B still waits for its own agency");
 
   // Agent advice within budget, through the user's (stand-in) key.

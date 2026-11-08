@@ -2,6 +2,14 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (D35 merged into the consolidated Release 1 PR; branch claude/release-1)
+- **Owner decision:** D1 confirmed (commit 311c85d by the owner). One agency approval adopts the automatically drafted strategy; high-risk changes keep their own approvals.
+- **Merge:** `claude/strategy-draft` (PR #50) merged into `claude/release-1` (#51) with a merge commit.
+  - Conflicts were only in the test runner order, the preflight list and docs.
+  - Migration order is now 080000 → 090000 (strategy draft) → 100000 (invite-only).
+- **Checks:** see STATUS section 4 for the re-run on the merged head.
+- **Deployment:** none.
+
 ## 2026-11-08 (Exhaustive tenant-isolation test, stale-PR audit; branch claude/release-1)
 - **Tests:** `cloud/portal/supabase/test/rls15.sql` (Gate E).
   - It finds every public function that a signed-in user or anon may call, and calls it as an outsider agency and as anon, aimed at every one of agency A's ids, with several text values.
@@ -34,6 +42,22 @@ Dated session entries; history is preserved. Product release notes are in the ro
 - **Tests:**
   - `rls14.sql` (new); `portal-invite-only.test.mjs` (new); `cf-worker.test.mjs` (paused routes).
   - `npm test` 565/565; 13 SQL suites pass; rollback check exact and re-apply clean; `god-pg-e2e.mjs` and `cf-local-e2e.mjs` pass.
+
+## 2026-11-08 (One agency approval per strategy, D35; branch claude/strategy-draft)
+- **Decision:** D35, from REVIEW-QUESTIONS D1 (Claude recommendation, ChatGPT agreed; owner confirmed later the same day).
+- **Code:**
+  - `src/god/planner.mjs`: the strategy draft is queued right after the scan, ungated.
+  - `src/god/handlers.mjs`: the draft result carries `adopt: true`.
+  - `src/god/worker.mjs`: results that need adopting go to the agency after review.
+  - `src/god/tick.mjs`: "request changes" on ungated work redoes it.
+  - `src/core/job-lifecycle.mjs`: the worker cannot authorize or reject anything waiting for the agency.
+- **Migration (not applied):** `20261108090000_strategy_draft.sql` redefines `transition_job` with the same rule.
+- **Tests:**
+  - `rls13.sql` (new); `god.test.mjs`, `onboarding.test.mjs`, `tick.test.mjs` updated.
+  - `scripts/god-pg-e2e.mjs` now applies the new migration and checks one adoption approval and a redraft after "request changes".
+  - `scripts/cf-local-e2e.mjs` now applies migrations 070000–090000 and checks one adoption approval in workerd.
+  - `npm test` 563/563; 13 SQL suites pass; `god-pg-e2e.mjs` passes; `cf-local-e2e.mjs` 24 checks pass.
+- **Docs:** D35; Cloudflare README migration list; preflight list gains 080000.
 - **Deployment:** none.
 
 ## 2026-11-08 (Security fixes, D34, and go-live preflight; branch claude/security-fixes)

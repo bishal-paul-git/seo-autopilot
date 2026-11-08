@@ -43,7 +43,8 @@ try {
   const strip = (f) => readFileSync(f, "utf8").replace(/^create extension if not exists pg_(net|cron);$/gm, "");
   psql([readFileSync(join(t, "shim.sql"), "utf8"), readFileSync(join(m, "20261030000000_portal.sql"), "utf8"), readFileSync(join(m, "20261030120000_portal_approvals_team_brand.sql"), "utf8"),
     readFileSync(join(t, "shim3.sql"), "utf8"), strip(join(m, "20261104000000_portal_url_sites.sql")), readFileSync(join(t, "shim4.sql"), "utf8"), readFileSync(join(m, "20261108000000_r1_contracts.sql"), "utf8"),
-    readFileSync(join(m, "20261108010000_r1_memory.sql"), "utf8"), readFileSync(join(m, "20261108020000_r1_scheduler.sql"), "utf8")].join("\n"));
+    readFileSync(join(m, "20261108010000_r1_memory.sql"), "utf8"), readFileSync(join(m, "20261108020000_r1_scheduler.sql"), "utf8"),
+    readFileSync(join(m, "20261108090000_strategy_draft.sql"), "utf8")].join("\n"));
   psql(`insert into auth.users (id, email) values ('00000000-0000-0000-0000-00000000000a', 'alice@a.test'), ('00000000-0000-0000-0000-00000000000b', 'bob@b.test');`);
   const site = (user, name, url) => JSON.parse(psql(`set role authenticated; set request.jwt.claim.sub = '${user}'; set request.jwt.claim.role = 'authenticated'; select public.create_site(${lit(name)}, ${lit(url)})->'site';`).split("\n").pop()).id;
   const A = site("00000000-0000-0000-0000-00000000000a", "Plumber", "https://plumber.test/"), B = site("00000000-0000-0000-0000-00000000000b", "Bakery", "https://bakery.test/");
@@ -51,32 +52,31 @@ try {
   for (const id of [A, B]) await enqueue(store, id, planSite({ site: { id }, reports: {}, strategy: { status: "none" }, now }));
   await enqueue(store, A, planSite({ site: { id: A }, reports: {}, strategy: { status: "none" }, now }));
   check(Number(psql("select count(*) from public.jobs")) === 4, "planned twice for site A: still 2 jobs per site (idempotent in the database)");
+  // D35: the scan runs, the strategy is drafted at once from it (no approval to start), and waits for the agency to adopt it.
+  const sites = store.listSites().map((x) => ({ id: x.id, name: x.name, url: x.url }));
+  const fakeScan = async (x) => ({ discovered: { name: { value: x.name, source: x.url }, phones: [], emails: [], addresses: [], hours: [], socials: [], topics: [] }, profile: { platform: { name: "WordPress" } }, audit: { generatedAt: new Date().toISOString(), summary: { pagesCrawled: 4 }, issues: [{ rule: "title-missing", severity: "high", url: x.url + "x" }], pages: [] }, snapshot: {} });
+  const gh = makeHandlers({ store, siteOf: async (id) => sites.find((x) => x.id === id), scan: fakeScan });
   const seen = [];
-  const handlers = { scan: async (job) => { seen.push(job.siteId); return { evidence: [`read ${job.siteId}`] }; } };
-  const r = [await runOnce({ store, handlers }), await runOnce({ store, handlers }), await runOnce({ store, handlers })];
-  check(r[0]?.outcome === "completed" && r[1]?.outcome === "completed" && r[2] === null, "both sites' scans completed; nothing else ran");
+  const handlers = { ...gh, scan: async (job) => { seen.push(job.siteId); return gh.scan(job); } };
+  const r = []; for (let i = 0; i < 5; i++) r.push(await runOnce({ store, handlers }));
+  check(r.slice(0, 4).map((x) => x?.outcome).sort().join() === "awaiting_approval,awaiting_approval,completed,completed" && r[4] === null, "both scans completed, both drafts made and sent to the agency; nothing else ran");
   check(seen.sort().join() === [A, B].sort().join(), "each scan ran for its own site");
-  check(psql("select string_agg(status, ',' order by status) from public.jobs where kind = 'strategy_proposal'") === "awaiting_approval,awaiting_approval", "strategy proposals wait for the agency in the database");
+  check(psql("select string_agg(status, ',' order by status) from public.jobs where kind = 'strategy_proposal'") === "awaiting_approval,awaiting_approval", "strategy drafts wait for the agency in the database");
+  check(psql(`select outputs->'proposal'->>'approval' from public.jobs where kind = 'strategy_proposal' and site_id = ${lit(A)}`) === "agency", "the drafted strategy is stored on the job for the agency to read");
   let refused = ""; try { psql(`select public.transition_job((select id from public.jobs where kind = 'strategy_proposal' and site_id = ${lit(A)}), 'authorized', 'worker-1');`, "service_role"); } catch (e) { refused = String(e.stderr || e.message); }
-  check(/only an agency approval/.test(refused), "the worker cannot authorize the proposal");
+  check(/only an agency approval/.test(refused), "the worker cannot adopt its own draft, although drafting needed no approval");
   let crossed = ""; try { psql(`set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b'; set request.jwt.claim.role = 'authenticated'; select public.approve_job((select id from public.jobs where kind = 'strategy_proposal' and site_id = ${lit(A)}), 'approve');`); } catch (e) { crossed = String(e.stderr || e.message); }
   check(/not allowed/.test(crossed), "agency B cannot approve agency A's strategy");
-  const ok = psql(`set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a'; set request.jwt.claim.role = 'authenticated'; select (public.approve_job((select id from public.jobs where kind = 'strategy_proposal' and site_id = ${lit(A)}), 'approve', 'go')).status;`).split("\n").pop();
-  check(ok === "authorized", "agency A approves its own strategy");
-  check(Number(psql("select count(*) from public.job_events")) >= 12 && Number(psql("select count(*) from public.audit_log where action = 'job.approve'")) === 1, "every move and the approval are recorded");
+  const ok = psql(`set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a'; set request.jwt.claim.role = 'authenticated'; select (public.approve_job((select id from public.jobs where kind = 'strategy_proposal' and site_id = ${lit(A)}), 'approve', 'adopt')).status;`).split("\n").pop();
+  check(ok === "authorized", "agency A adopts its own strategy");
+  // Agency B asks for changes to its draft: the scheduler redrafts it and sends it back.
+  psql(`set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000b'; set request.jwt.claim.role = 'authenticated'; select public.approve_job((select id from public.jobs where kind = 'strategy_proposal' and site_id = ${lit(B)}), 'request_changes', 'we answered your questions');`);
+  check(Number(psql("select count(*) from public.audit_log where action = 'job.approve'")) >= 1 && Number(psql("select count(*) from public.job_events")) >= 12, "every move and every decision are recorded");
 
-  // Scheduler ticks on the same database: the agency's approval above is carried out, the proposal is drafted from a
-  // (stubbed) scan, reviewed, returned to the agency, accepted on the second approval; site B keeps waiting.
-  const sites = store.listSites().map((x) => ({ id: x.id, name: x.name, url: x.url }));
-  const fakeScan = async (s) => ({ discovered: { name: { value: s.name, source: s.url }, phones: [], emails: [], addresses: [], hours: [], socials: [], topics: [] }, profile: { platform: { name: "WordPress" } }, audit: { generatedAt: new Date().toISOString(), summary: { pagesCrawled: 4 }, issues: [{ rule: "title-missing", severity: "high", url: s.url + "x" }], pages: [] }, snapshot: {} });
-  const gh = makeHandlers({ store, siteOf: async (id) => sites.find((x) => x.id === id), scan: fakeScan });
   const t1 = await tick({ store, sites, handlers: gh });
-  check(t1.sites.find((x) => x.site === A).moved.some((mv) => mv.to === "queued") && t1.runs.some((x) => x.outcome === "awaiting_approval"), "tick queued the approved proposal; it was drafted, reviewed and returned to the agency");
-  check(psql(`select outputs->'proposal'->>'approval' from public.jobs where kind = 'strategy_proposal' and site_id = ${lit(A)}`) === "agency", "the drafted strategy is stored on the job for the agency to read");
-  psql(`set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a'; set request.jwt.claim.role = 'authenticated'; select public.approve_job((select id from public.jobs where kind = 'strategy_proposal' and site_id = ${lit(A)}), 'approve', 'accept');`);
-  const t2 = await tick({ store, sites, handlers: gh });
-  check(t2.sites.find((x) => x.site === A).strategy === "approved" && psql(`select status from public.jobs where kind = 'strategy_proposal' and site_id = ${lit(A)}`) === "completed", "second approval: strategy accepted, job completed");
-  check(store.readMemory(A, "strategy")[0].value.status === "approved" && store.readMemory(B, "strategy").length === 0, "site memory: A approved, B has no strategy yet");
-  check(t2.sites.find((x) => x.site === B).strategy === "proposed", "site B still waits for its own agency");
+  check(t1.sites.find((x) => x.site === A).strategy === "approved" && psql(`select status from public.jobs where kind = 'strategy_proposal' and site_id = ${lit(A)}`) === "completed", "one approval: strategy adopted, job completed");
+  check(store.readMemory(A, "strategy")[0].value.status === "approved", "site memory: A approved");
+  check(t1.sites.find((x) => x.site === B).moved.some((mv) => mv.to === "queued") && psql(`select status from public.jobs where kind = 'strategy_proposal' and site_id = ${lit(B)}`) === "awaiting_approval", "site B: changes requested, redrafted, back with its own agency");
+  check(t1.sites.find((x) => x.site === B).strategy === "proposed", "site B still has no adopted strategy");
   console.log("all orchestration checks passed against the database");
 } finally { execFileSync("dropdb", ["--if-exists", DB]); }

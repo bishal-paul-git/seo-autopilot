@@ -36,7 +36,10 @@ export function planSite({ site, reports = {}, strategy = { status: "none" }, ag
     add({ kind: "scan", title: "Read the site and refresh the audit", department: "technical", risk: "low", priority: 2, period: day, why: lastScan ? "last audit is older than 36 hours" : "no audit yet" });
   }
   if (!approved) {
-    if (strategy?.status !== "proposed") add({ kind: "strategy_proposal", title: "Propose the initial SEO strategy for agency approval", department: "research", risk: "high", priority: 1, why: "no approved strategy: nothing else may execute until the agency approves one" });
+    // D1 (owner review, 2026-11-08): the draft is deterministic and free (scan, the site's own statements, the audit;
+    // no AI call), so it is drafted at once; the agency's single approval adopts it. Same priority as the scan and
+    // created after it, so the scan runs first and the draft reuses it.
+    if (strategy?.status !== "proposed") add({ kind: "strategy_proposal", title: "Draft the initial SEO strategy for agency approval", department: "research", risk: "medium", priority: 2, why: "no approved strategy: nothing else may execute until the agency adopts one" });
     return { strategyApproved: false, jobs };
   }
 
