@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+Connect any website to the client portal with just its address.
+
+- **New:** "Add and scan" in the portal. The `scan` Edge Function (Supabase, `cloud/portal/supabase/functions/scan`) crawls the site daily with the product's own crawler and audit rules, with no repository and no GitHub Actions minutes. pg_cron wakes it every 10 minutes; "Scan now" wakes it at once.
+- **New:** `src/analysis/discover.mjs` reads what a site states about itself (business name and type, phones, emails, address, opening hours, social profiles, key pages, main topics), each with the page it came from; nothing is guessed. Shown as "About this website" on the overview.
+- **New:** `src/hosted/scan.mjs` builds a portal snapshot from an address alone; `cloud/portal/build-scan.mjs` copies it into the function.
+- **Migration:** `20261104000000_portal_url_sites.sql` (site `mode`, scan state, `add_site_by_url`, `scan_now`, and service-only `claim_scan`, `finish_scan`, `scan_secret_ok`).
+- **New audit rules (12):** other addresses of the site that do not redirect (http://, www), HTTPS certificate expiring, page 2+ canonical pointing at page 1, the same Google tag loaded twice, non-responsive viewport, zoom blocked, broken images, images without width and height, camera-style image names, lazy-loaded main image, no call to action, long sentences. Each has a why, a fix and a recipe in `knowledge/audit-fix-recipes.md`.
+- **Faster daily run:** URL inspection runs four at a time (it took about 6.5 of the 8 minutes, one by one).
+- **Address-only sites:** Search Console clicks and queries once the site owner adds the scanning service account as a user (`GOOGLE_KEY_JSON` function secret), and the priorities to-do list from the audit.
+- **Security (hosted scan):** every request and redirect hop goes through `src/hosted/safe-fetch.mjs` (no private, loopback, link-local or metadata addresses, DNS answers checked, 5 MB cap); hosted scans follow robots.txt; the database refuses a private url for an address-only site even on a direct update, and limits adds to 20 per org per day.
+- **New:** `docs/registry.md` and `registry.json`, generated from the code by `scripts/build-registry.mjs` (purpose, trigger, credentials, permissions and verification level of every job, agent, skill and MCP tool), kept current by a test.
+- **New docs:** `AGENTS.md`, `docs/system-architecture.md`, `docs/security.md`, `docs/deployment-status.md`, `docs/test-matrix.md`, `docs/runbook.md`, `docs/release-checklist.md`.
+- **Fix:** another address of the site that serves 200 with a canonical to the main address is now a low finding (`host-variant-canonical-only`), not high.
+- **Changed:** the seo-backlinks template runs weekly (Thursdays) instead of daily: it was the biggest user of Actions minutes.
+
 ## 2.22.1
 
 Pages that state their own path are now seen at that path, so release dates work for hubs and nested pages.

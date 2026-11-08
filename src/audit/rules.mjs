@@ -13,6 +13,19 @@ export const SCHEMA_REQUIRED = {
 const HREFLANG = /^(x-default|[a-z]{2,3}(-[A-Za-z]{4})?(-([A-Za-z]{2}|\d{3}))?)$/;
 
 export const RULES = {
+  "host-variant-not-redirected": { severity: "high", title: "Another address of the site does not redirect", why: "If http:// or the www (or non-www) address serves the site instead of redirecting, search engines see two copies of every page and split links and signals between them.", fix: "Send a permanent (301) redirect from every other address to the one https:// address the site uses, in one hop." },
+  "host-variant-canonical-only": { severity: "low", title: "Another address serves the site, with a canonical to the main one", why: "Search engines usually follow the canonical, so this is not urgent, but links and shares to the other address count less cleanly than with a redirect.", fix: "Add a permanent (301) redirect from that address to the main https:// address." },
+  "ssl-expiring": { severity: "high", title: "HTTPS certificate expires soon", why: "When the certificate expires, browsers show a full-page security warning and most visitors and crawlers stop there.", fix: "Renew the certificate now, and turn on automatic renewal at the host (Let's Encrypt renews every 60-90 days)." },
+  "pagination-canonical-first": { severity: "medium", title: "Paginated page points its canonical at page 1", why: "Page 2 onwards lists different items. Pointing their canonical at page 1 tells search engines to ignore them, so items only linked from later pages can drop out of the index.", fix: "Give each paginated page a self-referencing canonical, and link the pages with normal <a href> links." },
+  "tracking-duplicate": { severity: "medium", title: "The same analytics tag loads twice", why: "A tag loaded twice counts every visit and conversion twice, so traffic and conversion figures are wrong.", fix: "Load each Google tag once: either through Google Tag Manager or directly in the page, not both, and remove repeated snippets." },
+  "viewport-fixed-width": { severity: "medium", title: "Viewport is not responsive", why: "Without width=device-width, phones show a shrunken desktop page. Google indexes the mobile version first, and visitors leave.", fix: "Use <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"> and a layout that adapts to the screen." },
+  "viewport-no-zoom": { severity: "low", title: "Page blocks zooming", why: "user-scalable=no or a maximum-scale below 2 stops people with poor sight from enlarging text, and accessibility checks flag it.", fix: "Remove user-scalable=no and maximum-scale from the viewport tag." },
+  "image-broken": { severity: "medium", title: "Image does not load", why: "A broken image shows an empty box, looks neglected, and the image cannot appear in image search.", fix: "Fix the image address or upload the missing file, or remove the image." },
+  "image-no-size": { severity: "low", title: "Images without width and height", why: "Without dimensions the browser cannot reserve space, so the page jumps as images load (layout shift, part of Core Web Vitals).", fix: "Add width and height attributes (the image's real size; CSS can still scale it)." },
+  "image-filename-generic": { severity: "low", title: "Camera-style image file names", why: "Names like IMG_1234.jpg tell search engines nothing about the picture; a descriptive name is a small image-search signal.", fix: "Rename files to describe the picture (boiler-repair-leeds.jpg) and update the links." },
+  "hero-image-lazy": { severity: "medium", title: "Main image is lazy-loaded", why: "The first image in the content is usually the largest thing on screen. loading=lazy delays it, which slows Largest Contentful Paint.", fix: "Remove loading=\"lazy\" from the first content image (keep it on images further down), and consider fetchpriority=\"high\"." },
+  "no-cta": { severity: "low", title: "No call to action", why: "A page that ranks but offers no next step (call, form, booking, buy) turns visits into nothing.", fix: "Add one clear next step that fits the page: a contact form, phone link, booking or quote button." },
+  "hard-to-read": { severity: "low", title: "Long sentences", why: "Very long sentences make text hard to scan on a phone, and short, direct sentences are easier for AI answers to quote.", fix: "Aim for an average under about 20 words per sentence: split long ones, lead with the answer, use lists." },
   "schema-required-missing": { severity: "medium", title: "Structured data is missing required properties", why: "Markup that lacks a required property is ignored for rich results and can be reported as an error in Search Console.", fix: "Add the missing properties, filled with real values that match the visible page." },
   "hreflang-invalid": { severity: "medium", title: "Invalid hreflang value", why: "Search engines ignore hreflang annotations whose language or region code is not valid, so the wrong version can be shown to people.", fix: "Use ISO 639-1 language codes with an optional ISO 3166-1 region (en, en-GB) or x-default." },
   "hreflang-no-self": { severity: "medium", title: "hreflang set has no self-reference", why: "Each page in a language set should list itself as well as its alternates, otherwise the set is incomplete.", fix: "Add an hreflang entry that points to the page's own URL." },
@@ -115,6 +128,8 @@ export function runChecks(pages, ctx = {}) {
   // Content checks run on real pages only: a URL that redirects is judged by where it lands, not as a page of its own.
   const html = pages.filter((p) => p.status === 200 && p.isHtml && !(p.chain && p.chain.length));
 
+  for (const v of ctx.hostVariants || []) if (!v.ok && v.status === 200) add(v.canonicalOk ? "host-variant-canonical-only" : "host-variant-not-redirected", v.from, `serves ${v.to} without redirecting to the main address${v.canonicalOk ? " (its canonical points to the main address)" : ""}`);
+  if (ctx.tls && ctx.tls.daysLeft != null && ctx.tls.daysLeft < 21) add("ssl-expiring", ctx.siteHost || "", `expires ${ctx.tls.validTo} (${ctx.tls.daysLeft} days)`);
   if (ctx.robotsTxt != null) {
     if (/^\s*Disallow:\s*\/\s*$/im.test(ctx.robotsTxt.split(/User-agent:/i).find((b) => /^\s*\*/.test(b)) || "")) add("robots-blocks-all", ctx.siteHost || "");
     if (!/^\s*Sitemap:/im.test(ctx.robotsTxt)) add("sitemap-not-in-robots", ctx.siteHost || "");
@@ -180,6 +195,27 @@ export function runChecks(pages, ctx = {}) {
     }
     if (p.imagesNoAlt) add("images-no-alt", p.url, `${p.imagesNoAlt} of ${p.images}`);
     if (!p.viewport) add("viewport-missing", p.url);
+    else {
+      if (!/width\s*=\s*device-width/i.test(p.viewport)) add("viewport-fixed-width", p.url, p.viewport);
+      const max = Number((/maximum-scale\s*=\s*([\d.]+)/i.exec(p.viewport) || [])[1]);
+      if (/user-scalable\s*=\s*(no|0)/i.test(p.viewport) || (max && max < 2)) add("viewport-no-zoom", p.url, p.viewport);
+    }
+    if (p.imagesNoSize) add("image-no-size", p.url, `${p.imagesNoSize} of ${p.images}`);
+    const camera = (p.imageSrcs || []).filter((u) => /\/(IMG|DSC|DSCN|DCIM|PXL|MVIMG|Screenshot|image|photo|untitled|WhatsApp Image)[-_ %]?[\d-]{2,}[^/]*$/i.test(decodeURIComponent(u.split("?")[0])));
+    if (camera.length) add("image-filename-generic", p.url, camera.slice(0, 3).map((u) => u.split("/").pop()).join(", "));
+    const broken = (p.imageSrcs || []).filter((u) => ctx.brokenImages?.has(u));
+    if (broken.length) add("image-broken", p.url, broken.slice(0, 3).map((u) => `${u} -> HTTP ${ctx.brokenImages.get(u)}`).join(", "));
+    if (p.heroLazy) add("hero-image-lazy", p.url);
+    if (p.dupTags && p.dupTags.length) add("tracking-duplicate", p.url, p.dupTags.join(", "));
+    const pageNo = Number((/[?&](?:page|paged|p)=(\d+)/i.exec(p.url) || /\/page\/(\d+)\/?$/i.exec(p.url) || [])[1]);
+    if (pageNo > 1 && p.canonical && !sameUrl(p.canonical, p.finalUrl || p.url) && !/[?&](?:page|paged|p)=|\/page\/\d+/i.test(p.canonical)) add("pagination-canonical-first", p.url, `canonical: ${p.canonical}`);
+    const article = /\/(blog|news|articles?|insights|guides?|posts?)\//i.test(p.url) || (p.jsonld.types || []).some((t) => /Article|BlogPosting|NewsArticle/.test(t));
+    if (p.ctas === 0 && p.inSitemap && !noindex && p.words >= 150 && !article) add("no-cta", p.url);
+    if (p.text && p.words >= 200) {
+      const sentences = p.text.split(/[.!?।]+\s/).filter((x) => x.split(/\s+/).length >= 3);
+      const avg = sentences.length ? p.words / sentences.length : 0;
+      if (avg > 25) add("hard-to-read", p.url, `${Math.round(avg)} words per sentence on average`);
+    }
     if (!p.lang) add("lang-missing", p.url);
     if (p.mixed.length) add("mixed-content", p.url, p.mixed.join(", "));
     if (p.inSitemap && p.inbound === 0) add("orphan", p.url);

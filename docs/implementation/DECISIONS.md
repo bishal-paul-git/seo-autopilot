@@ -83,6 +83,219 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-11-08 D37 Verified execution through the site's own GitHub workflow (R1-E1)
+**Context:** the spec's execution chain (§3, §5): approved work must reach the website through a reviewed, verified and reversible change. The owner asked for build progress without new platforms. Sites that run SEO Autopilot already have `seo-implement.yml`. It drafts a pull request from an approved issue, edits content files only, never runs builds, and passes through `seo-check`, `seo-review` and the merge policy of D17.
+
+**Decision:**
+- The hosted SEO God never edits a website. For a site with a connected repository, the agency picks a recommendation from accepted advice ("Prepare a pull request"). A deterministic work order is drafted, which is free and needs no approval to start. The agency approves that exact text (the D35 adoption pattern).
+- On approval, the scheduler opens an issue in the site's repository (labels `seo-proposal`, the change kind, `seo-hosted`) and starts `seo-implement` with that issue. The issue number is saved before the workflow starts, so a retry never opens a second issue.
+- It then follows the pull request on branch `seo/issue-<n>`.
+  - Merged: move to verifying and request a fresh scan.
+  - Closed unmerged, or no pull request after 7 days: escalate to a person.
+  - Open: wait, because the merge stays with a person or the site's policy.
+- Verification compares the page's problems in the first scan after the merge with the baseline taken when the issue was opened. New high-severity problems escalate, naming the pull request to revert. Otherwise the job completes with what was fixed.
+- Credentials (rule 6): the agency's own fine-grained token for that one repository (Issues and Actions read/write; Pull requests and Metadata read).
+  - It is stored in Supabase Vault. Only an agency owner can set or remove it.
+  - Only the service role can read it, and only for a connected site. It is never returned to a browser.
+  - Repository names are validated, and `.` and `..` are refused.
+- The recommendation text is quoted in the issue as data. HTML comment markers are stripped, so nothing can hide in the issue body.
+
+**Tradeoffs:**
+- Only sites whose code is in GitHub and that run SEO Autopilot's workflows can be changed. Address-only sites stay advice-only (D29).
+- Verification is audit-based. It shows whether problems went away, not traffic impact; Search Console measurement (D33) covers that where connected.
+- Rollback is the GitHub revert of the named pull request: a person's action, deliberately not automatic.
+
+**Evidence:** `test/github-execution.test.mjs`, `rls16.sql`, `portal-github.test.mjs`, and the workerd end-to-end run. That run drives the whole path against the real migrations with a GitHub stand-in: drafted, approved, issue and dispatch, merged, re-scanned, "1 of 1 problems fixed", and the token appears in no job, output or log.
+
+## 2026-11-08 D38 Notifications derived from the work; monthly work report; team page by department
+**Decision:**
+- Notifications are computed live from the work itself:
+  - for agencies: approvals waiting, work needing a person, client requests, changes verified or stopped, integration and planning errors;
+  - for client accounts: answers to their own requests.
+  - Only "seen up to" is stored per person.
+  - No email provider: Q7 is open, and the portal inbox is the channel.
+- The monthly work report is for the agency and the site's client accounts. It lists advice accepted, changes and their verification, requests answered, and the audit at the start and end of the month. It contains nothing internal: no costs, agents, analysis or reviews. Anonymous share links keep the existing report without it.
+- The team page shows the director plus the master spec's eight departments, taken from `src/god/departments.mjs` (each agent exactly once), with 30-day work per department and specialist.
+
+**Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
+
+## 2026-11-08 D40 Email through Supabase's SMTP; the Worker reads the scan secret from Vault
+**Context:** the owner asked for email through Supabase SMTP (Q7 answered in chat, 2026-11-08).
+
+**Decision:**
+- Invitations (agency and client) go out as Supabase Auth's own invite email, using the project's Auth SMTP and its "Invite user" template. The new `notify` Edge Function asks Auth to invite each queued invitee once. The invite-only gate (D36) lets the account be created because the invite is pending.
+- Daily summaries of unseen notifications are sent by `notify` through the same SMTP server. Its details are kept as Edge Function secrets (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `PORTAL_URL`).
+  - At most one a day, and only when something is new.
+  - Each person can turn it off.
+  - Without the secrets, summaries are skipped and the run says why.
+- The Cloudflare Worker calls `notify` every run, even while the SEO God is paused: invitations are portal features.
+- The Worker reads the shared scan secret from Vault through a service-role-only function, so nobody copies it by hand.
+
+**Tradeoffs:** Supabase's built-in SMTP sends only a few emails an hour and is meant for testing. A custom SMTP server in Authentication → SMTP Settings is needed for real use, and the same details then go into the function secrets.
+
+## 2026-11-08 D39 Brand discovery is labelled; competitors are not guessed
+**Decision:** discovery records the theme colour a site declares (stated) and the colours and fonts read from its own HTML styles (inferred), each with its source. Only plain hex colours and plain font names are kept, and generic font stacks are dropped. Competitors are not guessed from a site's own pages: they come from search data through the existing `gap` research job.
+
+## 2026-11-08 D36 Invite-only sign-up in the database; pause enforced on every Worker route
+**Context:** owner decision Q8 ("invite-only registration until public launch; verify owner/admin access and invite flows remain functional before changing authentication settings") and the owner's production-gates handover (a paused Worker must not execute due jobs even if Cron fires).
+
+**Decision:**
+- Sign-up is gated in the database, not by turning off Supabase Auth sign-ups.
+  - Turning sign-ups off would also stop invited people, because both the agency invite (`invites`) and the client invite (`client_invites`) expect the invited person to sign up with that email.
+  - Migration `20261108100000_invite_only.sql` adds a before-insert trigger on `auth.users`. It refuses an email without a pending invite.
+  - A platform admin (or the service role) changes it with `set_invite_only`. It is on by default.
+  - The portal turns Supabase's generic "Database error saving new user" into a plain explanation.
+- The Worker's planning and job routes (`/internal/tick-site`, `/internal/run-job`) check both pause switches themselves. A pause therefore also stops work a run in progress has already dispatched, or that anyone sends with the internal token. An unreadable switch counts as paused. This costs one extra database read per invocation.
+
+**Tradeoffs:**
+- A refused sign-up returns HTTP 500 from Supabase Auth. The portal handles it, but other clients see a generic error.
+- Anyone creating users through the Auth admin API must add an invite first, or open sign-up.
+
+**Evidence:** `rls14.sql`, `portal-invite-only.test.mjs`, `cf-worker.test.mjs` (paused routes), `scripts/db-rollback-check.mjs`.
+
+## 2026-11-08 D35 One agency approval per strategy (replaces the two-step flow of D28)
+**Context:** REVIEW-QUESTIONS D1. Under D28 the strategy needed one approval to start drafting and a second to accept the draft. Drafting is deterministic and free: it reads the scan, the site's own statements and the audit, with no AI call. The master spec requires approval only before a strategy is executed.
+
+**Decision:**
+- The planner queues the strategy draft right after the scan, ungated (risk medium, priority 2, created after the scan so the scan runs first and the draft reuses it).
+- The draft handler marks its result `adopt: true`. After review the worker sends such a result to the agency (`awaiting_approval`) even though starting it needed no approval.
+- One `approve_job` adopts it: the scheduler writes the strategy as approved and completes the job. Nothing else executes for the site until then, as before.
+- "Request changes" on ungated work (the job moves to `scoped`) makes the scheduler redo it. Gated work still waits for a new approval to start.
+- Only the agency decides work that waits for it: the worker may not authorize or reject a job in `awaiting_approval`, gated or not. This is enforced twice: `src/core/job-lifecycle.mjs` and `transition_job` in migration `20261108090000_strategy_draft.sql`.
+
+**Tradeoffs:** the agency sees a draft at once and decides once. A draft is made for every new site even if the agency never looks at it; it costs only the database writes. High-risk changes keep their own approvals (D17).
+
+**Owner input:** confirmed by the owner in REVIEW-QUESTIONS D1 (2026-11-08): one agency approval; the draft is generated automatically after the initial scan; agency approval is required before the strategy is adopted or executed; high-risk website changes keep their own approvals.
+
+## 2026-11-08 D34 Fixes from the independent security review
+An independent review of the whole stack found three exploitable defects. All are fixed, with regression tests (`rls12.sql`, `test/security-fixes.test.mjs`).
+
+1. **Search Console data could leak across agencies.**
+   - **Problem:** the platform's one shared Google account read any domain an agency added, even one it did not own.
+   - **Fix:** a site may use the shared account only after a platform admin confirms it (`set_gsc_allowed`), and never while the same domain is registered in another agency.
+     - The confirmation is cleared when the address changes.
+     - Members cannot set it.
+     - The scan function and the Worker both check `gsc_allowed` first.
+   - **Proper long-term fix:** each agency brings its own Google account (rule 6). See REVIEW-QUESTIONS X3.
+2. **Budget bypass.**
+   - **Problem:** agency staff could create jobs with any budget, skipping the per-site daily cap and spending the platform's AI key.
+   - **Fix:**
+     - Staff jobs carry at most $5.
+     - A staff job with a budget needs approval.
+     - Each person can create at most 100 jobs a day.
+     - The per-site daily budget is now a hard ceiling on every paid run at run time, whoever created the job.
+   - **Not fixed here:** fairness between agencies in the job queue (`claim_job` orders by priority across all tenants). See X3.
+3. **Script injection through a site's links.**
+   - **Problem:** a `javascript:` address in a site's structured data (`sameAs`, `logo`) reached a portal link.
+   - **Fix:** discovery keeps only http(s) addresses, and the portal builds every link from site data through `safeHref`, which allows http(s) only.
+
+## 2026-11-08 D33 Search Console for hosted sites measures accepted advice with the CLI's own method
+**Decision:** with a Google service account (`GOOGLE_KEY_JSON`, which site owners add as a user on their property), the scheduler queues a read-only `search_console` job. It runs once an accepted piece of advice has a complete after-window (3-day lag plus 14 days).
+
+**How it measures:**
+- The job compares the page's 14 days after with the 14 days before, against the rest of the site over the same dates. It reuses `src/analysis/experiments.mjs` (`evaluate`, `controlGroup`).
+- **Queries stay small:** per page under test, its daily rows, plus the site's daily totals; the control group is the totals minus the page. Downloading page × date data would be too much for the Worker's 10 ms CPU.
+- It tries the domain property first, then the address prefix. If it has no access, the job goes to a person, saying the site owner must add the account.
+- Verdicts feed the lessons. "Too little traffic" and "unclear" are never counted as wins.
+
+**Tradeoffs:**
+- It is still directional: the control group is the rest of the site, not matched pages.
+- It covers at most 10 pages per run.
+- Search Console data lags about 2 days.
+
+## 2026-11-08 D32 Operations: each agency sees only its own sites; platform health is for platform admins
+**Decision:** the portal's Operations page has two parts.
+- **Every agency** sees all its own websites at a glance: approvals waiting, client requests, stuck work, spend and when each site was last planned (`agency_overview`).
+- **Platform admins only** also see scheduler health: recent runs, errors and usage against the Workers Free daily limit. They get the global pause switch too (`platform_health`, `set_platform_paused`). The admin list is a table only the service role can change.
+
+**Why:** scheduler runs and the pause switch cover every agency. Showing them to agency members would leak other tenants' activity and let any agency stop everyone.
+**Tradeoffs:** a platform admin must be added once by SQL; there is no self-service admin UI.
+
+## 2026-11-08 D31 Learning measures what an audit can show, and says so
+**Decision:** the SEO God learns from three things.
+1. **Accepted advice is re-checked by later scans.** Each recommendation is recorded with the problems found on its page. A problem counts as fixed only if the page was crawled again and the problem is gone. Results are judged after 3 days, and unresolved items close as "not done" after 30 days.
+2. **The agency's own refusals.**
+3. **Lessons per agent**, built from those two.
+
+Lessons change planning:
+- an agent whose work the agency declined twice in 30 days is paused until the refusals age out;
+- advice never fixed after 3 checks drops a priority step.
+
+The site's lessons are also passed to the agents, inside the data block. The agency sees all of it on the SEO God page.
+
+**Why:** the master spec asks the system to improve from outcomes. The hosted path has no daily Search Console series for most sites, but every site has repeated audits.
+
+**Tradeoffs:**
+- An audit shows whether a problem went away, not whether traffic changed. The console and the lesson wording say so.
+- Traffic-based verdicts (`src/analysis/experiments.mjs`, difference-in-differences with a control group) stay with the CLI path until hosted sites have Search Console data.
+- Lessons are per site, not shared across agencies (tenant isolation).
+
+## 2026-11-08 D30 Cloudflare-first execution: a stateless Worker scheduler, crawling in the Supabase scan function, CLI jobs stay in GitHub Actions (owner: PR #42)
+**Decisions:**
+1. **Scheduler and light work in a Cloudflare Worker.** One Worker (`cloud/worker/`) with one Cron Trigger every 15 min. Each site's planning and each job run in a new invocation of the same Worker through a self service binding. Each invocation gets its own 10 ms CPU and 50-subrequest Free allowance.
+   - Measured CPU per step: 0.4-2.5 ms for planning, onboarding and agent prompts.
+   - The Worker keeps no state: Supabase is the source of truth for jobs, approvals, memory, leases, retries, costs and the run log.
+2. **Crawling in the existing Supabase `scan` Edge Function**, in a new job mode: one site per request, at most 40 pages.
+   - A 60-page crawl and audit measured 0.8-1.6 s of CPU. That is far over the Worker's 10 ms, and a single page alone is 13-27 ms.
+   - The Supabase limit is 2 s CPU per request. The function's older loop scanned several sites in one request and could exceed it, so it now scans one.
+3. **The 52 CLI jobs stay in the site repositories' GitHub Actions.** Every one reads or writes the site's state files, and 6 spawn processes. In Workers, `child_process` is a non-functional stub and `/tmp` is cleared per request. Moving a job requires moving its state to Supabase first. `scripts/cf-runtime-audit.mjs` keeps the classification generated from the code.
+4. **No Cloudflare Workflows for now.** The Supabase job ledger already gives durable steps, leases, retries and approval waits. Workflows Free has the same 10 ms per step and a 3,000-step daily cap.
+5. **Fails safe.**
+   - The Worker deploys paused (`SEO_GOD_PAUSED`), and a database switch (`set_god_paused`) pauses it with no deploy.
+   - If the database cannot be read, the scheduler pauses.
+   - Expired leases are recovered through the normal capped retry path.
+   - Internal routes need a token, and the only public route is `/health`.
+6. **One scheduler.** When Cloudflare goes live, the 10-minute pg_cron scan from D25 is unscheduled. The scan function's job mode stores the portal snapshot itself.
+
+**Supersedes:** the part of D13 that put engine jobs in a separate Node container or VM. The hosted path now needs no VM: Worker plus the Supabase function. The CLI path keeps GitHub Actions.
+**Tradeoffs:**
+- The Worker holds the service-role key; tenant safety rests on the SQL functions.
+- CPU inside Cloudflare is estimated from Node, not yet measured in production.
+- Hosted sites get audits, strategy and advice, not file edits.
+- Fan-out costs Worker requests: about 350 a day for 25 sites, against 100,000.
+
+## 2026-11-08 D29 Hosted agent runs advise only, on the user's own key, inside the job's budget
+**Decisions:**
+1. Hosted agent jobs (`agent:<name>`, `src/god/agent-runner.mjs`) use the agent's own definition from `departments/`. They see only the site's compact reports, approved strategy and stated facts. They return recommendations for the agency and change nothing on a website. Edits stay with repository-connected sites and the R1-E1 apply step.
+2. The call goes straight to the Messages API with the user's own `ANTHROPIC_API_KEY` (rules 5 and 6). The default model is `claude-opus-5-5` at effort `medium`; `SEO_GOD_MODEL` and `SEO_GOD_EFFORT` change it. Server-side refusal fallback (`fallbacks: "default"`) is on.
+3. Budget is enforced before the call. `max_tokens` is set so the worst case fits what is left of the job's budget: input estimated at one token per three characters, priced at the most expensive model a fallback could reach. Cost is computed from the API's own usage report, per attempt when a fallback ran. A model without a known price is refused.
+4. Some outcomes go to a person at once instead of being retried: no key, a budget too small, a refusal, an unreadable reply. The job's budget covers all its attempts together, and reviews that keep asking for changes stop at the attempt cap.
+
+**Why:** the planner was choosing agents that nothing could run. Unbounded retries of paid calls were possible, both review-driven (needs_changes requeued without a cap) and per-attempt (budgets were not cumulative).
+**Tradeoffs:** advice is weaker than a reviewed change, but it is safe on any site and needs no integration. Prices are the published first-party rates as of 2026-10; Bedrock, Vertex and Foundry users would need their own price table. Agent output quality is ungraded until runs on real sites with a real key.
+
+## 2026-11-08 D28 SEO God scheduler: two agency decisions per strategy, budgets reserved before work is queued
+**Decisions:**
+1. A scheduler tick (`src/god/tick.mjs`) carries out decisions the agency has already recorded and never makes one. An approved job that has not run is queued. An approved strategy proposal that has run becomes the site's strategy (`status: approved` in site memory) and its job completes. So the strategy needs **two** agency decisions: "start drafting" and "accept this draft". The agency approves the exact draft that is stored on the job (`jobs.outputs`), not a regenerated one.
+2. Approved changes that have run are not applied by the tick. They wait for an apply step that uses an authorized integration (R1-E1), so the content deployed is the reviewed content.
+3. Each site has a daily budget (default $0: free read-only work only). The remaining budget of open jobs counts as spent when planning, so one tick cannot queue more than the day allows. Every charge is a row in `job_costs`. Work that spends more than its budget fails review and is not retried.
+4. Only kinds with a runner are queued. Planned agent work without one is reported as deferred, not queued to fail.
+5. Kill switch `SEO_GOD_PAUSED`; a site with status `paused` is not planned.
+
+**Why:** the planner and worker existed but nothing ran them, approvals had no path forward, and there was no cost limit (master spec: budgets and costs per job; owner: agency-only approvals).
+**Tradeoffs:** two approvals per strategy is one more click for the agency, but it means drafting work (later model calls) is never started without consent. Agent cost estimates ($0.50 per run by default) are estimates until agents are graded on real runs. The queue is global; a site over budget can still run work already queued within its reservation.
+
+## 2026-11-08 D27 Release 1 contracts in the existing Supabase schema (owner: master spec PR #35, Q07, Q27-Q30)
+**Decision:** add clients, client viewers, jobs with a database-enforced lifecycle, append-only job events, independent reviews, agency-only approvals, untrusted client submissions, private site memory, integration records and an audit log to the existing portal schema (`20261108000000_r1_contracts.sql`), with the same lifecycle mirrored in `src/core/job-lifecycle.mjs`.
+**Why:** every later workstream (SEO God orchestration, onboarding, client portal, verified changes, learning) needs these records, and the owner's hardest rules (agency-only approval, submissions never execute, client results only) belong in the database so no UI or worker bug can bypass them.
+**Tradeoffs:** one Postgres project for everything (no new infrastructure); gates live in SQL functions, so the engine must call them rather than write rows. Same-org rules are triggers, not CHECK constraints, so existing member updates keep working. Client accounts come only from an agency invitation; anyone else who signs up still gets an agency workspace (open sign-up stays an owner decision).
+**Not decided here:** whether share links stay alongside client accounts; email provider; file upload storage and scanning.
+
+## 2026-11-07 D26 Audit outcomes: guarded fetch for hosted scans, robots.txt, a generated registry (owner: "a working, secure and measurable system before additional features")
+**Decisions:**
+1. Every address a user types is fetched only through `src/hosted/safe-fetch.mjs`, checked again at every redirect hop, with DNS answers checked where the runtime can resolve. The database also refuses private addresses for address-only sites, on insert and on update.
+2. Hosted scans follow robots.txt for `*`: the site's owner may not be the person who added it.
+3. The registry of jobs, agents, skills, MCP tools and workflows is generated from the code (`scripts/build-registry.mjs`) and checked by a test, instead of a hand-written list that drifts.
+4. No agent is merged or removed now. Overlaps (AI visibility x3, research x4, planning x2, local umbrella x5 specialists, review x3) are recorded; consolidation waits until agents are graded on real sites.
+**Why:** the D25 scanner fetched any URL a site linked to, including redirects to internal addresses; docs claimed things the code and deployment did not show (departments "not implemented", agents "running").
+**Tradeoffs:** DNS rebinding is reduced, not eliminated (documented in `docs/security.md`). Hosted scans read fewer pages on sites with strict robots.txt.
+
+## 2026-11-04 D25 Websites connected by address, scanned on Supabase (owner: "a simple or straightforward way to connect any site", "triggers outside GitHub", "cheapest, free if possible")
+**Decision:** a site can be added to the portal with only its address. A `scan` Edge Function in the portal's Supabase project crawls it (the product's own crawler, audit rules, platform detection and snapshot builder, copied in by `cloud/portal/build-scan.mjs`), reads what the site states about itself (`src/analysis/discover.mjs`) and stores a snapshot. pg_cron wakes it every 10 minutes; adding a site or pressing "Scan now" wakes it at once; each site is due once a day.
+**Why:** it works for any website (WordPress, Shopify, Wix, hand-built) with nothing to install, uses no GitHub Actions minutes, and runs on the free Supabase plan: 144 wake-ups a day, each scanning as many due sites as fit in 100 seconds. Claude already reaches the same database through the Supabase MCP.
+**Tradeoffs:** reads at most 60 pages per site per day, and only the HTML before JavaScript; no Search Console, GA4, agents or edits for address-only sites yet (they need access the owner of the site grants, which comes next). The free plan pauses a project after a week with no API traffic; the daily scans call the API, which should keep it awake, but that is not yet observed. The scanner refuses bare IPs, localhost and private suffixes.
+**Alternatives:** Render cron (unchanged Node, about $1–5 a month), Cloudflare Workers ($5 a month plan for the CPU time), a VPS. Rejected for now on cost; the scan module is plain Node, so moving it is a copy.
+
 ## 2026-10-30 D24 Approvals from the portal are applied by the site's own run (owner: "do your works")
 **Decision:** the portal records a decision (approve, hold, decline). The site's daily `portal --push` receives the pending decisions in the push response, applies them on GitHub with its own `GITHUB_TOKEN`, then acknowledges them. For an approval, it adds the label and comment and starts `seo-implement` by workflow dispatch.
 - **Why:** the portal keeps no GitHub access, which matches D23's push model. The site's token can already label issues. GitHub does not start workflows from labels added by `GITHUB_TOKEN`, but it does honour workflow dispatch, hence the explicit dispatch.

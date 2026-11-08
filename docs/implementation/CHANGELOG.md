@@ -2,6 +2,272 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (Email via Supabase SMTP, D40; production preparation; branch claude/release-1)
+- **Owner (chat):** use Supabase SMTP for email; do whatever needed approval.
+- **Code:**
+  - Migration `20261108130000_email.sql`.
+  - The `notify` Edge Function.
+  - The Worker calls `notify`, and reads the scan secret from Vault.
+  - The portal's daily summary switch.
+  - `.github/workflows/deploy-seo-god.yml`: manual, refuses an un-paused deploy.
+  - `cloud/portal/supabase/release-1-apply.sql`, built by `scripts/bundle-release-1.mjs`: all migrations in one transaction for the SQL editor.
+- **Tests:**
+  - `notify.test.mjs`, `rls18.sql`, cf-worker (+2), portal-notes.
+  - `npm test` 586/586; 18 SQL suites; rollback exact after 15 migrations; workerd e2e 31 checks, now without a copied scan secret.
+  - Bundle dry-run on a production-shaped local database: applies, then refuses a second run.
+- **Production actions:**
+  - Read-only checks.
+  - Created the `backup_20261108` schema with copies of all 8 existing tables and 21 function definitions.
+  - The migration attempts through the Supabase connector did not run: each asks the owner for confirmation, and the confirmation timed out. The production migration history is unchanged at 3.
+- **Blocked:**
+  - Cloudflare: the saved deploy token is not attached by the session proxy.
+  - Supabase management token: rejected.
+  - The owner declined the replacement forms. The Worker deploys through the GitHub workflow instead.
+
+## 2026-11-08 (Build batch: verified execution, notifications, reports, team page, brand discovery; branch claude/release-1)
+- **Owner direction (chat, 2026-11-08):** keep building without re-asking settled decisions. Production writes, merges and live jobs still need explicit approval.
+- **Code (commits 242ef4e, 3d40129, 967eb00, f6bd85e, 5f9948a):**
+  - D37 verified execution:
+    - `src/god/github.mjs`;
+    - the `implement` handler;
+    - scheduler deploy, follow and verify;
+    - Worker wiring;
+    - migration `20261108110000_github_execution.sql`;
+    - the portal's "Changes to the website" card.
+  - D38:
+    - migration `20261108120000_notifications_reports.sql`;
+    - the portal's Notifications page and menu badge;
+    - the monthly work report with print;
+    - the team page by the spec's departments.
+  - D39: brand discovery.
+  - Portal reliability: confirmations appear after the fresh render, and notifications load in the background. This was the root cause of the load-dependent browser-test failures.
+  - Security: repository names with `.` or `..` segments are refused (found by a new test).
+- **Tests:**
+  - New: `github-execution.test.mjs` (7), `portal-github.test.mjs` (2), `portal-notes.test.mjs` (2), `portal-team.test.mjs` (2), `rls16.sql`, `rls17.sql`.
+  - Extended: `discover.test.mjs` (+2), `portal-app.test.mjs`.
+  - Workerd e2e: 31 checks, including the full GitHub execution path.
+  - `npm test` 580/580; 17 SQL suites; tenant sweep 1,250 outsider calls to 39 functions, none leaked; rollback exact after 14 migrations; `god-pg-e2e.mjs` passes.
+  - All 8 portal browser test files pass three times in parallel.
+- **Deployment:** none. No production writes.
+
+## 2026-11-08 (D35 merged into the consolidated Release 1 PR; branch claude/release-1)
+- **Owner decision:** D1 confirmed (commit 311c85d by the owner). One agency approval adopts the automatically drafted strategy; high-risk changes keep their own approvals.
+- **Merge:** `claude/strategy-draft` (PR #50) merged into `claude/release-1` (#51) with a merge commit.
+  - Conflicts were only in the test runner order, the preflight list and docs.
+  - Migration order is now 080000 → 090000 (strategy draft) → 100000 (invite-only).
+- **Checks:** see STATUS section 4 for the re-run on the merged head.
+- **Deployment:** none.
+
+## 2026-11-08 (Exhaustive tenant-isolation test, stale-PR audit; branch claude/release-1)
+- **Tests:** `cloud/portal/supabase/test/rls15.sql` (Gate E).
+  - It finds every public function that a signed-in user or anon may call, and calls it as an outsider agency and as anon, aimed at every one of agency A's ids, with several text values.
+  - It fails when a result contains agency A's ids or addresses, or when any of agency A's rows change. Each call is rolled back. New functions are covered automatically.
+  - Result: 956 outsider calls to 30 functions; 925 refused; none leaked or changed data.
+  - Mutation check: a planted function leaking a site, and one renaming a site, were both reported (for Mallory and for anon), so the test can fail.
+- **Docs:** `STALE-PR-AUDIT-2026-11-08.md` (S4).
+  - #24 is still useful: the root `action.yml` is on `setup-node@v4`.
+  - #31 conflicts with #51 (owner choice Q5).
+  - #23 conflicts with `main`; its work-evidence job needs an owner decision.
+  - Stack PRs are superseded by #51 once it merges.
+  - Nothing was closed.
+- **Checks:** 14 SQL suites pass. #51 merges cleanly into `main`.
+- **Deployment:** none.
+
+## 2026-11-08 (Consolidated Release 1 PR, production change manifest, invite-only sign-up, D36; branch claude/release-1)
+- **Owner decisions** (commits 76510d3 and ce68c03 by the owner): Q1 one consolidated PR; Q2 production preparation and a paused deployment only after reviews, each production change presented for approval; Q3 erudience.com read-only pilot; Q8 invite-only sign-up.
+- **PR:** [#51](https://github.com/bishal-paul-git/seo-autopilot/pull/51), a draft consolidating #33–#49 into `main`. Merge commits; every original PR linked. #50 (D35) is kept out until the owner confirms D1.
+- **Production, read-only:** catalog fingerprints compared with the repo.
+  - Production equals the two portal migrations, except for a comment in `invite_member`, a stricter `on_new_user` grant, and a production-only owner-claim trigger (`claim_erudience`).
+  - D25 is not applied. The data is compatible with every new constraint.
+  - No writes.
+- **Code:**
+  - Migration `20261108100000_invite_only.sql` (not applied).
+  - Portal sign-up message.
+  - The Worker's planning and job routes honour both pause switches.
+  - `cloud/portal/supabase/rollback/release-1.sql` and `scripts/db-rollback-check.mjs`.
+  - Preflight list gains 080000 and 100000.
+- **Docs:** `docs/implementation/RELEASE-1-PRODUCTION-CHANGE-MANIFEST.md` (steps P1–P7 with verification, rollback and approval status; erudience.com pilot matrix); D36; Cloudflare README; REVIEW-QUESTIONS Q8 follow-up.
+- **Tests:**
+  - `rls14.sql` (new); `portal-invite-only.test.mjs` (new); `cf-worker.test.mjs` (paused routes).
+  - `npm test` 565/565; 13 SQL suites pass; rollback check exact and re-apply clean; `god-pg-e2e.mjs` and `cf-local-e2e.mjs` pass.
+
+## 2026-11-08 (One agency approval per strategy, D35; branch claude/strategy-draft)
+- **Decision:** D35, from REVIEW-QUESTIONS D1 (Claude recommendation, ChatGPT agreed; owner confirmed later the same day).
+- **Code:**
+  - `src/god/planner.mjs`: the strategy draft is queued right after the scan, ungated.
+  - `src/god/handlers.mjs`: the draft result carries `adopt: true`.
+  - `src/god/worker.mjs`: results that need adopting go to the agency after review.
+  - `src/god/tick.mjs`: "request changes" on ungated work redoes it.
+  - `src/core/job-lifecycle.mjs`: the worker cannot authorize or reject anything waiting for the agency.
+- **Migration (not applied):** `20261108090000_strategy_draft.sql` redefines `transition_job` with the same rule.
+- **Tests:**
+  - `rls13.sql` (new); `god.test.mjs`, `onboarding.test.mjs`, `tick.test.mjs` updated.
+  - `scripts/god-pg-e2e.mjs` now applies the new migration and checks one adoption approval and a redraft after "request changes".
+  - `scripts/cf-local-e2e.mjs` now applies migrations 070000–090000 and checks one adoption approval in workerd.
+  - `npm test` 563/563; 13 SQL suites pass; `god-pg-e2e.mjs` passes; `cf-local-e2e.mjs` 24 checks pass.
+- **Docs:** D35; Cloudflare README migration list; preflight list gains 080000.
+- **Deployment:** none.
+
+## 2026-11-08 (Security fixes, D34, and go-live preflight; branch claude/security-fixes)
+- **Review:** an independent security review of the stack found three exploitable defects (D34). All are fixed, with regression tests.
+- **Migration (not applied):** `20261108080000_security_fixes.sql`.
+  - `sites.gsc_allowed`, `gsc_allowed` (service only) and `set_gsc_allowed` (platform admins only).
+  - The confirmation is cleared when a site's address changes, and refused while the domain is in another agency.
+  - `create_job` now limits staff jobs: $5 each, gated when they carry a budget, priority clamped to 1–5, and 100 a day per person.
+- **Code:**
+  - Run-time daily cap for every paid run.
+  - Search Console job and scan function: confirmed sites only.
+  - Discovery keeps http(s) addresses only.
+  - Portal `safeHref`.
+  - `scripts/god-preflight.mjs`: a read-only go-live check (migrations, pause switch, recent scheduler runs, platform admin, scan function and its secret, Worker and its token) that says what to do next for each failing check.
+- **Tests:** `rls12.sql`; `test/security-fixes.test.mjs` (4); `test/god-preflight.test.mjs` (4).
+  - `npm test` 563/563; 12 SQL suites pass.
+  - workerd end-to-end run passes; scan function in Deno on a real site passes.
+
+## 2026-11-08 (Search Console for hosted sites, D33; branch claude/search-console)
+- **Code:**
+  - `src/god/search-console.mjs`: a Google service-account token via Web Crypto (Node and Workers), and the `search_console` job (small per-page and site-total queries; verdict against the rest of the site).
+  - Learning stores each recommendation's full address and counts traffic verdicts in lessons.
+  - The scheduler queues the measurement only when due and only with `GOOGLE_KEY_JSON`.
+  - The Worker registers the handler when the secret is set.
+- **Tests:**
+  - `test/search-console.test.mjs` (4 tests: a real RS256 signature checked with the public key; queries never download page × date data; domain property tried before address prefix; a "better" verdict; flat traffic not counted as a win; no access goes to a person; the scheduler queues only when due and with a key).
+  - `npm test` 555/555; workerd end-to-end run passes.
+- **Not verified live:** no Google key in this environment; mocked responses only.
+
+## 2026-11-08 (Operations, D32, and the review file; branch claude/operations)
+- **Code:**
+  - Portal **Operations** page, every agency member: their websites with approvals waiting, client requests, stuck work, strategy state, spend, and last-planned time or last error.
+  - Platform admins also get scheduler health (runs, errors, usage against Workers Free) and the pause switch, with a reason.
+- **Migration (not applied):** `20261108070000_operations.sql` (`platform_admins`, `agency_overview`, `platform_health`, `set_platform_paused`).
+- **Docs:** `docs/implementation/REVIEW-QUESTIONS.md`, a shared file of questions, decisions, suggestions and disagreements with reply slots for the owner and ChatGPT. It is linked from STATUS.
+- **Tests:**
+  - `rls11.sql`: agencies see only their sites; agency members and clients are refused platform functions; nobody can make themselves admin.
+  - `test/portal-ops.test.mjs` (2 tests, Chromium).
+  - `npm test` 551/551; 11 SQL suites pass.
+
+## 2026-11-08 (R1-D1 learning, D31; branch claude/learning)
+- **Code:**
+  - `src/god/learning.mjs` (pure): experiments from accepted advice with a per-page baseline; re-checks only on pages crawled again; lessons per agent from outcomes and agency refusals; lessons applied to the plan (pause, lower priority).
+  - The scheduler learns before planning.
+  - Agents receive the site's lessons.
+  - The compact audit keeps the crawled pages (engine and scan function).
+  - Jobs carry `updatedAt`.
+  - The SEO God page gets a "What it has learned" section.
+- **Migration (not applied):** `20261108060000_learning.sql` (`god_console` adds lessons and experiments; agency members only).
+- **Tests:**
+  - `test/learning.test.mjs` (6 tests, including the full loop through the scheduler).
+  - `rls10.sql`.
+  - The console browser test covers lessons and escaped addresses.
+  - The workerd end-to-end run confirms experiments are opened in the Worker and shown in the console: 26 checks.
+  - `npm test` 549/549; 10 SQL suites pass.
+
+## 2026-11-08 (R1-P2 client portal; branch claude/client-portal)
+- **Code (portal):**
+  - Agency page **Client requests**. It shows every request in full with who sent it, and offers accept (with a budget), ask a question or decline, each with a note the client sees. It also covers client access: create or assign a client, invite people, and see members and pending invites.
+  - **Signed-in client accounts:** reports plus a **Requests** page to send requests and see the status and the agency's notes. Clients never see agency pages, and their session never calls agency functions.
+  - Share links stay anonymous and reporting-only, with no Requests page. The tests found that the share-link route would have shown the form, and that is fixed.
+- **Code (engine):**
+  - Work created outside the planner (accepted requests) enters the lifecycle through the scheduler and always goes to agency approval first.
+  - `client_request` jobs are assessed by the SEO strategist in advise mode, with the client's text passed only as data.
+  - Approving advice-only results completes them instead of parking them for an apply step.
+- **Migration (not applied):** `20261108050000_client_portal.sql`
+  - `agency_inbox`;
+  - `review_submission` now gives accepted work a budget (it was 0, so it could never run) and checks risk and budget;
+  - `submission_for_job` (service only);
+  - `god_due_sites` treats a fresh request as due.
+- **Tests:**
+  - `rls9.sql`.
+  - `test/client-request.test.mjs` (2 tests).
+  - `test/portal-requests.test.mjs` (4 tests, including a page-script compile check that runs without a browser).
+  - The workerd end-to-end run now covers the full client request path: 24 checks.
+  - `npm test` 543/543; 9 SQL suites pass.
+
+## 2026-11-08 (R1-P2 agency console; branch claude/agency-console)
+- **Code:** portal page **SEO God**, agency only and never shown to clients. It covers:
+  - the strategy draft and its status;
+  - work waiting for the agency, showing the stored proposal and whether it is "approve to start" or "approve this result";
+  - approve, request changes or reject, with a note;
+  - onboarding questions with answers;
+  - escalated work with "Try again";
+  - work in progress, recent results and spend.
+
+  Model and site text are always escaped.
+- **Migration (not applied):** `20261108040000_agency_console.sql` (`god_console`, `answer_question`, `retry_job`; members of the site's agency only; the lifecycle still applies).
+- **Tests:**
+  - `rls8.sql`: members only; agency B, clients and anonymous users refused; gated work cannot be requeued without approval; answers supersede with history; audited.
+  - `test/portal-god.test.mjs`: 2 tests in Chromium covering decisions, questions, retries, a hostile proposal rendered as text, clients never seeing the page, phone width, and the message shown before the update is applied.
+  - `npm test` 537/537; 8 SQL suites pass.
+- **Not deployed:** the portal at seo.erudience.com is unchanged.
+
+## 2026-11-08 (Cloudflare execution, D30; branch claude/cloudflare-execution)
+- **Code:**
+  - `cloud/worker/`: the Worker. A Cron run, per-site planning and per-job runs through the SELF binding, a remote scan, the internal token, fail-safe settings and a build that bundles the agent prompts and packs.
+  - The scan function gets job mode, scans one site per request (fixes a CPU-limit risk), caps scans at 40 pages and stores the portal snapshot.
+  - Agent runner: injectable prompts and base URL.
+  - The strategy step reuses the scan kept in memory.
+  - The crawler is imported lazily.
+  - Module-level file reads in `core/agents.mjs`, `audit/engines.mjs` and `analysis/verticals.mjs` no longer crash a bundled Worker. Found by running in workerd.
+- **Migration (not applied):** `20261108030000_cloudflare_execution.sql` (pause switch, due-site rotation, lease reaper, run log, usage).
+- **Tools:** `scripts/cf-measure.mjs` (CPU per step on real sites), `cf-runtime-audit.mjs` (generated runtime matrix), `cf-local-e2e.mjs` (Worker in workerd against the real migrations), `scan-fn-local.mjs` (scan function in Deno).
+- **Tests:**
+  - `npm test` 535/535.
+  - 7 SQL suites, including the new `rls7.sql`.
+  - `god-pg-e2e.mjs` passes.
+  - `cf-local-e2e.mjs` in workerd: 18 checks pass.
+  - `scan-fn-local.mjs` in Deno on a real site: 8 checks pass.
+- **Docs:** `docs/cloudflare/` (setup, rollback, runtime matrix, usage estimate, measurements); D30; PR #42's plan merged in.
+- **Live:**
+  - Read-only Supabase check: still 3 migrations, `scan` v2, no jobs tables.
+  - The Cloudflare account could not be read from this session (no credential applied to the API).
+  - **No deployment and no production change.**
+
+## 2026-11-08 (R1-A2 agent runner, D29; branch claude/r1-agent-runner)
+- **Code:** `src/god/agent-runner.mjs` (advise-only agent runs on the user's key, budget-bounded, cost from API usage, refusal fallback); worker escalation outcome, cumulative per-job budget, retry cap on review-driven retries; `scripts/god-run.mjs` enables agents when a key is set.
+- **Tests:** `test/agent-runner.test.mjs` 7/7 (mocked API); `npm test` 526/526; six SQL suites and `god-pg-e2e.mjs` pass.
+- **Not done:** no live model call (no key in this environment). No production change.
+
+## 2026-11-08 (R1-A2 scheduler, D28; branch claude/r1-scheduler)
+- **Code:** `src/god/tick.mjs` (advance agency decisions, plan per site, budget reservation, bounded run); `scripts/god-run.mjs` (Supabase or in-memory dry run); worker stores outputs and costs, review fails overspending; stores gain `listJobs`, `recordOutput`, `spendSince`, `listSites`; scan handler keeps a compact audit and profile in memory.
+- **Migration (not applied):** `20261108020000_r1_scheduler.sql` (job_costs, record_job_output, site_spend, site_jobs, god_sites; memory kinds report and setting).
+- **Tests:** `test/tick.test.mjs` 6/6; `npm test` 519/519; `rls6.sql` added to `run.sh` (six suites pass); `god-pg-e2e.mjs` extended with two scheduler ticks (passes).
+- **Live evidence:** in-memory dry run on erudience.com and manchesterdisrepairclaims.co.uk (29.6 s for both scans; strategy accepted after two simulated agency approvals; 7 planned agent jobs deferred: no runner). No production change.
+
+## 2026-11-08 (R1-B1 onboarding; branch claude/r1-onboarding)
+- **Code:** `src/god/onboarding.mjs`, `src/god/handlers.mjs`, store memory methods; migration `20261108010000_r1_memory.sql` (not applied).
+- **Tests:** `test/onboarding.test.mjs` 3/3; `rls5.sql` (memory: supersede, history, per-site privacy, client and other agency refused); five SQL suites pass.
+- **Live evidence:** onboarding through the worker on erudience.com (16 s) and manchesterdisrepairclaims.co.uk (10 s); one bug found and fixed (multi-value facts).
+
+## 2026-11-08 (R1-A2 orchestration; branch claude/r1-orchestration)
+- **Code:** `src/god/` (departments, per-site planner, independent reviewer, memory and Supabase stores, worker); `scripts/god-pg-e2e.mjs`.
+- **Tests:** `test/god.test.mjs` 8/8; `god-pg-e2e.mjs` passes against the four migrations on Postgres 16. Not deployed; no live handlers.
+- **Docs:** `docs/product/R1-ORCHESTRATION.md`.
+- **Fix:** the registry counted a job as tested whenever its name appeared as a string in any test; it now requires `runJob("name")` or an import of the job module. Untested jobs: 10 (was reported as 5).
+
+## 2026-11-08 (R1 audit and contracts; branches claude/r1-audit-plan, claude/r1-contracts)
+- **Docs:** `docs/product/R1-AUDIT-AND-PLAN.md` (gap and traceability matrix against PR #35, PR integration plan, milestones, readiness scorecard); `docs/product/R1-CONTRACTS.md`; D27.
+- **Code (not applied anywhere):** migration `20261108000000_r1_contracts.sql`; `src/core/job-lifecycle.mjs`.
+- **Tests:** `cloud/portal/supabase/test/rls4.sql` (+ `shim4.sql`), run by `run.sh`: client isolation, client projection, untrusted submissions, crafted calls refused, agency-only approval, review independence, retry cap, idempotency, anonymous refused, existing renames still work. `test/job-lifecycle.test.mjs` (JS and SQL tables identical). All four SQL suites pass on Postgres 16.
+- **Live:** read-only checks of Supabase only. No production change.
+
+## 2026-11-07 (audit and hardening, D26; branch claude/audit-refinement)
+- **Code:** `src/hosted/safe-fetch.mjs` (SSRF guard), robots.txt in hosted crawls (`src/audit/crawl.mjs`, `src/hosted/scan.mjs`), `host-variant-canonical-only` rule, `scripts/build-registry.mjs`.
+- **Migration (not applied):** D25 hardened: host-only lower-casing, `sites_url_public` constraint, 20 adds per org per day.
+- **Tests:** `test/safe-fetch.test.mjs`, `test/registry.test.mjs`, `cloud/portal/supabase/test/shim3.sql`, `rls3.sql`, `run.sh`. `npm test` 498/498; SQL suites pass.
+- **Docs:** `AGENTS.md`, `docs/system-architecture.md`, `docs/registry.md`/`.json`, `docs/security.md`, `docs/deployment-status.md`, `docs/test-matrix.md`, `docs/runbook.md`, `docs/release-checklist.md`; DEPARTMENTS.md status corrected.
+- **Live evidence:** real hosted scans of the three owner sites (network allowlist for them added to the session environment with the owner's approval). Production state read only; **no production change** in this session.
+
+## 2026-11-05 (code: plan completion without new scope)
+- **Code:** 12 audit rules from the existing gap list (`src/audit/rules.mjs`, `extract.mjs`, `crawl.mjs`: host variants, TLS expiry, broken images; recipes in `knowledge/audit-fix-recipes.md`); URL inspection four at a time (`src/jobs/daily.mjs`); address-only scans add Search Console rows and priorities (`src/hosted/scan.mjs`), and the `scan` function signs a Google token with Web Crypto from the optional `GOOGLE_KEY_JSON` secret; portal shows the Search Console step.
+- **Checks:** `npm test` 490/490 (new `test/audit-more.test.mjs`, 8 tests; Search Console fallback test). Web Crypto JWT signature verified against Node's verifier with a generated key. Not run: a real Google token, a real scan (the D25 migration is still not applied).
+- **Not done, needs keys or access:** AEO extras (query fan-out, local citations), WordPress changes, real-key provider tests. Measured and dropped: npm caching (install takes 2-3 s of the 8-minute daily run).
+
+## 2026-11-04 (code: websites connected by address; config: fewer Actions minutes)
+- **Code:** `src/analysis/discover.mjs` (business details a site states, with sources), `src/hosted/scan.mjs` (snapshot from an address alone), `cloud/portal/supabase/functions/scan/index.ts` (Edge Function: claim, scan, store), `cloud/portal/build-scan.mjs` (copies the modules in), migration `20261104000000_portal_url_sites.sql`, portal "Add and scan", scanning state, "Scan now", "About this website". Decision D25.
+- **Config:** seo-backlinks template weekly; the same change merged in erudience-flow-engine#118, tenanthousingdisrepair#41 and excel-error-finder#15. Token-diet PRs merged in all 7 repos.
+- **Checks:** `npm test` 481/481.
+- **Deployment (2026-11-05):** `scan` Edge Function v1 deployed (verify_jwt off; POST without the secret returns 403, GET 405). Portal page built with the anon key and pushed to erudience-flow-engine `seo-portal` `660aadb`; Hostinger build `01a1a90b` completed 00:11 UTC. Migration not applied: `apply_migration` waited twice for a confirmation that was not answered, and the Management API returned "Invalid access token"; the owner runs it in the SQL Editor.
+
 ## 2026-11-03 (config and docs only: smaller session context)
 - **Config, no code change:** `.claude/settings.json` (new) denies MCP connectors this repo never uses: duplicate GitHub connectors, unrelated Supabase projects (matched by project URL), Whop, Gumroad, Stripe, Shopify, Lovable, ElevenLabs, Twilio, n8n, Vercel, Render and personal apps. Same kind of file added to keel, excel-error-finder, erudience-flow-engine, feed-to-site-magic, marketingmouse and tenanthousingdisrepair (each with its own list).
 - **Docs:** `STATUS.md` cut from 30 KB to about 4 KB; the full previous version is `history/STATUS-to-2026-11-03.md`.

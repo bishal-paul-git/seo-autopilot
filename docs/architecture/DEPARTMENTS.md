@@ -1,6 +1,6 @@
 # Departments: proposed organisation of the agent team
 
-Status: **proposal, not implemented.** It needs owner approval before any file moves (decision D16 in `docs/implementation/DECISIONS.md`). The evidence for the problems it solves is in `docs/research/AGENT-AUDIT-2026-10-18.md`. Sources for the SEO, AEO and GEO practice it encodes are in `docs/research/REFERENCES.md`.
+Status: **implemented** (agents live in `departments/<dept>/agents/`; decision D16 in `docs/implementation/DECISIONS.md`). The generated list of agents, with triggers and risk, is [../registry.md](../registry.md). The evidence for the problems it solves is in `docs/research/AGENT-AUDIT-2026-10-18.md`. Sources for the SEO, AEO and GEO practice it encodes are in `docs/research/REFERENCES.md`.
 
 ## Why change
 Today 27 agents sit in one flat folder, and 26 playbooks in another. That works, but:

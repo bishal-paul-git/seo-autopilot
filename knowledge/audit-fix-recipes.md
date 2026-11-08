@@ -44,6 +44,19 @@ What to actually do about each finding in the technical audit. Rule names match 
 - **viewport-missing:** add `<meta name="viewport" content="width=device-width, initial-scale=1">`.
 - **lang-missing:** set `lang` on the `<html>` element.
 - **mixed-content:** load every resource over HTTPS.
+- **host-variant-not-redirected:** one 301 from `http://` and from the www (or non-www) address to the single `https://` address the site uses.
+- **host-variant-canonical-only:** the canonical already covers it; add the 301 redirect when convenient.
+- **ssl-expiring:** renew the certificate and switch on automatic renewal at the host.
+- **pagination-canonical-first:** each paginated page gets a self-referencing canonical; link the pages with plain `<a href>` links.
+- **tracking-duplicate:** load each Google tag once (Tag Manager or the page, not both).
+- **viewport-fixed-width:** `width=device-width, initial-scale=1`, and a layout that adapts.
+- **viewport-no-zoom:** remove `user-scalable=no` and `maximum-scale`.
+- **image-broken:** fix the image address or upload the file; remove images that are gone.
+- **image-no-size:** add `width` and `height` attributes with the image's real size.
+- **image-filename-generic:** rename files to describe the picture, then update the links.
+- **hero-image-lazy:** no `loading="lazy"` on the first content image; `fetchpriority="high"` helps.
+- **no-cta:** add one clear next step that fits the page (form, phone link, booking, quote).
+- **hard-to-read:** split long sentences, lead with the answer, use lists; under about 20 words per sentence on average.
 - **slow-ttfb:** measure from several locations before acting; fix with caching, a CDN or a faster origin. Audit timings are hints from one machine.
 
 ## Order of work

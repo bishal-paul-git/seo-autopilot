@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.wrangler/
+src/agents.generated.mjs
+.dev.vars
+src/packs.generated.mjs

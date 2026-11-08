@@ -1,0 +1,1028 @@
+{
+ "jobs": [
+  {
+   "job": "agent",
+   "path": "hosted-equivalent",
+   "where": "agent:<name> jobs in the Worker (src/god/agent-runner.mjs, advise only, user's own key): prompt build 0.6-1.1 ms CPU, the model call is I/O",
+   "needs": {
+    "node": [
+     "child_process",
+     "fs",
+     "path",
+     "url"
+    ],
+    "spawns": true,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 4
+  },
+  {
+   "job": "ai-visibility",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": false,
+    "llm": true
+   },
+   "modules": 6
+  },
+  {
+   "job": "analyze",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 4
+  },
+  {
+   "job": "audit",
+   "path": "hosted-equivalent",
+   "where": "scan job: Supabase Edge Function `scan` (job mode, 1 site per request, <=40 pages, measured 0.8-1.6 s CPU for 60 pages vs 2 s limit), dispatched by the Worker",
+   "needs": {
+    "node": [
+     "child_process",
+     "crypto",
+     "fs",
+     "os",
+     "path",
+     "tls",
+     "url"
+    ],
+    "spawns": true,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 10
+  },
+  {
+   "job": "authority",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 10
+  },
+  {
+   "job": "autopilot",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path",
+     "readline/promises",
+     "url"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 10
+  },
+  {
+   "job": "backlinks-queue",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 3
+  },
+  {
+   "job": "backlinks-submit",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 4
+  },
+  {
+   "job": "changes",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "crypto",
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 20
+  },
+  {
+   "job": "citations",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": false,
+    "llm": false
+   },
+   "modules": 4
+  },
+  {
+   "job": "consent",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 3
+  },
+  {
+   "job": "conversions",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "crypto",
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 5
+  },
+  {
+   "job": "daily",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "crypto",
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 5
+  },
+  {
+   "job": "dashboard",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path",
+     "url"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 6
+  },
+  {
+   "job": "deepdive",
+   "path": "github-actions",
+   "where": "Node host only: spawns processes (git, Go, Python or browsers); runs in the site repository's existing GitHub Actions workflows",
+   "reason": "child_process is a non-functional stub in Workers",
+   "needs": {
+    "node": [
+     "child_process",
+     "url"
+    ],
+    "spawns": true,
+    "files": "none",
+    "network": false,
+    "llm": false
+   },
+   "modules": 2
+  },
+  {
+   "job": "digest",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "crypto",
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": true
+   },
+   "modules": 8
+  },
+  {
+   "job": "entity",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "crypto",
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 21
+  },
+  {
+   "job": "experiments",
+   "path": "github-actions",
+   "where": "Node host only: spawns processes (git, Go, Python or browsers); runs in the site repository's existing GitHub Actions workflows",
+   "reason": "child_process is a non-functional stub in Workers",
+   "needs": {
+    "node": [
+     "child_process",
+     "fs",
+     "path"
+    ],
+    "spawns": true,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 4
+  },
+  {
+   "job": "facts",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 5
+  },
+  {
+   "job": "forecast",
+   "path": "github-actions",
+   "where": "Node host only: spawns processes (git, Go, Python or browsers); runs in the site repository's existing GitHub Actions workflows",
+   "reason": "child_process is a non-functional stub in Workers",
+   "needs": {
+    "node": [
+     "child_process",
+     "url"
+    ],
+    "spawns": true,
+    "files": "none",
+    "network": false,
+    "llm": false
+   },
+   "modules": 2
+  },
+  {
+   "job": "gap",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "crypto",
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 14
+  },
+  {
+   "job": "geo",
+   "path": "github-actions",
+   "where": "Node host only: spawns processes (git, Go, Python or browsers); runs in the site repository's existing GitHub Actions workflows",
+   "reason": "child_process is a non-functional stub in Workers",
+   "needs": {
+    "node": [
+     "child_process",
+     "crypto",
+     "fs",
+     "os",
+     "path",
+     "tls",
+     "url"
+    ],
+    "spawns": true,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 8
+  },
+  {
+   "job": "gsc",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "crypto",
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 4
+  },
+  {
+   "job": "inbound",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": false,
+    "llm": false
+   },
+   "modules": 3
+  },
+  {
+   "job": "indexing-queue",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 4
+  },
+  {
+   "job": "indexnow",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 2
+  },
+  {
+   "job": "keywords",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "crypto",
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 12
+  },
+  {
+   "job": "linkgraph",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": false,
+    "llm": false
+   },
+   "modules": 4
+  },
+  {
+   "job": "links",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 5
+  },
+  {
+   "job": "listings",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "crypto",
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 8
+  },
+  {
+   "job": "local",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "crypto",
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 22
+  },
+  {
+   "job": "logs",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "dns",
+     "fs",
+     "path",
+     "readline",
+     "zlib"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": false,
+    "llm": false
+   },
+   "modules": 3
+  },
+  {
+   "job": "mark",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": false,
+    "llm": false
+   },
+   "modules": 2
+  },
+  {
+   "job": "mentions",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": true
+   },
+   "modules": 5
+  },
+  {
+   "job": "monthly",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 5
+  },
+  {
+   "job": "news",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": true
+   },
+   "modules": 6
+  },
+  {
+   "job": "optimize",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "crypto",
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 18
+  },
+  {
+   "job": "pace",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 4
+  },
+  {
+   "job": "portal",
+   "path": "hosted-equivalent",
+   "where": "replaced for hosted sites by Supabase rows written by the scan and the jobs",
+   "needs": {
+    "node": [
+     "crypto",
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 6
+  },
+  {
+   "job": "priorities",
+   "path": "hosted-equivalent",
+   "where": "part of the scan job (priorities from the audit) and the strategy draft (Worker)",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 7
+  },
+  {
+   "job": "profile",
+   "path": "hosted-equivalent",
+   "where": "part of the scan job (site profile from the crawl)",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 3
+  },
+  {
+   "job": "propose",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 4
+  },
+  {
+   "job": "quality",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": false,
+    "llm": false
+   },
+   "modules": 3
+  },
+  {
+   "job": "rank",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "crypto",
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 14
+  },
+  {
+   "job": "redirects",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 4
+  },
+  {
+   "job": "refresh",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 4
+  },
+  {
+   "job": "release",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 3
+  },
+  {
+   "job": "render",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "module",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 4
+  },
+  {
+   "job": "research",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "crypto",
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": true
+   },
+   "modules": 8
+  },
+  {
+   "job": "schedule",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 3
+  },
+  {
+   "job": "schema",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "crypto",
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 20
+  },
+  {
+   "job": "shop",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "crypto",
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 22
+  },
+  {
+   "job": "speed",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 2
+  },
+  {
+   "job": "team",
+   "path": "hosted-equivalent",
+   "where": "SEO God planner (src/god/planner.mjs) in the Worker: 0.6-2.5 ms CPU per site measured",
+   "needs": {
+    "node": [
+     "fs",
+     "path",
+     "url"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 10
+  },
+  {
+   "job": "vitals",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": false,
+    "llm": false
+   },
+   "modules": 3
+  },
+  {
+   "job": "watch",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 6
+  },
+  {
+   "job": "work",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": false,
+    "llm": false
+   },
+   "modules": 3
+  },
+  {
+   "job": "ymyl",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 4
+  }
+ ],
+ "summary": {
+  "total": 58,
+  "hostedEquivalent": 6,
+  "githubActions": 52,
+  "workerCandidate": 0,
+  "spawnProcesses": 6
+ }
+}

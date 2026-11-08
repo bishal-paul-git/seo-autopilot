@@ -1,0 +1,16 @@
+{
+  "name": "seo-god-worker",
+  "private": true,
+  "type": "module",
+  "description": "SEO God execution Worker for Cloudflare (D30). Separate from the dependency-free core; wrangler is only a deploy tool.",
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "node build.mjs && wrangler deploy --dry-run --outdir dist",
+    "dev": "node build.mjs && wrangler dev --test-scheduled",
+    "deploy:staging": "node build.mjs && wrangler deploy --env staging",
+    "deploy": "node build.mjs && wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.151.3"
+  }
+}

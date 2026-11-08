@@ -20,17 +20,24 @@ export async function run({ site, flags }) {
   const urls = [...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
   const order = [...urls].sort((a, b) => (state.results[a]?.checkedAt || "").localeCompare(state.results[b]?.checkedAt || ""));
 
-  let done = 0;
-  for (const url of order.slice(0, flags.limit ?? site.inspectPerDay)) {
-    const r = await fetch("https://searchconsole.googleapis.com/v1/urlInspection/index:inspect", {
-      method: "POST", headers: auth, body: JSON.stringify({ inspectionUrl: url, siteUrl: site.searchConsoleProperty }),
-    });
-    const j = await r.json();
-    if (j.error) { console.log(site.id, "error", url, j.error.message); if ([429, 403].includes(j.error.code)) break; continue; }
-    const x = j.inspectionResult?.indexStatusResult || {};
-    state.results[url] = { checkedAt: new Date().toISOString(), coverage: x.coverageState, fetch: x.pageFetchState, googleCanonical: x.googleCanonical, userCanonical: x.userCanonical, lastCrawl: x.lastCrawlTime };
-    done++;
-  }
+  // Four inspections at a time: each takes seconds at Google, and one by one they used most of the run's minutes.
+  // Google allows 600 a minute per property; a 429 or 403 stops every lane.
+  let done = 0, stop = false;
+  const todo = order.slice(0, flags.limit ?? site.inspectPerDay);
+  const lane = async () => {
+    while (!stop && todo.length) {
+      const url = todo.shift();
+      const r = await fetch("https://searchconsole.googleapis.com/v1/urlInspection/index:inspect", {
+        method: "POST", headers: auth, body: JSON.stringify({ inspectionUrl: url, siteUrl: site.searchConsoleProperty }),
+      });
+      const j = await r.json();
+      if (j.error) { console.log(site.id, "error", url, j.error.message); if ([429, 403].includes(j.error.code)) stop = true; continue; }
+      const x = j.inspectionResult?.indexStatusResult || {};
+      state.results[url] = { checkedAt: new Date().toISOString(), coverage: x.coverageState, fetch: x.pageFetchState, googleCanonical: x.googleCanonical, userCanonical: x.userCanonical, lastCrawl: x.lastCrawlTime };
+      done++;
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(4, todo.length) }, lane));
   writeJson(stateFile, state);
 
   const end = Date.now() - 2 * 864e5, start = end - 27 * 864e5;

@@ -4,6 +4,7 @@
 import { createHash } from "node:crypto";
 import { extractPage } from "./extract.mjs";
 import { sleep } from "../core/util.mjs";
+import { robotsDisallows } from "./rules.mjs";
 
 const UA = "seo-autopilot-audit/2 (+https://github.com/bishal-paul-git/seo-autopilot)";
 
@@ -89,7 +90,9 @@ export async function crawlSite(site, opts = {}) {
   const sitemapUrls = [...sm.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].trim());
   const robots = await fetchImpl(new URL("/robots.txt", site.url), { headers: { "User-Agent": UA } }).then((r) => (r.ok ? r.text() : null)).catch(() => null);
 
-  const queue = [site.url, ...sitemapUrls];
+  // Hosted scans of sites added by address follow robots.txt (the site's owner may not be the one who added it).
+  const allowed = (u) => { if (!opts.respectRobots || !robots) return true; try { return !robotsDisallows(robots, new URL(u).pathname); } catch { return false; } };
+  const queue = [site.url, ...sitemapUrls].filter(allowed);
   const seen = new Set(queue.map(strip));
   const pages = new Map();
   const inSitemap = new Set(sitemapUrls.map(strip));
@@ -102,7 +105,7 @@ export async function crawlSite(site, opts = {}) {
       if (r.isHtml && r.status === 200) {
         const x = extractPage(r.html, r.finalUrl);
         Object.assign(rec, x, { textHash: hashText(x.text) });
-        for (const l of x.links) if (isInternal(l.url) && !seen.has(strip(l.url)) && !/\.(pdf|jpe?g|png|gif|svg|webp|zip|xml|json|txt|ico|css|js|mp3|mp4)(\?|$)/i.test(l.url)) { seen.add(strip(l.url)); queue.push(l.url); }
+        for (const l of x.links) if (isInternal(l.url) && allowed(l.url) && !seen.has(strip(l.url)) && !/\.(pdf|jpe?g|png|gif|svg|webp|zip|xml|json|txt|ico|css|js|mp3|mp4)(\?|$)/i.test(l.url)) { seen.add(strip(l.url)); queue.push(l.url); }
       } else Object.assign(rec, { title: "", description: null, robots: "", viewport: null, canonical: null, alternates: [], h1s: [], h2s: [], headings: [], lang: null, jsonld: { types: [], invalid: 0 }, links: [], images: 0, imagesNoAlt: 0, mixed: [], words: 0, text: "" });
       pages.set(strip(r.url), rec);
     }
@@ -117,8 +120,44 @@ export async function crawlSite(site, opts = {}) {
   const unknownTargets = new Set();
   for (const p of list) for (const l of p.links) if (isInternal(l.url) && !pages.has(key(l.url)) && !finalToKey.has(key(l.url))) unknownTargets.add(l.url);
   const brokenTargets = new Map();
-  const probe = [...unknownTargets].filter((u) => !/\.(pdf|jpe?g|png|gif|svg|webp|zip|xml|json|txt|ico|css|js|mp3|mp4)(\?|$)/i.test(u)).slice(0, 150);
+  const probe = [...unknownTargets].filter((u) => allowed(u) && !/\.(pdf|jpe?g|png|gif|svg|webp|zip|xml|json|txt|ico|css|js|mp3|mp4)(\?|$)/i.test(u)).slice(0, 150);
   await pool(probe, 6, async (u) => { const r = await fetchPage(u, { method: "HEAD", fetchImpl }); if (r.status >= 400 || r.status === 0) brokenTargets.set(u, r.status); }, 100);
 
-  return { pages: list, ctx: { robotsTxt: robots, sitemapUrls, brokenTargets, siteHost: host } };
+  // Images the pages use: check they load (HEAD; a server that refuses HEAD with 405 is not counted as broken), capped.
+  const brokenImages = new Map();
+  const images = [...new Set(list.flatMap((p) => p.imageSrcs || []))].slice(0, opts.maxImages ?? 80);
+  await pool(images, 6, async (u) => { const r = await fetchPage(u, { method: "HEAD", fetchImpl, timeout: 10000 }); if ((r.status >= 400 && r.status !== 405) || r.status === 0) brokenImages.set(u, r.status || "no response"); }, 50);
+
+  // The other addresses of the home page (http://, and www or not) should redirect to the address the site uses.
+  const home = new URL(site.url);
+  const alt = home.hostname.startsWith("www.") ? home.hostname.slice(4) : `www.${home.hostname}`;
+  const hostVariants = [];
+  for (const v of [`http://${home.hostname}/`, `https://${alt}/`]) {
+    const r = await fetchPage(v, { fetchImpl, timeout: 10000 });
+    if (r.status === 0 && !r.chain.length) continue; // that name does not resolve: nothing to redirect
+    let final; try { final = new URL(r.finalUrl); } catch { continue; }
+    const ok = final.protocol === "https:" && final.hostname === home.hostname;
+    // A variant that serves the page itself is still handled if its canonical names the main address.
+    const canon = !ok && r.html ? (/<link\b[^>]*rel=["']?canonical["']?[^>]*>/i.exec(r.html) || [""])[0].match(/href=["']([^"']+)["']/i)?.[1] : null;
+    let canonicalOk = false; try { canonicalOk = !!canon && new URL(canon, r.finalUrl).hostname === home.hostname; } catch { /* bad href */ }
+    hostVariants.push({ from: v, to: r.finalUrl, status: r.status, ok, canonicalOk });
+  }
+
+  return { pages: list, ctx: { robotsTxt: robots, sitemapUrls, brokenTargets, brokenImages, hostVariants, tls: opts.checkTls === false ? null : await tlsDaysLeft(home.hostname), siteHost: host } };
+}
+
+/** Days until the site's TLS certificate expires, or null when it cannot be read here (some runtimes do not expose it). */
+export async function tlsDaysLeft(hostname, { timeout = 8000 } = {}) {
+  try {
+    const tls = await import("node:tls");
+    return await new Promise((resolve) => {
+      const done = (v) => { try { sock.destroy(); } catch { /* closed */ } resolve(v); };
+      const sock = tls.connect({ host: hostname, port: 443, servername: hostname, timeout }, () => {
+        const c = sock.getPeerCertificate?.();
+        const end = c && c.valid_to ? Date.parse(c.valid_to) : NaN;
+        done(Number.isFinite(end) ? { daysLeft: Math.floor((end - Date.now()) / 864e5), validTo: new Date(end).toISOString().slice(0, 10) } : null);
+      });
+      sock.on("error", () => done(null)); sock.on("timeout", () => done(null));
+    });
+  } catch { return null; }
 }
