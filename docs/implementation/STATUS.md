@@ -3,7 +3,7 @@
 Kept short; read at the start of every session. History: [history/STATUS-to-2026-11-03.md](history/STATUS-to-2026-11-03.md). Detail: [CHANGELOG.md](CHANGELOG.md), [DECISIONS.md](DECISIONS.md). Deployed state: [../deployment-status.md](../deployment-status.md). Tests: [../test-matrix.md](../test-matrix.md).
 
 ## 1. Snapshot
-- Last updated: 2026-11-08 UTC. Branch `claude/cloudflare-execution` (stacked: #33 → #34 → #36 → #37 → #38 → #39 → #40 → #41 → this; includes PR #42's plan); base `main` `e982f64`; release `v2.22.1`. Requirements: PR #35 (`docs/product/`).
+- Last updated: 2026-11-08 UTC. Branch `claude/agency-console` (stacked: #33 → #34 → #36 → #37 → #38 → #39 → #40 → #41 → #43 → this; includes PR #42's plan); base `main` `e982f64`; release `v2.22.1`. Requirements: PR #35 (`docs/product/`).
 - Environment: Linux cloud container, Node 22, Postgres 16 (local SQL checks); network allowed to Supabase, GitHub and the owner's three websites.
 
 ## 2. Goal and phase
@@ -24,10 +24,11 @@ Architecture: [../system-architecture.md](../system-architecture.md). Every job 
 | R1 scheduler (tick, budgets, costs, two-step strategy approval; D28) | `src/god/tick.mjs`, `scripts/god-run.mjs`, scheduler migration | `tick.test.mjs`, `rls6.sql`, `god-pg-e2e.mjs`; live dry run on 2 sites | not scheduled or deployed |
 | R1 agent runner (advise only, user's key, budget-bounded; D29) | `src/god/agent-runner.mjs` | `agent-runner.test.mjs` (mocked API only) | no live model call yet |
 | Cloudflare execution (Worker scheduler, scan job mode, pause, lease recovery, run log; D30) | `cloud/worker/`, scan function, migration 030000 | `cf-worker.test.mjs`, `rls7.sql`, `cf-local-e2e.mjs` in workerd, `scan-fn-local.mjs` in Deno on a real site | **not deployed**; see `docs/cloudflare/README.md` |
+| Agency console: the SEO God page (approvals, questions, escalations, results, spend) | `cloud/portal/app/index.html`, migration 040000 | `rls8.sql`, `portal-god.test.mjs` (Chromium) | not deployed (portal unchanged) |
 
 ## 4. Checks this session
-- `npm test`: 535/535.
-- `bash cloud/portal/supabase/test/run.sh`: 7 suites pass.
+- `npm test`: 537/537.
+- `bash cloud/portal/supabase/test/run.sh`: 8 suites pass.
 - `god-pg-e2e.mjs`: passes.
 - `cf-local-e2e.mjs`: the Worker ran in workerd against the real migrations; 18 checks pass.
 - `scan-fn-local.mjs`: the scan function ran in Deno on a real site; 8 checks pass.

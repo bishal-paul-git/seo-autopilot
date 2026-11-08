@@ -37,13 +37,14 @@ Where every job runs: [runtime-matrix.md](runtime-matrix.md). Free-tier usage: [
 ## Account setup (owner actions, in this order)
 Nothing here has been done. Each step needs the owner.
 
-1. **Review and merge the PR chain:** #33 → #34 → #35/#36 → #37 → #38 → #39 → #40 → #41 → this PR.
+1. **Review and merge the PR chain:** #33 → #34 → #35/#36 → #37 → #38 → #39 → #40 → #41 → #43, then the agency console PR.
 2. **Supabase migrations.** Apply them in order to project `ymwwwhdlyjnqbxxhtcew`, Dashboard → SQL, or `supabase db push` from a reviewed checkout:
    - `20261104000000_portal_url_sites.sql`
    - `20261108000000_r1_contracts.sql`
    - `20261108010000_r1_memory.sql`
    - `20261108020000_r1_scheduler.sql`
    - `20261108030000_cloudflare_execution.sql`
+   - `20261108040000_agency_console.sql` (the SEO God page in the portal)
 
    The first one (D25) needs the `pg_cron` and `pg_net` extensions. It also **schedules its own 10-minute scan** (`seo-autopilot-scan`). With Cloudflare as the only scheduler, remove that schedule straight after applying, so sites are not crawled twice:
 
@@ -71,11 +72,12 @@ Nothing here has been done. Each step needs the owner.
    - `npm run deploy` deploys **paused** (`SEO_GOD_PAUSED = "true"`). Then:
      - `curl https://seo-god.<your-subdomain>.workers.dev/health` must answer `{"ok":true,...}`;
      - `select * from public.god_runs order by id desc limit 3;` after 15 minutes must show `paused = true`.
-6. **Go live for one pilot site:**
+6. **Publish the portal** with the SEO God page: `PORTAL_SUPABASE_URL=… PORTAL_SUPABASE_KEY=<publishable key> node cloud/portal/build.mjs`, then upload `cloud/portal/dist/` to seo.erudience.com (Hostinger) as before.
+7. **Go live for one pilot site:**
    - set the other sites to `status = 'paused'` in `public.sites`;
    - change `SEO_GOD_PAUSED` to `"false"` and `npm run deploy`;
    - watch `god_runs`, `jobs` and the Workers dashboard (CPU p99, errors) for a day, then un-pause sites in batches.
-7. **Agent advice (optional):** set the `ANTHROPIC_API_KEY` secret and a non-zero `SEO_GOD_DAILY_BUDGET_USD` (per site per day), then deploy.
+8. **Agent advice (optional):** set the `ANTHROPIC_API_KEY` secret and a non-zero `SEO_GOD_DAILY_BUDGET_USD` (per site per day), then deploy.
 
 A staging Worker (`npm run deploy:staging`) exists in `wrangler.toml`. Point its `SUPABASE_URL` at a Supabase branch or a test project, never at production data.
 

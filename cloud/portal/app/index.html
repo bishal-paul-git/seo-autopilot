@@ -265,10 +265,11 @@ const I = {
   share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M12 3v13M7 8l5-5 5 5"/></svg>',
   grid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg>',
   plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  spark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/></svg>',
   out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg>',
 };
-const PAGES = [["overview", "Overview", I.home], ["traffic", "Traffic", I.trend], ["keywords", "Keywords", I.key], ["pages", "Pages", I.page], ["locations", "Locations", I.pin], ["plan", "Coming next", I.plan], ["report", "Weekly report", I.report], ["approvals", "Approvals", I.check], ["team", "SEO team", I.team], ["connect", "Connection", I.plug]];
-const AGENCY_ONLY = new Set(["approvals", "team", "connect"]);
+const PAGES = [["overview", "Overview", I.home], ["traffic", "Traffic", I.trend], ["keywords", "Keywords", I.key], ["pages", "Pages", I.page], ["locations", "Locations", I.pin], ["plan", "Coming next", I.plan], ["report", "Weekly report", I.report], ["god", "SEO God", I.spark], ["approvals", "Approvals", I.check], ["team", "SEO team", I.team], ["connect", "Connection", I.plug]];
+const AGENCY_ONLY = new Set(["god", "approvals", "team", "connect"]); // never shown to clients (D27: reporting only)
 const MOBILE_TABS = ["overview", "traffic", "keywords", "pages"];
 let state = { kwTab: "ranking", kwQ: "", pgFilter: "all", newToken: null };
 
@@ -551,6 +552,54 @@ function pApprovals(s) {
   }).join("") || '<div class="empty">No open proposals. New ones arrive with the daily and weekly runs.</div>'}</div></div>`;
 }
 
+/* ---------- SEO God console (agency only): approvals, questions, escalations, results, costs ---------- */
+// Everything here comes from public.god_console, which refuses anyone who is not a member of the site's agency.
+// Proposals are model output and site text: always escaped, never rendered as HTML.
+const RISK = { low: "ok", medium: "warn", high: "bad" };
+const usd = (n) => "$" + Number(n || 0).toFixed(2);
+const STRAT = { approved: ["Approved", "ok"], proposed: ["Waiting for your approval", "warn"] };
+async function loadConsole(s) {
+  try { s.console = await rpc("god_console", { p_site: s.id }); s.consoleError = null; }
+  catch (e) { s.console = null; s.consoleError = e.message; }
+}
+function proposalHtml(o) {
+  const p = o?.proposal; if (!p) return "";
+  if (Array.isArray(p.firstSteps)) return `<div class="xs" style="margin-top:8px">${p.objective ? `<p><b>Objective:</b> ${esc(p.objective)}</p>` : '<p class="muted">Objective not set yet: answer the goals question.</p>'}
+    <b>First steps</b><ol style="margin:4px 0 8px 18px;padding:0">${p.firstSteps.map((x) => `<li>${esc(x.title)}${x.why ? ` <span class="muted">· ${esc(x.why)}</span>` : ""}</li>`).join("") || "<li>None</li>"}</ol>
+    ${(p.kpis || []).length ? `<b>Measured by</b><ul style="margin:4px 0 8px 18px;padding:0">${p.kpis.map((k) => `<li>${esc(k)}</li>`).join("")}</ul>` : ""}
+    ${(p.risks || []).length ? `<b>Risks</b><ul style="margin:4px 0 0 18px;padding:0">${p.risks.map((k) => `<li>${esc(k)}</li>`).join("")}</ul>` : ""}</div>`;
+  if (Array.isArray(p.recommendations)) return `<div class="xs" style="margin-top:8px">${p.summary ? `<p>${esc(p.summary)}</p>` : ""}<ol style="margin:4px 0 0 18px;padding:0">${p.recommendations.map((r) => `<li><b>${esc(r.title)}</b>${r.url ? ` · <span class="muted">${esc(r.url)}</span>` : ""} <span class="pill">${esc(r.effort || "")}</span><br>${esc(r.why || "")}${(r.evidence || []).length ? `<br><span class="muted">Evidence: ${r.evidence.map(esc).join("; ")}</span>` : ""}</li>`).join("")}</ol>
+    <p class="muted" style="margin:6px 0 0">Advice only: nothing on the website is changed.</p></div>`;
+  return "";
+}
+function pGod(s) {
+  const c = s.console;
+  const head = `<div><h1>SEO God</h1><p class="lead">This website's own SEO director. It reads the site, drafts the strategy, plans the work and runs the specialists. Nothing it proposes goes ahead without your approval, and your clients never see this page.</p></div>`;
+  if (!c) return head + `<div class="callout">The SEO God is not switched on for this workspace yet. ${esc(s.consoleError || "")}</div>`;
+  const st = STRAT[c.strategy?.status] || ["Not drafted yet", ""];
+  const waiting = c.waiting || [], esc8 = c.escalated || [], qs = c.questions || [];
+  return head + `<div class="grid g4">${kpi("Strategy", `<span class="pill ${st[1]}">${st[0]}</span>`, null, "Nothing beyond reading the site runs until you approve a strategy.")}
+    ${kpi("Waiting for you", fmt(waiting.length), null, "Work that needs your decision.")}${kpi("Needs a person", fmt(esc8.length), null, "Work that failed repeatedly or was refused.")}
+    ${kpi("Spend", `${usd(c.costs?.today)} today`, null, `${usd(c.costs?.month)} this month, from your own AI key.`)}</div>
+  ${c.strategy ? `<div class="card"><div class="ch"><h2>Strategy</h2><span class="pill ${st[1]}">${st[0]}</span></div>${proposalHtml({ proposal: c.strategy })}${c.strategy.status === "approved" ? "" : '<p class="xs muted" style="margin:8px 0 0">Answer the questions below to sharpen it; approve it from \u201cWaiting for you\u201d.</p>'}</div>` : ""}
+  <div class="card pad0"><div class="ch"><h2>Waiting for you</h2><span class="xs muted">${c.lastPlanned?.at ? `planned ${esc(String(c.lastPlanned.at).slice(0, 16).replace("T", " "))} UTC` : "not planned yet"}</span></div><div class="list">${waiting.map((j) => `
+    <div class="row" style="display:block"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><div class="t" style="flex:1;min-width:200px">${esc(j.title)}</div><span class="pill ${RISK[j.risk] || ""}">${esc(j.risk)} risk</span><span class="pill info">${j.stage === "result" ? "Approve this result" : "Approve to start"}</span></div>
+      <div class="s">${esc(j.kind)}${j.why ? ` · ${esc(j.why)}` : ""}${j.review ? ` · review: ${esc(j.review.verdict)}` : ""}${Number(j.costUsd) ? ` · spent ${usd(j.costUsd)}` : ""}</div>
+      ${proposalHtml(j.outputs)}
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center"><input id="note-${esc(j.id)}" placeholder="Note (optional, saved with your decision)" style="flex:1;min-width:200px">
+        <button class="btn primary" data-jdec="approve" data-job="${esc(j.id)}">Approve</button><button class="btn" data-jdec="request_changes" data-job="${esc(j.id)}">Request changes</button><button class="btn" data-jdec="reject" data-job="${esc(j.id)}">Reject</button></div></div>`).join("") || '<div class="empty">Nothing waiting. New work appears here after each planning run.</div>'}</div></div>
+  <div class="grid g2">
+    <div class="card pad0"><div class="ch"><h2>Questions for you</h2></div><div class="list">${qs.map((q) => `<div class="row" style="display:block"><div class="t">${esc(q.question)}</div><div class="s">${esc(q.why || "")}</div>
+      <div style="display:flex;gap:6px;margin-top:8px"><input id="ans-${esc(q.key)}" maxlength="2000" placeholder="Your answer" style="flex:1"><button class="btn" data-qsave="${esc(q.key)}">Save</button></div></div>`).join("") || '<div class="empty">No open questions.</div>'}</div>
+      ${(c.answers || []).length ? `<details style="padding:0 16px 14px"><summary class="xs" style="cursor:pointer">${c.answers.length} answered</summary>${c.answers.map((a) => `<div class="xs" style="margin-top:6px"><b>${esc(a.key)}</b>: ${esc(a.value)}</div>`).join("")}</details>` : ""}</div>
+    <div class="card pad0"><div class="ch"><h2>Needs a person</h2></div><div class="list">${esc8.map((j) => `<div class="row" style="flex-wrap:wrap;gap:8px"><div style="flex:1;min-width:180px"><div class="t">${esc(j.title)}</div><div class="s">${esc(j.kind)} · ${esc(j.error || "stopped")} · ${fmt(j.attempts)} attempts</div></div><button class="btn" data-retry="${esc(j.id)}">Try again</button></div>`).join("") || '<div class="empty">Nothing stuck.</div>'}</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="card pad0"><div class="ch"><h2>In progress</h2></div><div class="list">${(c.active || []).map((j) => `<div class="row"><div><div class="t">${esc(j.title)}</div><div class="s">${esc(j.kind)}</div></div><span class="pill">${esc(j.status)}</span></div>`).join("") || '<div class="empty">Nothing running.</div>'}</div></div>
+    <div class="card pad0"><div class="ch"><h2>Recent results</h2></div><div class="list">${(c.recent || []).map((j) => `<div class="row" style="display:block"><div style="display:flex;gap:8px"><div class="t" style="flex:1">${esc(j.title)}</div><span class="pill ${j.status === "completed" ? "ok" : j.status === "failed" ? "bad" : ""}">${esc(j.status)}</span></div><div class="s">${esc(j.kind)} · ${esc(String(j.updatedAt || "").slice(0, 10))}${Number(j.costUsd) ? ` · ${usd(j.costUsd)}` : ""}</div>${j.outputs?.proposal ? `<details><summary class="xs" style="cursor:pointer">Show result</summary>${proposalHtml(j.outputs)}</details>` : ""}</div>`).join("") || '<div class="empty">No results yet.</div>'}</div></div>
+  </div>`;
+}
+
 function pTeamPage() {
   const owner = ORG?.role === "owner";
   return `<div><h1>Team and brand</h1><p class="lead">People in ${esc(ORG?.name || "your agency")}, and how your client links look.</p></div>
@@ -661,6 +710,18 @@ function wire(s) {
       toast(`${DEC[decision][0]}. Applied on GitHub at the next daily run.`); render();
     } catch (e) { toast(e.message); }
   }));
+  const consoleAction = async (fn, args, done) => { try { await rpc(fn, args); toast(done); await loadConsole(s); render(); } catch (e) { toast(e.message); } };
+  document.querySelectorAll("[data-jdec]").forEach((b) => (b.onclick = () => {
+    const d = b.dataset.jdec, id = b.dataset.job;
+    if (d === "reject" && !confirm("Reject this work? It will not run.")) return;
+    consoleAction("approve_job", { p_job: id, p_decision: d, p_note: ($(`#note-${CSS.escape(id)}`)?.value || "").trim() || null }, { approve: "Approved. It runs at the next planning run.", reject: "Rejected.", request_changes: "Sent back for changes." }[d]);
+  }));
+  document.querySelectorAll("[data-qsave]").forEach((b) => (b.onclick = () => {
+    const k = b.dataset.qsave, v = ($(`#ans-${CSS.escape(k)}`)?.value || "").trim();
+    if (!v) return toast("Type an answer first.");
+    consoleAction("answer_question", { p_site: s.id, p_key: k, p_value: v }, "Answer saved. The next strategy draft uses it.");
+  }));
+  document.querySelectorAll("[data-retry]").forEach((b) => (b.onclick = () => consoleAction("retry_job", { p_job: b.dataset.retry, p_note: null }, "Queued again.")));
   const people = $("#people");
   if (people) rpc("org_people").then((list) => { people.innerHTML = list.filter((p) => !ORG || p.org === ORG.id).map((p) => `<div class="row"><div><div class="t">${esc(p.email)}</div><div class="s">since ${esc(String(p.since).slice(0, 10))}</div></div><span class="pill ${p.role === "owner" ? "ok" : ""}">${esc(p.role)}</span></div>`).join("") || '<div class="empty">Only you so far.</div>'; }).catch((e) => (people.innerHTML = `<div class="empty">${esc(e.message)}</div>`));
   const inv = $("#invite-form");
@@ -698,7 +759,7 @@ function wire(s) {
   };
 }
 
-const PAGE_FN = { overview: pOverview, traffic: pTraffic, keywords: pKeywords, pages: pPages, locations: pLocations, plan: pPlan, report: pReport, team: pTeam, connect: pConnect, approvals: pApprovals };
+const PAGE_FN = { overview: pOverview, traffic: pTraffic, keywords: pKeywords, pages: pPages, locations: pLocations, plan: pPlan, report: pReport, team: pTeam, connect: pConnect, approvals: pApprovals, god: pGod };
 async function render() {
   const h = location.hash || "#/";
   $("#overlay").innerHTML = "";
@@ -728,8 +789,9 @@ async function render() {
     if (!s) { location.hash = "#/"; return; }
     const page = m[3] || "overview";
     if (page === "overview" && s.status === "live") await loadGrowth(s);
+    if (page === "god") await loadConsole(s);
     shell(s, page); document.title = `${s.name} · SEO dashboard`;
-    $("#page").innerHTML = s.status !== "live" && page !== "connect" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
+    $("#page").innerHTML = s.status !== "live" && page !== "connect" && page !== "god" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
     wire(s);
   } catch (e) { $("#page").innerHTML = `<div class="callout">${esc(e.message)}</div>`; }
 }

@@ -2,6 +2,23 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (R1-P2 agency console; branch claude/agency-console)
+- **Code:** portal page **SEO God**, agency only and never shown to clients. It covers:
+  - the strategy draft and its status;
+  - work waiting for the agency, showing the stored proposal and whether it is "approve to start" or "approve this result";
+  - approve, request changes or reject, with a note;
+  - onboarding questions with answers;
+  - escalated work with "Try again";
+  - work in progress, recent results and spend.
+
+  Model and site text are always escaped.
+- **Migration (not applied):** `20261108040000_agency_console.sql` (`god_console`, `answer_question`, `retry_job`; members of the site's agency only; the lifecycle still applies).
+- **Tests:**
+  - `rls8.sql`: members only; agency B, clients and anonymous users refused; gated work cannot be requeued without approval; answers supersede with history; audited.
+  - `test/portal-god.test.mjs`: 2 tests in Chromium covering decisions, questions, retries, a hostile proposal rendered as text, clients never seeing the page, phone width, and the message shown before the update is applied.
+  - `npm test` 537/537; 8 SQL suites pass.
+- **Not deployed:** the portal at seo.erudience.com is unchanged.
+
 ## 2026-11-08 (Cloudflare execution, D30; branch claude/cloudflare-execution)
 - **Code:**
   - `cloud/worker/`: the Worker. A Cron run, per-site planning and per-job runs through the SELF binding, a remote scan, the internal token, fail-safe settings and a build that bundles the agent prompts and packs.
