@@ -110,7 +110,9 @@ test("SEO God console: decisions, questions, retries, escaping, agency only, pho
   await page.click('[data-retry="j-esc"]');
   await page.waitForFunction(() => document.querySelector(".toast")?.textContent.includes("Queued again"));
   assert.ok(calls.some((c) => c.fn === "retry_job" && c.b.p_job === "j-esc"));
-  assert.ok(calls.filter((c) => c.fn === "god_console").length >= 5, "reloaded after every action");
+  // The portal shows the toast first and then reloads the console, so wait for that reload rather than racing it.
+  for (let i = 0; i < 100 && calls.filter((c) => c.fn === "god_console").length < 6; i++) await new Promise((r) => setTimeout(r, 50));
+  assert.ok(calls.filter((c) => c.fn === "god_console").length >= 6, "reloaded after every action (first load + 5 actions)");
   // Phone: no sideways scrolling.
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${base}/#/s/${SITE.id}/god`); await page.waitForSelector("h1:has-text('SEO God')");
