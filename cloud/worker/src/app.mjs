@@ -47,10 +47,19 @@ export function countingFetch(base = (...a) => fetch(...a)) {
 }
 
 /** The scan job's crawler: the Supabase `scan` function in job mode, one site per request. */
+// The shared secret for the scan and notify functions: the SCAN_SECRET Worker secret when set, otherwise read once per
+// invocation from Supabase Vault through a service-role-only function (D40), so it never has to be copied by hand.
+const secretCache = new WeakMap();
+export function scanSecret(env, fetchImpl) {
+  if (env.SCAN_SECRET) return Promise.resolve(env.SCAN_SECRET);
+  if (!secretCache.has(fetchImpl)) secretCache.set(fetchImpl, rpc(env, fetchImpl, "scan_secret").then((v) => v || null, () => null));
+  return secretCache.get(fetchImpl);
+}
 export function remoteScan(env, fetchImpl, maxPages) {
   return async (site) => {
-    if (!env.SCAN_FUNCTION_URL || !env.SCAN_SECRET) throw new Error("scan function not configured");
-    const r = await fetchImpl(env.SCAN_FUNCTION_URL, { method: "POST", headers: { "content-type": "application/json", "x-scan-secret": env.SCAN_SECRET }, body: JSON.stringify({ mode: "job", site: { id: site.id, name: site.name, url: site.url }, maxPages }) });
+    const secret = env.SCAN_FUNCTION_URL ? await scanSecret(env, fetchImpl) : null;
+    if (!env.SCAN_FUNCTION_URL || !secret) throw new Error("scan function not configured");
+    const r = await fetchImpl(env.SCAN_FUNCTION_URL, { method: "POST", headers: { "content-type": "application/json", "x-scan-secret": secret }, body: JSON.stringify({ mode: "job", site: { id: site.id, name: site.name, url: site.url }, maxPages }) });
     const body = await r.json().catch(() => null);
     if (!r.ok || !body?.ok) throw new Error(`scan function: ${body?.error || `HTTP ${r.status}`}`.slice(0, 300));
     return { discovered: body.discovered || {}, profile: body.profile || {}, audit: body.audit };
@@ -111,6 +120,18 @@ export async function schedule(env, { dispatch, fetchImpl = countingFetch(), now
     try { await rpc(env, fetchImpl, "record_god_run", { p_run: run }); } catch (e) { run.errors.push(`record: ${e.message}`); }
     return run;
   };
+  // D40: invitation emails and daily summaries are portal features, not SEO God work, so they go out even while the SEO
+  // God is paused. One call to the notify Edge Function per run; its own queue makes repeats harmless.
+  const notifySecret = env.NOTIFY_FUNCTION_URL ? await scanSecret(env, fetchImpl) : null;
+  if (env.NOTIFY_FUNCTION_URL && notifySecret) {
+    try {
+      const r = await fetchImpl(env.NOTIFY_FUNCTION_URL, { method: "POST", headers: { "content-type": "application/json", "x-scan-secret": notifySecret }, body: "{}" });
+      const j = await r.json().catch(() => ({}));
+      run.email = { invited: j.invited || 0, summaries: j.summaries || 0 };
+      if (!r.ok || j.ok === false) run.errors.push(`email: ${j.error || `HTTP ${r.status}`}`.slice(0, 200));
+      else for (const e of (j.errors || []).slice(0, 3)) run.errors.push(`email: ${e}`.slice(0, 200));
+    } catch (e) { run.errors.push(`email: ${String(e.message || e)}`.slice(0, 200)); }
+  }
   if (s.paused || (await rpc(env, fetchImpl, "god_paused").catch(() => true))) { run.paused = true; return finish(); }
   run.jobsRecovered = await rpc(env, fetchImpl, "reap_expired_leases", { p_limit: 20 }).catch((e) => { run.errors.push(`reap: ${e.message}`); return 0; });
   const due = await rpc(env, fetchImpl, "god_due_sites", { p_limit: s.sitesPerRun, p_min_age: `${s.minSiteAgeHours} hours` }).catch((e) => { run.errors.push(`due: ${e.message}`); return []; });

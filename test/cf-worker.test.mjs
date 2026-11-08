@@ -80,6 +80,37 @@ test("remote scan: one site to the scan function in job mode, errors surfaced, m
   await assert.rejects(app.remoteScan({}, async () => null, 40)({ id: "A", url: "https://p.test/" }), /not configured/);
 });
 
+test("scan secret: from the Worker secret when set, otherwise read once from Vault through the service-only function", async () => {
+  const { SCAN_SECRET, ...noSecret } = ENV;
+  const db = fakeDb({ scan_secret: "from-vault" });
+  const sent = [];
+  const f = app.countingFetch(async (url, o) => { if (String(url).includes("/functions/v1/")) { sent.push(o.headers["x-scan-secret"]); return new Response(JSON.stringify({ ok: true, discovered: {}, profile: {}, audit: { summary: {}, issues: [] } }), { status: 200 }); } return db.f(url, o); });
+  const scan = app.remoteScan(noSecret, f, 40);
+  await scan({ id: "A", url: "https://a.test/" }); await scan({ id: "B", url: "https://b.test/" });
+  assert.deepEqual(sent, ["from-vault", "from-vault"]);
+  assert.equal(db.calls.filter((c) => c.fn === "scan_secret").length, 1, "read once per invocation");
+  await assert.rejects(app.remoteScan(noSecret, app.countingFetch(fakeDb({}).f), 40)({ id: "A", url: "https://a.test/" }), /not configured/, "no secret anywhere: refused");
+  assert.equal(await app.scanSecret(ENV, db.f), SCAN_SECRET);
+});
+
+test("email (D40): each run calls the notify function once with the shared secret, even while paused; failures are recorded", async () => {
+  const NOTIFY = "https://db.test/functions/v1/notify";
+  const db = fakeDb({ record_god_run: 1, notify: { ok: true, invited: 2, summaries: 1, errors: [] } });
+  let seen = null;
+  const f = app.countingFetch(async (url, o) => { if (String(url) === NOTIFY) seen = o; return db.f(url, o); });
+  const r = await app.schedule({ ...ENV, SEO_GOD_PAUSED: "true", NOTIFY_FUNCTION_URL: NOTIFY }, { dispatch: async () => ({ ok: true }), fetchImpl: f });
+  assert.equal(r.paused, true);
+  assert.deepEqual(r.email, { invited: 2, summaries: 1 });
+  assert.equal(seen.headers["x-scan-secret"], ENV.SCAN_SECRET);
+  assert.deepEqual(db.calls.map((c) => c.fn), ["notify", "record_god_run"], "nothing else runs while paused");
+  const bad = fakeDb({ record_god_run: 1, notify: { ok: false, error: "forbidden" } });
+  const r2 = await app.schedule({ ...ENV, SEO_GOD_PAUSED: "true", NOTIFY_FUNCTION_URL: NOTIFY }, { dispatch: async () => ({ ok: true }), fetchImpl: bad.f });
+  assert.ok(r2.errors.some((e) => /email: forbidden/.test(e)));
+  const none = fakeDb({ record_god_run: 1 });
+  await app.schedule({ ...ENV, SEO_GOD_PAUSED: "true" }, { dispatch: async () => ({ ok: true }), fetchImpl: none.f });
+  assert.deepEqual(none.calls.map((c) => c.fn), ["record_god_run"], "no notify URL: no email call");
+});
+
 test("scheduler: the Worker switch and the database switch both pause; nothing else runs while paused", async () => {
   const db = fakeDb({ record_god_run: 1 });
   let dispatched = 0;

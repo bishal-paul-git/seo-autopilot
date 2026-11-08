@@ -11,6 +11,30 @@ create table public.notification_seen (
 alter table public.notification_seen enable row level security; -- no policies: only the functions below use it
 revoke all on public.notification_seen from public, anon, authenticated;
 
+-- The items for one person, computed from the work itself. Used by the portal (for the signed-in person) and by the
+-- email digest (for each person, by the service role only).
+create or replace function private.notifications_for(p_uid uuid)
+returns table (kind text, site uuid, site_name text, title text, at timestamptz, page text)
+language sql stable security definer set search_path = '' as $$
+  with mine as (select s.id, s.name from public.sites s join public.org_members om on om.org_id = s.org_id and om.user_id = p_uid)
+  -- Agency: decisions waiting, work that needs a person, client requests, changes verified or stopped, broken integrations, planning errors.
+  select 'approval', j.site_id, m.name, j.title, j.updated_at, 'god' from public.jobs j join mine m on m.id = j.site_id where j.status = 'awaiting_approval'
+  union all select 'stuck', j.site_id, m.name, j.title || coalesce(': ' || left(j.error, 120), ''), j.updated_at, 'god' from public.jobs j join mine m on m.id = j.site_id where j.status = 'escalated'
+  union all select 'request', x.site_id, m.name, x.title, x.created_at, 'requests' from public.submissions x join mine m on m.id = x.site_id where x.status in ('received', 'needs_clarification')
+  union all select case when j.status = 'completed' then 'verified' else 'change_failed' end, j.site_id, m.name, coalesce(j.outputs->'verification'->>'summary', j.title), j.updated_at, 'god'
+    from public.jobs j join mine m on m.id = j.site_id where j.kind = 'implement' and j.status in ('completed', 'escalated') and j.updated_at > now() - interval '14 days'
+  union all select 'integration', i.site_id, m.name, i.provider || ': ' || coalesce(i.last_error, 'not working'), coalesce(i.last_ok_at, i.created_at), 'god'
+    from public.integrations i join mine m on m.id = i.site_id where i.status = 'error'
+  union all select 'planning', t.site_id, m.name, 'Planning stopped: ' || left(t.outcome->>'error', 160), t.ticked_at, 'god'
+    from public.god_site_ticks t join mine m on m.id = t.site_id where t.outcome->>'error' is not null
+  -- Clients: the agency answered one of their own requests (still a viewer of that site).
+  union all select 'answer', x.site_id, s.name, x.title || ' · ' || replace(x.status, '_', ' '), x.decided_at, 'requests'
+    from public.submissions x join public.sites s on s.id = x.site_id
+   where x.submitted_by = p_uid and x.decided_at is not null and x.decided_at > now() - interval '30 days'
+     and exists (select 1 from public.client_members cm where cm.client_id = s.client_id and cm.user_id = p_uid);
+$$;
+revoke all on function private.notifications_for(uuid) from public, anon, authenticated;
+
 create or replace function public.my_notifications()
 returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare v_uid uuid := (select auth.uid()); v_seen timestamptz;
@@ -18,23 +42,7 @@ begin
   if v_uid is null then raise exception 'not allowed'; end if;
   select n.seen_at into v_seen from public.notification_seen n where n.user_id = v_uid;
   return (
-    with mine as (select s.id, s.name, s.org_id from public.sites s where private.is_member(s.org_id)),
-    items as (
-      -- Agency: decisions waiting, work that needs a person, client requests, changes verified or stopped, broken integrations, planning errors.
-      select 'approval' kind, j.site_id site, m.name site_name, j.title, j.updated_at at, 'god' page from public.jobs j join mine m on m.id = j.site_id where j.status = 'awaiting_approval'
-      union all select 'stuck', j.site_id, m.name, j.title || coalesce(': ' || left(j.error, 120), ''), j.updated_at, 'god' from public.jobs j join mine m on m.id = j.site_id where j.status = 'escalated'
-      union all select 'request', x.site_id, m.name, x.title, x.created_at, 'requests' from public.submissions x join mine m on m.id = x.site_id where x.status in ('received', 'needs_clarification')
-      union all select case when j.status = 'completed' then 'verified' else 'change_failed' end, j.site_id, m.name, coalesce(j.outputs->'verification'->>'summary', j.title), j.updated_at, 'god'
-        from public.jobs j join mine m on m.id = j.site_id where j.kind = 'implement' and j.status in ('completed', 'escalated') and j.updated_at > now() - interval '14 days'
-      union all select 'integration', i.site_id, m.name, i.provider || ': ' || coalesce(i.last_error, 'not working'), coalesce(i.last_ok_at, i.created_at), 'god'
-        from public.integrations i join mine m on m.id = i.site_id where i.status = 'error'
-      union all select 'planning', t.site_id, m.name, 'Planning stopped: ' || left(t.outcome->>'error', 160), t.ticked_at, 'god'
-        from public.god_site_ticks t join mine m on m.id = t.site_id where t.outcome->>'error' is not null
-      -- Clients: the agency answered one of their requests.
-      union all select 'answer', x.site_id, s.name, x.title || ' · ' || replace(x.status, '_', ' '), x.decided_at, 'requests'
-        from public.submissions x join public.sites s on s.id = x.site_id
-       where x.submitted_by = v_uid and x.decided_at is not null and x.decided_at > now() - interval '30 days' and private.is_client_viewer(x.site_id)
-    )
+    with items as (select * from private.notifications_for(v_uid))
     select jsonb_build_object('seenAt', v_seen,
       'unread', (select count(*) from items where at > coalesce(v_seen, '-infinity'::timestamptz)),
       'items', coalesce((select jsonb_agg(jsonb_build_object('kind', kind, 'site', site, 'siteName', site_name, 'title', left(title, 300), 'at', at, 'page', page,

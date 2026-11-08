@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const t = join(root, "cloud/portal/supabase/test"), m = join(root, "cloud/portal/supabase/migrations"), w = join(root, "cloud/worker");
-const DB = `cf_e2e_${process.pid}`, KEY = "local-service-key", TOKEN = "local-internal-token-0123456789", SCAN_SECRET = "local-scan-secret";
+const DB = `cf_e2e_${process.pid}`, KEY = "local-service-key", TOKEN = "local-internal-token-0123456789", SCAN_SECRET = "test-secret"; // the value shim3.sql keeps in Vault: the Worker reads it from there (D40)
 const psql = (sql, role = null) => execFileSync("psql", ["-qtAX", "-v", "ON_ERROR_STOP=1", "-d", DB], { input: (role ? `set role ${role}; set request.jwt.claim.role = '${role}';\n` : "") + sql, encoding: "utf8" }).trim();
 const lit = (v) => (v == null ? "null" : `'${String(typeof v === "object" ? JSON.stringify(v) : v).replace(/'/g, "''")}'`);
 const check = (ok, msg) => { if (!ok) throw new Error(`FAILED: ${msg}`); console.log(`ok - ${msg}`); };
@@ -29,7 +29,8 @@ psql([readFileSync(join(t, "shim.sql"), "utf8"), readFileSync(join(m, "202610300
   ...["20261108000000_r1_contracts.sql", "20261108010000_r1_memory.sql", "20261108020000_r1_scheduler.sql", "20261108030000_cloudflare_execution.sql", "20261108040000_agency_console.sql", "20261108050000_client_portal.sql", "20261108060000_learning.sql", "20261108070000_operations.sql", "20261108080000_security_fixes.sql", "20261108090000_strategy_draft.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
 psql(`insert into auth.users (id, email) values ('00000000-0000-0000-0000-00000000000a', 'alice@a.test'), ('00000000-0000-0000-0000-00000000000b', 'bob@b.test');`);
 // Existing users first, then the invite-only gate and GitHub execution (as production would get them).
-psql([readFileSync(join(m, "20261108100000_invite_only.sql"), "utf8"), readFileSync(join(t, "shim5.sql"), "utf8"), readFileSync(join(m, "20261108110000_github_execution.sql"), "utf8")].join("\n"));
+psql([readFileSync(join(m, "20261108100000_invite_only.sql"), "utf8"), readFileSync(join(t, "shim5.sql"), "utf8"), readFileSync(join(m, "20261108110000_github_execution.sql"), "utf8"),
+  readFileSync(join(m, "20261108120000_notifications_reports.sql"), "utf8"), readFileSync(join(m, "20261108130000_email.sql"), "utf8")].join("\n"));
 const asUser = (user, sql) => psql(`set role authenticated; set request.jwt.claim.sub = '${user}'; set request.jwt.claim.role = 'authenticated'; ${sql}`).split("\n").pop();
 const A_USER = "00000000-0000-0000-0000-00000000000a", B_USER = "00000000-0000-0000-0000-00000000000b";
 const A = JSON.parse(asUser(A_USER, `select public.create_site('Plumber', 'https://plumber.test/')->'site';`)).id;
@@ -82,7 +83,7 @@ const base = `http://127.0.0.1:${server.address().port}`;
 
 // --- the Worker in workerd -------------------------------------------------------------------------------------------
 const devVars = join(w, ".dev.vars");
-writeFileSync(devVars, [`SEO_GOD_PAUSED=false`, `SUPABASE_URL=${base}`, `SUPABASE_SERVICE_ROLE_KEY=${KEY}`, `INTERNAL_TOKEN=${TOKEN}`, `SCAN_FUNCTION_URL=${base}/functions/v1/scan`, `SCAN_SECRET=${SCAN_SECRET}`, `ANTHROPIC_API_KEY=fake-user-key`, `ANTHROPIC_BASE_URL=${base}`, `SEO_GOD_DAILY_BUDGET_USD=1`, `SITE_MIN_AGE_HOURS=1`, `GITHUB_API_URL=${base}/gh`].join("\n"));
+writeFileSync(devVars, [`SEO_GOD_PAUSED=false`, `SUPABASE_URL=${base}`, `SUPABASE_SERVICE_ROLE_KEY=${KEY}`, `INTERNAL_TOKEN=${TOKEN}`, `SCAN_FUNCTION_URL=${base}/functions/v1/scan`, `ANTHROPIC_API_KEY=fake-user-key`, `ANTHROPIC_BASE_URL=${base}`, `SEO_GOD_DAILY_BUDGET_USD=1`, `SITE_MIN_AGE_HOURS=1`, `GITHUB_API_URL=${base}/gh`].join("\n"));
 const PORT = 18787 + (process.pid % 1000);
 execFileSync("node", ["build.mjs"], { cwd: w, stdio: "ignore" });
 const env = { ...process.env }; for (const k of ["HTTPS_PROXY", "HTTP_PROXY", "https_proxy", "http_proxy"]) delete env[k];

@@ -1,4 +1,4 @@
--- Rollback for Release 1 database migrations (20261104000000 through 20261108120000).
+-- Rollback for Release 1 database migrations (20261104000000 through 20261108130000).
 -- Returns the schema to what production had on 2026-11-08 (the portal migrations only). Generated from a catalog diff
 -- and checked locally: after the full chain and this script, every table, column, constraint, index, trigger,
 -- function, policy, grant and row-level-security flag matches the original (see docs/implementation/RELEASE-1-PRODUCTION-CHANGE-MANIFEST.md).
@@ -50,6 +50,8 @@ alter table public.sites
 
 -- 5. New tables (their policies, indexes, triggers and sequences go with them).
 drop table if exists public.notification_seen cascade;
+drop table if exists public.email_prefs cascade;
+alter table public.invites drop column if exists emailed_at;
 drop table if exists public.client_invites cascade;
 drop table if exists public.jobs cascade;
 drop table if exists public.job_events cascade;
@@ -82,9 +84,15 @@ drop function if exists public.record_integration_status(uuid, text, boolean, te
 drop function if exists public.request_implementation(uuid, integer);
 drop function if exists public.site_deployments(uuid);
 drop function if exists public.my_notifications();
+drop function if exists private.notifications_for(uuid);
 drop function if exists public.mark_notifications_seen();
 drop function if exists public.site_work_report(uuid, date);
 drop function if exists public.site_workforce(uuid, integer);
+drop function if exists public.set_email_summary(boolean);
+drop function if exists public.my_email_summary();
+drop function if exists public.email_queue(integer);
+drop function if exists public.email_sent(text, text);
+drop function if exists public.scan_secret();
 drop function if exists private.public_host(p_url text);
 drop function if exists private.kick_scan();
 drop function if exists public.add_site_by_url(p_url text, p_name text, p_org uuid);

@@ -867,6 +867,7 @@ function wire(s) {
   document.querySelectorAll("[data-retry]").forEach((b) => (b.onclick = () => consoleAction("retry_job", { p_job: b.dataset.retry, p_note: null }, "Queued again.")));
   document.querySelectorAll("[data-wmonth]").forEach((b) => (b.onclick = async () => { if (!s) return; s.workMonth = b.dataset.wmonth; await loadWork(s); render(); }));
   const pr = $("#print-report"); if (pr) pr.onclick = () => window.print();
+  const es = $("#email-summary"); if (es) es.onchange = async () => { try { EMAIL_SUMMARY = await rpc("set_email_summary", { p_on: es.checked }); toast(EMAIL_SUMMARY ? "Daily summary on." : "Daily summary off."); } catch (e) { es.checked = !es.checked; toast(e.message); } };
   document.querySelectorAll("[data-impl]").forEach((b) => (b.onclick = () => consoleAction("request_implementation", { p_job: b.dataset.impl, p_index: Number(b.dataset.idx) }, "Work order requested. It appears under Waiting for you after the next planning run.")));
   const ghf = $("#gh-form");
   if (ghf && s) ghf.onsubmit = async (e) => {
@@ -947,7 +948,7 @@ function wire(s) {
 }
 
 /* ---------- Notifications and the monthly work report (D38) ---------- */
-let NOTES = null;
+let NOTES = null, EMAIL_SUMMARY = null; // EMAIL_SUMMARY: the person's daily email choice (D40); null when unknown
 async function loadNotes() { try { NOTES = await rpc("my_notifications"); } catch { NOTES = null; } }
 // In the background on every page: the menu badge updates when the answer arrives, the page never waits for it.
 const refreshNotes = () => loadNotes().then(() => document.querySelectorAll('#rail a[href="#/notes"]').forEach((a) => { a.querySelector(".count")?.remove(); a.insertAdjacentHTML("beforeend", unreadBadge()); }));
@@ -957,6 +958,7 @@ function pNotes() {
   const items = NOTES?.items || [];
   const href = (n) => (n.kind === "answer" ? `#/k/${encodeURIComponent(n.site)}/requests` : `#/s/${encodeURIComponent(n.site)}/${encodeURIComponent(n.page || "overview")}`);
   return `<div><h1>Notifications</h1><p class="lead">What needs you, and what happened, across your websites. Newest first.</p></div>
+  ${EMAIL_SUMMARY == null ? "" : `<label class="card" style="display:flex;gap:10px;align-items:center;padding:12px 16px;cursor:pointer"><input type="checkbox" id="email-summary" ${EMAIL_SUMMARY ? "checked" : ""}><span><b>Email me a daily summary</b><br><span class="xs muted">At most once a day, only when something new needs you. Sent from your agency's address.</span></span></label>`}
   <div class="card pad0"><div class="list">${items.map((n) => { const [label, cls] = NOTE_KIND[n.kind] || [n.kind, ""]; return `<a class="row note${n.unread ? " unread" : ""}" href="${href(n)}" style="display:block;text-decoration:none;color:inherit">
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill ${cls}">${esc(label)}</span><span class="t" style="flex:1;min-width:160px">${esc(n.siteName || "")}</span><span class="xs muted">${esc(String(n.at || "").slice(0, 16).replace("T", " "))} UTC</span></div>
     <div class="s" style="margin-top:4px">${esc(n.title || "")}</div></a>`; }).join("") || '<div class="empty">Nothing yet. Approvals, client requests, verified changes and problems appear here.</div>'}</div></div>`;
@@ -1020,7 +1022,7 @@ async function render() {
     if (!loaded) { $("#page").innerHTML = '<div class="empty">Loading…</div>'; await loadAgency(); }
     if (h !== "#/notes") refreshNotes();
     if (h === "#/notes") {
-      await loadNotes();
+      await Promise.all([loadNotes(), rpc("my_email_summary").then((v) => (EMAIL_SUMMARY = v), () => (EMAIL_SUMMARY = null))]);
       if (!SITES.length && CLIENT_SITES.length) { mode = "client"; clientAccount = true; }
       shell(null, "notes"); document.title = "Notifications · SEO Autopilot"; $("#page").innerHTML = pNotes();
       if (NOTES?.unread) rpc("mark_notifications_seen").then(() => { NOTES.unread = 0; document.querySelectorAll(".count").forEach((x) => x.remove()); }).catch(() => {});

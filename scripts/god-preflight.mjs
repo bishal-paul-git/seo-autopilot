@@ -20,6 +20,7 @@ export const MIGRATIONS = [
   ["20261108100000_invite_only", "set_invite_only"],
   ["20261108110000_github_execution", "connect_github"],
   ["20261108120000_notifications_reports", "my_notifications"],
+  ["20261108130000_email", "email_queue"],
   // 20261108090000_strategy_draft only redefines transition_job, so no new function shows it: check it by hand (README step 2).
 ];
 

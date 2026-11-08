@@ -39,6 +39,8 @@ function fake({ client = false } = {}) {
       if (fn === "client_sites") return send(200, client ? [{ site: SITE, data: {}, brand: { name: "Agency A", color: "#3355cc" } }] : []);
       if (fn === "my_notifications") return send(200, client ? { seenAt: null, unread: 1, items: [{ kind: "answer", site: SITE.id, siteName: "Plumber", title: "Rank for boilers · accepted", at: "2026-11-08T09:00:00Z", page: "requests", unread: state.unread > 0 }] } : { ...NOTES, unread: state.unread });
       if (fn === "mark_notifications_seen") { state.unread = 0; return send(200, "2026-11-08T10:00:00Z"); }
+      if (fn === "my_email_summary") return send(200, state.email ?? true);
+      if (fn === "set_email_summary") { state.email = b.p_on; return send(200, b.p_on); }
       if (fn === "site_work_report") return send(200, work(b.p_month ? String(b.p_month).slice(0, 7) : "2026-11"));
       if (fn === "site_growth") return send(200, []);
     }
@@ -72,6 +74,11 @@ test("agency: unread count, notifications with links, marked as seen; the work r
   for (let i = 0; i < 100 && f.state.unread; i++) await new Promise((r) => setTimeout(r, 50));
   assert.equal(f.state.unread, 0, "opening the list marks it as seen");
   await page.waitForFunction(() => !document.querySelector("#rail .count"));
+  // Daily email summary (D40): on by default, switched off from this page.
+  assert.equal(await page.isChecked("#email-summary"), true);
+  await page.click("#email-summary");
+  await page.waitForFunction(() => document.querySelector(".toast")?.textContent.includes("Daily summary off"));
+  assert.equal(f.state.email, false);
 
   await page.goto(`${base}/#/s/${SITE.id}/report`); await page.waitForSelector("h2:has-text('Work in November 2026')");
   const r = await page.textContent("#page");
