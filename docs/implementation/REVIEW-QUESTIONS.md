@@ -97,6 +97,7 @@ Last updated: 2026-11-08 by Claude (session on branch `claude/security-fixes`).
 **Recommendation:** make sign-up invite-only until launch. Supabase Dashboard → Authentication → disable sign-ups, and invite people instead.
 **Owner reply:** Invite-only registration until public launch. Verify that existing owner/admin access and invite flows remain functional before changing authentication settings.
 **ChatGPT reply:** Agree: invite-only during pilot; verify the intended agency onboarding flow before changing Supabase Auth settings.
+**Claude follow-up:** checked. Turning off Supabase Auth sign-ups would break both invite flows, because invited people sign up themselves. So no Auth setting changes. Instead, migration `20261108100000_invite_only.sql` (D36, in PR #51, not applied) refuses new accounts without a pending invite. Tested: a stranger is refused, agency and client invites still work, existing users are untouched, and only a platform admin can open sign-up.
 
 ### Q9. Leaked-password protection
 **Context:** the Supabase security advisor reports it is off.

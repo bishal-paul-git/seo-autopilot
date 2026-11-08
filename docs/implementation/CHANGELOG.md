@@ -2,6 +2,25 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (Consolidated Release 1 PR, production change manifest, invite-only sign-up, D36; branch claude/release-1)
+- **Owner decisions** (commits 76510d3 and ce68c03 by the owner): Q1 one consolidated PR; Q2 production preparation and a paused deployment only after reviews, each production change presented for approval; Q3 erudience.com read-only pilot; Q8 invite-only sign-up.
+- **PR:** [#51](https://github.com/bishal-paul-git/seo-autopilot/pull/51), a draft consolidating #33–#49 into `main`. Merge commits; every original PR linked. #50 (D35) is kept out until the owner confirms D1.
+- **Production, read-only:** catalog fingerprints compared with the repo.
+  - Production equals the two portal migrations, except for a comment in `invite_member`, a stricter `on_new_user` grant, and a production-only owner-claim trigger (`claim_erudience`).
+  - D25 is not applied. The data is compatible with every new constraint.
+  - No writes.
+- **Code:**
+  - Migration `20261108100000_invite_only.sql` (not applied).
+  - Portal sign-up message.
+  - The Worker's planning and job routes honour both pause switches.
+  - `cloud/portal/supabase/rollback/release-1.sql` and `scripts/db-rollback-check.mjs`.
+  - Preflight list gains 080000 and 100000.
+- **Docs:** `docs/implementation/RELEASE-1-PRODUCTION-CHANGE-MANIFEST.md` (steps P1–P7 with verification, rollback and approval status; erudience.com pilot matrix); D36; Cloudflare README; REVIEW-QUESTIONS Q8 follow-up.
+- **Tests:**
+  - `rls14.sql` (new); `portal-invite-only.test.mjs` (new); `cf-worker.test.mjs` (paused routes).
+  - `npm test` 565/565; 13 SQL suites pass; rollback check exact and re-apply clean; `god-pg-e2e.mjs` and `cf-local-e2e.mjs` pass.
+- **Deployment:** none.
+
 ## 2026-11-08 (Security fixes, D34, and go-live preflight; branch claude/security-fixes)
 - **Review:** an independent security review of the stack found three exploitable defects (D34). All are fixed, with regression tests.
 - **Migration (not applied):** `20261108080000_security_fixes.sql`.

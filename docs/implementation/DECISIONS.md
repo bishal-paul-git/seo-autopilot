@@ -83,6 +83,23 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-11-08 D36 Invite-only sign-up in the database; pause enforced on every Worker route
+**Context:** owner decision Q8 ("invite-only registration until public launch; verify owner/admin access and invite flows remain functional before changing authentication settings") and the owner's production-gates handover (a paused Worker must not execute due jobs even if Cron fires).
+
+**Decision:**
+- Sign-up is gated in the database, not by turning off Supabase Auth sign-ups.
+  - Turning sign-ups off would also stop invited people, because both the agency invite (`invites`) and the client invite (`client_invites`) expect the invited person to sign up with that email.
+  - Migration `20261108100000_invite_only.sql` adds a before-insert trigger on `auth.users`. It refuses an email without a pending invite.
+  - A platform admin (or the service role) changes it with `set_invite_only`. It is on by default.
+  - The portal turns Supabase's generic "Database error saving new user" into a plain explanation.
+- The Worker's planning and job routes (`/internal/tick-site`, `/internal/run-job`) check both pause switches themselves. A pause therefore also stops work a run in progress has already dispatched, or that anyone sends with the internal token. An unreadable switch counts as paused. This costs one extra database read per invocation.
+
+**Tradeoffs:**
+- A refused sign-up returns HTTP 500 from Supabase Auth. The portal handles it, but other clients see a generic error.
+- Anyone creating users through the Auth admin API must add an invite first, or open sign-up.
+
+**Evidence:** `rls14.sql`, `portal-invite-only.test.mjs`, `cf-worker.test.mjs` (paused routes), `scripts/db-rollback-check.mjs`.
+
 ## 2026-11-08 D34 Fixes from the independent security review
 An independent review of the whole stack found three exploitable defects. All are fixed, with regression tests (`rls12.sql`, `test/security-fixes.test.mjs`).
 

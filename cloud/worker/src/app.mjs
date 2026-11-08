@@ -114,7 +114,7 @@ export async function schedule(env, { dispatch, fetchImpl = countingFetch(), now
   // Planning fan-out, at most 4 at a time (Workers allow 6 open connections per invocation).
   for (let i = 0; i < due.length; i += 4) {
     const out = await Promise.all(due.slice(i, i + 4).map((site) => dispatch("/internal/tick-site", { site: { id: site.id, name: site.name, url: site.url } })));
-    for (const o of out) { run.invocations++; run.subrequests += o?.subrequests || 0; if (o?.ok) run.sitesPlanned++; else run.errors.push(`plan: ${o?.error || "failed"}`.slice(0, 200)); }
+    for (const o of out) { run.invocations++; run.subrequests += o?.subrequests || 0; if (o?.paused) continue; if (o?.ok) run.sitesPlanned++; else run.errors.push(`plan: ${o?.error || "failed"}`.slice(0, 200)); }
   }
   // Jobs one at a time: each is its own invocation; stop as soon as the queue is empty.
   for (let i = 0; i < s.jobsPerRun; i++) {
@@ -146,12 +146,17 @@ export const handler = {
     if (req.method !== "POST" || !tokenOk(req.headers.get("x-god-token") || "", env.INTERNAL_TOKEN || "")) return json({ error: "forbidden" }, 403);
     const f = countingFetch();
     try {
+      // Planning and job runs check both pause switches themselves, so a pause also stops work already dispatched by a
+      // run in progress, or sent with the token by anyone else. An unreadable switch counts as paused.
+      const paused = async () => settings(env).paused || (await rpc(env, f, "god_paused").catch(() => true));
+      const idle = () => json({ ok: true, paused: true, result: { idle: true, paused: true }, subrequests: f.count });
       if (url.pathname === "/internal/tick-site") {
         const { site } = await req.json();
         if (!site || typeof site.id !== "string" || typeof site.url !== "string") return json({ ok: false, error: "site required" }, 400);
+        if (await paused()) return idle();
         return json({ ok: true, outcome: await tickSite(env, site, f), subrequests: f.count });
       }
-      if (url.pathname === "/internal/run-job") return json({ ok: true, result: await runJob(env, f, `cf-${crypto.randomUUID().slice(0, 8)}`), subrequests: f.count });
+      if (url.pathname === "/internal/run-job") return (await paused()) ? idle() : json({ ok: true, result: await runJob(env, f, `cf-${crypto.randomUUID().slice(0, 8)}`), subrequests: f.count });
       if (url.pathname === "/internal/schedule") return json({ ok: true, run: await schedule(env, { dispatch: selfDispatch(env), runner: "manual" }) });
       return json({ error: "not found" }, 404);
     } catch (e) {

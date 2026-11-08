@@ -3,7 +3,7 @@
 Kept short; read at the start of every session, together with [REVIEW-QUESTIONS.md](REVIEW-QUESTIONS.md) (open questions and the owner's replies). History: [history/STATUS-to-2026-11-03.md](history/STATUS-to-2026-11-03.md). Detail: [CHANGELOG.md](CHANGELOG.md), [DECISIONS.md](DECISIONS.md). Deployed state: [../deployment-status.md](../deployment-status.md). Tests: [../test-matrix.md](../test-matrix.md).
 
 ## 1. Snapshot
-- Last updated: 2026-11-08 UTC. Branch `claude/security-fixes` (stacked: #33 → #34 → #36 → #37 → #38 → #39 → #40 → #41 → #43 → #44 → #45 → #46 → #47 → #48 → this; includes PR #42's plan); base `main` `e982f64`; release `v2.22.1`. Requirements: PR #35 (`docs/product/`).
+- Last updated: 2026-11-08 UTC. Branch `claude/release-1`, consolidated draft PR [#51](https://github.com/bishal-paul-git/seo-autopilot/pull/51) into `main` (carries #33–#49 and #42's plan; #50 / D35 waits for owner confirmation); base `main` `e982f64`; release `v2.22.1`. Requirements: PR #35 (`docs/product/`).
 - Environment: Linux cloud container, Node 22, Postgres 16 (local SQL checks); network allowed to Supabase, GitHub and the owner's three websites.
 
 ## 2. Goal and phase
@@ -32,8 +32,10 @@ Architecture: [../system-architecture.md](../system-architecture.md). Every job 
 | Client portal: client accounts with reports and requests; agency inbox and client access; requests assessed as advice after agency approval | portal, migration 050000, `tick.mjs`, `agent-runner.mjs` | `rls9.sql`, `portal-requests.test.mjs`, `client-request.test.mjs`, workerd e2e (24 checks) | not deployed |
 
 ## 4. Checks this session
-- `npm test`: 563/563.
-- `bash cloud/portal/supabase/test/run.sh`: 12 suites pass.
+- `npm test`: 565/565.
+- `bash cloud/portal/supabase/test/run.sh`: 13 suites pass (`rls14.sql`: invite-only sign-up).
+- `node scripts/db-rollback-check.mjs`: the Release 1 rollback restores the production-equivalent catalog exactly; the chain re-applies cleanly.
+- Read-only production fingerprint (2026-11-08): the schema equals the two portal migrations, with 3 noted exceptions (manifest section 0).
 - `god-pg-e2e.mjs`: passes.
 - `cf-local-e2e.mjs`: the Worker ran in workerd against the real migrations; 26 checks pass, including the client request path and learning.
 - `scan-fn-local.mjs`: the scan function ran in Deno on a real site; 8 checks pass.
@@ -42,17 +44,21 @@ Architecture: [../system-architecture.md](../system-architecture.md). Every job 
 - Read-only Supabase check: production is unchanged.
 
 ## 5. Blockers and owner items
-All open owner decisions, with recommendations, are in [REVIEW-QUESTIONS.md](REVIEW-QUESTIONS.md) (Q1–Q13, D1–D5, X1–X2, S1–S4). Reply there.
-1. Go-ahead to: redeploy `scan` from the audit commit, apply the D25 migration and Vault secrets, publish the portal page.
+Owner answered Q1, Q2, Q3 and Q8 (2026-11-08). The other open decisions are in [REVIEW-QUESTIONS.md](REVIEW-QUESTIONS.md) and [RELEASE-1-PRODUCTION-GATES-2026-11-08.md](RELEASE-1-PRODUCTION-GATES-2026-11-08.md).
+1. **Gate A/B:**
+   - Review PR #51.
+   - Approve each step in [RELEASE-1-PRODUCTION-CHANGE-MANIFEST.md](RELEASE-1-PRODUCTION-CHANGE-MANIFEST.md): backup, P1 migrations, P2 Vault, P3 scan v3, P4 paused Worker.
+   - P6 (portal publish) and P7 (unpause) are not authorized.
 2. Portal secrets on each site repository (E2E-GH flow).
 3. Keys for live-provider tests (`docs/runbook.md` lists names); `SEO_AGENT=true` on one site to grade agents.
-4. Supabase Auth: leaked-password protection on; decide invite-only sign-up before public launch.
+4. Supabase Auth: leaked-password protection (Q9). Invite-only sign-up is handled by migration 100000 (D36), with no Auth setting change.
+5. Confirm D1 (PR #50, D35) and who the platform admin is (Q10).
 
 ## 6. Cost
 No provider spend. Hosted scan within the Supabase free plan (about 3 sites per wake, 144 wakes a day).
 
 ## 7. Next
-Cloudflare: follow `docs/cloudflare/README.md` (account setup, secrets, deploy paused, one pilot site). Confirm CPU p99 in the Workers dashboard before un-pausing all sites.
+Owner: review #51 and approve the manifest steps one at a time. After approval, Claude applies P1–P4 exactly as written, with the backup first, and records the evidence. Then: a day of paused runs (CPU p99, X1), then a separate approval to unpause erudience.com read-only (manifest section 3).
 Next check needing the owner: one live agent run on a pilot site with the owner's own Anthropic key (set it as an environment secret, never in chat), then grade the advice. Needs a decision: the R1-P2 portal (build on #31 or not), a schedule for `god-run.mjs`.
 R1 order: owner merges #33/#34 → #35/#36 → contracts PR; then R1-P2 (client portal + submission inbox) and R1-A2 (SEO God planner and queue worker) in parallel.
 

@@ -730,7 +730,7 @@ function pAdd() {
 
 function pLogin() {
   const signup = location.hash === "#/signup";
-  return `<div class="card form" style="margin:6vh auto 0"><div><h1 style="margin:0 0 4px">${signup ? "Create your account" : "Sign in"}</h1><p class="muted" style="margin:0">${signup ? "Your agency workspace for every website you look after." : "SEO Autopilot workspace."}</p></div>
+  return `<div class="card form" style="margin:6vh auto 0"><div><h1 style="margin:0 0 4px">${signup ? "Create your account" : "Sign in"}</h1><p class="muted" style="margin:0">${signup ? "Use the email address your invitation was sent to." : "SEO Autopilot workspace."}</p></div>
   <form class="form" id="login-form"><label>Email<input name="email" type="email" required autocomplete="email"></label>
   <label>Password<input name="password" type="password" required minlength="8" autocomplete="${signup ? "new-password" : "current-password"}"></label>
   <div class="err" id="login-err"></div><button class="btn primary" type="submit">${signup ? "Create account" : "Sign in"}</button></form>
@@ -786,7 +786,9 @@ function wire(s) {
     try {
       const body = { email: f.get("email"), password: f.get("password") };
       if (location.hash === "#/signup") {
-        const j = await authCall("signup", body);
+        // Before launch, sign-up is by invitation only (Q8): the database refuses an email without a pending invite, and
+        // Supabase reports that as a generic database error.
+        const j = await authCall("signup", body).catch((x) => { throw /database error saving new user|invitation only/i.test(x.message) ? new Error("Sign-up is by invitation only for now. Ask your agency to invite this email address, then sign up with it.") : x; });
         if (!j.access_token) { err.style.color = "var(--accent)"; err.textContent = "Check your email and open the confirmation link, then sign in here."; return; }
         keep(j);
       } else keep(await authCall("token?grant_type=password", body));

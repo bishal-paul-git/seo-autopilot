@@ -56,6 +56,19 @@ test("HTTP routes: health is public and empty of data; everything else needs the
   assert.equal(bad.status, 400);
 });
 
+test("paused: planning and job routes do nothing, even with the token (either switch, or an unreadable one)", async (t) => {
+  const real = globalThis.fetch; t.after(() => { globalThis.fetch = real; });
+  const h = app.handler, hdr = { "x-god-token": ENV.INTERNAL_TOKEN };
+  for (const [env, dbPaused, why] of [[{ ...ENV, SEO_GOD_PAUSED: "true" }, false, "Worker switch"], [ENV, true, "database switch"], [ENV, undefined, "switch unreadable"]]) {
+    const calls = [];
+    globalThis.fetch = async (u) => { const fn = String(u).split("/").pop(); calls.push(fn); return new Response(fn === "god_paused" && dbPaused !== undefined ? JSON.stringify(dbPaused) : "", { status: fn === "god_paused" && dbPaused === undefined ? 500 : 200 }); };
+    const job = await (await h.fetch(new Request("https://w.test/internal/run-job", { method: "POST", headers: hdr }), env)).json();
+    const plan = await (await h.fetch(new Request("https://w.test/internal/tick-site", { method: "POST", headers: hdr, body: JSON.stringify({ site: { id: "A", url: "https://a.test/" } }) }), env)).json();
+    assert.ok(job.paused && job.result.idle && plan.paused, why);
+    assert.ok(calls.every((fn) => fn === "god_paused"), `${why}: nothing but the pause check was called (${calls.join()})`);
+  }
+});
+
 test("remote scan: one site to the scan function in job mode, errors surfaced, missing config refused", async () => {
   const sent = [];
   const ok = app.remoteScan(ENV, async (url, o) => { sent.push({ url, o }); return new Response(JSON.stringify({ ok: true, discovered: { name: { value: "P" } }, profile: {}, audit: { summary: { pagesCrawled: 3 }, issues: [] } }), { status: 200 }); }, 40);
