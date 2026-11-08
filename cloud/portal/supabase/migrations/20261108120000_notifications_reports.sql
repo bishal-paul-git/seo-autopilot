@@ -79,5 +79,18 @@ begin
                 from public.site_memory m where m.site_id = p_site and m.kind = 'report' and m.key = 'audit' and m.created_at < v_from order by m.created_at desc limit 1));
 end $$;
 
-revoke all on function public.my_notifications(), public.mark_notifications_seen(), public.site_work_report(uuid, date) from public, anon, authenticated;
-grant execute on function public.my_notifications(), public.mark_notifications_seen(), public.site_work_report(uuid, date) to authenticated;
+-- The workforce for one site (agency only): what each kind of work did in the last days, so the agency can see which
+-- departments and specialists worked on the site and with what result.
+create or replace function public.site_workforce(p_site uuid, p_days int default 30)
+returns jsonb language plpgsql stable security definer set search_path = '' as $$
+begin
+  if not private.is_member(private.site_org(p_site)) then raise exception 'not allowed'; end if;
+  return coalesce((select jsonb_agg(jsonb_build_object('kind', kind, 'total', total, 'completed', completed, 'waiting', waiting, 'active', active, 'stopped', stopped, 'lastAt', last_at) order by last_at desc)
+    from (select j.kind, count(*) total, count(*) filter (where j.status = 'completed') completed, count(*) filter (where j.status = 'awaiting_approval') waiting,
+                 count(*) filter (where j.status in ('scoped', 'queued', 'running', 'awaiting_review', 'authorized', 'deploying', 'verifying')) active,
+                 count(*) filter (where j.status in ('failed', 'escalated', 'rejected', 'cancelled')) stopped, max(j.updated_at) last_at
+            from public.jobs j where j.site_id = p_site and j.updated_at > now() - make_interval(days => least(greatest(coalesce(p_days, 30), 1), 365)) group by j.kind) t), '[]'::jsonb);
+end $$;
+
+revoke all on function public.my_notifications(), public.mark_notifications_seen(), public.site_work_report(uuid, date), public.site_workforce(uuid, int) from public, anon, authenticated;
+grant execute on function public.my_notifications(), public.mark_notifications_seen(), public.site_work_report(uuid, date), public.site_workforce(uuid, int) to authenticated;

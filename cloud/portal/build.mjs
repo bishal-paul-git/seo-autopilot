@@ -5,6 +5,7 @@
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { DEPARTMENTS } from "../../src/god/departments.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url)), root = resolve(here, "../..");
 const ORDER = ["command", "research", "content", "quality", "technical", "authority", "ai-search", "verticals"];
@@ -19,11 +20,19 @@ export function departments(dir = join(root, "departments")) {
   return out;
 }
 
+/** The master spec's eight departments with their agents (from departments/<dir>/agents) and engine jobs (src/god/departments.mjs). */
+export function organisation(dir = join(root, "departments")) {
+  const agentsIn = (d) => { const p = join(dir, d, "agents"); return existsSync(p) ? readdirSync(p).filter((f) => f.endsWith(".md")).map((f) => f.slice(0, -3)).sort() : []; };
+  const packs = { research: agentsIn("verticals") };
+  return { director: agentsIn("command").filter((a) => !DEPARTMENTS.some((d) => (d.agents || []).includes(a))),
+    departments: DEPARTMENTS.map((d) => ({ id: d.id, name: d.name, agents: [...d.agentDirs.flatMap(agentsIn), ...(d.agents || []), ...(packs[d.id] || [])], jobs: d.jobs })) };
+}
+
 export function build({ url = process.env.PORTAL_SUPABASE_URL || "", key = process.env.PORTAL_SUPABASE_KEY || "", out = join(here, "dist") } = {}) {
   if (url && !/^(https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+|http:\/\/(127\.0\.0\.1|localhost)(:\d+)?)\/?$/.test(url)) throw new Error("PORTAL_SUPABASE_URL must be https://<project>.supabase.co");
   if (/service_role|^sb_secret_/.test(key)) throw new Error("Use the publishable (anon) key, never the service role or a secret key.");
   const cfg = JSON.stringify({ supabaseUrl: url.replace(/\/$/, ""), anonKey: key }).replace(/</g, "\\u003c");
-  const html = readFileSync(join(here, "app/index.html"), "utf8").replace("__CONFIG__", cfg).replace("__DEPTS__", JSON.stringify(departments()));
+  const html = readFileSync(join(here, "app/index.html"), "utf8").replace("__CONFIG__", cfg).replace("__ORG__", JSON.stringify(organisation()));
   mkdirSync(out, { recursive: true });
   writeFileSync(join(out, "index.html"), html);
   writeFileSync(join(out, "robots.txt"), "User-agent: *\nDisallow: /\n");

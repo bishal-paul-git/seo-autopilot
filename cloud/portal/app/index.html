@@ -198,7 +198,7 @@ td { padding: 11px 16px; border-bottom: 1px solid var(--line-2) } tr:last-child 
 // The portal app. Reads from the portal's Supabase project over its REST API with the public (publishable) key; what a
 // person can see is decided by the database (row level security), not by this page. No libraries.
 const CFG = __CONFIG__;
-const DEPTS = __DEPTS__;
+const ORG_CHART = __ORG__; // the director and the eight departments of the master spec, with their agents and engine jobs
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmt = (n, d = 0) => (n == null || Number.isNaN(Number(n)) ? "–" : Number(n).toLocaleString("en-GB", { maximumFractionDigits: d }));
@@ -485,10 +485,22 @@ function pReport(s) {
   <div class="card report">${s.digest ? md(s.digest) : '<p class="muted">The first weekly report arrives after the first full week.</p>'}</div>`;
 }
 
+// Engine work that is not a specialist agent: which part of the organisation owns it (src/god/departments.mjs).
+const KIND_OWNER = { strategy_proposal: "director", client_request: "director", scan: "technical", implement: "automation", search_console: "analytics" };
+const agentLabel = (x) => x.replace(/^seo-/, "").replace(/-/g, " ");
+async function loadWorkforce(s) { s.workforce = await rpc("site_workforce", { p_site: s.id, p_days: 30 }).catch(() => null); }
 function pTeam(s) {
-  const active = new Set([...s.plan.map((p) => p.agent), ...s.runs.map((r) => r.agent)]);
-  return `<div><h1>Your SEO team</h1><p class="lead">${Object.values(DEPTS).flat().length} specialist agents in ${Object.keys(DEPTS).length} teams. Highlighted ones worked on this site recently.</p></div>
-  <div class="grid g2">${Object.entries(DEPTS).map(([d, a]) => `<div class="card"><div class="ch"><h2>${esc(d)}</h2><p>${a.length}</p></div><div class="chips">${a.map((x) => `<span class="chip ${active.has(x) ? "ok" : ""}">${esc(x.replace(/^seo-/, "").replace(/-/g, " "))}</span>`).join("")}</div></div>`).join("")}</div>
+  const wf = s.workforce || [];
+  const ran = new Map(wf.filter((w) => w.kind.startsWith("agent:")).map((w) => [w.kind.slice(6), w]));
+  const active = new Set([...s.plan.map((p) => p.agent), ...s.runs.map((r) => r.agent), ...ran.keys()]);
+  const ownerOf = (kind) => { if (kind.startsWith("agent:")) { const a = kind.slice(6); return ORG_CHART.director.includes(a) ? "director" : (ORG_CHART.departments.find((d) => d.agents.includes(a))?.id || "automation"); } return KIND_OWNER[kind] || ORG_CHART.departments.find((d) => d.jobs.includes(kind))?.id || "automation"; };
+  const stats = (id) => wf.filter((w) => ownerOf(w.kind) === id).reduce((a, w) => ({ total: a.total + w.total, completed: a.completed + w.completed, waiting: a.waiting + w.waiting, active: a.active + w.active, stopped: a.stopped + w.stopped }), { total: 0, completed: 0, waiting: 0, active: 0, stopped: 0 });
+  const line = (x) => (x.total ? `<p class="xs muted" style="margin:0 0 8px">${fmt(x.completed)} done · ${fmt(x.active)} in progress · ${fmt(x.waiting)} waiting for you${x.stopped ? ` · ${fmt(x.stopped)} stopped` : ""} <span class="muted">(30 days)</span></p>` : '<p class="xs muted" style="margin:0 0 8px">No work in the last 30 days.</p>');
+  const chips = (list) => `<div class="chips">${list.map((x) => { const r = ran.get(x); return `<span class="chip ${active.has(x) ? "ok" : ""}" title="${r ? `${r.total} runs, ${r.completed} done` : ""}">${esc(agentLabel(x))}${r ? ` · ${fmt(r.total)}` : ""}</span>`; }).join("")}</div>`;
+  const total = ORG_CHART.departments.reduce((a, d) => a + d.agents.length, 0);
+  return `<div><h1>Your SEO team</h1><p class="lead">A director for this website and ${total} specialists in ${ORG_CHART.departments.length} departments. Highlighted ones worked on this site recently; numbers are runs in the last 30 days.</p></div>
+  <div class="card"><div class="ch"><h2>Director: the SEO God</h2><p>${ORG_CHART.director.length + 1}</p></div>${line(stats("director"))}<p class="xs muted" style="margin:0 0 8px">Reads the site, drafts the strategy, plans the work, hands it to the departments and asks you for every decision.</p>${chips(ORG_CHART.director)}</div>
+  <div class="grid g2">${ORG_CHART.departments.map((d) => `<div class="card"><div class="ch"><h2>${esc(d.name)}</h2><p>${d.agents.length}</p></div>${line(stats(d.id))}${chips(d.agents)}</div>`).join("")}</div>
   ${s.runs.length ? `<div class="card pad0"><div class="ch"><h2>Recent work</h2></div><div class="list">${s.runs.slice().reverse().map((r) => `<div class="row"><div><div class="t">${esc(String(r.agent).replace(/^seo-/, "").replace(/-/g, " "))}</div><div class="s">${esc(String(r.task).slice(0, 120))}…</div></div><span class="xs muted mono">${esc(String(r.at).slice(0, 10))}</span></div>`).join("")}</div></div>` : ""}`;
 }
 
@@ -836,7 +848,8 @@ function wire(s) {
       toast(`${DEC[decision][0]}. Applied on GitHub at the next daily run.`); render();
     } catch (e) { toast(e.message); }
   }));
-  const consoleAction = async (fn, args, done) => { try { await rpc(fn, args); toast(done); await loadConsole(s); render(); } catch (e) { toast(e.message); } };
+  // The confirmation appears once the page shows the new state, so nothing on screen is stale when it does.
+  const consoleAction = async (fn, args, done) => { try { await rpc(fn, args); await loadConsole(s); await render(); toast(done); } catch (e) { toast(e.message); } };
   document.querySelectorAll("[data-jdec]").forEach((b) => (b.onclick = () => {
     const d = b.dataset.jdec, id = b.dataset.job;
     if (d === "reject" && !confirm("Reject this work? It will not run.")) return;
@@ -855,12 +868,12 @@ function wire(s) {
   if (ghf && s) ghf.onsubmit = async (e) => {
     e.preventDefault(); const err = $("#gh-err"); err.textContent = "";
     const tokenInput = $("#gh-token");
-    try { await rpc("connect_github", { p_site: s.id, p_repo: $("#gh-repo").value.trim(), p_token: tokenInput.value.trim() }); tokenInput.value = ""; toast("GitHub connected."); await loadConsole(s); render(); }
+    try { await rpc("connect_github", { p_site: s.id, p_repo: $("#gh-repo").value.trim(), p_token: tokenInput.value.trim() }); tokenInput.value = ""; await loadConsole(s); await render(); toast("GitHub connected."); }
     catch (x) { tokenInput.value = ""; err.textContent = x.message; }
   };
   const ghd = $("#gh-disconnect");
   if (ghd && s) ghd.onclick = () => { if (confirm("Disconnect GitHub? The SEO God goes back to advice only, and the stored token is deleted.")) consoleAction("disconnect_github", { p_site: s.id }, "GitHub disconnected."); };
-  const inboxAction = async (fn, args, done) => { try { await rpc(fn, args); toast(done); await loadInbox(s); render(); } catch (e) { toast(e.message); } };
+  const inboxAction = async (fn, args, done) => { try { await rpc(fn, args); await loadInbox(s); await render(); toast(done); } catch (e) { toast(e.message); } };
   document.querySelectorAll("[data-rdec]").forEach((b) => (b.onclick = () => {
     const d = b.dataset.rdec, id = b.dataset.req, note = ($(`#rnote-${CSS.escape(id)}`)?.value || "").trim() || null;
     if (d === "rejected" && !confirm("Decline this request? The client sees your note.")) return;
@@ -932,6 +945,8 @@ function wire(s) {
 /* ---------- Notifications and the monthly work report (D38) ---------- */
 let NOTES = null;
 async function loadNotes() { try { NOTES = await rpc("my_notifications"); } catch { NOTES = null; } }
+// In the background on every page: the menu badge updates when the answer arrives, the page never waits for it.
+const refreshNotes = () => loadNotes().then(() => document.querySelectorAll('#rail a[href="#/notes"]').forEach((a) => { a.querySelector(".count")?.remove(); a.insertAdjacentHTML("beforeend", unreadBadge()); }));
 const unreadBadge = () => (NOTES?.unread ? ` <span class="count" aria-label="${fmt(NOTES.unread)} unread">${NOTES.unread > 99 ? "99+" : fmt(NOTES.unread)}</span>` : "");
 const NOTE_KIND = { approval: ["Waiting for your approval", "info"], stuck: ["Needs a person", "bad"], request: ["Client request", "warn"], verified: ["Change verified", "ok"], change_failed: ["Change stopped", "bad"], integration: ["Integration error", "bad"], planning: ["Planning error", "bad"], answer: ["Your agency answered", "ok"] };
 function pNotes() {
@@ -991,8 +1006,7 @@ async function render() {
       if (/^#[0-9a-f]{6}$/i.test(s.brand?.color || "")) { document.documentElement.style.setProperty("--accent", s.brand.color); document.documentElement.style.setProperty("--chart", s.brand.color); }
       if (page === "requests") await loadRequests(s);
       if (page === "report") await loadWork(s);
-      await loadNotes();
-      shell(s, page); document.title = `${s.name} · SEO dashboard`;
+      shell(s, page); refreshNotes(); document.title = `${s.name} · SEO dashboard`;
       $("#page").innerHTML = page === "requests" ? pRequests(s) : s.status !== "live" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
       return wire(s);
     }
@@ -1000,8 +1014,9 @@ async function render() {
     if (h === "#/login" || h === "#/signup") { shell(null, "login"); document.title = "Sign in · SEO Autopilot"; $("#page").innerHTML = pLogin(); return wire(null); }
     if (!(await token())) { location.hash = "#/login"; return; }
     if (!loaded) { $("#page").innerHTML = '<div class="empty">Loading…</div>'; await loadAgency(); }
-    await loadNotes();
+    if (h !== "#/notes") refreshNotes();
     if (h === "#/notes") {
+      await loadNotes();
       if (!SITES.length && CLIENT_SITES.length) { mode = "client"; clientAccount = true; }
       shell(null, "notes"); document.title = "Notifications · SEO Autopilot"; $("#page").innerHTML = pNotes();
       if (NOTES?.unread) rpc("mark_notifications_seen").then(() => { NOTES.unread = 0; document.querySelectorAll(".count").forEach((x) => x.remove()); }).catch(() => {});
@@ -1022,6 +1037,7 @@ async function render() {
     if (page === "god") await loadConsole(s);
     if (page === "requests") await loadInbox(s);
     if (page === "report") await loadWork(s);
+    if (page === "team") await loadWorkforce(s);
     shell(s, page); document.title = `${s.name} · SEO dashboard`;
     $("#page").innerHTML = s.status !== "live" && page !== "connect" && page !== "god" && page !== "requests" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
     wire(s);

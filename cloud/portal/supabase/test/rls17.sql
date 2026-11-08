@@ -56,4 +56,16 @@ do $$ begin
   begin perform public.site_work_report((select v from ids where k = 'alice_site')); raise exception 'another agency read the report'; exception when raise_exception then if sqlerrm <> 'not allowed' then raise; end if; end;
 end $$;
 reset role;
+-- Workforce: the agency sees what each kind of work did; others cannot.
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a'; set request.jwt.claim.role = 'authenticated';
+do $$ declare w jsonb := public.site_workforce((select v from ids where k = 'alice_site')); begin
+  assert jsonb_array_length(w) >= 2 and exists (select 1 from jsonb_array_elements(w) x where x->>'kind' = 'implement'), 'kinds of work listed';
+  assert (select sum((x->>'total')::int) from jsonb_array_elements(w) x) >= (select sum((x->>'completed')::int) from jsonb_array_elements(w) x), 'counts consistent';
+end $$;
+reset role;
+set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-0000000000c1'; set request.jwt.claim.role = 'authenticated';
+do $$ begin
+  begin perform public.site_workforce((select v from ids where k = 'alice_site')); raise exception 'a client read the workforce'; exception when raise_exception then if sqlerrm <> 'not allowed' then raise; end if; end;
+end $$;
+reset role;
 \echo all notification and report checks passed

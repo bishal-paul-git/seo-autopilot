@@ -84,6 +84,7 @@ drop function if exists public.site_deployments(uuid);
 drop function if exists public.my_notifications();
 drop function if exists public.mark_notifications_seen();
 drop function if exists public.site_work_report(uuid, date);
+drop function if exists public.site_workforce(uuid, integer);
 drop function if exists private.public_host(p_url text);
 drop function if exists private.kick_scan();
 drop function if exists public.add_site_by_url(p_url text, p_name text, p_org uuid);

@@ -19,7 +19,7 @@ test("portal page script compiles", () => {
   const html = readFileSync(new URL("../cloud/portal/app/index.html", import.meta.url), "utf8");
   const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
   assert.ok(scripts.length > 0);
-  for (const s of scripts) assert.doesNotThrow(() => new vm.Script(s.replace("__CONFIG__", "{}").replace("__DEPTS__", "{}")), "syntax error in the portal page");
+  for (const s of scripts) assert.doesNotThrow(() => new vm.Script(s.replace("__CONFIG__", "{}").replace("__ORG__", "{\"director\":[],\"departments\":[]}")), "syntax error in the portal page");
 });
 
 const SITE = { id: "11111111-1111-4111-8111-111111111111", name: "Plumber", url: "https://plumber.test/", status: "live", last_snapshot_at: "2026-11-08T00:00:00Z" };
