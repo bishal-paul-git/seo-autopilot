@@ -2,6 +2,22 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (Security fixes, D34, and go-live preflight; branch claude/security-fixes)
+- **Review:** an independent security review of the stack found three exploitable defects (D34). All are fixed, with regression tests.
+- **Migration (not applied):** `20261108080000_security_fixes.sql`.
+  - `sites.gsc_allowed`, `gsc_allowed` (service only) and `set_gsc_allowed` (platform admins only).
+  - The confirmation is cleared when a site's address changes, and refused while the domain is in another agency.
+  - `create_job` now limits staff jobs: $5 each, gated when they carry a budget, priority clamped to 1–5, and 100 a day per person.
+- **Code:**
+  - Run-time daily cap for every paid run.
+  - Search Console job and scan function: confirmed sites only.
+  - Discovery keeps http(s) addresses only.
+  - Portal `safeHref`.
+  - `scripts/god-preflight.mjs`: a read-only go-live check (migrations, pause switch, recent scheduler runs, platform admin, scan function and its secret, Worker and its token) that says what to do next for each failing check.
+- **Tests:** `rls12.sql`; `test/security-fixes.test.mjs` (4); `test/god-preflight.test.mjs` (4).
+  - `npm test` 563/563; 12 SQL suites pass.
+  - workerd end-to-end run passes; scan function in Deno on a real site passes.
+
 ## 2026-11-08 (Search Console for hosted sites, D33; branch claude/search-console)
 - **Code:**
   - `src/god/search-console.mjs`: a Google service-account token via Web Crypto (Node and Workers), and the `search_console` job (small per-page and site-total queries; verdict against the rest of the site).

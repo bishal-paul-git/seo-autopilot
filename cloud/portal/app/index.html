@@ -505,10 +505,12 @@ function pConnectUrl(s) {
 }
 
 // What the website says about itself, from the daily scan. Every value links to the page it was read from.
+// Links built from a website's own data: http(s) only, so a "javascript:" value can never run in the portal.
+const safeHref = (u) => (/^https?:\/\//i.test(String(u || "")) ? esc(u) : "#");
 function aboutCard(s) {
   const d = s.discovered;
   if (!d) return "";
-  const src = (x) => (x && x.source ? ` <a class="xs muted" href="${esc(x.source)}" target="_blank" rel="noopener">source</a>` : "");
+  const src = (x) => (x && x.source ? ` <a class="xs muted" href="${safeHref(x.source)}" target="_blank" rel="noopener">source</a>` : "");
   const rows = [
     ["Business", d.name ? esc(d.name.value) + src(d.name) : null],
     ["Type", d.businessTypes && d.businessTypes.length ? esc(d.businessTypes.join(", ")) : null],
@@ -517,8 +519,8 @@ function aboutCard(s) {
     ["Email", (d.emails || []).map((x) => esc(x.value) + src(x)).join("<br>") || null],
     ["Address", (d.addresses || []).map((x) => esc(x.value) + src(x)).join("<br>") || null],
     ["Opening hours", (d.hours || []).map((x) => esc(x.value)).join("<br>") || null],
-    ["Social profiles", (d.socials || []).map((x) => `<a href="${esc(x.value)}" target="_blank" rel="noopener">${esc(x.platform)}</a>`).join(" · ") || null],
-    ["Key pages", Object.entries(d.keyPages || {}).map(([k, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(k)}</a>`).join(" · ") || null],
+    ["Social profiles", (d.socials || []).map((x) => `<a href="${safeHref(x.value)}" target="_blank" rel="noopener">${esc(x.platform)}</a>`).join(" · ") || null],
+    ["Key pages", Object.entries(d.keyPages || {}).map(([k, u]) => `<a href="${safeHref(u)}" target="_blank" rel="noopener">${esc(k)}</a>`).join(" · ") || null],
     ["Platform", s.platform ? esc(s.platform) : null],
     ["Language", d.language ? esc(d.language.value) : null],
     ["Pages read", d.stats ? `${fmt(d.stats.pagesRead)}${d.stats.pagesFailed ? ` (${fmt(d.stats.pagesFailed)} failed)` : ""} · sitemap ${d.stats.sitemapUrls ? `${fmt(d.stats.sitemapUrls)} URLs` : "not found"}` : null],
@@ -551,7 +553,7 @@ function pApprovals(s) {
   return `<div><h1>Approvals</h1><p class="lead">Proposals the SEO team made for ${esc(host(s.url))}. Approve to have it drafted, hold to park it, decline to close it. Your decision is applied on GitHub at the next daily run (05:17 UTC); risky changes still wait for a person before going live.</p></div>
   <div class="card pad0"><div class="list">${rows.map((i) => {
     const d = byIssue.get(i.number), st = d ? DEC[d.decision] : i.approved ? ["Approved", "ok"] : i.held ? ["On hold", "warn"] : null;
-    return `<div class="row" style="align-items:flex-start;flex-wrap:wrap;gap:10px"><div style="flex:1;min-width:220px"><div class="t">${esc(i.title)}</div><div class="s">#${i.number} · ${esc(i.kind)}${i.url ? ` · <a href="${esc(i.url)}" target="_blank" rel="noopener">open on GitHub</a>` : ""}${d ? ` · ${d.applied_at ? "applied" : "waiting for the next daily run"}${d.by ? ` · by ${esc(d.by)}` : ""}` : ""}</div></div>
+    return `<div class="row" style="align-items:flex-start;flex-wrap:wrap;gap:10px"><div style="flex:1;min-width:220px"><div class="t">${esc(i.title)}</div><div class="s">#${i.number} · ${esc(i.kind)}${i.url ? ` · <a href="${safeHref(i.url)}" target="_blank" rel="noopener">open on GitHub</a>` : ""}${d ? ` · ${d.applied_at ? "applied" : "waiting for the next daily run"}${d.by ? ` · by ${esc(d.by)}` : ""}` : ""}</div></div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">${st ? `<span class="pill ${st[1]}">${st[0]}</span>` : ""}${i.approved && !d ? "" : `<button class="btn" data-dec="approve" data-issue="${i.number}">Approve</button><button class="btn" data-dec="hold" data-issue="${i.number}">Hold</button><button class="btn" data-dec="decline" data-issue="${i.number}">Decline</button>`}</div></div>`;
   }).join("") || '<div class="empty">No open proposals. New ones arrive with the daily and weekly runs.</div>'}</div></div>`;
 }

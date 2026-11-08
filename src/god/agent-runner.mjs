@@ -86,7 +86,7 @@ export function parseReply(text) {
  * unknown price or a refusal escalates to a person instead of retrying; nothing is spent on a run that cannot fit.
  */
 // promptOf(name) supplies agent instructions where there is no file system (the Cloudflare Worker bundles them).
-export function makeAgentHandler({ store, siteOf, apiKey = globalThis.process?.env?.ANTHROPIC_API_KEY, model = globalThis.process?.env?.SEO_GOD_MODEL || "claude-opus-5-5", effort = globalThis.process?.env?.SEO_GOD_EFFORT || "medium", fetchImpl = (...a) => fetch(...a), agents = null, promptOf = null, baseUrl = "https://api.anthropic.com" }) {
+export function makeAgentHandler({ store, siteOf, apiKey = globalThis.process?.env?.ANTHROPIC_API_KEY, model = globalThis.process?.env?.SEO_GOD_MODEL || "claude-opus-5-5", effort = globalThis.process?.env?.SEO_GOD_EFFORT || "medium", fetchImpl = (...a) => fetch(...a), agents = null, promptOf = null, baseUrl = "https://api.anthropic.com", dailyRemaining = null }) {
   return async (job, ctx = {}) => {
     const name = job.inputs?.agent || job.kind.slice("agent:".length);
     if (!apiKey) return { escalate: "no AI key configured for this workspace (bring your own key)", evidence: [], costUsd: 0 };
@@ -99,10 +99,13 @@ export function makeAgentHandler({ store, siteOf, apiKey = globalThis.process?.e
     const system = `${own}\n${SYSTEM_TAIL}`, user = agentInput(job, memory, site);
     // Worst case must fit the budget: input counted at 1 token per 3 characters, priced at the worst fallback model.
     const worst = NO_SERVER_FALLBACK.has(model) ? price : { in: Math.max(price.in, FALLBACK_WORST.in), out: Math.max(price.out, FALLBACK_WORST.out) };
-    const budget = Number(ctx.budgetUsd ?? job.budgetUsd) || 0;
+    // The job's own budget, and never more than what is left of the site's budget for today (D34): work created
+    // outside the planner (agency staff, accepted client requests) is held to the same daily cap.
+    const left = dailyRemaining ? Math.max(0, Number(await dailyRemaining(job)) || 0) : Infinity;
+    const budget = Math.min(Number(ctx.budgetUsd ?? job.budgetUsd) || 0, left);
     const inUsd = ((system.length + user.length) / 3) * worst.in / 1e6;
     const maxTokens = Math.min(16000, Math.floor(((budget - inUsd) * 1e6) / worst.out));
-    if (maxTokens < 2000) return { escalate: `budget $${budget.toFixed(2)} is too small for this run (needs about $${(inUsd + 2000 * worst.out / 1e6).toFixed(2)})`, evidence: [], costUsd: 0 };
+    if (maxTokens < 2000) return { escalate: left < (Number(ctx.budgetUsd ?? job.budgetUsd) || 0) ? `the site's daily budget is used up ($${left.toFixed(2)} left today)` : `budget $${budget.toFixed(2)} is too small for this run (needs about $${(inUsd + 2000 * worst.out / 1e6).toFixed(2)})`, evidence: [], costUsd: 0 };
     const body = { model, max_tokens: maxTokens, system, messages: [{ role: "user", content: user }], output_config: { effort } };
     const headers = { "x-api-key": apiKey, "anthropic-version": "2023-06-01", "content-type": "application/json" };
     if (!NO_SERVER_FALLBACK.has(model)) { body.fallbacks = "default"; headers["anthropic-beta"] = "server-side-fallback-2026-07-01"; }

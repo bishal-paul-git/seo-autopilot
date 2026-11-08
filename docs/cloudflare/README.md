@@ -37,7 +37,7 @@ Where every job runs: [runtime-matrix.md](runtime-matrix.md). Free-tier usage: [
 ## Account setup (owner actions, in this order)
 Nothing here has been done. Each step needs the owner.
 
-1. **Review and merge the PR chain:** #33 → #34 → #35/#36 → #37 → #38 → #39 → #40 → #41 → #43 → #44 → #45 → #46 → the operations PR.
+1. **Review and merge the PR chain:** #33 → #34 → #35/#36 → #37 → #38 → #39 → #40 → #41 → #43 → #44 → #45 → #46 → #47 → #48 → the security fixes PR.
 2. **Supabase migrations.** Apply them in order to project `ymwwwhdlyjnqbxxhtcew`, Dashboard → SQL, or `supabase db push` from a reviewed checkout:
    - `20261104000000_portal_url_sites.sql`
    - `20261108000000_r1_contracts.sql`
@@ -48,6 +48,7 @@ Nothing here has been done. Each step needs the owner.
    - `20261108050000_client_portal.sql` (client requests and the agency inbox)
    - `20261108060000_learning.sql` (what the SEO God learned, in the console)
    - `20261108070000_operations.sql` (Operations page; platform admins)
+   - `20261108080000_security_fixes.sql` (security review fixes, D34)
 
    Then make yourself a platform admin: `insert into public.platform_admins (user_id, note) select id, 'owner' from auth.users where email = '<your email>';`
 
@@ -86,6 +87,11 @@ Nothing here has been done. Each step needs the owner.
 8. **Agent advice (optional):** set the `ANTHROPIC_API_KEY` secret and a non-zero `SEO_GOD_DAILY_BUDGET_USD` (per site per day), then deploy.
 
 A staging Worker (`npm run deploy:staging`) exists in `wrangler.toml`. Point its `SUPABASE_URL` at a Supabase branch or a test project, never at production data.
+
+## Check the setup
+`SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… WORKER_URL=https://seo-god.<you>.workers.dev node scripts/god-preflight.mjs` checks each step above, read-only, and says what to do for each failing one.
+
+To let a site use the shared Google account for Search Console, a platform admin first confirms the agency really manages it, then runs `select public.set_gsc_allowed('<site id>', true);`. This is refused while the domain is in another agency (D34).
 
 ## Rollback (fastest first)
 1. Portal → Operations → **Pause the scheduler** (platform admins), or `select public.set_god_paused(true, 'reason');`. Either stops all work from the next run, with no deploy.

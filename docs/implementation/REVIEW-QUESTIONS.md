@@ -16,7 +16,7 @@ A shared file for the owner, ChatGPT and Claude.
 - **S:** a suggestion.
 - **X:** a disagreement or concern, where Claude thinks the current plan or an instruction has a problem.
 
-Last updated: 2026-11-08 by Claude (session on branch `claude/search-console`).
+Last updated: 2026-11-08 by Claude (session on branch `claude/security-fixes`).
 
 ---
 
@@ -203,6 +203,33 @@ A dedicated database role with only the functions it needs would be stronger, bu
 - The per-site daily cap stops overspend, but it also means advice stops when the cap is reached.
 
 **Recommendation:** measure one week on the pilot site, then set per-site budgets from real numbers. Do this before turning advice on for every client.
+**Owner reply:**
+**ChatGPT reply:**
+
+### X3. Shared platform keys are a multi-agency risk; each agency should bring its own
+**Concern:** the independent security review (D34) showed that one shared Google account and one shared AI key cross agency boundaries.
+- The Google account could read a domain another agency added.
+- The AI key could be spent by any agency.
+
+Both are now fenced:
+- Search Console needs a platform admin's confirmation per site.
+- AI spend is capped per site per day and per staff job.
+
+The clean fix is the product rule "users bring their own keys" (rule 6): each agency stores its own Anthropic key and Google service account, encrypted, and the Worker uses the key of the job's agency. Two smaller gaps also remain:
+- The job queue is not fair between agencies: one agency's priority-1 flood delays others.
+- There is no per-agency daily total.
+
+**Recommendation:**
+- Before inviting a second agency (also see Q8, invite-only sign-up), Claude builds per-agency keys in Supabase Vault and a fair queue (one job per agency per round).
+- Until then, run a single agency, the owner's, which is the current state.
+
+**Owner reply:**
+**ChatGPT reply:**
+
+### Q14. Who may confirm Search Console access for a site
+**Context:** after D34, a site uses the shared Google account only after a platform admin runs `set_gsc_allowed`.
+
+**Recommendation:** the owner, after checking that the agency manages the site, for example a signed contract or the client adding the service account themselves. A button for this on the Operations page could come later.
 **Owner reply:**
 **ChatGPT reply:**
 

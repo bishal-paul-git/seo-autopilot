@@ -23,6 +23,10 @@ const hostOf = (u) => { try { return new URL(u).hostname.replace(/^www\./, "").t
 const pathOf = (u) => { try { return new URL(u).pathname; } catch { return ""; } };
 
 /** Every JSON-LD node (objects with an @type), flattened out of @graph arrays and nesting. */
+// Only http(s) addresses leave the site's own data: a "javascript:" value with a familiar-looking host (for example
+// javascript://facebook.com/...) must never become a link (security review 2026-11-08).
+const webUrl = (u, base) => { try { const x = new URL(String(u), base); return /^https?:$/.test(x.protocol) ? x.toString() : null; } catch { return null; } };
+
 export function jsonLdNodes(html) {
   const out = [];
   for (const m of String(html || "").matchAll(/<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
@@ -67,13 +71,13 @@ export function discoverSite({ siteUrl, docs = [], pages = [], sitemapUrls = [],
       if (!t.some((x) => ORG_TYPES.test(x))) continue;
       for (const x of t) if (!out.businessTypes.includes(x)) out.businessTypes.push(x);
       if (!out.name && text(n.name)) out.name = { value: text(n.name), source: d.url };
-      if (!out.logo && urlOf(n.logo)) out.logo = { value: new URL(urlOf(n.logo), d.url).toString(), source: d.url };
+      if (!out.logo && urlOf(n.logo)) { const l = webUrl(urlOf(n.logo), d.url); if (l) out.logo = { value: l, source: d.url }; }
       add(out.phones, phone(n.telephone || ""), d.url);
       add(out.emails, email(n.email || ""), d.url);
       for (const a of [].concat(n.address || [])) add(out.addresses, address(a), d.url);
       for (const h of [].concat(n.openingHours || [])) add(out.hours, decode(h), d.url);
       for (const s of [].concat(n.openingHoursSpecification || [])) if (s && s.opens) add(out.hours, `${[].concat(s.dayOfWeek || []).map((x) => String(x).split("/").pop()).join(", ")} ${s.opens}–${s.closes || ""}`.trim(), d.url);
-      for (const u of [].concat(n.sameAs || [])) { const h = hostOf(u); const s = SOCIAL.find(([, re]) => re.test(h)); if (s) add(out.socials, u, d.url, { platform: s[0] }); }
+      for (const u of [].concat(n.sameAs || [])) { const w = webUrl(u); const h = w && hostOf(w); const s = h && SOCIAL.find(([, re]) => re.test(h)); if (s) add(out.socials, w, d.url, { platform: s[0] }); }
     }
     for (const m of html.matchAll(/<a\b[^>]*>/gi)) {
       const href = attr(m[0], "href");

@@ -83,6 +83,28 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-11-08 D34 Fixes from the independent security review
+An independent review of the whole stack found three exploitable defects. All are fixed, with regression tests (`rls12.sql`, `test/security-fixes.test.mjs`).
+
+1. **Search Console data could leak across agencies.**
+   - **Problem:** the platform's one shared Google account read any domain an agency added, even one it did not own.
+   - **Fix:** a site may use the shared account only after a platform admin confirms it (`set_gsc_allowed`), and never while the same domain is registered in another agency.
+     - The confirmation is cleared when the address changes.
+     - Members cannot set it.
+     - The scan function and the Worker both check `gsc_allowed` first.
+   - **Proper long-term fix:** each agency brings its own Google account (rule 6). See REVIEW-QUESTIONS X3.
+2. **Budget bypass.**
+   - **Problem:** agency staff could create jobs with any budget, skipping the per-site daily cap and spending the platform's AI key.
+   - **Fix:**
+     - Staff jobs carry at most $5.
+     - A staff job with a budget needs approval.
+     - Each person can create at most 100 jobs a day.
+     - The per-site daily budget is now a hard ceiling on every paid run at run time, whoever created the job.
+   - **Not fixed here:** fairness between agencies in the job queue (`claim_job` orders by priority across all tenants). See X3.
+3. **Script injection through a site's links.**
+   - **Problem:** a `javascript:` address in a site's structured data (`sameAs`, `logo`) reached a portal link.
+   - **Fix:** discovery keeps only http(s) addresses, and the portal builds every link from site data through `safeHref`, which allows http(s) only.
+
 ## 2026-11-08 D33 Search Console for hosted sites measures accepted advice with the CLI's own method
 **Decision:** with a Google service account (`GOOGLE_KEY_JSON`, which site owners add as a user on their property), the scheduler queues a read-only `search_console` job. It runs once an accepted piece of advice has a complete after-window (3-day lag plus 14 days).
 

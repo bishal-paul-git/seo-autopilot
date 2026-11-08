@@ -46,8 +46,11 @@ const toSeries = (rows) => Object.fromEntries(rows.map((x) => [x.keys[0], [x.cli
  * The "search_console" job: for accepted advice whose after-window is complete, read Search Console and store a
  * traffic verdict on each item. deps: { store, siteOf, getToken: async () => token, fetchImpl, now }.
  */
-export function makeSearchConsoleHandler({ store, siteOf, getToken, fetchImpl = (...a) => fetch(...a), now = () => new Date().toISOString() }) {
+export function makeSearchConsoleHandler({ store, siteOf, getToken, fetchImpl = (...a) => fetch(...a), now = () => new Date().toISOString(), allowed = async () => true }) {
   return async (job) => {
+    // The shared Google account may read only sites a platform admin confirmed (D34): a domain added by an agency that
+    // does not own it must never be read with access its real owner granted.
+    if (!(await allowed(job.siteId))) return { evidence: ["Search Console not used: a platform admin has not confirmed this site (set_gsc_allowed)"] };
     const site = await siteOf(job.siteId);
     const memory = (await store.readMemory(job.siteId, "experiment")) || [];
     const due = trafficDue(memory.map((m) => m.value), now());

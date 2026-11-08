@@ -55,7 +55,8 @@ Deno.serve(async (req) => {
     const s = body.site || {};
     if (typeof s.id !== "string" || typeof s.url !== "string") return json({ error: "site.id and site.url required" }, 400);
     try {
-      const r = await scanSite({ id: s.id, name: String(s.name || ""), url: s.url }, { maxPages: Math.min(Number(body.maxPages) || MAX_PAGES, MAX_PAGES), concurrency: 6, ...google });
+      const g = (await rpc("gsc_allowed", { p_site: s.id }).catch(() => false)) ? google : {}; // D34: confirmed sites only
+      const r = await scanSite({ id: s.id, name: String(s.name || ""), url: s.url }, { maxPages: Math.min(Number(body.maxPages) || MAX_PAGES, MAX_PAGES), concurrency: 6, ...g });
       // The portal reads snapshots: store this one exactly as the scheduled path does, so the Worker can be the only scheduler.
       const stored = await rpc("finish_scan", { p_site: s.id, p_data: r.snapshot }).then(() => true).catch(() => false);
       return json({ ok: true, snapshotStored: stored, ...compact(r) });
@@ -68,7 +69,8 @@ Deno.serve(async (req) => {
       const site = await rpc("claim_scan").catch(() => null);
       if (!site) return;
       try {
-        const { snapshot } = await scanSite(site, { maxPages: MAX_PAGES, concurrency: 6, ...google });
+        const g = (await rpc("gsc_allowed", { p_site: site.id }).catch(() => false)) ? google : {}; // D34: confirmed sites only
+        const { snapshot } = await scanSite(site, { maxPages: MAX_PAGES, concurrency: 6, ...g });
         await rpc("finish_scan", { p_site: site.id, p_data: snapshot });
         console.log(`scan ok ${site.url} ${snapshot.audit?.pages ?? 0} pages`);
       } catch (e) {
