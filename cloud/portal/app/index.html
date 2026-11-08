@@ -178,6 +178,9 @@ td { padding: 11px 16px; border-bottom: 1px solid var(--line-2) } tr:last-child 
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important } }
   pre.wo{white-space:pre-wrap;word-break:break-word;background:var(--bg2,rgba(127,127,127,.08));padding:8px;border-radius:6px;font-size:12px;max-height:240px;overflow:auto;margin:0}
+  .count{display:inline-block;min-width:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:var(--accent);color:#fff;font-size:11px;line-height:18px;text-align:center;font-weight:600}
+  .note.unread{background:var(--accent-soft,rgba(16,185,129,.08))}
+  @media print{#rail,#hdr,#tabbar,.no-print,.toast{display:none!important}.card{break-inside:avoid;box-shadow:none}body{background:#fff}}
 </style>
 </head>
 <body>
@@ -478,6 +481,7 @@ function md(t) {
 function pReport(s) {
   const title = (String(s.digest).match(/^# (.+)$/m) || [])[1] || "Weekly report";
   return `<div><h1>Weekly report</h1><p class="lead">${esc(title.replace(/^.*?digest,?\s*/i, "") || title)}</p></div>
+  ${workHtml(s)}
   <div class="card report">${s.digest ? md(s.digest) : '<p class="muted">The first weekly report arrives after the first full week.</p>'}</div>`;
 }
 
@@ -776,10 +780,10 @@ function shell(s, page) {
   const pages = PAGES.filter(visible).map(([k, t, ic]) => [k, k === "requests" && mode === "agency" ? "Client requests" : t, ic]);
   $("#rail").innerHTML = `<a class="brand" href="${mode === "client" && s ? link(s, "overview") : "#/"}">${brandMark}<span><b>${mode === "client" && s ? esc(s.name) : "SEO Autopilot"}</b><span>${mode === "client" ? (s?.brand?.name ? `SEO dashboard by ${esc(s.brand.name)}` : "SEO dashboard") : "Workspace"}</span></span></a>
     ${s ? `<div><div class="lbl">Dashboard</div><nav>${pages.map(([k, t, ic]) => `<a href="${link(s, k)}" aria-current="${k === page ? "page" : "false"}">${ic}${t}</a>`).join("")}</nav></div>` : ""}
-    ${mode === "client" && clientAccount ? `<div><div class="lbl">Account</div><nav>${CLIENT_SITES.length > 1 ? `<a href="#/">${I.grid}Your websites</a>` : ""}<a href="#/logout">${I.out}Sign out</a></nav></div>` : ""}
-    ${mode === "agency" && session ? `<div><div class="lbl">Websites</div><nav><a href="#/" aria-current="${!s && page !== "add" ? "page" : "false"}">${I.grid}All websites</a>${SITES.map((x) => `<a href="#/s/${x.key}/overview" aria-current="${s && x.key === s.key ? "page" : "false"}"><span class="dot ${x.status === "live" ? "live" : "setup"}"></span>${esc(x.name)}</a>`).join("")}<a href="#/add" aria-current="${page === "add" ? "page" : "false"}">${I.plus}Connect a website</a><a href="#/ops" aria-current="${page === "ops" ? "page" : "false"}">${I.report}Operations</a><a href="#/team" aria-current="${page === "teampage" ? "page" : "false"}">${I.people}Team and brand</a><a href="#/logout">${I.out}Sign out</a></nav></div>` : ""}
+    ${mode === "client" && clientAccount ? `<div><div class="lbl">Account</div><nav>${CLIENT_SITES.length > 1 ? `<a href="#/">${I.grid}Your websites</a>` : ""}<a href="#/notes" aria-current="${page === "notes" ? "page" : "false"}">${I.inbox}Notifications${unreadBadge()}</a><a href="#/logout">${I.out}Sign out</a></nav></div>` : ""}
+    ${mode === "agency" && session ? `<div><div class="lbl">Websites</div><nav><a href="#/" aria-current="${!s && page !== "add" ? "page" : "false"}">${I.grid}All websites</a>${SITES.map((x) => `<a href="#/s/${x.key}/overview" aria-current="${s && x.key === s.key ? "page" : "false"}"><span class="dot ${x.status === "live" ? "live" : "setup"}"></span>${esc(x.name)}</a>`).join("")}<a href="#/add" aria-current="${page === "add" ? "page" : "false"}">${I.plus}Connect a website</a><a href="#/notes" aria-current="${page === "notes" ? "page" : "false"}">${I.inbox}Notifications${unreadBadge()}</a><a href="#/ops" aria-current="${page === "ops" ? "page" : "false"}">${I.report}Operations</a><a href="#/team" aria-current="${page === "teampage" ? "page" : "false"}">${I.people}Team and brand</a><a href="#/logout">${I.out}Sign out</a></nav></div>` : ""}
     <div class="foot">${s ? `Data from Google Search Console${s.ga4 && !s.ga4.error ? ", Google Analytics" : ""} and the site audit. Updated ${esc(s.lastAt ? s.lastAt.slice(0, 10) : last(s).day || "–")}.` : session ? esc(session.email || "") : ""}</div>`;
-  const title = s ? (PAGES.find(([k]) => k === page) || PAGES[0])[1] : { add: "Connect a website", login: "Sign in", teampage: "Team and brand", ops: "Operations" }[page] || "Websites";
+  const title = s ? (PAGES.find(([k]) => k === page) || PAGES[0])[1] : { add: "Connect a website", login: "Sign in", teampage: "Team and brand", ops: "Operations", notes: "Notifications" }[page] || "Websites";
   $("#hdr").innerHTML = `<span class="mobile-brand">${brandMark}</span>
     <div class="site"><b>${s ? esc(s.name) : "SEO Autopilot"}</b><span>${esc(title)}${s && s.status === "live" && s.lastAt ? ` · updated ${esc(s.lastAt.slice(0, 10))}` : ""}</span></div><span class="sp"></span>
     ${s && mode === "agency" ? `<button class="btn" id="share">${I.share}<span>Client link</span></button>` : ""}
@@ -844,6 +848,8 @@ function wire(s) {
     consoleAction("answer_question", { p_site: s.id, p_key: k, p_value: v }, "Answer saved. The next strategy draft uses it.");
   }));
   document.querySelectorAll("[data-retry]").forEach((b) => (b.onclick = () => consoleAction("retry_job", { p_job: b.dataset.retry, p_note: null }, "Queued again.")));
+  document.querySelectorAll("[data-wmonth]").forEach((b) => (b.onclick = async () => { if (!s) return; s.workMonth = b.dataset.wmonth; await loadWork(s); render(); }));
+  const pr = $("#print-report"); if (pr) pr.onclick = () => window.print();
   document.querySelectorAll("[data-impl]").forEach((b) => (b.onclick = () => consoleAction("request_implementation", { p_job: b.dataset.impl, p_index: Number(b.dataset.idx) }, "Work order requested. It appears under Waiting for you after the next planning run.")));
   const ghf = $("#gh-form");
   if (ghf && s) ghf.onsubmit = async (e) => {
@@ -923,6 +929,38 @@ function wire(s) {
   };
 }
 
+/* ---------- Notifications and the monthly work report (D38) ---------- */
+let NOTES = null;
+async function loadNotes() { try { NOTES = await rpc("my_notifications"); } catch { NOTES = null; } }
+const unreadBadge = () => (NOTES?.unread ? ` <span class="count" aria-label="${fmt(NOTES.unread)} unread">${NOTES.unread > 99 ? "99+" : fmt(NOTES.unread)}</span>` : "");
+const NOTE_KIND = { approval: ["Waiting for your approval", "info"], stuck: ["Needs a person", "bad"], request: ["Client request", "warn"], verified: ["Change verified", "ok"], change_failed: ["Change stopped", "bad"], integration: ["Integration error", "bad"], planning: ["Planning error", "bad"], answer: ["Your agency answered", "ok"] };
+function pNotes() {
+  const items = NOTES?.items || [];
+  const href = (n) => (n.kind === "answer" ? `#/k/${encodeURIComponent(n.site)}/requests` : `#/s/${encodeURIComponent(n.site)}/${encodeURIComponent(n.page || "overview")}`);
+  return `<div><h1>Notifications</h1><p class="lead">What needs you, and what happened, across your websites. Newest first.</p></div>
+  <div class="card pad0"><div class="list">${items.map((n) => { const [label, cls] = NOTE_KIND[n.kind] || [n.kind, ""]; return `<a class="row note${n.unread ? " unread" : ""}" href="${href(n)}" style="display:block;text-decoration:none;color:inherit">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="pill ${cls}">${esc(label)}</span><span class="t" style="flex:1;min-width:160px">${esc(n.siteName || "")}</span><span class="xs muted">${esc(String(n.at || "").slice(0, 16).replace("T", " "))} UTC</span></div>
+    <div class="s" style="margin-top:4px">${esc(n.title || "")}</div></a>`; }).join("") || '<div class="empty">Nothing yet. Approvals, client requests, verified changes and problems appear here.</div>'}</div></div>`;
+}
+const monthLabel = (ym) => { const [y, m] = String(ym || "").split("-").map(Number); return y && m ? new Date(Date.UTC(y, m - 1, 1)).toLocaleString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" }) : ""; };
+const shiftMonth = (ym, d) => { const [y, m] = String(ym).split("-").map(Number); const x = new Date(Date.UTC(y, m - 1 + d, 1)); return `${x.getUTCFullYear()}-${String(x.getUTCMonth() + 1).padStart(2, "0")}`; };
+async function loadWork(s) { try { s.work = await rpc("site_work_report", { p_site: s.id, p_month: s.workMonth ? `${s.workMonth}-01` : null }); } catch { s.work = null; } }
+const sevTotal = (a) => (a?.bySeverity ? Object.values(a.bySeverity).reduce((x, y) => x + (Number(y) || 0), 0) : null);
+function workHtml(s) {
+  const w = s.work; if (!w) return "";
+  const now = new Date().toISOString().slice(0, 7), before = sevTotal(w.auditBefore), after = sevTotal(w.audit);
+  const verified = (w.changes || []).filter((c) => c.status === "completed").length;
+  return `<div class="card work-report"><div class="ch" style="flex-wrap:wrap;gap:8px"><h2>Work in ${esc(monthLabel(w.month))}</h2><span class="no-print" style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" data-wmonth="${esc(shiftMonth(w.month, -1))}">Previous month</button>${w.month < now ? `<button class="btn" data-wmonth="${esc(shiftMonth(w.month, 1))}">Next month</button>` : ""}<button class="btn" id="print-report">Print or save as PDF</button></span></div>
+    <p class="xs muted" style="margin-top:0">${esc(w.site?.name || "")} · ${esc(w.site?.url || "")}${w.brand?.name ? ` · prepared by ${esc(w.brand.name)}` : ""}</p>
+    <div class="grid g4">${kpi("Advice accepted", fmt((w.advice || []).length), null, "Recommendations your SEO team reviewed and accepted.")}${kpi("Changes made", fmt((w.changes || []).length), null, `${fmt(verified)} verified on the live site.`)}${kpi("Requests answered", fmt((w.requests || []).length), null, "Requests you sent that the team decided on.")}${kpi("Site problems", after == null ? "–" : fmt(after), null, before == null ? "Found by the latest audit this month." : `${fmt(before)} at the start of the month.`)}</div>
+    ${w.strategy ? `<p class="xs" style="margin:10px 0 0"><b>Strategy:</b> ${w.strategy.approved ? "approved" : "being prepared"}${w.strategy.objective ? ` · ${esc(w.strategy.objective)}` : ""}</p>` : ""}
+    ${(w.changes || []).length ? `<h3 style="margin:14px 0 6px">Changes to the website</h3><ul class="xs" style="margin:0 0 0 18px;padding:0">${w.changes.map((c) => `<li><b>${esc(c.title)}</b>${c.page ? ` · ${esc(c.page)}` : ""}<br><span class="muted">${esc(c.verification || (c.status === "completed" ? "done" : c.status === "escalated" ? "stopped: the team is looking at it" : "in progress"))}</span></li>`).join("")}</ul>` : ""}
+    ${(w.advice || []).length ? `<h3 style="margin:14px 0 6px">Advice accepted</h3><ul class="xs" style="margin:0 0 0 18px;padding:0">${w.advice.map((a) => `<li><b>${esc(a.title)}</b>${(a.recommendations || []).length ? `<ul style="margin:2px 0 4px 16px;padding:0">${a.recommendations.slice(0, 8).map((r) => `<li>${esc(r.title || "")}${r.url ? ` <span class="muted">· ${esc(r.url)}</span>` : ""}</li>`).join("")}</ul>` : ""}</li>`).join("")}</ul>` : ""}
+    ${(w.requests || []).length ? `<h3 style="margin:14px 0 6px">Your requests</h3><ul class="xs" style="margin:0 0 0 18px;padding:0">${w.requests.map((r) => `<li><b>${esc(r.title)}</b> · ${esc(String(r.status || "").replace(/_/g, " "))}${r.note ? `<br><span class="muted">${esc(r.note)}</span>` : ""}</li>`).join("")}</ul>` : ""}
+    ${!(w.changes || []).length && !(w.advice || []).length && !(w.requests || []).length ? '<p class="xs muted">Nothing was completed in this month yet.</p>' : ""}
+    <p class="xs muted" style="margin:12px 0 0">Every item comes from recorded work and the site audit. Search traffic is in the other pages of this dashboard.</p></div>`;
+}
+
 const PAGE_FN = { overview: pOverview, traffic: pTraffic, keywords: pKeywords, pages: pPages, locations: pLocations, plan: pPlan, report: pReport, team: pTeam, connect: pConnect, approvals: pApprovals, god: pGod, requests: (s) => (mode === "agency" ? pInbox(s) : pRequests(s)) };
 async function render() {
   const h = location.hash || "#/";
@@ -952,6 +990,8 @@ async function render() {
       let page = m[3] || "overview"; if (AGENCY_ONLY.has(page)) page = "overview";
       if (/^#[0-9a-f]{6}$/i.test(s.brand?.color || "")) { document.documentElement.style.setProperty("--accent", s.brand.color); document.documentElement.style.setProperty("--chart", s.brand.color); }
       if (page === "requests") await loadRequests(s);
+      if (page === "report") await loadWork(s);
+      await loadNotes();
       shell(s, page); document.title = `${s.name} · SEO dashboard`;
       $("#page").innerHTML = page === "requests" ? pRequests(s) : s.status !== "live" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
       return wire(s);
@@ -960,6 +1000,13 @@ async function render() {
     if (h === "#/login" || h === "#/signup") { shell(null, "login"); document.title = "Sign in · SEO Autopilot"; $("#page").innerHTML = pLogin(); return wire(null); }
     if (!(await token())) { location.hash = "#/login"; return; }
     if (!loaded) { $("#page").innerHTML = '<div class="empty">Loading…</div>'; await loadAgency(); }
+    await loadNotes();
+    if (h === "#/notes") {
+      if (!SITES.length && CLIENT_SITES.length) { mode = "client"; clientAccount = true; }
+      shell(null, "notes"); document.title = "Notifications · SEO Autopilot"; $("#page").innerHTML = pNotes();
+      if (NOTES?.unread) rpc("mark_notifications_seen").then(() => { NOTES.unread = 0; document.querySelectorAll(".count").forEach((x) => x.remove()); }).catch(() => {});
+      return wire(null);
+    }
     if (h === "#/ops") { await loadOps(); shell(null, "ops"); document.title = "Operations · SEO Autopilot"; $("#page").innerHTML = pOps(); return wire(null); }
     if (h === "#/team") { shell(null, "teampage"); document.title = "Team and brand · SEO Autopilot"; $("#page").innerHTML = pTeamPage(); return wire(null); }
     if (h === "#/add") { shell(null, "add"); document.title = "Connect a website · SEO Autopilot"; $("#page").innerHTML = pAdd(); return wire(null); }
@@ -974,6 +1021,7 @@ async function render() {
     if (page === "overview" && s.status === "live") await loadGrowth(s);
     if (page === "god") await loadConsole(s);
     if (page === "requests") await loadInbox(s);
+    if (page === "report") await loadWork(s);
     shell(s, page); document.title = `${s.name} · SEO dashboard`;
     $("#page").innerHTML = s.status !== "live" && page !== "connect" && page !== "god" && page !== "requests" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
     wire(s);
