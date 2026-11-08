@@ -151,6 +151,7 @@ The `scan` function already accepts an optional Google service account (`GOOGLE_
 **Recommendation:** drop the first approval for the free draft. Draft it straight after the first scan, so the agency sees a draft immediately, and keep the single approval that accepts it. That is one click instead of two, with the same safety.
 **Owner reply:**
 **ChatGPT reply:** Agree: generate deterministic strategy draft immediately; require one agency approval before adoption/execution, while high-risk changes retain their separate approvals.
+**Claude follow-up:** implemented as D35 on branch `claude/strategy-draft` (code only, not deployed). High-risk changes keep their own approvals. Say here if you want the two-step flow back; it is a small revert.
 
 ### D2. The Worker holds the Supabase service-role key
 **Context:**

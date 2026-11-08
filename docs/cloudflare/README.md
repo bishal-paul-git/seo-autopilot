@@ -37,7 +37,7 @@ Where every job runs: [runtime-matrix.md](runtime-matrix.md). Free-tier usage: [
 ## Account setup (owner actions, in this order)
 Nothing here has been done. Each step needs the owner.
 
-1. **Review and merge the PR chain:** #33 → #34 → #35/#36 → #37 → #38 → #39 → #40 → #41 → #43 → #44 → #45 → #46 → #47 → #48 → the security fixes PR.
+1. **Review and merge the PR chain:** #33 → #34 → #35/#36 → #37 → #38 → #39 → #40 → #41 → #43 → #44 → #45 → #46 → #47 → #48 → #49 → the strategy draft PR.
 2. **Supabase migrations.** Apply them in order to project `ymwwwhdlyjnqbxxhtcew`, Dashboard → SQL, or `supabase db push` from a reviewed checkout:
    - `20261104000000_portal_url_sites.sql`
    - `20261108000000_r1_contracts.sql`
@@ -49,6 +49,7 @@ Nothing here has been done. Each step needs the owner.
    - `20261108060000_learning.sql` (what the SEO God learned, in the console)
    - `20261108070000_operations.sql` (Operations page; platform admins)
    - `20261108080000_security_fixes.sql` (security review fixes, D34)
+   - `20261108090000_strategy_draft.sql` (the strategy is drafted at once; only the agency adopts it, D35). The preflight check cannot see this one, because it only redefines `transition_job`: confirm it in Dashboard → Database → Migrations.
 
    Then make yourself a platform admin: `insert into public.platform_admins (user_id, note) select id, 'owner' from auth.users where email = '<your email>';`
 

@@ -24,24 +24,26 @@ test("tick: the kill switch stops everything", async () => {
   assert.equal(store.jobs.size, 0);
 });
 
-test("tick: full onboarding flow per site, with the agency deciding twice and the scheduler doing the rest", async () => {
+test("tick: full onboarding flow per site: scan, draft at once, one agency approval adopts it (D35)", async () => {
   const { store, handlers, scans } = setup();
   const r1 = await tick({ store, handlers, now: NOW });
   assert.deepEqual(scans.sort(), ["A", "B"], "each site read once");
   assert.deepEqual(statuses(store, "A"), ["scan:completed", "strategy_proposal:awaiting_approval"]);
   assert.equal(r1.sites[0].strategy, "proposed");
-  assert.ok(r1.sites[0].waiting.some((w) => /approve starting it/.test(w.reason)));
+  assert.equal(scans.length, 2, "the draft reused the scan: no second crawl");
   assert.equal(store.readMemory("A", "report").find((m) => m.key === "audit").value.summary.pagesCrawled, 9, "audit summary kept for the next plan");
+  const spA = store.listJobs("A").find((j) => j.kind === "strategy_proposal");
+  assert.ok(store.get(spA.id).outputs.proposal.firstSteps.length > 0, "the exact draft the agency will adopt is stored on the job");
 
   const r2 = await tick({ store, handlers, now: NOW });
-  assert.equal(r2.runs.length, 0, "a second tick without agency decisions does nothing: no rescan (fresh audit), no duplicate proposal");
+  assert.equal(r2.runs.length, 0, "a second tick without agency decisions does nothing: no rescan (fresh audit), no duplicate draft");
+  assert.ok(r2.sites[0].waiting.some((w) => /approve the result/.test(w.reason)));
 
-  const spA = store.listJobs("A").find((j) => j.kind === "strategy_proposal");
-  store.approve(spA.id, "approve", "alice@agency");
+  // Asking for changes sends the draft back to be redone (after the agency answers questions, for example).
+  store.approve(spA.id, "request_changes", "alice@agency");
   const r3 = await tick({ store, handlers, now: NOW });
   assert.deepEqual(r3.sites[0].moved, [{ job: spA.id, kind: "strategy_proposal", to: "queued" }]);
-  assert.deepEqual(r3.runs.map((x) => x.outcome), ["awaiting_approval"], "drafted, reviewed, back to the agency");
-  assert.ok(store.get(spA.id).outputs.proposal.firstSteps.length > 0, "the exact draft the agency will approve is stored on the job");
+  assert.ok(r3.runs.some((x) => x.job === spA.id && x.outcome === "awaiting_approval"), "redrafted, back to the agency");
   assert.equal(store.listJobs("B").find((j) => j.kind === "strategy_proposal").status, "awaiting_approval", "site B untouched");
 
   store.approve(spA.id, "approve", "alice@agency");

@@ -3,7 +3,7 @@
 Kept short; read at the start of every session, together with [REVIEW-QUESTIONS.md](REVIEW-QUESTIONS.md) (open questions and the owner's replies). History: [history/STATUS-to-2026-11-03.md](history/STATUS-to-2026-11-03.md). Detail: [CHANGELOG.md](CHANGELOG.md), [DECISIONS.md](DECISIONS.md). Deployed state: [../deployment-status.md](../deployment-status.md). Tests: [../test-matrix.md](../test-matrix.md).
 
 ## 1. Snapshot
-- Last updated: 2026-11-08 UTC. Branch `claude/security-fixes` (stacked: #33 → #34 → #36 → #37 → #38 → #39 → #40 → #41 → #43 → #44 → #45 → #46 → #47 → #48 → this; includes PR #42's plan); base `main` `e982f64`; release `v2.22.1`. Requirements: PR #35 (`docs/product/`).
+- Last updated: 2026-11-08 UTC. Branch `claude/strategy-draft` (stacked: #33 → #34 → #36 → #37 → #38 → #39 → #40 → #41 → #43 → #44 → #45 → #46 → #47 → #48 → #49 → this; includes PR #42's plan); base `main` `e982f64`; release `v2.22.1`. Requirements: PR #35 (`docs/product/`).
 - Environment: Linux cloud container, Node 22, Postgres 16 (local SQL checks); network allowed to Supabase, GitHub and the owner's three websites.
 
 ## 2. Goal and phase
@@ -24,8 +24,9 @@ Architecture: [../system-architecture.md](../system-architecture.md). Every job 
 | Operations (D32): agency overview of all sites; platform health and pause switch for platform admins | portal, migration 070000 | `rls11.sql`, `portal-ops.test.mjs` | not deployed |
 | Search Console for hosted sites (D33): accepted advice measured against the rest of the site | `src/god/search-console.mjs` | `search-console.test.mjs` (mocked Google) | not deployed; needs `GOOGLE_KEY_JSON` (Q11) |
 | Security fixes from an independent review (D34) and a go-live preflight check | migration 080000, `scripts/god-preflight.mjs` | `rls12.sql`, `security-fixes.test.mjs`, `god-preflight.test.mjs` | not deployed |
+| One agency approval per strategy (D35): drafted right after the scan; only the agency adopts it | `src/god/`, migration 090000 | `rls13.sql`, `tick.test.mjs`, `god-pg-e2e.mjs`, workerd e2e | not deployed |
 | R1 onboarding (dossier, questions, strategy proposal, site memory) | `src/god/onboarding.mjs`, `handlers.mjs`, memory migration | `onboarding.test.mjs`, `rls5.sql`; live runs on 2 sites (in-memory store) | not deployed |
-| R1 scheduler (tick, budgets, costs, two-step strategy approval; D28) | `src/god/tick.mjs`, `scripts/god-run.mjs`, scheduler migration | `tick.test.mjs`, `rls6.sql`, `god-pg-e2e.mjs`; live dry run on 2 sites | not scheduled or deployed |
+| R1 scheduler (tick, budgets, costs; strategy drafted at once, one agency approval adopts it, D35) | `src/god/tick.mjs`, `scripts/god-run.mjs`, scheduler migration | `tick.test.mjs`, `rls6.sql`, `god-pg-e2e.mjs`; live dry run on 2 sites | not scheduled or deployed |
 | R1 agent runner (advise only, user's key, budget-bounded; D29) | `src/god/agent-runner.mjs` | `agent-runner.test.mjs` (mocked API only) | no live model call yet |
 | Cloudflare execution (Worker scheduler, scan job mode, pause, lease recovery, run log; D30) | `cloud/worker/`, scan function, migration 030000 | `cf-worker.test.mjs`, `rls7.sql`, `cf-local-e2e.mjs` in workerd, `scan-fn-local.mjs` in Deno on a real site | **not deployed**; see `docs/cloudflare/README.md` |
 | Agency console: the SEO God page (approvals, questions, escalations, results, spend) | `cloud/portal/app/index.html`, migration 040000 | `rls8.sql`, `portal-god.test.mjs` (Chromium) | not deployed (portal unchanged) |
@@ -33,9 +34,9 @@ Architecture: [../system-architecture.md](../system-architecture.md). Every job 
 
 ## 4. Checks this session
 - `npm test`: 563/563.
-- `bash cloud/portal/supabase/test/run.sh`: 12 suites pass.
+- `bash cloud/portal/supabase/test/run.sh`: 13 suites pass.
 - `god-pg-e2e.mjs`: passes.
-- `cf-local-e2e.mjs`: the Worker ran in workerd against the real migrations; 26 checks pass, including the client request path and learning.
+- `cf-local-e2e.mjs`: the Worker ran in workerd against all migrations through 090000; 24 checks pass, including one-approval strategy adoption, the client request path and learning.
 - `scan-fn-local.mjs`: the scan function ran in Deno on a real site; 8 checks pass.
 - `cf-measure.mjs`: CPU measured on 3 real sites. A scan costs 0.8-1.6 s of CPU; Worker steps cost 0.4-2.5 ms.
 - Cloudflare and Supabase limits were read from the official docs.

@@ -41,6 +41,12 @@ export async function advance(store, site, jobs, memory, actor = "seo-god") {
     await store.transition(j.id, to, actor, j.requiresApproval ? "needs agency approval" : "queued");
     moved.push({ job: j.id, kind: j.kind, to });
   }
+  // The agency asked for changes (approve_job "request_changes" moves the job to scoped): redo it. Gated work is not
+  // re-queued here: it waits for a new approval to start.
+  for (const j of jobs.filter((x) => x.status === "scoped" && !x.requiresApproval)) {
+    await store.transition(j.id, "queued", actor, "the agency asked for changes: redo it");
+    moved.push({ job: j.id, kind: j.kind, to: "queued" });
+  }
   for (const j of jobs.filter((x) => x.status === "authorized")) {
     if (!j.attempts) { await store.transition(j.id, "queued", actor, "approved by the agency: run it"); moved.push({ job: j.id, kind: j.kind, to: "queued" }); continue; }
     if (j.kind === "strategy_proposal") {

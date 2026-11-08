@@ -31,7 +31,8 @@ export const needsApproval = ({ risk = "low", source = "agency", requiresApprova
 export function canMove(job, to, { approved = false, reviewed = false, actor = "worker" } = {}) {
   const from = job.status, gated = needsApproval(job), risk = job.risk || "low";
   if (!allowed.has(`${from}>${to}`)) return { ok: false, reason: `job cannot move from ${from} to ${to}` };
-  if (actor === "worker" && (to === "rejected" || (to === "authorized" && gated))) return { ok: false, reason: "only an agency approval can authorize or reject" };
+  // Work waiting for the agency is decided only by the agency, even when starting it needed no approval (D35).
+  if (actor === "worker" && (to === "rejected" || (to === "authorized" && (gated || from === "awaiting_approval")))) return { ok: false, reason: "only an agency approval can authorize or reject" };
   if (gated && ["queued", "running", "authorized", "deploying"].includes(to) && !approved) return { ok: false, reason: "job needs agency approval first" };
   if (from === "awaiting_review" && ["awaiting_approval", "authorized"].includes(to) && risk !== "low" && !reviewed) return { ok: false, reason: "job needs a passing independent review" };
   if (from === "running" && to === "completed" && (risk !== "low" || gated)) return { ok: false, reason: "only low-risk jobs without approval can complete straight from running" };

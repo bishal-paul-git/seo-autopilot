@@ -2,6 +2,23 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (One agency approval per strategy, D35; branch claude/strategy-draft)
+- **Decision:** D35, from REVIEW-QUESTIONS D1 (Claude recommendation, ChatGPT agreed; Owner reply pending).
+- **Code:**
+  - `src/god/planner.mjs`: the strategy draft is queued right after the scan, ungated.
+  - `src/god/handlers.mjs`: the draft result carries `adopt: true`.
+  - `src/god/worker.mjs`: results that need adopting go to the agency after review.
+  - `src/god/tick.mjs`: "request changes" on ungated work redoes it.
+  - `src/core/job-lifecycle.mjs`: the worker cannot authorize or reject anything waiting for the agency.
+- **Migration (not applied):** `20261108090000_strategy_draft.sql` redefines `transition_job` with the same rule.
+- **Tests:**
+  - `rls13.sql` (new); `god.test.mjs`, `onboarding.test.mjs`, `tick.test.mjs` updated.
+  - `scripts/god-pg-e2e.mjs` now applies the new migration and checks one adoption approval and a redraft after "request changes".
+  - `scripts/cf-local-e2e.mjs` now applies migrations 070000–090000 and checks one adoption approval in workerd.
+  - `npm test` 563/563; 13 SQL suites pass; `god-pg-e2e.mjs` passes; `cf-local-e2e.mjs` 24 checks pass.
+- **Docs:** D35; Cloudflare README migration list; preflight list gains 080000.
+- **Deployment:** none.
+
 ## 2026-11-08 (Security fixes, D34, and go-live preflight; branch claude/security-fixes)
 - **Review:** an independent security review of the stack found three exploitable defects (D34). All are fixed, with regression tests.
 - **Migration (not applied):** `20261108080000_security_fixes.sql`.

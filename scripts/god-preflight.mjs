@@ -16,6 +16,8 @@ export const MIGRATIONS = [
   ["20261108050000_client_portal", "agency_inbox"],
   ["20261108060000_learning", "god_console"],
   ["20261108070000_operations", "platform_health"],
+  ["20261108080000_security_fixes", "set_gsc_allowed"],
+  // 20261108090000_strategy_draft only redefines transition_job, so no new function shows it: check it by hand (README step 2).
 ];
 
 /** Runs every check. deps: { env, fetchImpl, now }. Returns [{ id, ok, required, detail, fix }]. */

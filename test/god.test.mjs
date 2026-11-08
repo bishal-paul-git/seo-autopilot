@@ -25,7 +25,8 @@ test("planner: before an approved strategy only discovery and the strategy propo
   assert.equal(p.strategyApproved, false);
   assert.deepEqual(p.jobs.map((j) => j.kind).sort(), ["scan", "strategy_proposal"]);
   const sp = p.jobs.find((j) => j.kind === "strategy_proposal");
-  assert.ok(sp.requiresApproval && sp.risk === "high" && sp.priority === 1);
+  assert.ok(!sp.requiresApproval && sp.risk === "medium" && sp.priority === 2, "drafting is free and ungated; adopting it needs the agency (D35)");
+  assert.ok(p.jobs.findIndex((j) => j.kind === "scan") < p.jobs.findIndex((j) => j.kind === "strategy_proposal"), "the scan is queued first");
   assert.deepEqual(planSite({ site: { id: "A" }, reports: { audit: { ...AUDIT, generatedAt: NOW } }, strategy: { status: "proposed" }, now: NOW }).jobs, [], "fresh audit and a pending proposal: nothing new");
 });
 
@@ -54,14 +55,17 @@ test("worker: two sites in one queue, strategy gate, agency approval, isolation 
   const store = new MemoryStore();
   for (const id of ["A", "B"]) await enqueue(store, id, planSite({ site: { id }, reports: {}, strategy: { status: "none" }, now: NOW }));
   const seen = [];
-  const handlers = { scan: async (job) => { seen.push(job.siteId); return { evidence: [`scanned ${job.siteId}`] }; } };
-  const r1 = await runOnce({ store, handlers }), r2 = await runOnce({ store, handlers });
-  assert.deepEqual([r1.outcome, r2.outcome], ["completed", "completed"]);
+  const handlers = { scan: async (job) => { seen.push(job.siteId); return { evidence: [`scanned ${job.siteId}`] }; },
+    strategy_proposal: async (job) => ({ evidence: [`drafted for ${job.siteId}`], proposal: { status: "proposed", firstSteps: [] }, adopt: true }) };
+  const outcomes = [];
+  for (let i = 0; i < 4; i++) outcomes.push((await runOnce({ store, handlers })).outcome);
+  assert.deepEqual(outcomes.sort(), ["awaiting_approval", "awaiting_approval", "completed", "completed"], "both scans done; both drafts made and sent to the agency");
   assert.deepEqual(seen.sort(), ["A", "B"]);
-  assert.equal(await runOnce({ store, handlers }), null, "strategy proposals are never claimed before approval");
+  assert.equal(await runOnce({ store, handlers }), null, "nothing else runs without the agency");
   const props = [...store.jobs.values()].filter((j) => j.kind === "strategy_proposal");
   assert.deepEqual(props.map((j) => j.status), ["awaiting_approval", "awaiting_approval"]);
-  assert.throws(() => store.transition(props[0].id, "authorized", "worker-1"), /only an agency approval/);
+  assert.throws(() => store.transition(props[0].id, "authorized", "worker-1"), /only an agency approval/, "a worker cannot adopt its own draft, even though drafting was ungated");
+  assert.throws(() => store.transition(props[0].id, "rejected", "worker-1"), /only an agency approval/);
   assert.equal(store.approve(props[0].id, "approve", "alice@agency").status, "authorized");
   assert.equal(store.get(props[1].id).status, "awaiting_approval", "approving site A changes nothing for site B");
 });
