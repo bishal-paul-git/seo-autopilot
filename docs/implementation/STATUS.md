@@ -3,8 +3,20 @@
 Kept short; read at the start of every session, together with [REVIEW-QUESTIONS.md](REVIEW-QUESTIONS.md) (open questions and the owner's replies). History: [history/STATUS-to-2026-11-03.md](history/STATUS-to-2026-11-03.md). Detail: [CHANGELOG.md](CHANGELOG.md), [DECISIONS.md](DECISIONS.md). Deployed state: [../deployment-status.md](../deployment-status.md). Tests: [../test-matrix.md](../test-matrix.md).
 
 ## 1. Snapshot
-- Last updated: 2026-11-08 UTC. Branch `claude/release-1`, consolidated draft PR [#51](https://github.com/bishal-paul-git/seo-autopilot/pull/51) into `main` (carries #33–#50 and #42's plan; D35 confirmed by the owner); base `main` `e982f64`; release `v2.22.1`. Requirements: PR #35 (`docs/product/`).
+- Last updated: 2026-11-08 ~17:30 UTC. Release 1 merged into `main` as `5b5f103` ([#51](https://github.com/bishal-paul-git/seo-autopilot/pull/51), owner-authorized; carries #33–#50). Follow-up docs on `claude/hopeful-euler-662mu5`. Release `v2.22.1` (no new tag yet).
 - Environment: Linux cloud container, Node 22, Postgres 16 (local SQL checks); network allowed to Supabase, GitHub and the owner's three websites.
+
+## 1b. Production (2026-11-08, Supabase `ymwwwhdlyjnqbxxhtcew`)
+| Step | State | Evidence |
+|---|---|---|
+| Backup | done | schema `backup_20261108` (9 tables + function definitions) |
+| P1 migrations (15, one transaction) + P2 Vault + platform admin + pause | **applied by the owner** in the SQL editor via a loader that downloads `release-1-apply.sql` at commit 674a931 and checks its md5 (`eef7677c…`) | read-only check: 18 migrations (latest 20261108130000), 0 cron jobs, 2 Vault secrets, 1 platform admin, `god_control.paused = true`, 4 sites and 2 agencies intact, helper `http` extension removed; pg_cron and pg_net installed |
+| `notify` Edge Function v1 | deployed (verify_jwt off; own secret check) | POST without/with a wrong secret: 403 |
+| `scan` Edge Function v3 | deployed; product modules imported from `src/` at pinned commit 674a931 (identical to the `build-scan.mjs` copy) | 403 without secret; job-mode scan of erudience.com (10 pages, read-only) through pg_net: HTTP 200, `snapshotStored: true` |
+| Cloudflare Worker (paused) | **not deployed**: needs repository secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `SUPABASE_SERVICE_ROLE_KEY`, then Actions → deploy-seo-god | n/a |
+| SMTP | **owner**: Auth → SMTP settings, and `SMTP_*` + `PORTAL_URL` function secrets | summaries are skipped (reported) until set |
+| Portal publish (P6), unpause (P7), GitHub execution for the pilot (P8) | not done; not authorized for the pilot | n/a |
+Rollback: `cloud/portal/supabase/rollback/release-1.sql`; previous scan is v2 (redeploy from the pre-Release-1 source).
 
 ## 2. Goal and phase
 Release 1: agency-ready multi-client platform (`docs/product/SEO-GOD-MASTER-SPEC.md`). Phase: **M1 audit done** (`docs/product/R1-AUDIT-AND-PLAN.md`), **M2 shared contracts started** (`docs/product/R1-CONTRACTS.md`, D27).
