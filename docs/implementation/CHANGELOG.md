@@ -2,6 +2,17 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (Operations, D32, and the review file; branch claude/operations)
+- **Code:**
+  - Portal **Operations** page, every agency member: their websites with approvals waiting, client requests, stuck work, strategy state, spend, and last-planned time or last error.
+  - Platform admins also get scheduler health (runs, errors, usage against Workers Free) and the pause switch, with a reason.
+- **Migration (not applied):** `20261108070000_operations.sql` (`platform_admins`, `agency_overview`, `platform_health`, `set_platform_paused`).
+- **Docs:** `docs/implementation/REVIEW-QUESTIONS.md`, a shared file of questions, decisions, suggestions and disagreements with reply slots for the owner and ChatGPT. It is linked from STATUS.
+- **Tests:**
+  - `rls11.sql`: agencies see only their sites; agency members and clients are refused platform functions; nobody can make themselves admin.
+  - `test/portal-ops.test.mjs` (2 tests, Chromium).
+  - `npm test` 551/551; 11 SQL suites pass.
+
 ## 2026-11-08 (R1-D1 learning, D31; branch claude/learning)
 - **Code:**
   - `src/god/learning.mjs` (pure): experiments from accepted advice with a per-page baseline; re-checks only on pages crawled again; lessons per agent from outcomes and agency refusals; lessons applied to the plan (pause, lower priority).

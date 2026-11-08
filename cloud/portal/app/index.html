@@ -659,6 +659,34 @@ function pClientHome() {
   return `<div><h1>Your websites</h1><p class="lead">Reports from your SEO team.</p></div><div class="sites">${CLIENT_SITES.map((s) => `<a class="card site-card" href="#/k/${s.key}/overview"><div style="display:flex;gap:12px;align-items:center"><span class="score ${s.status === "live" ? tone(health(s)) : "warn"}">${s.status === "live" ? health(s) : "–"}</span><div><b>${esc(s.name)}</b><div class="xs muted">${esc(host(s.url))}</div></div></div></a>`).join("") || '<div class="card">No websites have been shared with you yet. Ask your SEO team.</div>'}</div>`;
 }
 
+/* ---------- Operations: every site of the agency at a glance; platform health for platform admins only (D32) ---------- */
+let OPS = null;
+async function loadOps() {
+  const [overview, health] = await Promise.all([rpc("agency_overview").catch((e) => ({ error: e.message })), rpc("platform_health", { p_days: 1 }).catch(() => null)]);
+  OPS = { overview, health }; // health is null for everyone who is not a platform admin
+}
+const ago = (t) => { if (!t) return "never"; const m = Math.round((Date.now() - Date.parse(t)) / 60000); return m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 2880 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} days ago`; };
+function pOps() {
+  const o = OPS?.overview, h = OPS?.health;
+  const head = `<div><h1>Operations</h1><p class="lead">Every website's SEO God at a glance: what needs you, what is stuck, and what it costs.</p></div>`;
+  if (!o || o.error) return head + `<div class="callout">Operations are not switched on for this workspace yet. ${esc(o?.error || "")}</div>`;
+  const sum = (k) => o.reduce((a, s) => a + Number(s[k] || 0), 0);
+  const STRAT_PILL = { approved: ["Strategy approved", "ok"], proposed: ["Strategy waiting", "warn"] };
+  let html = head + `<div class="grid g4">${kpi("Waiting for you", fmt(sum("waiting")), null, "Approvals across all websites.")}${kpi("Client requests", fmt(sum("requests")), null, "New or waiting for your answer.")}${kpi("Needs a person", fmt(sum("escalated")), null, "Stopped after repeated failures or a refusal.")}${kpi("Spend this month", usd(sum("spendMonth")), null, `${usd(sum("spendToday"))} today, from your own AI key.`)}</div>
+  <div class="card pad0"><div class="ch"><h2>Websites</h2></div><div class="list">${o.map((s) => { const p = STRAT_PILL[s.strategy] || ["No strategy yet", ""]; return `<div class="row" style="flex-wrap:wrap;gap:8px">
+    <div style="flex:1;min-width:200px"><div class="t"><a href="#/s/${esc(s.id)}/god">${esc(s.name)}</a></div><div class="s">${esc(host(s.url))} · planned ${esc(ago(s.lastPlanned))}${s.lastError ? ` · <span style="color:var(--bad,#c33)">${esc(s.lastError)}</span>` : ""}</div></div>
+    <span class="pill ${p[1]}">${p[0]}</span>${Number(s.waiting) ? `<span class="pill warn">${fmt(s.waiting)} waiting</span>` : ""}${Number(s.requests) ? `<span class="pill info"><a href="#/s/${esc(s.id)}/requests">${fmt(s.requests)} requests</a></span>` : ""}${Number(s.escalated) ? `<span class="pill bad">${fmt(s.escalated)} stuck</span>` : ""}${s.status === "paused" ? '<span class="pill">paused</span>' : ""}<span class="xs muted">${usd(s.spendMonth)} this month</span></div>`; }).join("") || '<div class="empty">No websites yet.</div>'}</div></div>`;
+  if (h) {
+    const c = h.control || {}, u = h.usage || {}, pct = ((Number(u.invocations || 0) / 100000) * 100).toFixed(2);
+    html += `<div class="card"><div class="ch"><h2>Scheduler (platform)</h2><span class="pill ${c.paused ? "warn" : "ok"}">${c.paused ? "Paused" : "Running"}</span></div>
+      <p class="xs muted" style="margin:0 0 8px">Only platform admins see this. ${c.paused ? `Paused${c.reason ? `: ${esc(c.reason)}` : ""}${c.by ? ` by ${esc(c.by)}` : ""}.` : ""} Last run ${esc(ago(h.lastRunAt))}. ${fmt(h.sites)} websites, ${fmt(h.pausedSites)} paused.</p>
+      <div class="grid g4">${kpi("Runs (24 h)", fmt(u.runs), null, `${fmt(u.runsWithErrors)} with errors`)}${kpi("Worker requests (24 h)", fmt(u.invocations), null, `${pct}% of the 100,000 a day on Workers Free`)}${kpi("Outbound requests", fmt(u.subrequests), null, "Database, scans, AI provider")}${kpi("Jobs run", fmt(u.jobsRun), null, `${fmt(u.jobsRecovered)} recovered after a stop`)}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">${c.paused ? '<button class="btn primary" id="ops-resume">Resume the scheduler</button>' : '<button class="btn" id="ops-pause">Pause the scheduler</button>'}</div>
+      <details style="margin-top:10px"><summary class="xs" style="cursor:pointer">Recent runs</summary><div class="list">${(h.runs || []).map((r) => `<div class="row"><div><div class="t">${esc(String(r.started_at).slice(0, 16).replace("T", " "))} · ${esc(r.runner)}</div><div class="s">${fmt(r.sites_planned)} sites planned · ${fmt(r.jobs_run)} jobs · ${fmt(r.invocations)} invocations · ${fmt(r.subrequests)} requests${r.paused ? " · paused" : ""}${(r.errors || []).length ? ` · <span style="color:var(--bad,#c33)">${esc(r.errors.join("; "))}</span>` : ""}</div></div></div>`).join("") || '<div class="empty">No runs yet.</div>'}</div></details></div>`;
+  }
+  return html;
+}
+
 function pTeamPage() {
   const owner = ORG?.role === "owner";
   return `<div><h1>Team and brand</h1><p class="lead">People in ${esc(ORG?.name || "your agency")}, and how your client links look.</p></div>
@@ -718,9 +746,9 @@ function shell(s, page) {
   $("#rail").innerHTML = `<a class="brand" href="${mode === "client" && s ? link(s, "overview") : "#/"}">${brandMark}<span><b>${mode === "client" && s ? esc(s.name) : "SEO Autopilot"}</b><span>${mode === "client" ? (s?.brand?.name ? `SEO dashboard by ${esc(s.brand.name)}` : "SEO dashboard") : "Workspace"}</span></span></a>
     ${s ? `<div><div class="lbl">Dashboard</div><nav>${pages.map(([k, t, ic]) => `<a href="${link(s, k)}" aria-current="${k === page ? "page" : "false"}">${ic}${t}</a>`).join("")}</nav></div>` : ""}
     ${mode === "client" && clientAccount ? `<div><div class="lbl">Account</div><nav>${CLIENT_SITES.length > 1 ? `<a href="#/">${I.grid}Your websites</a>` : ""}<a href="#/logout">${I.out}Sign out</a></nav></div>` : ""}
-    ${mode === "agency" && session ? `<div><div class="lbl">Websites</div><nav><a href="#/" aria-current="${!s && page !== "add" ? "page" : "false"}">${I.grid}All websites</a>${SITES.map((x) => `<a href="#/s/${x.key}/overview" aria-current="${s && x.key === s.key ? "page" : "false"}"><span class="dot ${x.status === "live" ? "live" : "setup"}"></span>${esc(x.name)}</a>`).join("")}<a href="#/add" aria-current="${page === "add" ? "page" : "false"}">${I.plus}Connect a website</a><a href="#/team" aria-current="${page === "teampage" ? "page" : "false"}">${I.people}Team and brand</a><a href="#/logout">${I.out}Sign out</a></nav></div>` : ""}
+    ${mode === "agency" && session ? `<div><div class="lbl">Websites</div><nav><a href="#/" aria-current="${!s && page !== "add" ? "page" : "false"}">${I.grid}All websites</a>${SITES.map((x) => `<a href="#/s/${x.key}/overview" aria-current="${s && x.key === s.key ? "page" : "false"}"><span class="dot ${x.status === "live" ? "live" : "setup"}"></span>${esc(x.name)}</a>`).join("")}<a href="#/add" aria-current="${page === "add" ? "page" : "false"}">${I.plus}Connect a website</a><a href="#/ops" aria-current="${page === "ops" ? "page" : "false"}">${I.report}Operations</a><a href="#/team" aria-current="${page === "teampage" ? "page" : "false"}">${I.people}Team and brand</a><a href="#/logout">${I.out}Sign out</a></nav></div>` : ""}
     <div class="foot">${s ? `Data from Google Search Console${s.ga4 && !s.ga4.error ? ", Google Analytics" : ""} and the site audit. Updated ${esc(s.lastAt ? s.lastAt.slice(0, 10) : last(s).day || "–")}.` : session ? esc(session.email || "") : ""}</div>`;
-  const title = s ? (PAGES.find(([k]) => k === page) || PAGES[0])[1] : { add: "Connect a website", login: "Sign in", teampage: "Team and brand" }[page] || "Websites";
+  const title = s ? (PAGES.find(([k]) => k === page) || PAGES[0])[1] : { add: "Connect a website", login: "Sign in", teampage: "Team and brand", ops: "Operations" }[page] || "Websites";
   $("#hdr").innerHTML = `<span class="mobile-brand">${brandMark}</span>
     <div class="site"><b>${s ? esc(s.name) : "SEO Autopilot"}</b><span>${esc(title)}${s && s.status === "live" && s.lastAt ? ` · updated ${esc(s.lastAt.slice(0, 10))}` : ""}</span></div><span class="sp"></span>
     ${s && mode === "agency" ? `<button class="btn" id="share">${I.share}<span>Client link</span></button>` : ""}
@@ -808,6 +836,13 @@ function wire(s) {
     try { await rpc("submit_to_agency", { p_site: s.id, p_kind: f.get("kind"), p_title: String(f.get("title") || "").trim(), p_body: String(f.get("body") || "").trim() || null }); toast("Sent to your SEO team."); await loadRequests(s); render(); }
     catch (x) { err.textContent = x.message; }
   };
+  const opsSet = async (paused) => {
+    const reason = paused ? prompt("Why pause the scheduler? (saved with the change)") : null;
+    if (paused && reason === null) return;
+    try { await rpc("set_platform_paused", { p_paused: paused, p_reason: reason }); toast(paused ? "Paused from the next run." : "Resumed."); await loadOps(); render(); } catch (e) { toast(e.message); }
+  };
+  const op = $("#ops-pause"); if (op) op.onclick = () => opsSet(true);
+  const orz = $("#ops-resume"); if (orz) orz.onclick = () => opsSet(false);
   const people = $("#people");
   if (people) rpc("org_people").then((list) => { people.innerHTML = list.filter((p) => !ORG || p.org === ORG.id).map((p) => `<div class="row"><div><div class="t">${esc(p.email)}</div><div class="s">since ${esc(String(p.since).slice(0, 10))}</div></div><span class="pill ${p.role === "owner" ? "ok" : ""}">${esc(p.role)}</span></div>`).join("") || '<div class="empty">Only you so far.</div>'; }).catch((e) => (people.innerHTML = `<div class="empty">${esc(e.message)}</div>`));
   const inv = $("#invite-form");
@@ -882,6 +917,7 @@ async function render() {
     if (h === "#/login" || h === "#/signup") { shell(null, "login"); document.title = "Sign in · SEO Autopilot"; $("#page").innerHTML = pLogin(); return wire(null); }
     if (!(await token())) { location.hash = "#/login"; return; }
     if (!loaded) { $("#page").innerHTML = '<div class="empty">Loading…</div>'; await loadAgency(); }
+    if (h === "#/ops") { await loadOps(); shell(null, "ops"); document.title = "Operations · SEO Autopilot"; $("#page").innerHTML = pOps(); return wire(null); }
     if (h === "#/team") { shell(null, "teampage"); document.title = "Team and brand · SEO Autopilot"; $("#page").innerHTML = pTeamPage(); return wire(null); }
     if (h === "#/add") { shell(null, "add"); document.title = "Connect a website · SEO Autopilot"; $("#page").innerHTML = pAdd(); return wire(null); }
     if (!m && !SITES.length && CLIENT_SITES.length) {

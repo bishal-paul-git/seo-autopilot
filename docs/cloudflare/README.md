@@ -37,7 +37,7 @@ Where every job runs: [runtime-matrix.md](runtime-matrix.md). Free-tier usage: [
 ## Account setup (owner actions, in this order)
 Nothing here has been done. Each step needs the owner.
 
-1. **Review and merge the PR chain:** #33 → #34 → #35/#36 → #37 → #38 → #39 → #40 → #41 → #43 → #44 → #45 → the learning PR.
+1. **Review and merge the PR chain:** #33 → #34 → #35/#36 → #37 → #38 → #39 → #40 → #41 → #43 → #44 → #45 → #46 → the operations PR.
 2. **Supabase migrations.** Apply them in order to project `ymwwwhdlyjnqbxxhtcew`, Dashboard → SQL, or `supabase db push` from a reviewed checkout:
    - `20261104000000_portal_url_sites.sql`
    - `20261108000000_r1_contracts.sql`
@@ -47,6 +47,9 @@ Nothing here has been done. Each step needs the owner.
    - `20261108040000_agency_console.sql` (the SEO God page in the portal)
    - `20261108050000_client_portal.sql` (client requests and the agency inbox)
    - `20261108060000_learning.sql` (what the SEO God learned, in the console)
+   - `20261108070000_operations.sql` (Operations page; platform admins)
+
+   Then make yourself a platform admin: `insert into public.platform_admins (user_id, note) select id, 'owner' from auth.users where email = '<your email>';`
 
    The first one (D25) needs the `pg_cron` and `pg_net` extensions. It also **schedules its own 10-minute scan** (`seo-autopilot-scan`). With Cloudflare as the only scheduler, remove that schedule straight after applying, so sites are not crawled twice:
 
@@ -84,7 +87,7 @@ Nothing here has been done. Each step needs the owner.
 A staging Worker (`npm run deploy:staging`) exists in `wrangler.toml`. Point its `SUPABASE_URL` at a Supabase branch or a test project, never at production data.
 
 ## Rollback (fastest first)
-1. `select public.set_god_paused(true, 'reason');` stops all work from the next run, with no deploy.
+1. Portal → Operations → **Pause the scheduler** (platform admins), or `select public.set_god_paused(true, 'reason');`. Either stops all work from the next run, with no deploy.
 2. `SEO_GOD_PAUSED = "true"` plus `npm run deploy`, or `npx wrangler rollback` to the previous Worker version.
 3. `npx wrangler triggers deploy` with an empty `crons` list removes the schedule; `npx wrangler delete` removes the Worker.
 4. Jobs left `running` are recovered by `reap_expired_leases` on the next run, or can be failed by hand with `public.fail_job`. No website is ever changed by this Worker (advise only), so no site rollback is needed.

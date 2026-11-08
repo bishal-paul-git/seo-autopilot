@@ -17,4 +17,5 @@ p -f shim.sql -f ../migrations/20261030000000_portal.sql -f rls.sql \
   -f ../migrations/20261108030000_cloudflare_execution.sql -f rls7.sql \
   -f ../migrations/20261108040000_agency_console.sql -f rls8.sql \
   -f ../migrations/20261108050000_client_portal.sql -f rls9.sql \
-  -f ../migrations/20261108060000_learning.sql -f rls10.sql
+  -f ../migrations/20261108060000_learning.sql -f rls10.sql \
+  -f ../migrations/20261108070000_operations.sql -f rls11.sql

@@ -83,6 +83,14 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-11-08 D32 Operations: each agency sees only its own sites; platform health is for platform admins
+**Decision:** the portal's Operations page has two parts.
+- **Every agency** sees all its own websites at a glance: approvals waiting, client requests, stuck work, spend and when each site was last planned (`agency_overview`).
+- **Platform admins only** also see scheduler health: recent runs, errors and usage against the Workers Free daily limit. They get the global pause switch too (`platform_health`, `set_platform_paused`). The admin list is a table only the service role can change.
+
+**Why:** scheduler runs and the pause switch cover every agency. Showing them to agency members would leak other tenants' activity and let any agency stop everyone.
+**Tradeoffs:** a platform admin must be added once by SQL; there is no self-service admin UI.
+
 ## 2026-11-08 D31 Learning measures what an audit can show, and says so
 **Decision:** the SEO God learns from three things.
 1. **Accepted advice is re-checked by later scans.** Each recommendation is recorded with the problems found on its page. A problem counts as fixed only if the page was crawled again and the problem is gone. Results are judged after 3 days, and unresolved items close as "not done" after 30 days.
