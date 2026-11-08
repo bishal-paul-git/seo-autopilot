@@ -2,6 +2,12 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (Production deployment of Release 1; deployment actions only)
+- **Deployment:** the owner ran the Release 1 SQL in the Supabase SQL editor (the full 1,581-line paste was truncated on a phone, so a short loader fetched `cloud/portal/supabase/release-1-apply.sql` at commit 674a931 with the `http` extension, checked its md5, ran it in one transaction and removed the extension). Verified read-only: 18 migrations, 0 cron jobs, 2 Vault secrets, 1 platform admin, paused.
+- **Deployment:** `notify` v1 and `scan` v3 Edge Functions deployed via the Supabase connector. scan v3 imports `src/hosted/scan.mjs` from GitHub at the pinned commit (resolved at deploy time). Checks: both answer 403 without the secret; one job-mode read-only scan of erudience.com returned 200 and stored a snapshot.
+- **Merge:** PR #51 merged into `main` (`5b5f103`, merge commit) on the owner's authorization ("do whatever you needed approval"); CI was green on 674a931.
+- Not done: Cloudflare Worker (needs repository secrets), SMTP settings, portal publish, unpause.
+
 ## 2026-11-08 (Email via Supabase SMTP, D40; production preparation; branch claude/release-1)
 - **Owner (chat):** use Supabase SMTP for email; do whatever needed approval.
 - **Code:**
