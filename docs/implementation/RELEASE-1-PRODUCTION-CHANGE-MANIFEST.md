@@ -29,7 +29,19 @@ Keep both files outside the repository: they contain customer data. Restoring a 
 
 ## 2. Steps, in order
 
-### P1. Database migrations (Gate B; approval needed)
+### P1. Database migrations (owner approved 2026-11-08: "do whatever you needed approval")
+**Simplest way (one paste):** Supabase Dashboard → SQL Editor → New query → paste [`cloud/portal/supabase/release-1-apply.sql`](../../cloud/portal/supabase/release-1-apply.sql) → Run.
+- It runs all 15 migrations in one transaction, so it either applies everything or nothing.
+- It records each migration in the migration history and leaves out the pg_cron schedule.
+- It creates the two Vault secrets (the shared secret is generated inside the database and never shown).
+- It makes the owner the platform admin and keeps the SEO God paused.
+- Expected check row: `migrations 18 | cron_jobs 0 | vault_secrets 2 | platform_admins 1 | paused true`.
+- Running it a second time stops with "already applied" and changes nothing.
+- It was dry-run on a local database shaped like production (base schema, owner account, four sites); the sites were untouched.
+- Backup: the `backup_20261108` schema already holds a copy of every existing table, taken 2026-11-08 through the Supabase connector.
+
+The file-by-file route below gives the same result.
+
 Apply in this order, in the SQL editor, one file at a time, each in its own transaction:
 
 | # | File | Adds | Touches existing objects |

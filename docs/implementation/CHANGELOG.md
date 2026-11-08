@@ -2,6 +2,28 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (Email via Supabase SMTP, D40; production preparation; branch claude/release-1)
+- **Owner (chat):** use Supabase SMTP for email; do whatever needed approval.
+- **Code:**
+  - Migration `20261108130000_email.sql`.
+  - The `notify` Edge Function.
+  - The Worker calls `notify`, and reads the scan secret from Vault.
+  - The portal's daily summary switch.
+  - `.github/workflows/deploy-seo-god.yml`: manual, refuses an un-paused deploy.
+  - `cloud/portal/supabase/release-1-apply.sql`, built by `scripts/bundle-release-1.mjs`: all migrations in one transaction for the SQL editor.
+- **Tests:**
+  - `notify.test.mjs`, `rls18.sql`, cf-worker (+2), portal-notes.
+  - `npm test` 586/586; 18 SQL suites; rollback exact after 15 migrations; workerd e2e 31 checks, now without a copied scan secret.
+  - Bundle dry-run on a production-shaped local database: applies, then refuses a second run.
+- **Production actions:**
+  - Read-only checks.
+  - Created the `backup_20261108` schema with copies of all 8 existing tables and 21 function definitions.
+  - The migration attempts through the Supabase connector did not run: each asks the owner for confirmation, and the confirmation timed out. The production migration history is unchanged at 3.
+- **Blocked:**
+  - Cloudflare: the saved deploy token is not attached by the session proxy.
+  - Supabase management token: rejected.
+  - The owner declined the replacement forms. The Worker deploys through the GitHub workflow instead.
+
 ## 2026-11-08 (Build batch: verified execution, notifications, reports, team page, brand discovery; branch claude/release-1)
 - **Owner direction (chat, 2026-11-08):** keep building without re-asking settled decisions. Production writes, merges and live jobs still need explicit approval.
 - **Code (commits 242ef4e, 3d40129, 967eb00, f6bd85e, 5f9948a):**

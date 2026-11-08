@@ -119,6 +119,20 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
 
+## 2026-11-08 D40 Email through Supabase's SMTP; the Worker reads the scan secret from Vault
+**Context:** the owner asked for email through Supabase SMTP (Q7 answered in chat, 2026-11-08).
+
+**Decision:**
+- Invitations (agency and client) go out as Supabase Auth's own invite email, using the project's Auth SMTP and its "Invite user" template. The new `notify` Edge Function asks Auth to invite each queued invitee once. The invite-only gate (D36) lets the account be created because the invite is pending.
+- Daily summaries of unseen notifications are sent by `notify` through the same SMTP server. Its details are kept as Edge Function secrets (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `PORTAL_URL`).
+  - At most one a day, and only when something is new.
+  - Each person can turn it off.
+  - Without the secrets, summaries are skipped and the run says why.
+- The Cloudflare Worker calls `notify` every run, even while the SEO God is paused: invitations are portal features.
+- The Worker reads the shared scan secret from Vault through a service-role-only function, so nobody copies it by hand.
+
+**Tradeoffs:** Supabase's built-in SMTP sends only a few emails an hour and is meant for testing. A custom SMTP server in Authentication → SMTP Settings is needed for real use, and the same details then go into the function secrets.
+
 ## 2026-11-08 D39 Brand discovery is labelled; competitors are not guessed
 **Decision:** discovery records the theme colour a site declares (stated) and the colours and fonts read from its own HTML styles (inferred), each with its source. Only plain hex colours and plain font names are kept, and generic font stacks are dropped. Competitors are not guessed from a site's own pages: they come from search data through the existing `gap` research job.
 
