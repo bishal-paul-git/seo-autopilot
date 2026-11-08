@@ -33,7 +33,7 @@ Architecture: [../system-architecture.md](../system-architecture.md). Every job 
 
 ## 4. Checks this session
 - `npm test`: 565/565.
-- `bash cloud/portal/supabase/test/run.sh`: 13 suites pass (`rls14.sql`: invite-only sign-up).
+- `bash cloud/portal/supabase/test/run.sh`: 14 suites pass (`rls14.sql`: invite-only sign-up; `rls15.sql`: every outsider-callable function called against another agency's ids, 956 calls, none leaked or changed data; a planted leak was caught).
 - `node scripts/db-rollback-check.mjs`: the Release 1 rollback restores the production-equivalent catalog exactly; the chain re-applies cleanly.
 - Read-only production fingerprint (2026-11-08): the schema equals the two portal migrations, with 3 noted exceptions (manifest section 0).
 - `god-pg-e2e.mjs`: passes.
@@ -53,6 +53,7 @@ Owner answered Q1, Q2, Q3 and Q8 (2026-11-08). The other open decisions are in [
 3. Keys for live-provider tests (`docs/runbook.md` lists names); `SEO_AGENT=true` on one site to grade agents.
 4. Supabase Auth: leaked-password protection (Q9). Invite-only sign-up is handled by migration 100000 (D36), with no Auth setting change.
 5. Confirm D1 (PR #50, D35) and who the platform admin is (Q10).
+6. Old PRs #23, #24 and #31: see [STALE-PR-AUDIT-2026-11-08.md](STALE-PR-AUDIT-2026-11-08.md). Nothing was closed.
 
 ## 6. Cost
 No provider spend. Hosted scan within the Supabase free plan (about 3 sites per wake, 144 wakes a day).

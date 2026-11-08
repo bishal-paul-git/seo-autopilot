@@ -2,6 +2,21 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (Exhaustive tenant-isolation test, stale-PR audit; branch claude/release-1)
+- **Tests:** `cloud/portal/supabase/test/rls15.sql` (Gate E).
+  - It finds every public function that a signed-in user or anon may call, and calls it as an outsider agency and as anon, aimed at every one of agency A's ids, with several text values.
+  - It fails when a result contains agency A's ids or addresses, or when any of agency A's rows change. Each call is rolled back. New functions are covered automatically.
+  - Result: 956 outsider calls to 30 functions; 925 refused; none leaked or changed data.
+  - Mutation check: a planted function leaking a site, and one renaming a site, were both reported (for Mallory and for anon), so the test can fail.
+- **Docs:** `STALE-PR-AUDIT-2026-11-08.md` (S4).
+  - #24 is still useful: the root `action.yml` is on `setup-node@v4`.
+  - #31 conflicts with #51 (owner choice Q5).
+  - #23 conflicts with `main`; its work-evidence job needs an owner decision.
+  - Stack PRs are superseded by #51 once it merges.
+  - Nothing was closed.
+- **Checks:** 14 SQL suites pass. #51 merges cleanly into `main`.
+- **Deployment:** none.
+
 ## 2026-11-08 (Consolidated Release 1 PR, production change manifest, invite-only sign-up, D36; branch claude/release-1)
 - **Owner decisions** (commits 76510d3 and ce68c03 by the owner): Q1 one consolidated PR; Q2 production preparation and a paused deployment only after reviews, each production change presented for approval; Q3 erudience.com read-only pilot; Q8 invite-only sign-up.
 - **PR:** [#51](https://github.com/bishal-paul-git/seo-autopilot/pull/51), a draft consolidating #33–#49 into `main`. Merge commits; every original PR linked. #50 (D35) is kept out until the owner confirms D1.

@@ -147,7 +147,7 @@ This needs a separate approval after a day of healthy paused runs. It will be sc
 
 ## 4. Checks behind this manifest (local, this session; mocked providers only)
 - `npm test`: 564/564.
-- `bash cloud/portal/supabase/test/run.sh`: 13 suites, including `rls14.sql` (invite-only).
+- `bash cloud/portal/supabase/test/run.sh`: 14 suites, including `rls14.sql` (invite-only) and `rls15.sql`. The second calls every outsider-callable function against another agency's records (956 calls; nothing leaked or changed).
 - `node scripts/db-rollback-check.mjs`: rollback exact; re-apply clean.
 - `node scripts/god-pg-e2e.mjs`.
 - `node scripts/cf-local-e2e.mjs` (workerd).
