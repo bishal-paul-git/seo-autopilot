@@ -28,7 +28,7 @@ Last updated: 2026-11-08 by Claude (session on branch `claude/security-fixes`).
 - #35 (the master spec) is documentation and can merge at any time.
 
 **Recommendation:** review and merge in that order, with merge commits, not squash, so the later PRs keep applying cleanly. If reviewing 13 PRs is too much, Claude can open one combined "Release 1" PR from the top of the stack instead.
-**Owner reply:**
+**Owner reply:** Owner chooses ONE consolidated Release 1 review PR. Preserve traceability to the stacked PRs and verify integrated CI before any merge.
 **ChatGPT reply:** Recommend one consolidated Release 1 review PR to reduce review burden, preserving original PR traceability and verifying CI and migration order. Do not merge until owner approves.
 
 ### Q2. Production go-ahead, step by step
@@ -42,7 +42,7 @@ Last updated: 2026-11-08 by Claude (session on branch `claude/security-fixes`).
 7. un-pause one pilot site.
 
 **Recommendation:** approve steps 1 to 6 together, and step 7 only after a day of paused runs looks right in `god_runs`.
-**Owner reply:**
+**Owner reply:** Owner authorizes production preparation and a PAUSED Cloudflare deployment only AFTER required reviews and safety checks. This does NOT authorize live execution, unpausing any site, unreviewed migrations, portal publishing, paid usage, or production changes outside the reviewed deployment sequence. Present the exact migration/scan/portal changes and rollback for approval before applying.
 **ChatGPT reply:** Recommend staged authorization, not blanket approval: first review migrations and backups, then apply DB/scan/paused Worker, verify, then separately approve portal publish and one-site unpause. No production changes yet.
 
 ### Q3. Pilot website
@@ -51,7 +51,7 @@ Last updated: 2026-11-08 by Claude (session on branch `claude/security-fixes`).
 - Tested so far: erudience.com, manchesterdisrepairclaims.co.uk, www.excelerrorfinder.com. All are read-only scans so far.
 
 **Recommendation:** erudience.com as the pilot, if its repository can take pull requests. Otherwise the site with a repository and the lowest traffic risk.
-**Owner reply:**
+**Owner reply:** Use erudience.com as the first pilot website. Begin read-only. No website modifications or live AI spending without separate approval.
 **ChatGPT reply:** Recommend erudience.com for read-only pilot, subject to owner confirmation and site ownership; do not make live changes without separate approval.
 
 ### Q4. AI key, model and budget
@@ -95,7 +95,7 @@ Last updated: 2026-11-08 by Claude (session on branch `claude/security-fixes`).
 **Context:** anyone who signs up without an invitation gets their own agency workspace. That's fine for a product, but risky before launch, since strangers can create workspaces and add websites, up to 20 a day each.
 
 **Recommendation:** make sign-up invite-only until launch. Supabase Dashboard → Authentication → disable sign-ups, and invite people instead.
-**Owner reply:**
+**Owner reply:** Invite-only registration until public launch. Verify that existing owner/admin access and invite flows remain functional before changing authentication settings.
 **ChatGPT reply:** Agree: invite-only during pilot; verify the intended agency onboarding flow before changing Supabase Auth settings.
 
 ### Q9. Leaked-password protection
