@@ -29,6 +29,8 @@ const consoleData = () => ({
   active: [{ id: "j-q", kind: "scan", title: "Read the site", status: "queued" }],
   recent: [{ id: "j-done", kind: "scan", title: "Read the site", status: "completed", outputs: null, costUsd: 0, updatedAt: "2026-11-08T01:00:00Z" }],
   costs: { today: 0.04, month: 1.2 }, lastPlanned: { at: "2026-11-08T01:15:00Z" },
+  lessons: [{ key: "agent:seo-snippet-optimizer", text: "seo-snippet-optimizer: 2 of 3 checked recommendations were fixed by later scans.", confidence: 0.6 }],
+  experiments: [{ agent: "seo-snippet-optimizer", status: "open", openedAt: "2026-11-01T00:00:00Z", items: [{ url: "plumber.test/<b>x</b>", status: "resolved" }, { url: "plumber.test/y", status: "not_rechecked" }] }],
 });
 
 function fake({ consoleFails = false } = {}) {
@@ -77,11 +79,14 @@ test("SEO God console: decisions, questions, retries, escaping, agency only, pho
   await page.goto(`${base}/#/s/${SITE.id}/god`);
   await page.waitForSelector("h1:has-text('SEO God')");
   const text = await page.textContent("#page");
-  for (const s of ["Waiting for your approval", "Approve to start", "Approve this result", "Two titles are weak.", "Add missing titles", "What should search bring you?", "provider timeout", "$0.04 today", "Advice only"]) assert.ok(text.includes(s), `shows: ${s}`);
+  for (const s of ["Waiting for your approval", "Approve to start", "Approve this result", "Two titles are weak.", "Add missing titles", "What should search bring you?", "provider timeout", "$0.04 today", "Advice only", "What it has learned", "2 of 3 checked recommendations were fixed", "1 pieces of advice being checked"]) assert.ok(text.includes(s), `shows: ${s}`);
   // Model and site text is shown as text, never run as HTML.
   assert.ok(text.includes('<img src=x onerror="window.__pwned=1">Fix titles'), "hostile title shown literally");
   assert.equal(await page.evaluate(() => window.__pwned), undefined);
   assert.equal(await page.locator("#page img").count(), 0);
+  assert.equal(await page.locator("#page details b:has-text(\"x\")").count(), 0, "addresses from the site are escaped too");
+  await page.click("summary:has-text(\"being checked\")");
+  assert.ok((await page.textContent("#page")).includes("page not re-read yet"));
   // Approve the advice with a note.
   await page.fill("#note-j-advice", "Looks right, go ahead");
   await page.click('[data-jdec="approve"][data-job="j-advice"]');

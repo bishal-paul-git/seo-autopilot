@@ -24,7 +24,7 @@ export class MemoryStore {
     const j = this.jobs.get(id); if (!j) throw new Error("job not found");
     const r = canMove(j, to, { ...this.#ctx(id), actor: as }); if (!r.ok) throw new Error(r.reason);
     this.events.push({ jobId: id, from: j.status, to, actor, note, data });
-    j.status = to; if (to === "running") j.attempts++;
+    j.status = to; j.updatedAt = this.clock?.() || new Date().toISOString(); if (to === "running") j.attempts++;
     return j;
   }
   claimJob(worker) {
@@ -85,7 +85,7 @@ export class SupabaseStore {
     if (!r.ok) { let m = t; try { m = JSON.parse(t).message || t; } catch { /* text */ } throw new Error(`${fn}: ${m}`.slice(0, 300)); }
     return t ? JSON.parse(t) : null;
   }
-  static #job(r) { return r && r.id ? { id: r.id, siteId: r.site_id, kind: r.kind, title: r.title, status: r.status, risk: r.risk, priority: r.priority, requiresApproval: r.requires_approval, attempts: r.attempts, maxAttempts: r.max_attempts, agent: r.agent, inputs: r.inputs, source: r.source, budgetUsd: Number(r.budget_usd ?? 0), costUsd: Number(r.cost_usd ?? 0), outputs: r.outputs ?? null, idempotencyKey: r.idempotency_key ?? null, createdAt: r.created_at } : null; }
+  static #job(r) { return r && r.id ? { id: r.id, siteId: r.site_id, kind: r.kind, title: r.title, status: r.status, risk: r.risk, priority: r.priority, requiresApproval: r.requires_approval, attempts: r.attempts, maxAttempts: r.max_attempts, agent: r.agent, inputs: r.inputs, source: r.source, budgetUsd: Number(r.budget_usd ?? 0), costUsd: Number(r.cost_usd ?? 0), outputs: r.outputs ?? null, idempotencyKey: r.idempotency_key ?? null, createdAt: r.created_at, updatedAt: r.updated_at } : null; }
   async createJob(s) { return SupabaseStore.#job(await this.#rpc("create_job", { p_site: s.siteId, p_kind: s.kind, p_title: s.title, p_source: s.source || "seo_god", p_risk: s.risk || "low", p_requires_approval: !!s.requiresApproval, p_priority: s.priority || 3, p_inputs: s.inputs || {}, p_idempotency_key: s.idempotencyKey || null, p_objective: s.why || null, p_budget_usd: s.budgetUsd || 0 })); }
   async claimJob(worker) { return SupabaseStore.#job(await this.#rpc("claim_job", { p_worker: worker })); }
   async transition(id, to, actor, note = null, data = null) { return SupabaseStore.#job(await this.#rpc("transition_job", { p_job: id, p_to: to, p_actor: actor, p_note: note, p_data: data })); }

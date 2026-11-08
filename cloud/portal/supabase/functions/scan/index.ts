@@ -28,7 +28,8 @@ const MAX_PAGES = 40; // keeps a scan well inside the 2 s CPU limit (measured 13
 // What the Worker needs from a scan (onboarding facts, profile, a compact audit): small, so parsing it costs little CPU.
 const compact = (r: any) => ({
   discovered: r.discovered, profile: { mode: r.profile?.mode ?? null, platform: r.profile?.platform?.name ? { name: r.profile.platform.name } : null, rendering: r.profile?.rendering ?? null, inRepository: false },
-  audit: { generatedAt: r.audit?.generatedAt ?? new Date().toISOString(), summary: r.audit?.summary ?? {}, issues: (r.audit?.issues ?? []).slice(0, 200).map((i: any) => ({ rule: i.rule, severity: i.severity, url: i.url })), pages: [] },
+  audit: { generatedAt: r.audit?.generatedAt ?? new Date().toISOString(), summary: r.audit?.summary ?? {}, issues: (r.audit?.issues ?? []).slice(0, 200).map((i: any) => ({ rule: i.rule, severity: i.severity, url: i.url })), pages: [],
+    crawled: (r.audit?.pages ?? []).map((p: any) => p.url).filter(Boolean).slice(0, 100) },
 });
 
 Deno.serve(async (req) => {

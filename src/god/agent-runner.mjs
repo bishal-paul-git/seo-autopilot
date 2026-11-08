@@ -59,6 +59,8 @@ export function agentInput(job, memory, site) {
     strategy: pick("strategy", "initial"), profile: pick("report", "profile"),
     audit: audit ? { generatedAt: audit.generatedAt, summary: audit.summary, issues: (audit.issues || []).slice(0, 80) } : null,
     facts: facts.slice(0, 60),
+    // What earlier advice on this site led to (from later scans and the agency's decisions).
+    lessons: memory.filter((m) => m.kind === "lesson").map((m) => m.value?.text).filter(Boolean).slice(0, 10),
   };
   return `<site_data>\n${JSON.stringify(data).replace(/<\/?site_data>/gi, "")}\n</site_data>\nDo the task above for this site and reply with the JSON object.`;
 }

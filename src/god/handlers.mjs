@@ -48,7 +48,8 @@ async function scanFromMemory(store, siteId) {
 /** The compact reports the planner needs on its next tick (audit age and findings, site profile), kept in site memory. */
 export function reportMemory(r) {
   const a = r.audit || {}, p = r.profile || {};
-  const audit = { generatedAt: a.generatedAt || new Date().toISOString(), summary: a.summary || {}, issues: (a.issues || []).slice(0, 200).map((i) => ({ rule: i.rule, severity: i.severity, url: i.url })) };
+  const audit = { generatedAt: a.generatedAt || new Date().toISOString(), summary: a.summary || {}, issues: (a.issues || []).slice(0, 200).map((i) => ({ rule: i.rule, severity: i.severity, url: i.url })),
+    crawled: (a.crawled || (a.pages || []).map((p) => p.url)).filter(Boolean).slice(0, 100) };
   const profile = { mode: p.mode || null, platform: p.platform?.name ? { name: p.platform.name } : null, rendering: p.rendering || null, inRepository: !!p.inRepository };
   return [
     { kind: "report", key: "audit", value: audit, basis: "verified", confidence: null, source: "scan" },

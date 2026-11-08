@@ -560,6 +560,7 @@ function pApprovals(s) {
 // Everything here comes from public.god_console, which refuses anyone who is not a member of the site's agency.
 // Proposals are model output and site text: always escaped, never rendered as HTML.
 const RISK = { low: "ok", medium: "warn", high: "bad" };
+const LEARN_ST = { open: "waiting for the next scan", resolved: "fixed", partly: "partly fixed", unchanged: "not fixed yet", worse: "got worse", not_rechecked: "page not re-read yet", not_implemented: "not done after 30 days", no_baseline: "nothing to measure on that page" };
 const usd = (n) => "$" + Number(n || 0).toFixed(2);
 const STRAT = { approved: ["Approved", "ok"], proposed: ["Waiting for your approval", "warn"] };
 async function loadConsole(s) {
@@ -601,7 +602,11 @@ function pGod(s) {
   <div class="grid g2">
     <div class="card pad0"><div class="ch"><h2>In progress</h2></div><div class="list">${(c.active || []).map((j) => `<div class="row"><div><div class="t">${esc(j.title)}</div><div class="s">${esc(j.kind)}</div></div><span class="pill">${esc(j.status)}</span></div>`).join("") || '<div class="empty">Nothing running.</div>'}</div></div>
     <div class="card pad0"><div class="ch"><h2>Recent results</h2></div><div class="list">${(c.recent || []).map((j) => `<div class="row" style="display:block"><div style="display:flex;gap:8px"><div class="t" style="flex:1">${esc(j.title)}</div><span class="pill ${j.status === "completed" ? "ok" : j.status === "failed" ? "bad" : ""}">${esc(j.status)}</span></div><div class="s">${esc(j.kind)} · ${esc(String(j.updatedAt || "").slice(0, 10))}${Number(j.costUsd) ? ` · ${usd(j.costUsd)}` : ""}</div>${j.outputs?.proposal ? `<details><summary class="xs" style="cursor:pointer">Show result</summary>${proposalHtml(j.outputs)}</details>` : ""}</div>`).join("") || '<div class="empty">No results yet.</div>'}</div></div>
-  </div>`;
+  </div>
+  <div class="card pad0"><div class="ch"><h2>What it has learned</h2><span class="xs muted">from later scans and your decisions</span></div>
+    <div class="list">${(c.lessons || []).map((l) => `<div class="row"><div><div class="t">${esc(l.text)}</div><div class="s">confidence ${esc(String(l.confidence ?? "–"))}</div></div></div>`).join("") || '<div class="empty">Nothing yet. When you accept advice, later scans check whether it was carried out and what changed.</div>'}</div>
+    ${(c.experiments || []).length ? `<details style="padding:0 16px 14px"><summary class="xs" style="cursor:pointer">${c.experiments.length} pieces of advice being checked</summary>${c.experiments.map((e) => `<div class="xs" style="margin-top:8px"><b>${esc(e.agent)}</b> · accepted ${esc(String(e.openedAt || "").slice(0, 10))} · ${esc(e.status)}${(e.items || []).map((it) => `<div class="muted">${esc(it.url)}: ${esc(LEARN_ST[it.status] || it.status)}</div>`).join("")}</div>`).join("")}</details>` : ""}
+    <p class="xs muted" style="padding:0 16px 14px;margin:0">Checked against the site audit only: it shows whether a problem went away, not whether traffic changed.</p></div>`;
 }
 
 /* ---------- Client requests: the agency's inbox and the client's own requests (R1-P2) ---------- */

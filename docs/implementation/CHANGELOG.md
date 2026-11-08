@@ -2,6 +2,22 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (R1-D1 learning, D31; branch claude/learning)
+- **Code:**
+  - `src/god/learning.mjs` (pure): experiments from accepted advice with a per-page baseline; re-checks only on pages crawled again; lessons per agent from outcomes and agency refusals; lessons applied to the plan (pause, lower priority).
+  - The scheduler learns before planning.
+  - Agents receive the site's lessons.
+  - The compact audit keeps the crawled pages (engine and scan function).
+  - Jobs carry `updatedAt`.
+  - The SEO God page gets a "What it has learned" section.
+- **Migration (not applied):** `20261108060000_learning.sql` (`god_console` adds lessons and experiments; agency members only).
+- **Tests:**
+  - `test/learning.test.mjs` (6 tests, including the full loop through the scheduler).
+  - `rls10.sql`.
+  - The console browser test covers lessons and escaped addresses.
+  - The workerd end-to-end run confirms experiments are opened in the Worker and shown in the console: 26 checks.
+  - `npm test` 549/549; 10 SQL suites pass.
+
 ## 2026-11-08 (R1-P2 client portal; branch claude/client-portal)
 - **Code (portal):**
   - Agency page **Client requests**. It shows every request in full with who sent it, and offers accept (with a budget), ask a question or decline, each with a note the client sees. It also covers client access: create or assign a client, invite people, and see members and pending invites.

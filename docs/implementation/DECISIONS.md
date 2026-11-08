@@ -83,6 +83,25 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-11-08 D31 Learning measures what an audit can show, and says so
+**Decision:** the SEO God learns from three things.
+1. **Accepted advice is re-checked by later scans.** Each recommendation is recorded with the problems found on its page. A problem counts as fixed only if the page was crawled again and the problem is gone. Results are judged after 3 days, and unresolved items close as "not done" after 30 days.
+2. **The agency's own refusals.**
+3. **Lessons per agent**, built from those two.
+
+Lessons change planning:
+- an agent whose work the agency declined twice in 30 days is paused until the refusals age out;
+- advice never fixed after 3 checks drops a priority step.
+
+The site's lessons are also passed to the agents, inside the data block. The agency sees all of it on the SEO God page.
+
+**Why:** the master spec asks the system to improve from outcomes. The hosted path has no daily Search Console series for most sites, but every site has repeated audits.
+
+**Tradeoffs:**
+- An audit shows whether a problem went away, not whether traffic changed. The console and the lesson wording say so.
+- Traffic-based verdicts (`src/analysis/experiments.mjs`, difference-in-differences with a control group) stay with the CLI path until hosted sites have Search Console data.
+- Lessons are per site, not shared across agencies (tenant isolation).
+
 ## 2026-11-08 D30 Cloudflare-first execution: a stateless Worker scheduler, crawling in the Supabase scan function, CLI jobs stay in GitHub Actions (owner: PR #42)
 **Decisions:**
 1. **Scheduler and light work in a Cloudflare Worker.** One Worker (`cloud/worker/`) with one Cron Trigger every 15 min. Each site's planning and each job run in a new invocation of the same Worker through a self service binding. Each invocation gets its own 10 ms CPU and 50-subrequest Free allowance.

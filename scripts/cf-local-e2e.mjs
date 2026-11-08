@@ -26,7 +26,7 @@ execFileSync("createdb", [DB]);
 const strip = (f) => readFileSync(f, "utf8").replace(/^create extension if not exists pg_(net|cron);$/gm, "");
 psql([readFileSync(join(t, "shim.sql"), "utf8"), readFileSync(join(m, "20261030000000_portal.sql"), "utf8"), readFileSync(join(m, "20261030120000_portal_approvals_team_brand.sql"), "utf8"),
   readFileSync(join(t, "shim3.sql"), "utf8"), strip(join(m, "20261104000000_portal_url_sites.sql")), readFileSync(join(t, "shim4.sql"), "utf8"),
-  ...["20261108000000_r1_contracts.sql", "20261108010000_r1_memory.sql", "20261108020000_r1_scheduler.sql", "20261108030000_cloudflare_execution.sql", "20261108040000_agency_console.sql", "20261108050000_client_portal.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
+  ...["20261108000000_r1_contracts.sql", "20261108010000_r1_memory.sql", "20261108020000_r1_scheduler.sql", "20261108030000_cloudflare_execution.sql", "20261108040000_agency_console.sql", "20261108050000_client_portal.sql", "20261108060000_learning.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
 psql(`insert into auth.users (id, email) values ('00000000-0000-0000-0000-00000000000a', 'alice@a.test'), ('00000000-0000-0000-0000-00000000000b', 'bob@b.test');`);
 const asUser = (user, sql) => psql(`set role authenticated; set request.jwt.claim.sub = '${user}'; set request.jwt.claim.role = 'authenticated'; ${sql}`).split("\n").pop();
 const A_USER = "00000000-0000-0000-0000-00000000000a", B_USER = "00000000-0000-0000-0000-00000000000b";
@@ -147,6 +147,9 @@ try {
   psql(`update public.jobs set status = 'running', lease_until = now() - interval '1 minute', attempts = 1 where id = (select id from public.jobs where site_id = ${lit(A)} and status = 'completed' and kind = 'scan' limit 1);`);
   await cron(); run = lastRun();
   check(run.jobs_recovered === 1, "expired lease recovered by the next run");
+  const exps = JSON.parse(psql(`select public.recall(${lit(A)}, 'experiment')`, "service_role"));
+  check(exps.length >= 1 && exps[0].value.items[0].baseline.includes("title-missing"), `learning: ${exps.length} accepted pieces of advice are being checked against later scans, with their baseline`);
+  check(JSON.parse(asUser(A_USER, `select public.god_console(${lit(A)});`)).experiments.length === exps.length, "the agency console shows them");
 
   // Pause without a deploy.
   psql(`select public.set_god_paused(true, 'e2e');`, "service_role");

@@ -4,6 +4,7 @@
 // it only carries out decisions the agency already recorded.
 import { planSite } from "./planner.mjs";
 import { enqueue, runOnce } from "./worker.mjs";
+import { learn, applyLessons } from "./learning.mjs";
 
 const OPEN = new Set(["proposed", "scoped", "queued", "running", "awaiting_review", "awaiting_approval", "authorized", "deploying", "verifying", "failed", "escalated"]);
 
@@ -84,6 +85,10 @@ export async function tick({ store, sites = null, handlers = {}, now = new Date(
       const adv = await advance(store, site, jobs, memory);
       entry.moved = adv.moved; entry.waiting = adv.waiting;
       if (adv.moved.length) { jobs = await store.listJobs(site.id); memory = (await store.readMemory(site.id)) || []; }
+      // Learn from what happened since the last run, before deciding what to do next.
+      const learned = learn({ memory, jobs, now });
+      if (learned.rows.length) { await store.writeMemory(site.id, learned.rows); memory = (await store.readMemory(site.id)) || []; }
+      entry.learning = { experiments: learned.experiments.length, open: learned.experiments.filter((e) => e.status === "open").length, lessons: learned.lessons.length };
       entry.strategy = strategyStatus(jobs, memory);
       const budget = budgets[site.id] ?? dailyBudgetUsd;
       const spent = await store.spendSince(site.id, dayStart);
@@ -92,7 +97,9 @@ export async function tick({ store, sites = null, handlers = {}, now = new Date(
       entry.spentTodayUsd = round(spent); entry.budgetUsd = budget;
       const plan = planSite({ site, reports: reportsFrom(memory), strategy: { status: entry.strategy }, agents, now });
       const keep = [], existing = new Set(jobs.map((j) => j.idempotencyKey).filter(Boolean));
-      for (const spec of plan.jobs) {
+      const guided = applyLessons(plan.jobs, learned.lessons);
+      entry.deferred.push(...guided.deferred); entry.adjusted = guided.adjusted;
+      for (const spec of guided.keep) {
         if (!has(spec.kind)) { entry.deferred.push({ kind: spec.kind, reason: "no runner for this kind yet" }); continue; }
         if (existing.has(spec.idempotencyKey)) continue; // already planned this period; its budget is already reserved
         const est = estimateCost(spec.kind, { agentRunUsd });
