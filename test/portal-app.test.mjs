@@ -25,7 +25,7 @@ const SNAP = buildSnapshot({
     gsc: { countries: [{ key: "gbr", clicks: 2, impressions: 90 }], devices: [{ key: "MOBILE", clicks: 2, impressions: 80 }] },
   },
 });
-SNAP.discovered = { name: { value: "Leeds Plumbing Co", source: `${U}/` }, businessTypes: ["Plumber"], phones: [{ value: "0113 496 0000", source: `${U}/contact/` }], emails: [], addresses: [], hours: [], socials: [], keyPages: { contact: `${U}/contact/` }, topics: [{ value: "Boiler repair", source: `${U}/boilers/` }], stats: { pagesRead: 2, pagesFailed: 0, sitemapUrls: 2, robotsTxt: true, avgWords: 500 } };
+SNAP.discovered = { name: { value: "Leeds Plumbing Co", source: `${U}/` }, businessTypes: ["Plumber"], phones: [{ value: "0113 496 0000", source: `${U}/contact/` }], emails: [], addresses: [], hours: [], socials: [], keyPages: { contact: `${U}/contact/` }, topics: [{ value: "Boiler repair", source: `${U}/boilers/` }], brand: { themeColor: { value: "#0a7a4b", source: `${U}/` }, colors: [{ value: "#f5a623", name: "brand-accent" }, { value: "red;background:url(javascript:alert(1))", name: "evil" }], fonts: [{ value: "Inter" }, { value: "<b>x</b>" }] }, stats: { pagesRead: 2, pagesFailed: 0, sitemapUrls: 2, robotsTxt: true, avgWords: 500 } };
 
 function fakeSupabase() {
   const calls = [];
@@ -111,6 +111,11 @@ test("portal app: sign in, websites, connect a website, client link, client view
     await page.waitForSelector("text=Growth over time");
     await page.waitForSelector("text=About this website");
     assert.ok(await page.isVisible("text=Leeds Plumbing Co") && await page.isVisible("text=0113 496 0000"));
+    // Brand (D39): stated theme colour and inferred colours and fonts; a colour that is not a plain hex value is never drawn.
+    assert.ok(await page.isVisible("text=theme colour, stated") && await page.isVisible("text=fonts, inferred"));
+    assert.equal(await page.locator(".swatch").count(), 2, "only the two hex colours become swatches");
+    assert.equal(await page.locator('[style*="javascript"]').count(), 0);
+    assert.equal(await page.locator("#page b:text-is('x')").count(), 0, "font names escaped");
     assert.ok(await page.isVisible("text=2 daily snapshots since 2026-09-29"));
     await page.click("#share");
     await page.waitForFunction(() => document.body.innerText.includes("Client link copied") || true);

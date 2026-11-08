@@ -101,6 +101,7 @@ export function discoverSite({ siteUrl, docs = [], pages = [], sitemapUrls = [],
   const lang = (/<html\b[^>]*\blang\s*=\s*["']([^"']+)["']/i.exec(homeHtml) || [])[1];
   if (lang) out.language = { value: lang, source: home.url };
   if (!out.logo) { const icon = (/<link\b[^>]*rel\s*=\s*["'](?:apple-touch-icon|icon)["'][^>]*>/i.exec(homeHtml) || [])[0]; if (icon && attr(icon, "href")) out.logo = { value: new URL(attr(icon, "href"), home.url).toString(), source: home.url, kind: "icon" }; }
+  out.brand = brandOf(homeHtml, home.url);
 
   const ok = pages.filter((p) => p.status === 200);
   for (const [k, re] of KEY_PAGES) { const p = ok.find((x) => re.test(pathOf(x.finalUrl || x.url))); if (p) out.keyPages[k] = p.finalUrl || p.url; }
@@ -117,6 +118,34 @@ export function discoverSite({ siteUrl, docs = [], pages = [], sitemapUrls = [],
 }
 
 /** The few pages worth reading in full for contact details: home, then contact and about pages from the crawl. */
+// Brand from the home page's own HTML (the scanner reads HTML only, never external stylesheets): the theme colour the
+// site declares (stated), colours from inline CSS variables whose names say brand/primary/accent (inferred: a name is a
+// hint, not a statement), and fonts from linked Google Fonts or inline font-family on body and headings (inferred).
+// Only six-digit or three-digit hex colours and plain font names are kept: these values are later shown in the portal.
+const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
+const GENERIC_FONT = /^(serif|sans-serif|monospace|cursive|fantasy|system-ui|ui-sans-serif|ui-serif|ui-monospace|inherit|initial|unset|-apple-system|blinkmacsystemfont|segoe ui|roboto|helvetica neue|helvetica|arial|apple color emoji|segoe ui emoji|segoe ui symbol|noto color emoji|var\(.*\))$/i;
+const fontName = (s) => { const f = String(s || "").trim().replace(/^["']|["']$/g, "").trim(); return f && f.length <= 40 && /^[A-Za-z0-9 _-]+$/.test(f) && !GENERIC_FONT.test(f) ? f : null; };
+export function brandOf(html, source) {
+  html = String(html || "");
+  const out = { themeColor: null, colors: [], fonts: [] };
+  const tc = (/<meta\b[^>]*name\s*=\s*["']theme-color["'][^>]*>/i.exec(html) || [])[0];
+  const tcv = tc && attr(tc, "content");
+  if (tcv && HEX.test(tcv.trim())) out.themeColor = { value: tcv.trim().toLowerCase(), source, basis: "stated" };
+  const css = [...html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)].map((m) => m[1]).join("\n") + "\n" + [...html.matchAll(/\bstyle\s*=\s*"([^"]*)"/gi)].map((m) => m[1]).join(";");
+  for (const m of css.matchAll(/--([a-z0-9-]*(?:brand|primary|accent|secondary)[a-z0-9-]*)\s*:\s*(#[0-9a-f]{3,8})\b/gi)) {
+    const v = m[2].toLowerCase();
+    if (HEX.test(v) && !out.colors.some((c) => c.value === v)) out.colors.push({ value: v, name: m[1].toLowerCase(), source, basis: "inferred" });
+    if (out.colors.length >= 5) break;
+  }
+  const addFont = (f, how) => { const n = fontName(f); if (n && !out.fonts.some((x) => x.value.toLowerCase() === n.toLowerCase())) out.fonts.push({ value: n, source, basis: "inferred", how }); };
+  for (const m of html.matchAll(/<link\b[^>]*href\s*=\s*["']([^"']*fonts\.googleapis\.com\/css2?\?[^"']*)["'][^>]*>/gi)) {
+    for (const fam of decode(m[1]).matchAll(/family=([^&:;]+)/gi)) addFont(fam[1].replace(/\+/g, " "), "linked font");
+  }
+  for (const m of css.matchAll(/(?:^|[}\s;])(?:body|html|h1|h2|:root)\b[^{]*\{[^}]*font-family\s*:\s*([^;}]+)/gi)) addFont(m[1].split(",")[0], "font-family");
+  out.fonts = out.fonts.slice(0, 4);
+  return out;
+}
+
 export function pagesToRead(siteUrl, pages = []) {
   const ok = pages.filter((p) => p.status === 200).map((p) => p.finalUrl || p.url);
   const pick = (re) => ok.find((u) => re.test(pathOf(u)));

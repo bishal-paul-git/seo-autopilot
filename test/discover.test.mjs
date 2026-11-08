@@ -104,3 +104,29 @@ test("searchConsoleRows tries the domain property, then the URL prefix, and give
   assert.ok(seen[0].includes("sc-domain:acme.test"));
   assert.equal(await searchConsoleRows("https://x.test/", "tok", { fetchImpl: async () => new Response("{}", { status: 403 }) }), null);
 });
+
+test("brand: declared theme colour is stated; CSS variables and fonts are inferred; unsafe values never kept (D39)", async () => {
+  const { brandOf, discoverSite } = await import("../src/analysis/discover.mjs");
+  const html = `<html><head><meta name="theme-color" content="#0A7A4B">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&amp;family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>:root{--brand-primary:#0a7a4b;--color-accent: #F5A623;--text:#111;--primary-x:#12345;--secondary:url(javascript:alert(1))}
+      body{font-family:"Inter",system-ui,sans-serif} h1{font-family: 'Playfair Display', serif} h2{font-family:"<script>x</script>"}</style></head>
+    <body><div style="--brand-dark:#003322"></div></body></html>`;
+  const b = brandOf(html, "https://plumber.test/");
+  assert.deepEqual(b.themeColor, { value: "#0a7a4b", source: "https://plumber.test/", basis: "stated" });
+  assert.deepEqual(b.colors.map((c) => [c.name, c.value, c.basis]), [["brand-primary", "#0a7a4b", "inferred"], ["color-accent", "#f5a623", "inferred"], ["brand-dark", "#003322", "inferred"]]);
+  assert.deepEqual(b.fonts.map((f) => f.value), ["Playfair Display", "Inter"]);
+  assert.ok(b.fonts.every((f) => f.basis === "inferred"));
+  const none = brandOf(`<meta name="theme-color" content="red;background:url(x)"><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto}</style>`, "u");
+  assert.deepEqual(none, { themeColor: null, colors: [], fonts: [] }, "only hex colours and real font names; generic stacks dropped");
+  const d = discoverSite({ siteUrl: "https://plumber.test/", docs: [{ url: "https://plumber.test/", html }] });
+  assert.equal(d.brand.themeColor.value, "#0a7a4b", "part of discovery");
+});
+
+test("brand reaches the dossier and site memory as brand facts with their basis", async () => {
+  const { buildDossier, dossierMemory } = await import("../src/god/onboarding.mjs");
+  const discovered = { brand: { themeColor: { value: "#0a7a4b", source: "https://p.test/" }, colors: [{ value: "#f5a623", source: "https://p.test/" }], fonts: [{ value: "Inter", source: "https://p.test/" }] } };
+  const dossier = buildDossier({ site: { url: "https://p.test/", name: "P" }, discovered });
+  const mem = dossierMemory(dossier).filter((m) => m.kind === "brand");
+  assert.deepEqual(mem.map((m) => [m.key, m.value.value, m.basis]), [["theme_color", "#0a7a4b", "stated"], ["brand_color", "#f5a623", "inferred"], ["brand_font", "Inter", "inferred"]]);
+});

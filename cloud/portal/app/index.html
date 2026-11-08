@@ -181,6 +181,7 @@ td { padding: 11px 16px; border-bottom: 1px solid var(--line-2) } tr:last-child 
   .count{display:inline-block;min-width:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:var(--accent);color:#fff;font-size:11px;line-height:18px;text-align:center;font-weight:600}
   .note.unread{background:var(--accent-soft,rgba(16,185,129,.08))}
   @media print{#rail,#hdr,#tabbar,.no-print,.toast{display:none!important}.card{break-inside:avoid;box-shadow:none}body{background:#fff}}
+  .swatch{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin:0 4px 0 0;border:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -536,6 +537,9 @@ function aboutCard(s) {
     ["Email", (d.emails || []).map((x) => esc(x.value) + src(x)).join("<br>") || null],
     ["Address", (d.addresses || []).map((x) => esc(x.value) + src(x)).join("<br>") || null],
     ["Opening hours", (d.hours || []).map((x) => esc(x.value)).join("<br>") || null],
+    ["Brand", (() => { const b = d.brand || {}; const hex = (v) => /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i.test(String(v || "")); const sw = (c, label) => hex(c.value) ? `<span class="swatch" style="background:${c.value}" title="${esc(label)}"></span>${esc(c.value)}` : "";
+      const parts = [b.themeColor && hex(b.themeColor.value) ? `${sw(b.themeColor, "theme colour (stated)")} <span class="muted">theme colour, stated</span>` : "", (b.colors || []).filter((c) => hex(c.value)).map((c) => sw(c, c.name || "colour")).join(" ") + ((b.colors || []).length ? ' <span class="muted">from its styles, inferred</span>' : ""), (b.fonts || []).length ? `${b.fonts.map((f) => esc(f.value)).join(", ")} <span class="muted">fonts, inferred</span>` : ""].filter(Boolean);
+      return parts.length ? parts.join("<br>") : null; })()],
     ["Social profiles", (d.socials || []).map((x) => `<a href="${safeHref(x.value)}" target="_blank" rel="noopener">${esc(x.platform)}</a>`).join(" · ") || null],
     ["Key pages", Object.entries(d.keyPages || {}).map(([k, u]) => `<a href="${safeHref(u)}" target="_blank" rel="noopener">${esc(k)}</a>`).join(" · ") || null],
     ["Platform", s.platform ? esc(s.platform) : null],

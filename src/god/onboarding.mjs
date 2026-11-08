@@ -11,6 +11,7 @@ const fact = (key, value, basis, source, confidence) => ({ key, value, basis, so
  * discovered: output of src/analysis/discover.mjs. profile: site-profile. audit: audit report. answers: { [key]: value }
  * already given by the agency or client. Returns { facts, unknowns, questions, strategyDraft }.
  */
+const BRAND_KEYS = new Set(["logo", "theme_color", "brand_color", "brand_font"]);
 export function buildDossier({ site, discovered = {}, profile = null, audit = null, answers = {} }) {
   const d = discovered, facts = [];
   const stated = (key, x) => { if (x && x.value != null && x.value !== "") facts.push(fact(key, x.value, "stated", x.source, 0.9)); };
@@ -18,6 +19,11 @@ export function buildDossier({ site, discovered = {}, profile = null, audit = nu
   for (const [k, list] of [["phone", d.phones], ["email", d.emails], ["address", d.addresses], ["opening_hours", d.hours], ["social_profile", d.socials]]) for (const x of list || []) stated(k, x);
   if ((d.businessTypes || []).length) facts.push(fact("business_type", d.businessTypes.join(", "), "stated", d.name?.source || site.url, 0.8));
   if (profile?.platform?.name && profile.platform.name !== "Unknown") facts.push(fact("platform", profile.platform.name, "inferred", site.url, 0.7));
+  // Brand (D39): the theme colour the site declares is stated; colours and fonts read from its styles are inferred.
+  const b = d.brand || {};
+  if (b.themeColor?.value) facts.push(fact("theme_color", b.themeColor.value, "stated", b.themeColor.source, 0.9));
+  for (const c of (b.colors || []).slice(0, 5)) facts.push(fact("brand_color", c.value, "inferred", c.source, 0.6));
+  for (const f of (b.fonts || []).slice(0, 4)) facts.push(fact("brand_font", f.value, "inferred", f.source, 0.6));
   for (const [k, v] of Object.entries(answers)) if (v != null && v !== "") facts.push(fact(k, v, "answered", "onboarding answer", 1));
 
   const has = (k) => facts.some((f) => f.key === k);
@@ -60,7 +66,7 @@ export const dossierMemory = (dossier) => {
   for (const f of dossier.facts) count[f.key] = (count[f.key] || 0) + 1;
   const keyOf = (f) => (count[f.key] > 1 ? `${f.key}#${(seen[f.key] = (seen[f.key] || 0) + 1)}` : f.key);
   return [
-  ...dossier.facts.map((f) => ({ kind: f.basis === "answered" ? "answer" : f.key === "logo" ? "brand" : "identity", key: keyOf(f), value: { value: f.value }, basis: f.basis, confidence: f.confidence, source: f.source })),
+  ...dossier.facts.map((f) => ({ kind: f.basis === "answered" ? "answer" : BRAND_KEYS.has(f.key) ? "brand" : "identity", key: keyOf(f), value: { value: f.value }, basis: f.basis, confidence: f.confidence, source: f.source })),
   ...dossier.questions.map((q) => ({ kind: "question", key: q.key, value: { question: q.question, why: q.why }, basis: "inferred", confidence: null, source: "onboarding" })),
   { kind: "strategy", key: "initial", value: dossier.strategyDraft, basis: "inferred", confidence: null, source: "onboarding" },
   ];
