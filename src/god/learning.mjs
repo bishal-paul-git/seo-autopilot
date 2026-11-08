@@ -27,7 +27,8 @@ export function openExperiment(job, audit, now) {
   const recs = job.outputs?.proposal?.recommendations || [];
   const items = recs.filter((r) => r.url).slice(0, 8).map((r) => {
     const url = normUrl(r.url);
-    return { url, title: String(r.title || "").slice(0, 200), baseline: rulesOn(audit, url), status: "open" };
+    let href = null; try { const x = new URL(r.url); if (/^https?:$/.test(x.protocol)) href = x.toString(); } catch { /* not an address */ }
+    return { url, href, title: String(r.title || "").slice(0, 200), baseline: rulesOn(audit, url), status: "open" };
   });
   if (!items.length) return null;
   return { job: job.id, agent: job.inputs?.agent || job.kind.replace(/^agent:/, ""), kind: job.kind, openedAt: now, baselineAuditAt: audit?.generatedAt || null, items, status: "open" };
@@ -58,7 +59,7 @@ export function evaluateExperiment(exp, audit, now) {
  */
 export function lessonsFrom(experiments, jobs = [], now) {
   const by = new Map();
-  const get = (a) => by.get(a) || by.set(a, { agent: a, checked: 0, resolved: 0, partly: 0, unchanged: 0, worse: 0, notImplemented: 0, refusals: 0 }).get(a);
+  const get = (a) => by.get(a) || by.set(a, { agent: a, checked: 0, resolved: 0, partly: 0, unchanged: 0, worse: 0, notImplemented: 0, refusals: 0, measured: 0, better: 0, worseTraffic: 0 }).get(a);
   for (const e of experiments) for (const it of e.items || []) {
     const s = get(e.agent);
     if (it.status === "resolved") { s.checked++; s.resolved++; }
@@ -66,16 +67,20 @@ export function lessonsFrom(experiments, jobs = [], now) {
     else if (it.status === "unchanged") { s.checked++; s.unchanged++; }
     else if (it.status === "worse") { s.checked++; s.worse++; }
     else if (it.status === "not_implemented") { s.checked++; s.notImplemented++; }
+    // Search Console verdicts (src/god/search-console.mjs), counted only when there was enough traffic to say anything.
+    const v = it.traffic?.verdict || "";
+    if (it.traffic?.status === "done" && !/too little traffic|unclear/.test(v)) { s.measured++; if (/better|improved/.test(v)) s.better++; else if (/worse/.test(v)) s.worseTraffic++; }
   }
   const since = Date.parse(now) - REFUSAL_WINDOW_DAYS * DAY;
   for (const j of jobs) if (j.status === "rejected" && j.kind.startsWith("agent:") && Date.parse(j.updatedAt || j.createdAt || now) >= since) get(j.kind.slice(6)).refusals++;
   const out = [];
   for (const s of by.values()) {
-    if (!s.checked && !s.refusals) continue;
+    if (!s.checked && !s.refusals && !s.measured) continue;
     const parts = [];
     if (s.checked) parts.push(`${s.resolved} of ${s.checked} checked recommendations were fixed by later scans${s.partly ? `, ${s.partly} partly` : ""}${s.worse ? `, ${s.worse} got worse` : ""}${s.notImplemented ? `, ${s.notImplemented} not done after ${FINAL_DAYS} days` : ""}`);
+    if (s.measured) parts.push(`in Search Console ${s.better} of ${s.measured} measured pages did better than the rest of the site${s.worseTraffic ? ` and ${s.worseTraffic} did worse` : ""}`);
     if (s.refusals) parts.push(`the agency declined its work ${s.refusals} time${s.refusals > 1 ? "s" : ""} in the last ${REFUSAL_WINDOW_DAYS} days`);
-    out.push({ key: `agent:${s.agent}`, value: { ...s, text: `${s.agent}: ${parts.join("; ")}.` }, confidence: Math.min(0.9, Math.round((0.3 + 0.1 * (s.checked + s.refusals)) * 100) / 100) });
+    out.push({ key: `agent:${s.agent}`, value: { ...s, text: `${s.agent}: ${parts.join("; ")}.` }, confidence: Math.min(0.9, Math.round((0.3 + 0.1 * (s.checked + s.refusals + s.measured)) * 100) / 100) });
   }
   return out.sort((a, b) => a.key.localeCompare(b.key));
 }

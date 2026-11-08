@@ -5,6 +5,7 @@
 import { planSite } from "./planner.mjs";
 import { enqueue, runOnce } from "./worker.mjs";
 import { learn, applyLessons } from "./learning.mjs";
+import { trafficDue } from "./search-console.mjs";
 
 const OPEN = new Set(["proposed", "scoped", "queued", "running", "awaiting_review", "awaiting_approval", "authorized", "deploying", "verifying", "failed", "escalated"]);
 
@@ -97,6 +98,8 @@ export async function tick({ store, sites = null, handlers = {}, now = new Date(
       entry.spentTodayUsd = round(spent); entry.budgetUsd = budget;
       const plan = planSite({ site, reports: reportsFrom(memory), strategy: { status: entry.strategy }, agents, now });
       const keep = [], existing = new Set(jobs.map((j) => j.idempotencyKey).filter(Boolean));
+      // Measure accepted advice in Search Console once its after-window is complete (only with a Google key).
+      if (has("search_console") && trafficDue(learned.experiments, now).length) plan.jobs.push({ kind: "search_console", title: "Measure accepted advice in Search Console", department: "analytics", risk: "low", priority: 3, source: "seo_god", requiresApproval: false, idempotencyKey: `search_console:${now.slice(0, 10)}`, inputs: { site: site.id }, why: "accepted advice has a complete 14-day after-window" });
       const guided = applyLessons(plan.jobs, learned.lessons);
       entry.deferred.push(...guided.deferred); entry.adjusted = guided.adjusted;
       for (const spec of guided.keep) {

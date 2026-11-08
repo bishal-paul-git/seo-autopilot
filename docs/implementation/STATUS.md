@@ -3,7 +3,7 @@
 Kept short; read at the start of every session, together with [REVIEW-QUESTIONS.md](REVIEW-QUESTIONS.md) (open questions and the owner's replies). History: [history/STATUS-to-2026-11-03.md](history/STATUS-to-2026-11-03.md). Detail: [CHANGELOG.md](CHANGELOG.md), [DECISIONS.md](DECISIONS.md). Deployed state: [../deployment-status.md](../deployment-status.md). Tests: [../test-matrix.md](../test-matrix.md).
 
 ## 1. Snapshot
-- Last updated: 2026-11-08 UTC. Branch `claude/operations` (stacked: #33 → #34 → #36 → #37 → #38 → #39 → #40 → #41 → #43 → #44 → #45 → #46 → this; includes PR #42's plan); base `main` `e982f64`; release `v2.22.1`. Requirements: PR #35 (`docs/product/`).
+- Last updated: 2026-11-08 UTC. Branch `claude/search-console` (stacked: #33 → #34 → #36 → #37 → #38 → #39 → #40 → #41 → #43 → #44 → #45 → #46 → #47 → this; includes PR #42's plan); base `main` `e982f64`; release `v2.22.1`. Requirements: PR #35 (`docs/product/`).
 - Environment: Linux cloud container, Node 22, Postgres 16 (local SQL checks); network allowed to Supabase, GitHub and the owner's three websites.
 
 ## 2. Goal and phase
@@ -22,6 +22,7 @@ Architecture: [../system-architecture.md](../system-architecture.md). Every job 
 | R1 orchestration (per-site planner, reviewer, worker) | `src/god/` | `god.test.mjs`, `scripts/god-pg-e2e.mjs` on Postgres 16 | not deployed |
 | Learning from results (D31): accepted advice re-checked by later scans; lessons per agent change planning and reach agents; shown to the agency | `src/god/learning.mjs`, migration 060000 | `learning.test.mjs`, `rls10.sql`, workerd e2e (26 checks) | not deployed; real outcomes need a live site |
 | Operations (D32): agency overview of all sites; platform health and pause switch for platform admins | portal, migration 070000 | `rls11.sql`, `portal-ops.test.mjs` | not deployed |
+| Search Console for hosted sites (D33): accepted advice measured against the rest of the site | `src/god/search-console.mjs` | `search-console.test.mjs` (mocked Google) | not deployed; needs `GOOGLE_KEY_JSON` (Q11) |
 | R1 onboarding (dossier, questions, strategy proposal, site memory) | `src/god/onboarding.mjs`, `handlers.mjs`, memory migration | `onboarding.test.mjs`, `rls5.sql`; live runs on 2 sites (in-memory store) | not deployed |
 | R1 scheduler (tick, budgets, costs, two-step strategy approval; D28) | `src/god/tick.mjs`, `scripts/god-run.mjs`, scheduler migration | `tick.test.mjs`, `rls6.sql`, `god-pg-e2e.mjs`; live dry run on 2 sites | not scheduled or deployed |
 | R1 agent runner (advise only, user's key, budget-bounded; D29) | `src/god/agent-runner.mjs` | `agent-runner.test.mjs` (mocked API only) | no live model call yet |
@@ -30,7 +31,7 @@ Architecture: [../system-architecture.md](../system-architecture.md). Every job 
 | Client portal: client accounts with reports and requests; agency inbox and client access; requests assessed as advice after agency approval | portal, migration 050000, `tick.mjs`, `agent-runner.mjs` | `rls9.sql`, `portal-requests.test.mjs`, `client-request.test.mjs`, workerd e2e (24 checks) | not deployed |
 
 ## 4. Checks this session
-- `npm test`: 551/551.
+- `npm test`: 555/555.
 - `bash cloud/portal/supabase/test/run.sh`: 11 suites pass.
 - `god-pg-e2e.mjs`: passes.
 - `cf-local-e2e.mjs`: the Worker ran in workerd against the real migrations; 26 checks pass, including the client request path and learning.

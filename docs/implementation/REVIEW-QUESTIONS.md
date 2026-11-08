@@ -16,7 +16,7 @@ A shared file for the owner, ChatGPT and Claude.
 - **S:** a suggestion.
 - **X:** a disagreement or concern, where Claude thinks the current plan or an instruction has a problem.
 
-Last updated: 2026-11-08 by Claude (session on branch `claude/operations`).
+Last updated: 2026-11-08 by Claude (session on branch `claude/search-console`).
 
 ---
 
@@ -125,7 +125,7 @@ The `scan` function already accepts an optional Google service account (`GOOGLE_
 - Create one Google service account for the agency and store its key as a Supabase function secret.
 - Add its email as a restricted user on each client's Search Console property.
 
-Claude then adds traffic-based verdicts to learning, reusing the CLI's control-group method.
+**Update (claude/search-console):** the code is now built and tested with mocked Google responses (D33). It needs only this key, set as the Worker secret `GOOGLE_KEY_JSON`, and the email added on each property.
 **Owner reply:**
 **ChatGPT reply:**
 

@@ -2,6 +2,17 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (Search Console for hosted sites, D33; branch claude/search-console)
+- **Code:**
+  - `src/god/search-console.mjs`: a Google service-account token via Web Crypto (Node and Workers), and the `search_console` job (small per-page and site-total queries; verdict against the rest of the site).
+  - Learning stores each recommendation's full address and counts traffic verdicts in lessons.
+  - The scheduler queues the measurement only when due and only with `GOOGLE_KEY_JSON`.
+  - The Worker registers the handler when the secret is set.
+- **Tests:**
+  - `test/search-console.test.mjs` (4 tests: a real RS256 signature checked with the public key; queries never download page × date data; domain property tried before address prefix; a "better" verdict; flat traffic not counted as a win; no access goes to a person; the scheduler queues only when due and with a key).
+  - `npm test` 555/555; workerd end-to-end run passes.
+- **Not verified live:** no Google key in this environment; mocked responses only.
+
 ## 2026-11-08 (Operations, D32, and the review file; branch claude/operations)
 - **Code:**
   - Portal **Operations** page, every agency member: their websites with approvals waiting, client requests, stuck work, strategy state, spend, and last-planned time or last error.

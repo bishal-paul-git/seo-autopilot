@@ -12,6 +12,7 @@ import { SupabaseStore } from "../../../src/god/stores.mjs";
 import { makeHandlers } from "../../../src/god/handlers.mjs";
 import { makeAgentHandler, makeClientRequestHandler } from "../../../src/god/agent-runner.mjs";
 import { tick } from "../../../src/god/tick.mjs";
+import { makeSearchConsoleHandler, googleToken } from "../../../src/god/search-console.mjs";
 import { runOnce } from "../../../src/god/worker.mjs";
 import { PROMPTS } from "./agents.generated.mjs";
 
@@ -65,6 +66,8 @@ export function context(env, fetchImpl) {
   const handlers = makeHandlers({ store, siteOf, scan: remoteScan(env, fetchImpl, s.scanMaxPages) });
   // Agent jobs only with the user's own key (rule 6); otherwise the planner reports them as deferred, never queued.
   if (env.ANTHROPIC_API_KEY) handlers["agent:*"] = handlers.client_request = makeAgentHandler({ store, siteOf, apiKey: env.ANTHROPIC_API_KEY, model: env.SEO_GOD_MODEL || "claude-opus-5-5", effort: env.SEO_GOD_EFFORT || "medium", fetchImpl, promptOf: (name) => PROMPTS[name] || null, baseUrl: env.ANTHROPIC_BASE_URL || "https://api.anthropic.com" });
+  // Search Console only with a service account key (GOOGLE_KEY_JSON); without it the measurement is never queued.
+  if (env.GOOGLE_KEY_JSON) { let tok = null; handlers.search_console = makeSearchConsoleHandler({ store, siteOf, fetchImpl, getToken: () => (tok ??= googleToken(env.GOOGLE_KEY_JSON, { fetchImpl })) }); }
   if (handlers.client_request) handlers.client_request = makeClientRequestHandler({ store, agentHandler: handlers["agent:*"] });
   return { s, store, siteOf, handlers };
 }

@@ -1,0 +1,86 @@
+// Search Console for hosted sites (Q11, D33): measures whether accepted advice changed clicks, using the CLI's own
+// experiment method (src/analysis/experiments.mjs: 14 days after vs 14 days before, adjusted by a control group).
+// Runs in the Cloudflare Worker (10 ms CPU, 50 requests), so it never downloads the site's full page x date data:
+// one small query per page under test (that page's daily rows) plus one for the site's daily totals; the control
+// group is the rest of the site (totals minus the page). A Google service account the site owner added as a user on
+// their Search Console property signs in with Web Crypto (works in Node and Workers). Read-only scope.
+import { evaluate, controlGroup } from "../analysis/experiments.mjs";
+
+const day = (t) => new Date(t).toISOString().slice(0, 10);
+const addDays = (d, n) => day(Date.parse(`${d}T00:00:00Z`) + n * 864e5);
+export const LAG = 3, SPAN = 14, MAX_ITEMS = 10;
+
+const b64u = (b) => { const s = typeof b === "string" ? b : String.fromCharCode(...new Uint8Array(b)); return btoa(unescape(encodeURIComponent(s))).replace(/=+$/, "").replace(/\+/g, "-").replace(/\//g, "_"); };
+const b64uBytes = (b) => btoa(String.fromCharCode(...new Uint8Array(b))).replace(/=+$/, "").replace(/\+/g, "-").replace(/\//g, "_");
+
+/** A read-only Search Console access token from a service account key (JSON text). */
+export async function googleToken(keyJson, { fetchImpl = (...a) => fetch(...a), now = Date.now() } = {}) {
+  const key = typeof keyJson === "string" ? JSON.parse(keyJson) : keyJson;
+  if (!key?.client_email || !key?.private_key) throw new Error("Google key is missing client_email or private_key");
+  const iat = Math.floor(now / 1000), aud = key.token_uri || "https://oauth2.googleapis.com/token";
+  const unsigned = `${b64u(JSON.stringify({ alg: "RS256", typ: "JWT" }))}.${b64u(JSON.stringify({ iss: key.client_email, scope: "https://www.googleapis.com/auth/webmasters.readonly", aud, iat, exp: iat + 3600 }))}`;
+  const der = Uint8Array.from(atob(String(key.private_key).replace(/-----[^-]+-----|\s/g, "")), (c) => c.charCodeAt(0));
+  const k = await crypto.subtle.importKey("pkcs8", der, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", k, new TextEncoder().encode(unsigned));
+  const r = await fetchImpl(aud, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer", assertion: `${unsigned}.${b64uBytes(sig)}` }).toString() });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || !j.access_token) throw new Error(`Google sign-in failed: ${j.error_description || j.error || r.status}`);
+  return j.access_token;
+}
+
+/** Experiments with items whose 14-day after-window has completed and that have no traffic result yet. */
+export function trafficDue(experiments, now) {
+  const ready = day(Date.parse(now) - (LAG + SPAN) * 864e5);
+  return experiments.filter((e) => String(e.openedAt).slice(0, 10) <= ready && (e.items || []).some((it) => it.href && !it.traffic));
+}
+
+async function query(fetchImpl, token, property, body) {
+  const r = await fetchImpl(`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(property)}/searchAnalytics/query`, { method: "POST", headers: { Authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify(body) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || j.error) { const e = new Error(j.error?.message || `Search Console HTTP ${r.status}`); e.status = r.status; throw e; }
+  return j.rows || [];
+}
+const toSeries = (rows) => Object.fromEntries(rows.map((x) => [x.keys[0], [x.clicks, x.impressions, Number(Number(x.position).toFixed(1))]]));
+
+/**
+ * The "search_console" job: for accepted advice whose after-window is complete, read Search Console and store a
+ * traffic verdict on each item. deps: { store, siteOf, getToken: async () => token, fetchImpl, now }.
+ */
+export function makeSearchConsoleHandler({ store, siteOf, getToken, fetchImpl = (...a) => fetch(...a), now = () => new Date().toISOString() }) {
+  return async (job) => {
+    const site = await siteOf(job.siteId);
+    const memory = (await store.readMemory(job.siteId, "experiment")) || [];
+    const due = trafficDue(memory.map((m) => m.value), now());
+    if (!due.length) return { evidence: ["no accepted advice is ready to measure yet"] };
+    const token = await getToken();
+    const host = new URL(site.url).hostname.replace(/^www\./, "");
+    const from = addDays(day(Math.min(...due.map((e) => Date.parse(e.openedAt)))), -SPAN - 1), to = addDays(day(Date.parse(now())), -2);
+    // The property the owner shared with us: the domain property first, then the address prefix.
+    let property = null, total = null;
+    for (const p of [`sc-domain:${host}`, new URL("/", site.url).toString()]) {
+      try { total = await query(fetchImpl, token, p, { startDate: from, endDate: to, dimensions: ["date"], rowLimit: 500 }); property = p; break; }
+      catch (e) { if (![403, 404].includes(e.status)) throw e; }
+    }
+    if (!property) return { escalate: `Search Console: the service account has no access to ${host}; the site owner must add it as a user`, evidence: [], costUsd: 0 };
+    const siteSeries = toSeries(total), today = day(Date.parse(now()));
+    let measured = 0;
+    const updates = [];
+    for (const exp of due) {
+      const items = [];
+      for (const it of exp.items) {
+        if (!it.href || it.traffic || measured >= MAX_ITEMS) { items.push(it); continue; }
+        measured++;
+        const rows = await query(fetchImpl, token, property, { startDate: from, endDate: to, dimensions: ["date"], dimensionFilterGroups: [{ filters: [{ dimension: "page", operator: "equals", expression: it.href }] }], rowLimit: 500 });
+        const page = toSeries(rows);
+        const rest = Object.fromEntries(Object.entries(siteSeries).map(([d, v]) => { const p = page[d] || [0, 0, 0]; return [d, [Math.max(0, v[0] - p[0]), Math.max(0, v[1] - p[1]), v[2]]]; }));
+        const e = { url: it.href, change: it.title, date: String(exp.openedAt).slice(0, 10) };
+        const controls = controlGroup(e, { __rest__: rest }, new Set([it.href]), { span: SPAN, lag: LAG, minPages: 1 });
+        const r = evaluate(e, { [it.href]: page }, today, { span: SPAN, lag: LAG, controls });
+        items.push({ ...it, traffic: { status: r.status, verdict: r.verdict || null, clicksChange: r.clicksChange ?? null, impressionsChange: r.impressionsChange ?? null, adjustedImpressionsChange: r.control?.adjustedImpressionsChange ?? null, before: r.before ? { clicks: r.before.clicks, impressions: r.before.impressions } : null, after: r.after ? { clicks: r.after.clicks, impressions: r.after.impressions } : null, note: r.note || null, property } });
+      }
+      updates.push({ kind: "experiment", key: `exp:${exp.job}`, value: { ...exp, items }, basis: "verified", confidence: null, source: "search console" });
+    }
+    if (updates.length) await store.writeMemory(job.siteId, updates);
+    return { evidence: [`Search Console ${property}: ${measured} page${measured === 1 ? "" : "s"} measured, 14 days after vs 14 before, against the rest of the site`] };
+  };
+}

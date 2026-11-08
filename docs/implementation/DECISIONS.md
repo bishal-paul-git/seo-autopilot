@@ -83,6 +83,20 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-11-08 D33 Search Console for hosted sites measures accepted advice with the CLI's own method
+**Decision:** with a Google service account (`GOOGLE_KEY_JSON`, which site owners add as a user on their property), the scheduler queues a read-only `search_console` job. It runs once an accepted piece of advice has a complete after-window (3-day lag plus 14 days).
+
+**How it measures:**
+- The job compares the page's 14 days after with the 14 days before, against the rest of the site over the same dates. It reuses `src/analysis/experiments.mjs` (`evaluate`, `controlGroup`).
+- **Queries stay small:** per page under test, its daily rows, plus the site's daily totals; the control group is the totals minus the page. Downloading page × date data would be too much for the Worker's 10 ms CPU.
+- It tries the domain property first, then the address prefix. If it has no access, the job goes to a person, saying the site owner must add the account.
+- Verdicts feed the lessons. "Too little traffic" and "unclear" are never counted as wins.
+
+**Tradeoffs:**
+- It is still directional: the control group is the rest of the site, not matched pages.
+- It covers at most 10 pages per run.
+- Search Console data lags about 2 days.
+
 ## 2026-11-08 D32 Operations: each agency sees only its own sites; platform health is for platform admins
 **Decision:** the portal's Operations page has two parts.
 - **Every agency** sees all its own websites at a glance: approvals waiting, client requests, stuck work, spend and when each site was last planned (`agency_overview`).

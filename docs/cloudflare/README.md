@@ -73,6 +73,7 @@ Nothing here has been done. Each step needs the owner.
      | `INTERNAL_TOKEN` | a new random value, e.g. `openssl rand -hex 32`; used only between the Worker and itself |
      | `SCAN_SECRET` | the `scan_secret` from step 3 |
      | `ANTHROPIC_API_KEY` | optional, the agency's own key; without it agent jobs are deferred, never queued |
+     | `GOOGLE_KEY_JSON` | optional, the agency's Google service account key (JSON); site owners add its email as a user in their Search Console; without it traffic is never measured |
    - Plain vars are already in `wrangler.toml` and safe to commit: `SUPABASE_URL`, `SCAN_FUNCTION_URL`, budgets, model. Check them.
    - `npm run deploy` deploys **paused** (`SEO_GOD_PAUSED = "true"`). Then:
      - `curl https://seo-god.<your-subdomain>.workers.dev/health` must answer `{"ok":true,...}`;
