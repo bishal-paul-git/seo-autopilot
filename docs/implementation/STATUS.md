@@ -25,6 +25,9 @@ Architecture: [../system-architecture.md](../system-architecture.md). Every job 
 | Search Console for hosted sites (D33): accepted advice measured against the rest of the site | `src/god/search-console.mjs` | `search-console.test.mjs` (mocked Google) | not deployed; needs `GOOGLE_KEY_JSON` (Q11) |
 | Security fixes from an independent review (D34) and a go-live preflight check | migration 080000, `scripts/god-preflight.mjs` | `rls12.sql`, `security-fixes.test.mjs`, `god-preflight.test.mjs` | not deployed |
 | One agency approval per strategy (D35): drafted right after the scan; only the agency adopts it | `src/god/`, migration 090000 | `rls13.sql`, `tick.test.mjs`, `god-pg-e2e.mjs`, workerd e2e | not deployed |
+| Verified execution through the site's own GitHub (D37): work order, agency approval, issue + seo-implement, pull request followed, verified by the next scan | `src/god/github.mjs`, `tick.mjs`, migration 110000, portal | `github-execution.test.mjs`, `rls16.sql`, `portal-github.test.mjs`, workerd e2e (full path) | not deployed; never run against real GitHub |
+| Notifications, monthly work report, team page by department (D38) | migration 120000, portal | `rls17.sql`, `portal-notes.test.mjs`, `portal-team.test.mjs` | not deployed |
+| Brand discovery, stated/inferred (D39) | `src/analysis/discover.mjs`, `onboarding.mjs` | `discover.test.mjs`, `portal-app.test.mjs` | not deployed |
 | R1 onboarding (dossier, questions, strategy proposal, site memory) | `src/god/onboarding.mjs`, `handlers.mjs`, memory migration | `onboarding.test.mjs`, `rls5.sql`; live runs on 2 sites (in-memory store) | not deployed |
 | R1 scheduler (tick, budgets, costs; strategy drafted at once, one agency approval adopts it, D35) | `src/god/tick.mjs`, `scripts/god-run.mjs`, scheduler migration | `tick.test.mjs`, `rls6.sql`, `god-pg-e2e.mjs`; live dry run on 2 sites | not scheduled or deployed |
 | R1 agent runner (advise only, user's key, budget-bounded; D29) | `src/god/agent-runner.mjs` | `agent-runner.test.mjs` (mocked API only) | no live model call yet |
@@ -33,15 +36,16 @@ Architecture: [../system-architecture.md](../system-architecture.md). Every job 
 | Client portal: client accounts with reports and requests; agency inbox and client access; requests assessed as advice after agency approval | portal, migration 050000, `tick.mjs`, `agent-runner.mjs` | `rls9.sql`, `portal-requests.test.mjs`, `client-request.test.mjs`, workerd e2e (24 checks) | not deployed |
 
 ## 4. Checks this session
-- Merged head (D35 included): `npm test` 565/565.
-- `bash cloud/portal/supabase/test/run.sh`: 15 suites pass.
+- Head 5f9948a: `npm test` 580/580.
+- `bash cloud/portal/supabase/test/run.sh`: 17 suites pass.
   - `rls13.sql`: one-approval strategy.
   - `rls14.sql`: invite-only sign-up.
-  - `rls15.sql`: every outsider-callable function called against another agency's ids. 1,050 calls; none leaked or changed data; a planted leak was caught.
-- `node scripts/db-rollback-check.mjs`: after 12 migrations, the rollback restores the production-equivalent catalog exactly, and the chain re-applies cleanly.
+  - `rls15.sql`: every outsider-callable function called against another agency's ids. 1,250 calls to 39 functions; none leaked or changed data; a planted leak was caught.
+  - `rls16.sql`: GitHub execution (token in Vault, owner only). `rls17.sql`: notifications, work report, workforce.
+- `node scripts/db-rollback-check.mjs`: after 14 migrations, the rollback restores the production-equivalent catalog exactly, and the chain re-applies cleanly.
 - Read-only production fingerprint (2026-11-08): the schema equals the two portal migrations, with 3 noted exceptions (manifest section 0).
 - `god-pg-e2e.mjs`: passes.
-- `cf-local-e2e.mjs`: the Worker ran in workerd against all migrations through 090000; 24 checks pass, including one-approval strategy adoption, the client request path and learning.
+- `cf-local-e2e.mjs`: the Worker ran in workerd against all migrations through 110000; 31 checks pass. They include one-approval strategy adoption, the client request path, learning, and the full GitHub execution path with a GitHub stand-in.
 - `scan-fn-local.mjs`: the scan function ran in Deno on a real site; 8 checks pass.
 - `cf-measure.mjs`: CPU measured on 3 real sites. A scan costs 0.8-1.6 s of CPU; Worker steps cost 0.4-2.5 ms.
 - Cloudflare and Supabase limits were read from the official docs.

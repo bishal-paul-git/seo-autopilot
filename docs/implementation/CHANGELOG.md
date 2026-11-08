@@ -2,6 +2,32 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-08 (Build batch: verified execution, notifications, reports, team page, brand discovery; branch claude/release-1)
+- **Owner direction (chat, 2026-11-08):** keep building without re-asking settled decisions. Production writes, merges and live jobs still need explicit approval.
+- **Code (commits 242ef4e, 3d40129, 967eb00, f6bd85e, 5f9948a):**
+  - D37 verified execution:
+    - `src/god/github.mjs`;
+    - the `implement` handler;
+    - scheduler deploy, follow and verify;
+    - Worker wiring;
+    - migration `20261108110000_github_execution.sql`;
+    - the portal's "Changes to the website" card.
+  - D38:
+    - migration `20261108120000_notifications_reports.sql`;
+    - the portal's Notifications page and menu badge;
+    - the monthly work report with print;
+    - the team page by the spec's departments.
+  - D39: brand discovery.
+  - Portal reliability: confirmations appear after the fresh render, and notifications load in the background. This was the root cause of the load-dependent browser-test failures.
+  - Security: repository names with `.` or `..` segments are refused (found by a new test).
+- **Tests:**
+  - New: `github-execution.test.mjs` (7), `portal-github.test.mjs` (2), `portal-notes.test.mjs` (2), `portal-team.test.mjs` (2), `rls16.sql`, `rls17.sql`.
+  - Extended: `discover.test.mjs` (+2), `portal-app.test.mjs`.
+  - Workerd e2e: 31 checks, including the full GitHub execution path.
+  - `npm test` 580/580; 17 SQL suites; tenant sweep 1,250 outsider calls to 39 functions, none leaked; rollback exact after 14 migrations; `god-pg-e2e.mjs` passes.
+  - All 8 portal browser test files pass three times in parallel.
+- **Deployment:** none. No production writes.
+
 ## 2026-11-08 (D35 merged into the consolidated Release 1 PR; branch claude/release-1)
 - **Owner decision:** D1 confirmed (commit 311c85d by the owner). One agency approval adopts the automatically drafted strategy; high-risk changes keep their own approvals.
 - **Merge:** `claude/strategy-draft` (PR #50) merged into `claude/release-1` (#51) with a merge commit.

@@ -51,6 +51,8 @@ Nothing here has been done. Each step needs the owner.
    - `20261108080000_security_fixes.sql` (security review fixes, D34)
    - `20261108090000_strategy_draft.sql` (the strategy is drafted at once; only the agency adopts it, D35, owner-confirmed). The preflight check cannot see this one, because it only redefines `transition_job`: confirm it in Dashboard → Database → Migrations.
    - `20261108100000_invite_only.sql` (invite-only sign-up until launch, Q8 and D36; no Supabase Auth setting change needed)
+   - `20261108110000_github_execution.sql` (approved advice becomes a reviewed pull request through the site's own GitHub workflow, D37)
+   - `20261108120000_notifications_reports.sql` (notifications, monthly work report, team page data, D38)
 
    Rollback: `cloud/portal/supabase/rollback/release-1.sql` (checked by `node scripts/db-rollback-check.mjs`).
 

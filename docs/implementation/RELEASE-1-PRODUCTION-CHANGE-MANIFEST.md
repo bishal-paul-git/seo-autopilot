@@ -46,6 +46,8 @@ Apply in this order, in the SQL editor, one file at a time, each in its own tran
 | 10 | `20261108080000_security_fixes.sql` | Search Console confirmation, job limits | `sites.gsc_allowed*`, trigger `sites_gsc_reset` |
 | 11 | `20261108090000_strategy_draft.sql` | one agency approval adopts the drafted strategy (D35; owner confirmed D1) | none (redefines `transition_job`, which #2 adds) |
 | 12 | `20261108100000_invite_only.sql` | invite-only sign-up gate (Q8) | trigger `on_auth_user_gate_signup` (before insert on `auth.users`) |
+| 13 | `20261108110000_github_execution.sql` | GitHub connection per site (token in Vault), work orders, deployments (D37) | `sites.repo` set when an owner connects; `integrations` rows |
+| 14 | `20261108120000_notifications_reports.sql` | notifications, monthly work report, team page data (D38) | none |
 
 **Immediately after #1, in the same session:** `select cron.unschedule('seo-autopilot-scan');`. Cloudflare is the only scheduler (D30). Until the Vault secrets exist, that job does nothing anyway (`kick_scan` returns early).
 
@@ -130,6 +132,9 @@ insert into public.platform_admins (user_id, note) select id, 'owner' from auth.
 ### P7. Unpause the read-only pilot (NOT authorized; Gate C)
 This needs a separate approval after a day of healthy paused runs. It will be scoped to erudience.com only (Q3), with `SEO_GOD_DAILY_BUDGET_USD = 0` and no AI key.
 
+### P8. Website changes through GitHub (NOT authorized; Q3 "no website modifications without separate approval")
+After P1, an agency owner can connect a site's repository in the portal (SEO God page, "Changes to the website"). For the erudience.com pilot, that connection, and any approved work order that reaches its repository, needs your separate approval. Without a connected repository, every site stays advice-only.
+
 ## 3. erudience.com read-only pilot test matrix (for Gate C)
 | # | Check | Expected | Evidence |
 |---|---|---|---|
@@ -146,9 +151,9 @@ This needs a separate approval after a day of healthy paused runs. It will be sc
 | 11 | Usage | Worker requests a day; Supabase function invocations | dashboards vs `docs/cloudflare/usage-estimate.md` |
 
 ## 4. Checks behind this manifest (local, this session; mocked providers only)
-- `npm test`: 565/565.
-- `bash cloud/portal/supabase/test/run.sh`: 15 suites, including `rls13.sql` (one-approval strategy), `rls14.sql` (invite-only) and `rls15.sql`. The last calls every outsider-callable function against another agency's records (1,050 calls; nothing leaked or changed).
-- `node scripts/db-rollback-check.mjs`: after all 12 migrations, the rollback is exact and re-apply is clean.
+- `npm test`: 580/580.
+- `bash cloud/portal/supabase/test/run.sh`: 17 suites, including `rls13.sql` (one-approval strategy), `rls14.sql` (invite-only), `rls15.sql` (every outsider-callable function called against another agency's records: 1,250 calls to 39 functions; nothing leaked or changed), `rls16.sql` (GitHub execution) and `rls17.sql` (notifications and reports).
+- `node scripts/db-rollback-check.mjs`: after all 14 migrations, the rollback is exact and re-apply is clean.
 - `node scripts/god-pg-e2e.mjs`.
 - `node scripts/cf-local-e2e.mjs` (workerd).
 - Production: read-only queries listed in section 0.

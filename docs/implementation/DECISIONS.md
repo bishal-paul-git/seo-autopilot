@@ -83,6 +83,45 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Keel:** separate product; see PHASE-0-AUDIT §5.3. No code dependency in either direction.
 
+## 2026-11-08 D37 Verified execution through the site's own GitHub workflow (R1-E1)
+**Context:** the spec's execution chain (§3, §5): approved work must reach the website through a reviewed, verified and reversible change. The owner asked for build progress without new platforms. Sites that run SEO Autopilot already have `seo-implement.yml`. It drafts a pull request from an approved issue, edits content files only, never runs builds, and passes through `seo-check`, `seo-review` and the merge policy of D17.
+
+**Decision:**
+- The hosted SEO God never edits a website. For a site with a connected repository, the agency picks a recommendation from accepted advice ("Prepare a pull request"). A deterministic work order is drafted, which is free and needs no approval to start. The agency approves that exact text (the D35 adoption pattern).
+- On approval, the scheduler opens an issue in the site's repository (labels `seo-proposal`, the change kind, `seo-hosted`) and starts `seo-implement` with that issue. The issue number is saved before the workflow starts, so a retry never opens a second issue.
+- It then follows the pull request on branch `seo/issue-<n>`.
+  - Merged: move to verifying and request a fresh scan.
+  - Closed unmerged, or no pull request after 7 days: escalate to a person.
+  - Open: wait, because the merge stays with a person or the site's policy.
+- Verification compares the page's problems in the first scan after the merge with the baseline taken when the issue was opened. New high-severity problems escalate, naming the pull request to revert. Otherwise the job completes with what was fixed.
+- Credentials (rule 6): the agency's own fine-grained token for that one repository (Issues and Actions read/write; Pull requests and Metadata read).
+  - It is stored in Supabase Vault. Only an agency owner can set or remove it.
+  - Only the service role can read it, and only for a connected site. It is never returned to a browser.
+  - Repository names are validated, and `.` and `..` are refused.
+- The recommendation text is quoted in the issue as data. HTML comment markers are stripped, so nothing can hide in the issue body.
+
+**Tradeoffs:**
+- Only sites whose code is in GitHub and that run SEO Autopilot's workflows can be changed. Address-only sites stay advice-only (D29).
+- Verification is audit-based. It shows whether problems went away, not traffic impact; Search Console measurement (D33) covers that where connected.
+- Rollback is the GitHub revert of the named pull request: a person's action, deliberately not automatic.
+
+**Evidence:** `test/github-execution.test.mjs`, `rls16.sql`, `portal-github.test.mjs`, and the workerd end-to-end run. That run drives the whole path against the real migrations with a GitHub stand-in: drafted, approved, issue and dispatch, merged, re-scanned, "1 of 1 problems fixed", and the token appears in no job, output or log.
+
+## 2026-11-08 D38 Notifications derived from the work; monthly work report; team page by department
+**Decision:**
+- Notifications are computed live from the work itself:
+  - for agencies: approvals waiting, work needing a person, client requests, changes verified or stopped, integration and planning errors;
+  - for client accounts: answers to their own requests.
+  - Only "seen up to" is stored per person.
+  - No email provider: Q7 is open, and the portal inbox is the channel.
+- The monthly work report is for the agency and the site's client accounts. It lists advice accepted, changes and their verification, requests answered, and the audit at the start and end of the month. It contains nothing internal: no costs, agents, analysis or reviews. Anonymous share links keep the existing report without it.
+- The team page shows the director plus the master spec's eight departments, taken from `src/god/departments.mjs` (each agent exactly once), with 30-day work per department and specialist.
+
+**Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
+
+## 2026-11-08 D39 Brand discovery is labelled; competitors are not guessed
+**Decision:** discovery records the theme colour a site declares (stated) and the colours and fonts read from its own HTML styles (inferred), each with its source. Only plain hex colours and plain font names are kept, and generic font stacks are dropped. Competitors are not guessed from a site's own pages: they come from search data through the existing `gap` research job.
+
 ## 2026-11-08 D36 Invite-only sign-up in the database; pause enforced on every Worker route
 **Context:** owner decision Q8 ("invite-only registration until public launch; verify owner/admin access and invite flows remain functional before changing authentication settings") and the owner's production-gates handover (a paused Worker must not execute due jobs even if Cron fires).
 
