@@ -87,3 +87,59 @@ export function makeSearchConsoleHandler({ store, siteOf, getToken, fetchImpl = 
     return { evidence: [`Search Console ${property}: ${measured} page${measured === 1 ? "" : "s"} measured, 14 days after vs 14 before, against the rest of the site`] };
   };
 }
+
+// The property the owner shared with the service account: the domain property first, then the address prefix.
+async function findProperty(fetchImpl, token, siteUrl, body) {
+  const host = new URL(siteUrl).hostname.replace(/^www\./, "");
+  for (const p of [`sc-domain:${host}`, new URL("/", siteUrl).toString()]) {
+    try { return { property: p, rows: await query(fetchImpl, token, p, body) }; }
+    catch (e) { if (![403, 404].includes(e.status)) throw e; }
+  }
+  return { property: null, rows: null, host };
+}
+
+export const SNAPSHOT_DAYS = 28, SNAPSHOT_PAGES = 250, SNAPSHOT_QUERIES = 100;
+const r4 = (x) => Number(Number(x || 0).toFixed(4)), r1 = (x) => Number(Number(x || 0).toFixed(1));
+const rowOf = (x) => ({ clicks: x.clicks || 0, impressions: x.impressions || 0, ctr: r4(x.ctr), position: r1(x.position) });
+
+/**
+ * The "search_snapshot" job (Phase 3, D47): the last 28 days of Search Console for the agents to read, stored in the
+ * site's memory as report "search_console": totals, the top pages and the top queries. Three small queries, read-only.
+ */
+export function makeSearchSnapshotHandler({ store, siteOf, getToken, fetchImpl = (...a) => fetch(...a), now = () => new Date().toISOString(), allowed = async () => true }) {
+  return async (job) => {
+    if (!(await allowed(job.siteId))) return { evidence: ["Search Console not used: a platform admin has not confirmed this site (set_gsc_allowed)"] };
+    const site = await siteOf(job.siteId);
+    const token = await getToken();
+    const to = addDays(day(Date.parse(now())), -LAG), from = addDays(to, -(SNAPSHOT_DAYS - 1));
+    const found = await findProperty(fetchImpl, token, site.url, { startDate: from, endDate: to, rowLimit: 1 });
+    if (!found.property) return { escalate: `Search Console: the service account has no access to ${found.host}; the site owner must add it as a user`, evidence: [], costUsd: 0 };
+    const { property } = found, base = { startDate: from, endDate: to };
+    const pages = await query(fetchImpl, token, property, { ...base, dimensions: ["page"], rowLimit: SNAPSHOT_PAGES });
+    const queries = await query(fetchImpl, token, property, { ...base, dimensions: ["query"], rowLimit: SNAPSHOT_QUERIES });
+    const totals = (found.rows || [])[0] ? rowOf(found.rows[0]) : { clicks: 0, impressions: 0, ctr: 0, position: 0 };
+    const value = { property, from, to, days: SNAPSHOT_DAYS, generatedAt: now(), totals,
+      pages: pages.map((x) => ({ url: x.keys[0], ...rowOf(x) })), queries: queries.map((x) => ({ query: x.keys[0], ...rowOf(x) })),
+      complete: { pages: pages.length < SNAPSHOT_PAGES, queries: queries.length < SNAPSHOT_QUERIES } };
+    await store.writeMemory(job.siteId, [{ kind: "report", key: "search_console", value, basis: "verified", confidence: null, source: "search console" }]);
+    return { evidence: [`Search Console ${property}, ${from} to ${to}: ${totals.clicks} clicks, ${totals.impressions} impressions; ${value.pages.length} pages and ${value.queries.length} queries stored for the agents`] };
+  };
+}
+
+/** Whether the site's Search Console snapshot is missing or older than a day. */
+export function snapshotDue(memory, now) {
+  const s = memory.find((m) => m.kind === "report" && m.key === "search_console")?.value;
+  return !s?.generatedAt || Date.parse(now) - Date.parse(s.generatedAt) > 20 * 3600e3;
+}
+
+/**
+ * What an agent sees of the snapshot: totals, every page up to `maxPages` (by impressions), the top queries, and a plain
+ * note on what absence means, so a pruner never reads "not listed" as "no traffic" when the list was cut.
+ */
+export function searchForAgents(s, { maxPages = 120, maxQueries = 40 } = {}) {
+  if (!s) return null;
+  const pages = [...(s.pages || [])].sort((a, b) => b.impressions - a.impressions).slice(0, maxPages);
+  const allPages = (s.complete?.pages ?? false) && pages.length === (s.pages || []).length;
+  return { property: s.property, from: s.from, to: s.to, totals: s.totals, pages, queries: (s.queries || []).slice(0, maxQueries),
+    note: allPages ? "Every page with at least one impression in this period is listed; a page not listed had no impressions." : `Only the top ${pages.length} pages by impressions are listed; a page not listed may still have had impressions.` };
+}

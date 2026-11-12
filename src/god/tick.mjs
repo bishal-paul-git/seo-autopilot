@@ -5,7 +5,7 @@
 import { planSite } from "./planner.mjs";
 import { enqueue, runOnce } from "./worker.mjs";
 import { learn, applyLessons } from "./learning.mjs";
-import { trafficDue } from "./search-console.mjs";
+import { trafficDue, snapshotDue } from "./search-console.mjs";
 import { rulesOnPage, verifyChange, WAIT_FOR_PR_DAYS } from "./github.mjs";
 import { withAnswers } from "./onboarding.mjs";
 
@@ -202,6 +202,8 @@ export async function tick({ store, sites = null, handlers = {}, now = new Date(
       const plan = planSite({ site, reports: reportsFrom(memory), strategy: { status: entry.strategy }, agents, now });
       const keep = [], existing = new Set(jobs.map((j) => j.idempotencyKey).filter(Boolean));
       // Measure accepted advice in Search Console once its after-window is complete (only with a Google key).
+      // A fresh 28-day Search Console snapshot for the agents to read, once a day, before the specialists (D47).
+      if (has("search_snapshot") && snapshotDue(memory, now)) plan.jobs.push({ kind: "search_snapshot", title: "Read the last 28 days from Search Console", department: "analytics", risk: "low", priority: 1, source: "seo_god", requiresApproval: false, idempotencyKey: `search_snapshot:${now.slice(0, 10)}`, inputs: { site: site.id }, why: "the agents read clicks and impressions per page and query" });
       if (has("search_console") && trafficDue(learned.experiments, now).length) plan.jobs.push({ kind: "search_console", title: "Measure accepted advice in Search Console", department: "analytics", risk: "low", priority: 3, source: "seo_god", requiresApproval: false, idempotencyKey: `search_console:${now.slice(0, 10)}`, inputs: { site: site.id }, why: "accepted advice has a complete 14-day after-window" });
       const guided = applyLessons(plan.jobs, learned.lessons);
       entry.deferred.push(...guided.deferred); entry.adjusted = guided.adjusted;

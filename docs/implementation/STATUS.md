@@ -5,7 +5,7 @@ Kept short; read at the start of every session. Plan: [../product/SYSTEM-READINE
 ## 1. Snapshot
 - Last updated: 2026-11-12 ~22:10 UTC. Branch `claude/hopeful-euler-662mu5`, PR [#58](https://github.com/bishal-paul-git/seo-autopilot/pull/58). Release 1 is on `main` (#51, then #56 and #57).
 - Environment: Linux cloud container, Node 22, Postgres 16 for local SQL checks.
-- Phase: **pilot running on erudience.com (read-only, advice only)**; readiness plan: Phase 1 (D45) deployed; Phase 2 (agent pages, D46) built.
+- Phase: **pilot running on erudience.com (read-only, advice only)**; readiness plan: Phase 1 (D45) and Phase 2 (agent pages, D46) deployed; Phase 3 step 1 (Search Console for the agents, D47) built, waits on the owner's Google key.
 
 ## 1b. Production (Supabase `ymwwwhdlyjnqbxxhtcew`, Worker `seo-god`, portal seo.erudience.com)
 | Step | State | Evidence |
@@ -32,9 +32,10 @@ Cloudflare Worker `seo-god` (`cloud/worker/`) runs every 15 min: plans each due 
 | Change | Kind | State |
 |---|---|---|
 | Readiness plan and agent-intelligence plan | docs | pushed |
-| D45: playbooks and skills sent to each agent; every AI output reviewed; fact-checker second opinion for content and high-risk work | code (`src/god/knowledge.mjs`, `agent-runner.mjs`, `worker.mjs`, `cloud/worker/build.mjs`, `src/app.mjs`) | **deployed** 2026-11-12 ~21:30 UTC: PR #58 merged (167fa60), deploy-seo-god run 8 (run=true) succeeded, god_runs 90 no errors; first live run with playbooks not yet observed (next planning ~01:45 UTC) |
+| D45: playbooks and skills sent to each agent; every AI output reviewed; fact-checker second opinion for content and high-risk work | code (`src/god/knowledge.mjs`, `agent-runner.mjs`, `worker.mjs`, `cloud/worker/build.mjs`, `src/app.mjs`) | **deployed** 2026-11-12 ~21:30 UTC: PR #58 merged (167fa60), deploy-seo-god run 8 (run=true) succeeded, god_runs 90 no errors; **verified live** 22:15 UTC: a snippet-optimizer run read its 4 playbooks and 1 skill, passed the quality gate and the fact-checker, cost $0.1333 |
 | STATUS rewritten (old table moved to history) | docs | done |
-| D46: agent pages (instructions, playbooks, record on this site, review verdicts, spend) and a specialists table on the team page | code (migration 20261114000000, `cloud/portal/build.mjs`, `app/index.html`) | built and tested; migration and portal publish recorded when done |
+| D46: agent pages (instructions, playbooks, record on this site, review verdicts, spend) and a specialists table on the team page | code (migration 20261114000000, `cloud/portal/build.mjs`, `app/index.html`) | **deployed**: PR #59 (8f6a287), migration applied, portal published ~22:00 UTC (previous kept as `previous-2026-11-12c.html`) |
+| D47: daily 28-day Search Console snapshot in site memory; every agent reads it (or is told it is not connected) | code (`src/god/search-console.mjs`, `tick.mjs`, `agent-runner.mjs`, Worker) | built and tested (mocked Google); live once `GOOGLE_KEY_JSON` is set and the site is confirmed |
 D45: no migration. D46: one read-only migration. No new dependency or secret.
 
 ## 4. Checks

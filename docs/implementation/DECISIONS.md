@@ -119,6 +119,12 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
 
+## 2026-11-12 D47 Search Console data for the agents
+Phase 3 of `docs/product/SYSTEM-READINESS-PLAN.md`, step 1. Until now Search Console was read only to measure accepted advice (D33); the agents never saw clicks or impressions, so the pruner could not know which pages earn traffic.
+- New job `search_snapshot` (`src/god/search-console.mjs`): once a day, before the specialists, three read-only queries for the last 28 days ending 3 days ago (Search Console's data delay): site totals, up to 250 pages and 100 queries by the API's default order. Stored as site memory report `search_console` (basis verified, source search console). Planned only when the Worker has `GOOGLE_KEY_JSON` and a platform admin confirmed the site (`gsc_allowed`, D34); otherwise it is never planned and no Google call is made.
+- Every agent's input gets `searchConsole` (top 120 pages by impressions, top 40 queries, totals) with a plain note: when the page list is complete, "a page not listed had no impressions"; when it was cut, "a page not listed may still have had impressions". It is `null` when not connected, and the agents are told to say so and not estimate traffic.
+- Tradeoffs: 28 days is short for seasonal sites (a later option: 3 and 16 months for pruning decisions); pages beyond the top 250 are summarised as "may have impressions" rather than fetched, to stay inside the Worker's request limits.
+
 ## 2026-11-12 D46 Agent pages in the portal, read-only
 Phase 2 of `docs/product/SYSTEM-READINESS-PLAN.md`. The owner asked where to see, manage and verify the agents.
 - **SEO team → any specialist** opens its page (`#/s/<site>/agent/<name>`, agency only): its description and full instructions; the playbooks and skills it reads before every run (D45), each with word count, whether it lists sources and its review date (today 1 of 29 playbooks lists sources and none has a date, shown honestly); its record on this site (every run with what it read, its summary and recommendation titles, cost, every review verdict with the reviewer's reasons, and the agency's decision); and its exam score (shown as "not examined yet" until Phase 4).
