@@ -2,6 +2,11 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-12 (Phase 2: agent pages, D46; code change)
+- Code: migration `cloud/portal/supabase/migrations/20261114000000_agent_pages.sql` (new, read-only functions), `cloud/portal/build.mjs` (`agentCatalog()`), `cloud/portal/app/index.html` (team page links and table, agent page); tests `test/portal-agent.test.mjs` (new), `cloud/portal/supabase/test/rls21.sql` (new).
+- Checks: `npm test` 599/599; `bash cloud/portal/supabase/test/run.sh` all suites through rls21.
+- Deployment (D45, earlier today): PR #58 merged as 167fa60; deploy-seo-god run 8 (run=true) succeeded; god_runs 90 (21:30 UTC) after the deploy: no errors, not paused.
+
 ## 2026-11-12 (Phase 1: playbooks, review of every AI output, second opinion, D45; code change)
 - Code: `src/god/knowledge.mjs` (new), `src/god/agent-runner.mjs`, `src/god/worker.mjs`, `cloud/worker/build.mjs`, `cloud/worker/src/app.mjs`; tests in `test/agent-runner.test.mjs` (4 new or changed).
 - Checks: `npm test` 597/597; `scripts/cf-local-e2e.mjs` and `scripts/god-pg-e2e.mjs` pass. Mocked API only until the live run.
