@@ -1,0 +1,52 @@
+# Hourly health check of the hosted SEO God (D41): reads the Worker's run log and keeps ONE GitHub issue labelled
+# seo-god-health open while something is wrong (no run for 40 minutes, or errors in every recent run), closing it when the
+# scheduler is healthy again. Read-only: it never pauses, unpauses or changes anything. Needs the repository secret
+# SUPABASE_SERVICE_ROLE_KEY (already set for deploy-seo-god).
+name: god-health
+on:
+  schedule:
+    - cron: "23 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: god-health
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_URL: https://ymwwwhdlyjnqbxxhtcew.supabase.co
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Check the run log
+        id: health
+        run: |
+          set +e
+          node scripts/god-health.mjs > report.md 2> err.txt
+          code=$?
+          [ -s err.txt ] && { echo "**SEO God health: PROBLEM**"; echo; echo "The check itself failed: $(head -c 300 err.txt)"; } >> report.md
+          cat report.md >> "$GITHUB_STEP_SUMMARY"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+      - name: Open, update or close the health issue
+        run: |
+          gh label create seo-god-health --color B60205 --description "Hosted SEO God health check" 2>/dev/null || true
+          open=$(gh issue list --label seo-god-health --state open --json number --jq '.[0].number // empty')
+          if [ "${{ steps.health.outputs.code }}" != "0" ]; then
+            if [ -n "$open" ]; then gh issue comment "$open" --body-file report.md
+            else gh issue create --title "SEO God health: problem detected" --label seo-god-health --body-file report.md; fi
+            exit 1
+          elif [ -n "$open" ]; then
+            gh issue close "$open" --comment "Healthy again: $(head -c 400 report.md | tail -n +3)"
+          fi

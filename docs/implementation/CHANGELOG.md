@@ -2,6 +2,13 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-12 (Pilot fixes and health monitoring, D41; code changes)
+- `src/god/onboarding.mjs`: an address alone no longer marks a site as a local business (test in `test/onboarding.test.mjs`).
+- `cloud/portal/supabase/functions/notify/core.mjs`: missing SMTP is a note, not an error (test updated). Redeployed as notify v2.
+- New `scripts/god-health.mjs`, `test/god-health.test.mjs`, `.github/workflows/god-health.yml` (hourly, one issue labelled `seo-god-health`).
+- `.github/workflows/deploy-seo-god.yml`: a "run" input deploys the scheduler running; default stays paused.
+- Checks: `npm test` 590/590.
+
 ## 2026-11-12 (Pilot first run; portal published; deployment actions only)
 - Owner set `SEO_GOD_PAUSED=false` in the Cloudflare dashboard; run 8 (01:00 UTC) scanned erudience.com (39 pages, 14 low findings), saved 11 facts and 8 questions, and drafted the strategy (awaiting approval). No errors, $0.
 - Portal published to seo.erudience.com through the Hostinger connector's file upload (TUS); the network allowlist gained `srv1401-files.hstgr.io` and `seo.erudience.com` with the owner's approval. Rollback: upload `previous-2026-11-05.html` as `index.html`.

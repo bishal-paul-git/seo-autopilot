@@ -23,6 +23,12 @@ test("dossier: stated facts keep their source; questions only for what is unknow
   assert.ok(!keys.includes("contact_phone"), "phone is stated, so not asked");
   assert.ok(keys.includes("contact_email"), "email is missing, so asked");
   assert.match(d.questions.find((q) => q.key === "target_locations").question, /lists an address/, "local business gets the service-area question");
+  {
+    const office = buildDossier({ site: { id: "o1", name: "Agency", url: "https://agency.test/" }, discovered: { name: { value: "Agency", source: "https://agency.test/" }, businessTypes: ["Organization"], addresses: [{ value: "1 City Road, London", source: "https://agency.test/" }], phones: [], emails: [] }, profile: {} });
+    const q = office.questions.find((x) => x.key === "target_locations");
+    assert.match(q.question, /beyond that area/, "an office address alone does not make the site a local business");
+    assert.doesNotMatch(q.why, /local business/);
+  }
   assert.ok(keys.includes("services_priority"), "several topics: asks which matter most");
   assert.equal(d.strategyDraft.approval, "agency");
   assert.equal(d.strategyDraft.status, "proposed");
