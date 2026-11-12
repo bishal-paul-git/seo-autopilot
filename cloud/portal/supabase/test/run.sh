@@ -25,4 +25,5 @@ p -f shim.sql -f ../migrations/20261030000000_portal.sql -f rls.sql \
   -f shim5.sql -f ../migrations/20261108110000_github_execution.sql -f ../migrations/20261108120000_notifications_reports.sql \
   -f ../migrations/20261108130000_email.sql \
   -f rls15.sql -f rls16.sql -f rls17.sql -f rls18.sql \
-  -f ../migrations/20261112000000_activity.sql -f rls19.sql
+  -f ../migrations/20261112000000_activity.sql -f rls19.sql \
+  -f ../migrations/20261113000000_business_brief.sql -f rls20.sql

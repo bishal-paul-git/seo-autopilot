@@ -2,16 +2,20 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-12 (Business brief at onboarding, $2/day budget, D44; code change)
+- Code: `BRIEF` in `src/god/onboarding.mjs`; migration `20261113000000_business_brief.sql` (`site_brief`, `save_brief`); portal brief page, add-website flow, SEO God summary card (`cloud/portal/app/index.html`, `cloud/portal/build.mjs`); `cloud/worker/wrangler.toml` budget "2".
+- Tests: `cloud/portal/supabase/test/rls20.sql`, `test/portal-brief.test.mjs`; updated `portal-god`, `portal-activity`, `portal-app` for the new flow. `npm test` 594/594; SQL suites incl. rls20 pass.
+
 ## 2026-11-12 (Answers carried into the approved strategy, D43; code change)
 - Code: `withAnswers()` in `src/god/onboarding.mjs`, used by `advance()` in `src/god/tick.mjs`; portal hint on the strategy card. Test in `test/onboarding.test.mjs`.
 - Checks: `npm test` 592/592; `node scripts/god-pg-e2e.mjs` and `node scripts/cf-local-e2e.mjs` pass.
-- Deployment: needs a Worker redeploy (deploy-seo-god with run=true) before the owner approves; recorded below when done.
+- Deployment 2026-11-12 ~18:47 UTC: PR #56 merged into `main` (45b314b); deploy-seo-god run #6 (run=true) succeeded, so the Worker carries D43 before the owner's first approval.
 
 ## 2026-11-12 (Live activity, D42; code change and one production migration)
 - Code: `cloud/portal/supabase/migrations/20261112000000_activity.sql` (`site_activity`), "Live activity" card on the SEO God page (`cloud/portal/app/index.html`), tests `cloud/portal/supabase/test/rls19.sql` and `test/portal-activity.test.mjs`.
 - Checks: `npm test` 591/591; `bash cloud/portal/supabase/test/run.sh` all suites incl. rls19 (no cross-agency rows, no Worker error text, clients/anon refused, read changes nothing).
 - Deployment: migration applied to production `ymwwwhdlyjnqbxxhtcew` with `apply_migration` (read-only function only). Verified as an Erudience member in a rolled-back transaction: 11 events, 2 workers, heartbeat 4 runs/hour, 0 errors; a random user and anon are refused.
-- Not deployed: the portal page. The Hostinger connector needs re-authorisation in claude.ai before the new build can be uploaded; until then the live portal shows the old SEO God page (the function is unused, no harm).
+- Portal published 2026-11-12 ~18:48 UTC to seo.erudience.com after the owner reconnected Hostinger: built from the merged code with the legacy anon key; live md5 = build md5 (01ca3cff…); Chromium loads the sign-in page with no errors. Previous version kept on the server as `previous-2026-11-12.html` (md5 78eb4066…).
 
 ## 2026-11-12 (Pilot fixes and health monitoring, D41; code changes)
 - `src/god/onboarding.mjs`: an address alone no longer marks a site as a local business (test in `test/onboarding.test.mjs`).

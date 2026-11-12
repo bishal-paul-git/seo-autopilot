@@ -3,7 +3,7 @@
 Kept short; read at the start of every session, together with [REVIEW-QUESTIONS.md](REVIEW-QUESTIONS.md) (open questions and the owner's replies). History: [history/STATUS-to-2026-11-03.md](history/STATUS-to-2026-11-03.md). Detail: [CHANGELOG.md](CHANGELOG.md), [DECISIONS.md](DECISIONS.md). Deployed state: [../deployment-status.md](../deployment-status.md). Tests: [../test-matrix.md](../test-matrix.md).
 
 ## 1. Snapshot
-- Last updated: 2026-11-08 ~17:30 UTC. Release 1 merged into `main` as `5b5f103` ([#51](https://github.com/bishal-paul-git/seo-autopilot/pull/51), owner-authorized; carries #33–#50). Follow-up docs on `claude/hopeful-euler-662mu5`. Release `v2.22.1` (no new tag yet).
+- Last updated: 2026-11-12 ~18:50 UTC (see 1b). Earlier: 2026-11-08 ~17:30 UTC. Release 1 merged into `main` as `5b5f103` ([#51](https://github.com/bishal-paul-git/seo-autopilot/pull/51), owner-authorized; carries #33–#50). Follow-up docs on `claude/hopeful-euler-662mu5`. Release `v2.22.1` (no new tag yet).
 - Environment: Linux cloud container, Node 22, Postgres 16 (local SQL checks); network allowed to Supabase, GitHub and the owner's three websites.
 
 ## 1b. Production (2026-11-08, Supabase `ymwwwhdlyjnqbxxhtcew`)
@@ -17,7 +17,7 @@ Kept short; read at the start of every session, together with [REVIEW-QUESTIONS.
 | Read-only pilot, erudience.com only | **owner said go 2026-11-12**: the other 3 sites set to `status='paused'` (previous statuses in `backup_20261108.pilot_site_status`), database switch `god_paused()=false`; waits on the owner setting the Worker var `SEO_GOD_PAUSED=false` in the Cloudflare dashboard | not yet run |
 | Pilot first run | 2026-11-12 01:00 UTC: run 8 unpaused, 1 site planned, 2 jobs (scan: 39 pages, 14 low findings, 11 facts; strategy_proposal awaiting agency approval), no errors, $0 | `god_runs` id 8, `jobs` for site 7c3118dc |
 | Portal (P6) | **published 2026-11-12** to seo.erudience.com (Hostinger, user u579290830, root `public_html/seo-portal`) built from `main` with the legacy anon key; previous version kept as `previous-2026-11-05.html` | live file md5 = build md5; Chromium loads the sign-in page with no errors |
-| Live activity (D42) | `site_activity` migration **applied 2026-11-12 ~15:35 UTC**; portal card built and tested, **not yet uploaded** (Hostinger connector needs re-authorisation) | rolled-back member check on real data; outsider/anon refused; `npm test` 591/591 |
+| Live activity (D42) and answers carried into the approved strategy (D43) | migration applied 2026-11-12 ~15:35 UTC; PR #56 merged (45b314b); Worker redeployed (deploy-seo-god #6, run=true); portal **published ~18:48 UTC**, previous version kept as `previous-2026-11-12.html` | member check on real data; outsider/anon refused; `npm test` 592/592; pg and workerd e2e pass; live md5 = build md5 |
 | SMTP | **owner**: Auth → SMTP settings, and `SMTP_*` + `PORTAL_URL` function secrets | summaries are skipped (reported) until set |
 | Portal publish (P6), unpause (P7), GitHub execution for the pilot (P8) | not done; not authorized for the pilot | n/a |
 Rollback: `cloud/portal/supabase/rollback/release-1.sql`; previous scan is v2 (redeploy from the pre-Release-1 source).

@@ -60,7 +60,7 @@ test("SEO God page: live activity shows the heartbeat, blockers, who is working 
   const card = await page.textContent("#activity");
   assert.match(card, /Scheduler running: last check 5 min ago, 4 in the last hour, no errors/);
   assert.match(card, /strategy is waiting for your approval/);
-  assert.match(card, /8 questions open/);
+  assert.match(card, /Business brief: 8 things the site does not say are still blank \(optional\)/);
   assert.match(card, /AI specialists start after the strategy is approved/);
   assert.match(card, /Advice only: connect GitHub/);
   assert.match(card, /Working now[\s\S]*snippet optimizer[\s\S]*Rewrite titles · started working · since 2 min ago/);

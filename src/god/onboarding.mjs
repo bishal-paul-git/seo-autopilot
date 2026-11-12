@@ -62,6 +62,24 @@ export function buildDossier({ site, discovered = {}, profile = null, audit = nu
 }
 
 /**
+ * The business brief asked once, when a website is added (D44), instead of question by question on the SEO God page.
+ * Every field is optional; the same keys the dossier asks about, so an answer here closes that question. Plain labels
+ * for a form; the dossier keeps its own site-specific wording.
+ */
+export const BRIEF = [
+  { key: "goals", label: "What should search bring you in the next 6 months?", hint: "More enquiries, sales, bookings, or brand visibility" },
+  { key: "conversions", label: "What counts as a conversion, and is it tracked?", hint: "Contact form, call, booking, purchase; tracked in GA4 or not yet" },
+  { key: "target_locations", label: "Where are your customers?", hint: "Cities, regions or countries you serve" },
+  { key: "services_priority", label: "Which services or products matter most?", hint: "The ones that bring the most revenue" },
+  { key: "competitors", label: "Main competitors online", hint: "Names or website addresses" },
+  { key: "brand_voice", label: "Tone, and anything to avoid saying", hint: "Words, claims or topics that are off limits" },
+  { key: "restrictions", label: "Pages or changes never to touch without asking", hint: "Legal pages, prices, regulated content" },
+  { key: "publishing_access", label: "Advice only, or approved low-risk changes too?", hint: "Advice only / approved changes through GitHub" },
+  { key: "contact_phone", label: "Phone number customers should use", hint: "Only if the site does not show one" },
+  { key: "contact_email", label: "Email address customers should use", hint: "Only if the site does not show one" },
+];
+
+/**
  * The draft as the agency adopts it: answers given after it was drafted (goals, conversions) are carried in, so approving
  * never freezes an objective of "not set" when the agency has since stated one. openQuestions: questions still unanswered.
  */

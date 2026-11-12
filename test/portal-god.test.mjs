@@ -79,7 +79,7 @@ test("SEO God console: decisions, questions, retries, escaping, agency only, pho
   await page.goto(`${base}/#/s/${SITE.id}/god`);
   await page.waitForSelector("h1:has-text('SEO God')");
   const text = await page.textContent("#page");
-  for (const s of ["Waiting for your approval", "Approve to start", "Approve this result", "Two titles are weak.", "Add missing titles", "What should search bring you?", "provider timeout", "$0.04 today", "Advice only", "What it has learned", "2 of 3 checked recommendations were fixed", "1 pieces of advice being checked"]) assert.ok(text.includes(s), `shows: ${s}`);
+  for (const s of ["Waiting for your approval", "Approve to start", "Approve this result", "Two titles are weak.", "Add missing titles", "provider timeout", "$0.04 today", "Advice only", "What it has learned", "2 of 3 checked recommendations were fixed", "1 pieces of advice being checked"]) assert.ok(text.includes(s), `shows: ${s}`);
   // Model and site text is shown as text, never run as HTML.
   assert.ok(text.includes('<img src=x onerror="window.__pwned=1">Fix titles'), "hostile title shown literally");
   assert.equal(await page.evaluate(() => window.__pwned), undefined);
@@ -99,20 +99,17 @@ test("SEO God console: decisions, questions, retries, escaping, agency only, pho
   assert.ok(calls.some((c) => c.fn === "approve_job" && c.b.p_decision === "request_changes" && c.b.p_note === null));
   await page.click('[data-jdec="reject"][data-job="j-start"]');
   await page.waitForFunction(() => document.querySelector(".toast")?.textContent.includes("Rejected"));
-  // Answer a question; empty answers are not sent.
-  const before = calls.length;
-  await page.click('[data-qsave="goals"]');
-  assert.equal(calls.filter((c, i) => i >= before && c.fn === "answer_question").length, 0, "empty answer not sent");
-  await page.fill("#ans-goals", "More boiler repair enquiries");
-  await page.click('[data-qsave="goals"]');
-  await page.waitForFunction(() => document.querySelector(".toast")?.textContent.includes("Answer saved"));
-  assert.deepEqual(calls.find((c) => c.fn === "answer_question").b, { p_site: SITE.id, p_key: "goals", p_value: "More boiler repair enquiries" });
+  // Questions live in the business brief (D44): the console only links to it.
+  const brief = await page.textContent('.card:has(h2:has-text("Business brief"))');
+  assert.match(brief, /0 of 10 answered · 1 the site itself does not answer/);
+  assert.match(await page.getAttribute('.card:has(h2:has-text("Business brief")) a', "href"), /\/brief$/);
+  assert.equal(await page.$("[data-qsave]"), null, "no question form on the SEO God page");
   await page.click('[data-retry="j-esc"]');
   await page.waitForFunction(() => document.querySelector(".toast")?.textContent.includes("Queued again"));
   assert.ok(calls.some((c) => c.fn === "retry_job" && c.b.p_job === "j-esc"));
   // The portal shows the toast first and then reloads the console, so wait for that reload rather than racing it.
-  for (let i = 0; i < 100 && calls.filter((c) => c.fn === "god_console").length < 6; i++) await new Promise((r) => setTimeout(r, 50));
-  assert.ok(calls.filter((c) => c.fn === "god_console").length >= 6, "reloaded after every action (first load + 5 actions)");
+  for (let i = 0; i < 100 && calls.filter((c) => c.fn === "god_console").length < 5; i++) await new Promise((r) => setTimeout(r, 50));
+  assert.ok(calls.filter((c) => c.fn === "god_console").length >= 5, "reloaded after every action (first load + 4 actions)");
   // Phone: no sideways scrolling.
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${base}/#/s/${SITE.id}/god`); await page.waitForSelector("h1:has-text('SEO God')");
