@@ -19,6 +19,11 @@ const OVERVIEW = [
 ];
 const HEALTH = { control: { paused: false, reason: null }, usage: { runs: 96, invocations: 340, subrequests: 1800, jobsRun: 40, jobsRecovered: 1, runsWithErrors: 2 }, runs: [{ id: 1, runner: "cloudflare-cron", started_at: "2026-11-08T01:00:00Z", sites_planned: 5, jobs_run: 3, invocations: 9, subrequests: 60, errors: ["plan: timeout"], paused: false }], lastRunAt: new Date().toISOString(), sites: 2, pausedSites: 1 };
 
+const GSC = [
+  { id: "s1", name: "Plumber", url: "https://plumber.test/", status: "live", allowed: false, conflict: false, agency: "Agency A" },
+  { id: "s2", name: "Bakery", url: "https://bakery.test/", status: "paused", allowed: true, allowedAt: "2026-11-10T09:00:00Z", conflict: false, agency: "Agency A" },
+  { id: "s3", name: "Copycat", url: "https://plumber.test/", status: "live", allowed: false, conflict: true, agency: "Agency B" },
+];
 function fake(admin) {
   const calls = [], html = { body: "" };
   const server = createServer(async (req, res) => {
@@ -35,6 +40,8 @@ function fake(admin) {
       if (fn === "agency_overview") return send(200, OVERVIEW);
       if (fn === "platform_health") return admin ? send(200, HEALTH) : send(400, { message: "not allowed" });
       if (fn === "set_platform_paused") return admin ? send(200, { paused: b.p_paused }) : send(400, { message: "not allowed" });
+      if (fn === "gsc_sites") return admin ? send(200, GSC) : send(400, { message: "not allowed" });
+      if (fn === "set_gsc_allowed") return admin ? send(200, { site: b.p_site, allowed: b.p_allowed }) : send(400, { message: "not allowed" });
     }
     send(404, { message: "not found" });
   });
@@ -62,6 +69,7 @@ test("agency member: own websites at a glance, never the platform scheduler", { 
   assert.equal(await page.evaluate(() => window.__pwned), undefined);
   assert.equal(await page.locator("#page img, #page b:has-text('Co')").count(), 0);
   assert.ok(!text.includes("Scheduler (platform)"), "no platform card for agency members");
+  assert.ok(!text.includes("Search Console access"), "no Search Console confirmation for agency members");
   assert.ok((await page.textContent("#rail")).includes("Operations"));
   await page.setViewportSize({ width: 390, height: 844 });
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), "fits a phone");
@@ -77,5 +85,19 @@ test("platform admin: scheduler health, usage against the free tier, pause with 
   await page.click("#ops-pause");
   await page.waitForFunction(() => document.querySelector(".toast")?.textContent.includes("Paused"));
   assert.deepEqual(calls.find((c) => c.fn === "set_platform_paused").b, { p_paused: true, p_reason: "planned maintenance" });
+  assert.deepEqual(errors, []);
+});
+
+test("platform admin: confirms or revokes Search Console per website; a domain in two agencies cannot be confirmed", { skip: !playwright && "Playwright not installed" }, async (t) => {
+  const { page, calls, errors } = await open(t, true);
+  const card = await page.textContent('.card:has(h2:has-text("Search Console access"))');
+  assert.match(card, /Plumber[\s\S]*Not confirmed[\s\S]*Bakery[\s\S]*Confirmed 2026-11-10[\s\S]*Copycat[\s\S]*Also registered in another agency/);
+  assert.equal(await page.locator('[data-gsc="s3"]').count(), 0, "no button for a domain registered in another agency");
+  await page.click('[data-gsc="s1"]');
+  await page.waitForFunction(() => document.querySelector(".toast")?.textContent.includes("Confirmed"));
+  assert.deepEqual(calls.find((c) => c.fn === "set_gsc_allowed").b, { p_site: "s1", p_allowed: true });
+  await page.click('[data-gsc="s2"]');
+  await page.waitForFunction(() => document.querySelector(".toast")?.textContent.includes("Revoked"));
+  assert.deepEqual(calls.filter((c) => c.fn === "set_gsc_allowed").at(-1).b, { p_site: "s2", p_allowed: false });
   assert.deepEqual(errors, []);
 });

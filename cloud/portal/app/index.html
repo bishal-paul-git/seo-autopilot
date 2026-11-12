@@ -825,8 +825,8 @@ function pClientHome() {
 /* ---------- Operations: every site of the agency at a glance; platform health for platform admins only (D32) ---------- */
 let OPS = null;
 async function loadOps() {
-  const [overview, health] = await Promise.all([rpc("agency_overview").catch((e) => ({ error: e.message })), rpc("platform_health", { p_days: 1 }).catch(() => null)]);
-  OPS = { overview, health }; // health is null for everyone who is not a platform admin
+  const [overview, health, gsc] = await Promise.all([rpc("agency_overview").catch((e) => ({ error: e.message })), rpc("platform_health", { p_days: 1 }).catch(() => null), rpc("gsc_sites").catch(() => null)]);
+  OPS = { overview, health, gsc }; // health and gsc are null for everyone who is not a platform admin
 }
 const ago = (t) => { if (!t) return "never"; const m = Math.round((Date.now() - Date.parse(t)) / 60000); return m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 2880 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} days ago`; };
 function pOps() {
@@ -847,6 +847,11 @@ function pOps() {
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">${c.paused ? '<button class="btn primary" id="ops-resume">Resume the scheduler</button>' : '<button class="btn" id="ops-pause">Pause the scheduler</button>'}</div>
       <details style="margin-top:10px"><summary class="xs" style="cursor:pointer">Recent runs</summary><div class="list">${(h.runs || []).map((r) => `<div class="row"><div><div class="t">${esc(String(r.started_at).slice(0, 16).replace("T", " "))} · ${esc(r.runner)}</div><div class="s">${fmt(r.sites_planned)} sites planned · ${fmt(r.jobs_run)} jobs · ${fmt(r.invocations)} invocations · ${fmt(r.subrequests)} requests${r.paused ? " · paused" : ""}${(r.errors || []).length ? ` · <span style="color:var(--bad,#c33)">${esc(r.errors.join("; "))}</span>` : ""}</div></div></div>`).join("") || '<div class="empty">No runs yet.</div>'}</div></details></div>`;
   }
+  // Search Console (D34, D47): the shared Google account reads a website only after a platform admin confirms it.
+  if (Array.isArray(OPS?.gsc)) html += `<div class="card pad0"><div class="ch"><h2>Search Console access</h2><p>Platform admins only</p></div>
+    <p class="xs muted" style="margin:0;padding:0 16px 8px">Confirm only websites whose owner added the scanning Google account as a user in Search Console. The agents then read 28 days of clicks and impressions every day.</p>
+    <div class="list">${OPS.gsc.map((x) => `<div class="row" style="flex-wrap:wrap;gap:8px"><div style="flex:1;min-width:200px"><div class="t">${esc(x.name)}</div><div class="s">${esc(host(x.url))} · ${esc(x.agency || "")}${x.status === "paused" ? " · paused" : ""}</div></div>
+      ${x.conflict ? '<span class="pill bad"><i></i>Also registered in another agency</span>' : x.allowed ? `<span class="pill ok"><i></i>Confirmed ${esc(String(x.allowedAt || "").slice(0, 10))}</span><button class="btn" data-gsc="${esc(x.id)}" data-on="0">Revoke</button>` : '<span class="pill"><i></i>Not confirmed</span>' + `<button class="btn primary" data-gsc="${esc(x.id)}" data-on="1">Confirm</button>`}</div>`).join("") || '<div class="empty">No websites yet.</div>'}</div></div>`;
   return html;
 }
 
@@ -1017,6 +1022,11 @@ function wire(s) {
   };
   const op = $("#ops-pause"); if (op) op.onclick = () => opsSet(true);
   const orz = $("#ops-resume"); if (orz) orz.onclick = () => opsSet(false);
+  document.querySelectorAll("[data-gsc]").forEach((b) => (b.onclick = async () => {
+    const on = b.dataset.on === "1";
+    if (on && !confirm("Confirm that this website's owner added the scanning Google account in Search Console?")) return;
+    try { await rpc("set_gsc_allowed", { p_site: b.dataset.gsc, p_allowed: on }); toast(on ? "Confirmed: Search Console is read from the next planning run." : "Revoked."); await loadOps(); render(); } catch (e) { toast(e.message); }
+  }));
   const people = $("#people");
   if (people) rpc("org_people").then((list) => { people.innerHTML = list.filter((p) => !ORG || p.org === ORG.id).map((p) => `<div class="row"><div><div class="t">${esc(p.email)}</div><div class="s">since ${esc(String(p.since).slice(0, 10))}</div></div><span class="pill ${p.role === "owner" ? "ok" : ""}">${esc(p.role)}</span></div>`).join("") || '<div class="empty">Only you so far.</div>'; }).catch((e) => (people.innerHTML = `<div class="empty">${esc(e.message)}</div>`));
   const inv = $("#invite-form");
