@@ -2,6 +2,10 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-12 (Pilot first run; portal published; deployment actions only)
+- Owner set `SEO_GOD_PAUSED=false` in the Cloudflare dashboard; run 8 (01:00 UTC) scanned erudience.com (39 pages, 14 low findings), saved 11 facts and 8 questions, and drafted the strategy (awaiting approval). No errors, $0.
+- Portal published to seo.erudience.com through the Hostinger connector's file upload (TUS); the network allowlist gained `srv1401-files.hstgr.io` and `seo.erudience.com` with the owner's approval. Rollback: upload `previous-2026-11-05.html` as `index.html`.
+
 ## 2026-11-12 (Worker deployed; pilot switched on in the database; deployment actions only)
 - **Deployment (owner):** deploy-seo-god run #4 deployed `seo-god` paused to the Erudience Cloudflare account. Runs #1–#3 failed with Cloudflare authentication error 10000 because the account id given to the owner was wrong (the session's own Cloudflare connection only sees a different account); the owner read the right id from the dashboard URL.
 - **Deployment:** for the owner's "go": the 3 non-pilot sites set to `paused` (saved in `backup_20261108.pilot_site_status`), then `set_god_paused(false)`. The Worker variable `SEO_GOD_PAUSED` is still `true` until the owner changes it in the dashboard.
