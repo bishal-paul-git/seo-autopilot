@@ -2,6 +2,11 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-12 (Search Console confirmation button for platform admins; code change; D47 deployed)
+- Code: migration `20261115000000_gsc_sites.sql` (read-only `gsc_sites()`, platform admins only), Operations page card "Search Console access" with Confirm/Revoke (calls the existing `set_gsc_allowed`, unchanged; no button for a domain also registered in another agency); tests `test/portal-ops.test.mjs` (new case), `rls22.sql`.
+- Checks: `npm test` 604/604; SQL suites through rls22.
+- Deployment D47: PR #60 merged (371075e); deploy-seo-god run 43318779465 (run=true) succeeded. Search Console stays off until the owner sets `GOOGLE_KEY_JSON` and confirms the site (erudience.com: not confirmed yet, no other agency has the domain).
+
 ## 2026-11-12 (Phase 3 step 1: Search Console snapshot for the agents, D47; code change; D46 deployed)
 - Code: `src/god/search-console.mjs` (`makeSearchSnapshotHandler`, `snapshotDue`, `searchForAgents`), `src/god/tick.mjs` (plans it daily), `src/god/agent-runner.mjs` (input field and rule), `cloud/worker/src/app.mjs` (handler with the Google key); test `test/search-snapshot.test.mjs` (new, 4 tests, mocked Google).
 - Checks: `npm test` 603/603.
