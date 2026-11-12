@@ -119,6 +119,14 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
 
+## 2026-11-12 D46 Agent pages in the portal, read-only
+Phase 2 of `docs/product/SYSTEM-READINESS-PLAN.md`. The owner asked where to see, manage and verify the agents.
+- **SEO team → any specialist** opens its page (`#/s/<site>/agent/<name>`, agency only): its description and full instructions; the playbooks and skills it reads before every run (D45), each with word count, whether it lists sources and its review date (today 1 of 29 playbooks lists sources and none has a date, shown honestly); its record on this site (every run with what it read, its summary and recommendation titles, cost, every review verdict with the reviewer's reasons, and the agency's decision); and its exam score (shown as "not examined yet" until Phase 4).
+- The team page gains "Specialists on this site": runs, waiting, last run, spend this month, reviews passed (30 days).
+- Data: two read-only functions in migration 20261114000000 (`site_agent_stats`, `agent_runs`): agency members only, agent names checked against `^seo-[a-z0-9-]+$`, capped at 100 runs, no new tables. Instructions and playbook metadata come from the repository at build time (`agentCatalog()` in `cloud/portal/build.mjs`).
+- Read-only on purpose: an agent's instructions change in the repository, where every change is reviewed, versioned and (Phase 4) must pass the exams. Editing a prompt in a web form would skip all three. Tradeoff: the agency cannot tune an agent for one client from the portal; site-specific facts and rules go in the business brief and memory instead.
+- Agent output is untrusted text: rendered with `esc()` only (a test plants an `<img onerror>` recommendation title).
+
 ## 2026-11-12 D45 Agents read their playbooks; every AI output is reviewed; the fact-checker gives a second opinion
 Phase 1 of `docs/product/SYSTEM-READINESS-PLAN.md`, owner go 2026-11-12. Found on the first live runs: hosted agents got only their own file (never the playbooks they are told to read), and low-risk AI output went straight to "done" without the quality gate.
 - **Knowledge at run time** (`src/god/knowledge.mjs`): each agent gets exactly the playbooks its "Read first" names and the skills it names, in that order, as trusted reference material in the system prompt (site data stays in `<site_data>` as untrusted data). Limit 48,000 characters per run; nothing is cut today (largest: local agent, about 27,000). The run's evidence and the proposal list what was read. The Worker bundles playbooks, skills and departments (`cloud/worker/build.mjs`). A test fails if an agent names a playbook that does not exist.

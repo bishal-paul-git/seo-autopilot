@@ -3,9 +3,9 @@
 Kept short; read at the start of every session. Plan: [../product/SYSTEM-READINESS-PLAN.md](../product/SYSTEM-READINESS-PLAN.md) (phases 0 to 8). Agent detail: [../product/AGENT-INTELLIGENCE-PLAN.md](../product/AGENT-INTELLIGENCE-PLAN.md). History: [history/STATUS-to-2026-11-12.md](history/STATUS-to-2026-11-12.md) (full capability table and earlier checks), [history/STATUS-to-2026-11-03.md](history/STATUS-to-2026-11-03.md). Detail: [CHANGELOG.md](CHANGELOG.md), [DECISIONS.md](DECISIONS.md). Deployed state: [../deployment-status.md](../deployment-status.md).
 
 ## 1. Snapshot
-- Last updated: 2026-11-12 ~21:40 UTC. Branch `claude/hopeful-euler-662mu5`, PR [#58](https://github.com/bishal-paul-git/seo-autopilot/pull/58). Release 1 is on `main` (#51, then #56 and #57).
+- Last updated: 2026-11-12 ~22:10 UTC. Branch `claude/hopeful-euler-662mu5`, PR [#58](https://github.com/bishal-paul-git/seo-autopilot/pull/58). Release 1 is on `main` (#51, then #56 and #57).
 - Environment: Linux cloud container, Node 22, Postgres 16 for local SQL checks.
-- Phase: **pilot running on erudience.com (read-only, advice only)**; readiness plan Phase 0 (sort out) and Phase 1 (trustworthy output, D45) in progress on owner's go (2026-11-12).
+- Phase: **pilot running on erudience.com (read-only, advice only)**; readiness plan: Phase 1 (D45) deployed; Phase 2 (agent pages, D46) built.
 
 ## 1b. Production (Supabase `ymwwwhdlyjnqbxxhtcew`, Worker `seo-god`, portal seo.erudience.com)
 | Step | State | Evidence |
@@ -32,12 +32,14 @@ Cloudflare Worker `seo-god` (`cloud/worker/`) runs every 15 min: plans each due 
 | Change | Kind | State |
 |---|---|---|
 | Readiness plan and agent-intelligence plan | docs | pushed |
-| D45: playbooks and skills sent to each agent; every AI output reviewed; fact-checker second opinion for content and high-risk work | code (`src/god/knowledge.mjs`, `agent-runner.mjs`, `worker.mjs`, `cloud/worker/build.mjs`, `src/app.mjs`) | built and tested; deploy recorded in 1b when done |
+| D45: playbooks and skills sent to each agent; every AI output reviewed; fact-checker second opinion for content and high-risk work | code (`src/god/knowledge.mjs`, `agent-runner.mjs`, `worker.mjs`, `cloud/worker/build.mjs`, `src/app.mjs`) | **deployed** 2026-11-12 ~21:30 UTC: PR #58 merged (167fa60), deploy-seo-god run 8 (run=true) succeeded, god_runs 90 no errors; first live run with playbooks not yet observed (next planning ~01:45 UTC) |
 | STATUS rewritten (old table moved to history) | docs | done |
-No migration, no new dependency, no new secret.
+| D46: agent pages (instructions, playbooks, record on this site, review verdicts, spend) and a specialists table on the team page | code (migration 20261114000000, `cloud/portal/build.mjs`, `app/index.html`) | built and tested; migration and portal publish recorded when done |
+D45: no migration. D46: one read-only migration. No new dependency or secret.
 
 ## 4. Checks
-- `npm test`: 597/597 (mocked network). New: knowledge references resolve for all 38 agents; runner sends playbooks and calls the fact-checker; worker reviews every AI output; a planted invented figure (340%) is sent back by the fact-checker.
+- `npm test`: 599/599 (mocked network). D46: `test/portal-agent.test.mjs` (Chromium), `rls21.sql`.
+- Earlier D45 run: 597/597. New: knowledge references resolve for all 38 agents; runner sends playbooks and calls the fact-checker; worker reviews every AI output; a planted invented figure (340%) is sent back by the fact-checker.
 - `node scripts/cf-local-e2e.mjs`: all checks pass in workerd against all migrations (Anthropic and scan stand-ins, no spend).
 - `node scripts/god-pg-e2e.mjs`: passes.
 - Not yet: a live run with playbooks and the second opinion (after deploy); exams (Phase 4).

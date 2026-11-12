@@ -200,6 +200,7 @@ td { padding: 11px 16px; border-bottom: 1px solid var(--line-2) } tr:last-child 
 // person can see is decided by the database (row level security), not by this page. No libraries.
 const CFG = __CONFIG__;
 const BRIEF = __BRIEF__; // the business brief asked when a website is added (src/god/onboarding.mjs, D44)
+const AGENTS = __AGENTS__; // each agent's instructions and the playbooks and skills it reads (D45, D46), from the repository
 const ORG_CHART = __ORG__; // the director and the eight departments of the master spec, with their agents and engine jobs
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -279,7 +280,7 @@ const I = {
   out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg>',
 };
 const PAGES = [["overview", "Overview", I.home], ["traffic", "Traffic", I.trend], ["keywords", "Keywords", I.key], ["pages", "Pages", I.page], ["locations", "Locations", I.pin], ["plan", "Coming next", I.plan], ["report", "Weekly report", I.report], ["god", "SEO God", I.spark], ["brief", "Business brief", I.page], ["requests", "Requests", I.inbox], ["approvals", "Approvals", I.check], ["team", "SEO team", I.team], ["connect", "Connection", I.plug]];
-const AGENCY_ONLY = new Set(["god", "brief", "approvals", "team", "connect"]); // never shown to clients (D27: reporting only)
+const AGENCY_ONLY = new Set(["god", "brief", "approvals", "team", "connect", "agent"]); // never shown to clients (D27: reporting only)
 const MOBILE_TABS = ["overview", "traffic", "keywords", "pages"];
 let state = { kwTab: "ranking", kwQ: "", pgFilter: "all", newToken: null };
 
@@ -490,7 +491,7 @@ function pReport(s) {
 // Engine work that is not a specialist agent: which part of the organisation owns it (src/god/departments.mjs).
 const KIND_OWNER = { strategy_proposal: "director", client_request: "director", scan: "technical", implement: "automation", search_console: "analytics" };
 const agentLabel = (x) => x.replace(/^seo-/, "").replace(/-/g, " ");
-async function loadWorkforce(s) { s.workforce = await rpc("site_workforce", { p_site: s.id, p_days: 30 }).catch(() => null); }
+async function loadWorkforce(s) { [s.workforce, s.agentStats] = await Promise.all([rpc("site_workforce", { p_site: s.id, p_days: 30 }).catch(() => null), rpc("site_agent_stats", { p_site: s.id }).catch(() => null)]); }
 function pTeam(s) {
   const wf = s.workforce || [];
   const ran = new Map(wf.filter((w) => w.kind.startsWith("agent:")).map((w) => [w.kind.slice(6), w]));
@@ -498,12 +499,51 @@ function pTeam(s) {
   const ownerOf = (kind) => { if (kind.startsWith("agent:")) { const a = kind.slice(6); return ORG_CHART.director.includes(a) ? "director" : (ORG_CHART.departments.find((d) => d.agents.includes(a))?.id || "automation"); } return KIND_OWNER[kind] || ORG_CHART.departments.find((d) => d.jobs.includes(kind))?.id || "automation"; };
   const stats = (id) => wf.filter((w) => ownerOf(w.kind) === id).reduce((a, w) => ({ total: a.total + w.total, completed: a.completed + w.completed, waiting: a.waiting + w.waiting, active: a.active + w.active, stopped: a.stopped + w.stopped }), { total: 0, completed: 0, waiting: 0, active: 0, stopped: 0 });
   const line = (x) => (x.total ? `<p class="xs muted" style="margin:0 0 8px">${fmt(x.completed)} done · ${fmt(x.active)} in progress · ${fmt(x.waiting)} waiting for you${x.stopped ? ` · ${fmt(x.stopped)} stopped` : ""} <span class="muted">(30 days)</span></p>` : '<p class="xs muted" style="margin:0 0 8px">No work in the last 30 days.</p>');
-  const chips = (list) => `<div class="chips">${list.map((x) => { const r = ran.get(x); return `<span class="chip ${active.has(x) ? "ok" : ""}" title="${r ? `${r.total} runs, ${r.completed} done` : ""}">${esc(agentLabel(x))}${r ? ` · ${fmt(r.total)}` : ""}</span>`; }).join("")}</div>`;
+  const chips = (list) => `<div class="chips">${list.map((x) => { const r = ran.get(x); const tag = AGENTS.agents[x] ? "a" : "span"; return `<${tag} class="chip ${active.has(x) ? "ok" : ""}"${tag === "a" ? ` href="${link(s, "agent")}/${esc(x)}"` : ""} title="${r ? `${r.total} runs, ${r.completed} done` : "Open its instructions and record"}">${esc(agentLabel(x))}${r ? ` · ${fmt(r.total)}` : ""}</${tag}>`; }).join("")}</div>`;
   const total = ORG_CHART.departments.reduce((a, d) => a + d.agents.length, 0);
   return `<div><h1>Your SEO team</h1><p class="lead">A director for this website and ${total} specialists in ${ORG_CHART.departments.length} departments. Highlighted ones worked on this site recently; numbers are runs in the last 30 days.</p></div>
   <div class="card"><div class="ch"><h2>Director: the SEO God</h2><p>${ORG_CHART.director.length + 1}</p></div>${line(stats("director"))}<p class="xs muted" style="margin:0 0 8px">Reads the site, drafts the strategy, plans the work, hands it to the departments and asks you for every decision.</p>${chips(ORG_CHART.director)}</div>
   <div class="grid g2">${ORG_CHART.departments.map((d) => `<div class="card"><div class="ch"><h2>${esc(d.name)}</h2><p>${d.agents.length}</p></div>${line(stats(d.id))}${chips(d.agents)}</div>`).join("")}</div>
+  ${agentTable(s)}
   ${s.runs.length ? `<div class="card pad0"><div class="ch"><h2>Recent work</h2></div><div class="list">${s.runs.slice().reverse().map((r) => `<div class="row"><div><div class="t">${esc(String(r.agent).replace(/^seo-/, "").replace(/-/g, " "))}</div><div class="s">${esc(String(r.task).slice(0, 120))}…</div></div><span class="xs muted mono">${esc(String(r.at).slice(0, 10))}</span></div>`).join("")}</div></div>` : ""}`;
+}
+
+// Specialists that worked on this site (30 days): status, last run, spend this month, how their output fared in review (D46).
+function agentTable(s) {
+  const st = s.agentStats || [];
+  if (!st.length) return '<div class="card"><div class="ch"><h2>Specialists on this site</h2></div><p class="xs muted" style="margin:0">No specialist has run here in the last 30 days. Click any name above to read its instructions.</p></div>';
+  return `<div class="card pad0"><div class="ch"><h2>Specialists on this site</h2><p>30 days</p></div><div class="list">${st.map((a) => `<a class="row" href="${link(s, "agent")}/${esc(a.agent)}"><div style="min-width:0"><div class="t">${esc(agentLabel(a.agent))}</div><div class="s">${fmt(a.runs)} runs · ${fmt(a.completed)} done${a.waiting ? ` · ${fmt(a.waiting)} waiting for you` : ""}${a.active ? ` · ${fmt(a.active)} in progress` : ""}${a.stopped ? ` · ${fmt(a.stopped)} stopped` : ""} · last ${esc(ago(a.lastAt))}</div></div><span class="xs muted" style="text-align:right">$${Number(a.costMonth || 0).toFixed(2)} this month<br>${a.reviews ? `${fmt(a.reviewsPassed)}/${fmt(a.reviews)} reviews passed` : "not reviewed yet"}</span></a>`).join("")}</div></div>`;
+}
+
+// One agent: its instructions and the knowledge it reads (from the repository, read-only), and its record on this site.
+// Everything from a run is agent output: shown as text only.
+const VERDICT = { pass: ["ok", "passed"], needs_changes: ["warn", "sent back"], fail: ["bad", "failed"] };
+const REVIEWER_NAME = { "quality-gate@1": "Quality gate (automatic checks)", "seo-fact-checker": "Fact-checker (second opinion)" };
+async function loadAgentRuns(s, name) { s.agentRuns = AGENTS.agents[name] ? await rpc("agent_runs", { p_site: s.id, p_agent: name, p_limit: 30 }).catch((e) => ({ error: e.message })) : []; }
+function pAgent(s, name) {
+  const a = AGENTS.agents[name];
+  if (!a) return `<div class="callout">There is no agent called ${esc(name)}. <a href="${link(s, "team")}">Back to the SEO team</a></div>`;
+  const runs = Array.isArray(s.agentRuns) ? s.agentRuns : [], err = s.agentRuns && s.agentRuns.error;
+  const fileRow = (f) => { const m = AGENTS.files[f] || {}; return `<div class="row"><div style="min-width:0"><div class="t mono">${esc(f)}</div><div class="s">${esc(m.title || "")}${m.words ? ` · ${fmt(m.words)} words` : ""}</div></div><span class="xs" style="text-align:right">${m.sources ? '<span class="pill ok"><i></i>Sources listed</span>' : '<span class="pill warn"><i></i>No sources yet</span>'}<br><span class="muted">${m.reviewed ? `Reviewed ${esc(m.reviewed)}` : "Review date not set"}</span></span></div>`; };
+  const all = runs.flatMap((r) => r.reviews || []), passed = all.filter((v) => v.verdict === "pass").length;
+  const spend = runs.reduce((x, r) => x + Number(r.costUsd || 0), 0);
+  const runHtml = (r) => `<details class="row" style="display:block"><summary style="cursor:pointer;display:flex;justify-content:space-between;gap:12px"><span style="min-width:0"><b>${esc(r.title)}</b><span class="xs muted"> · ${esc(String(r.createdAt).slice(0, 16).replace("T", " "))} · ${esc(String(r.status).replace(/_/g, " "))}${r.risk === "high" ? " · high risk" : ""}</span></span><span class="xs muted">$${Number(r.costUsd || 0).toFixed(4)}</span></summary>
+    <div style="padding:8px 0 4px">
+      ${(r.reviews || []).map((v) => { const [tone, word] = VERDICT[v.verdict] || ["", v.verdict]; return `<div class="xs" style="margin:2px 0"><span class="pill ${tone}"><i></i>${esc(word)}</span> ${esc(REVIEWER_NAME[v.reviewer] || v.reviewer)}${v.rationale ? `: <span class="muted">${esc(v.rationale)}</span>` : ""}</div>`; }).join("") || '<div class="xs muted">No review recorded (before 12 Nov 2026, low-risk advice skipped the quality gate).</div>'}
+      ${r.decision ? `<div class="xs" style="margin:6px 0">Your decision: <b>${esc(String(r.decision.decision).replace(/_/g, " "))}</b>${r.decision.note ? ` (${esc(r.decision.note)})` : ""}</div>` : ""}
+      ${r.summary ? `<p style="margin:8px 0 4px">${esc(r.summary)}</p>` : ""}
+      ${(r.titles || []).length ? `<ul style="margin:4px 0">${r.titles.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : ""}
+      <div class="xs muted">Read: ${(r.knowledge || []).length ? esc(r.knowledge.join(", ")) : "no playbooks recorded (runs before 12 Nov 2026 did not get them)"}</div>
+      ${(r.evidence || []).length ? `<div class="xs muted">Evidence: ${esc(r.evidence.join(" · "))}</div>` : ""}
+      ${r.lastNote ? `<div class="xs muted">Last step: ${esc(r.lastNote)}</div>` : ""}
+    </div></details>`;
+  const tile = (label, value) => `<div class="card"><div class="xs muted">${label}</div><div style="font-size:24px;font-weight:600">${value}</div></div>`;
+  return `<div><p class="xs"><a href="${link(s, "team")}">← SEO team</a></p><h1>${esc(agentLabel(name))}</h1><p class="lead">${esc(a.description)}</p></div>
+  <div class="grid g3">${tile("Runs on this site", fmt(runs.length))}${tile("Spent on these runs", `$${spend.toFixed(2)}`)}${tile("Reviews passed", all.length ? `${fmt(passed)}/${fmt(all.length)}` : "–")}</div>
+  <div class="card"><div class="ch"><h2>Exam score</h2><span class="pill warn"><i></i>Not examined yet</span></div><p class="xs muted" style="margin:0">Each agent will get a fixed set of test cases with known right answers. Its score and the date will show here once the exams run.</p></div>
+  <div class="card pad0"><div class="ch"><h2>What it reads before every run</h2><p>${fmt(a.playbooks.length)} playbooks · ${fmt(a.skills.length)} skills</p></div><div class="list">${[...a.playbooks, ...a.skills].map(fileRow).join("")}</div></div>
+  <div class="card pad0"><div class="ch"><h2>Its record on ${esc(host(s.url))}</h2><p>newest first</p></div><div class="list">${err ? `<div class="callout">${esc(err)}</div>` : runs.map(runHtml).join("") || '<div class="empty">It has not run on this site yet.</div>'}</div></div>
+  <div class="card report"><div class="ch"><h2>Its instructions</h2><p>Read-only: changes are made in the repository, reviewed and tested</p></div>${md(a.text)}</div>`;
 }
 
 const ingestUrl = () => `${CFG.supabaseUrl}/functions/v1/ingest`;
@@ -1067,7 +1107,7 @@ async function render() {
   $("#overlay").innerHTML = "";
   if (!CFG.supabaseUrl || !CFG.anonKey) { shell(null); $("#page").innerHTML = '<div class="callout">This portal is not configured yet (no Supabase address or key at build time).</div>'; return; }
   if (h === "#/logout") { saveSession(null); SITES = []; loaded = false; location.hash = "#/login"; return; }
-  const m = h.match(/^#\/(s|c|k)\/([\w-]+)(?:\/(\w+))?/);
+  const m = h.match(/^#\/(s|c|k)\/([\w-]+)(?:\/(\w+)(?:\/(seo-[a-z0-9-]+))?)?/);
   try {
     if (m && m[1] === "c") {
       mode = "client";
@@ -1124,6 +1164,7 @@ async function render() {
     if (page === "requests") await loadInbox(s);
     if (page === "report") await loadWork(s);
     if (page === "team") await loadWorkforce(s);
+    if (page === "agent") { await loadAgentRuns(s, m[4] || ""); shell(s, "team"); document.title = `${agentLabel(m[4] || "agent")} · ${s.name}`; $("#page").innerHTML = pAgent(s, m[4] || ""); return wire(s); }
     shell(s, page); document.title = `${s.name} · SEO dashboard`;
     $("#page").innerHTML = s.status !== "live" && page !== "connect" && page !== "god" && page !== "brief" && page !== "requests" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
     wire(s);
