@@ -35,7 +35,7 @@ const urlMatch = (a, b) => String(a || "").replace(/\/$/, "").toLowerCase() === 
  */
 export function gradeExam(c, out, memory = []) {
   const text = examText(out);
-  const base = gradeCase({ ...c, inputs: [JSON.stringify(memory), c.instruction || ""] }, out?.escalate && !out?.proposal ? `escalated: ${out.escalate}` : text);
+  const base = gradeCase({ ...c, inputs: [JSON.stringify(memory, null, 1), c.instruction || ""] /* line breaks: the URL filter in evals.mjs stops at whitespace */ }, out?.escalate && !out?.proposal ? `escalated: ${out.escalate}` : text);
   const checks = [...base.checks], e = c.expect || {}, recs = out?.proposal?.recommendations || [];
   const add = (name, pass, detail = "") => checks.push({ name, pass, detail });
   if (e.escalates !== undefined) add(e.escalates ? "stops for a person" : "does not stop for a person", Boolean(out?.escalate) === e.escalates, out?.escalate || "");

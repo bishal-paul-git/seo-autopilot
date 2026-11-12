@@ -2,6 +2,13 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-12 (Phase 5 first pass: playbook metadata, AI-search playbook v2, more exams, D49; code and content change)
+- Code: `src/analysis/knowledge-meta.mjs` (new), `scripts/knowledge-review.mjs` (new), `cloud/portal/build.mjs` and `app/index.html` (sources, version, review due), `src/analysis/exams.mjs` (grader fix); tests `test/knowledge-meta.test.mjs` (new), `test/portal-agent.test.mjs` (false positive corrected).
+- Content: `knowledge/ai-search-visibility.md` v2 (labelled claims, per-purpose crawler control, two read sources); `exams/cases.json` 16 cases for 10 agents; `docs/product/KNOWLEDGE-REVIEW-2026-11.md` (unverified leads).
+- Network: the documentation hosts are blocked in this environment; the owner declined adding them (2026-11-12), so no Google, Bing or schema.org source was verified or cited.
+- Checks: `npm test` 611/611. `node scripts/knowledge-review.mjs`: 29 playbooks, 1 current, 28 undated.
+- Production recheck: 8 scheduler runs in 2 h, none with errors; $0.31 spent today on the pilot; security advisors show no new findings (the known items: SECURITY DEFINER functions with their own checks, public share links by design, pg_net in public, leaked-password protection off, Q9).
+
 ## 2026-11-12 (Phase 4: agent exams, D48; code change)
 - Code: `src/analysis/exams.mjs`, `scripts/exams.mjs`, `exams/cases.json` (11 cases, 5 agents), `.github/workflows/agent-exams.yml` (manual), `cloud/portal/build.mjs` and `app/index.html` (exam score on agent pages from `exams/latest.json`); test `test/exams.test.mjs`.
 - Checks: `npm test` 607/607 (mocked model). No exam has run on a real model yet: it needs the `ANTHROPIC_API_KEY` repository secret, or a local run with the key.
