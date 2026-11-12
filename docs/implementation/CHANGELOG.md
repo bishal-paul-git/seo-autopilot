@@ -2,6 +2,10 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-12 (Worker deployed; pilot switched on in the database; deployment actions only)
+- **Deployment (owner):** deploy-seo-god run #4 deployed `seo-god` paused to the Erudience Cloudflare account. Runs #1–#3 failed with Cloudflare authentication error 10000 because the account id given to the owner was wrong (the session's own Cloudflare connection only sees a different account); the owner read the right id from the dashboard URL.
+- **Deployment:** for the owner's "go": the 3 non-pilot sites set to `paused` (saved in `backup_20261108.pilot_site_status`), then `set_god_paused(false)`. The Worker variable `SEO_GOD_PAUSED` is still `true` until the owner changes it in the dashboard.
+
 ## 2026-11-08 (Production deployment of Release 1; deployment actions only)
 - **Deployment:** the owner ran the Release 1 SQL in the Supabase SQL editor (the full 1,581-line paste was truncated on a phone, so a short loader fetched `cloud/portal/supabase/release-1-apply.sql` at commit 674a931 with the `http` extension, checked its md5, ran it in one transaction and removed the extension). Verified read-only: 18 migrations, 0 cron jobs, 2 Vault secrets, 1 platform admin, paused.
 - **Deployment:** `notify` v1 and `scan` v3 Edge Functions deployed via the Supabase connector. scan v3 imports `src/hosted/scan.mjs` from GitHub at the pinned commit (resolved at deploy time). Checks: both answer 403 without the secret; one job-mode read-only scan of erudience.com returned 200 and stored a snapshot.
