@@ -2,6 +2,10 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-12 (Phase 7: per-site budgets, alerts, rollback rehearsal, load check, D50; code change)
+- Code: migration `20261116000000_budgets_alerts.sql`; `cloud/worker/src/app.mjs` (per-site budget, tick outcome); portal Operations (alerts card, budget per site, last month's spend); `cloud/portal/supabase/rollback/post-release-1.sql`; `scripts/db-rollback-check.mjs --post`; `scripts/load-check.mjs`; `scripts/cf-local-e2e.mjs` (all migrations, budget check); `docs/runbook.md` (Hosted SEO God section).
+- Tests: `npm test` 612/612 (one run had the share-link portal test fail once; it passed on the next two runs and on the full suite; unrelated to this change); SQL suites through new `rls23.sql`; `cf-local-e2e.mjs` passes in workerd; both rollback rehearsals pass; load check as in D50.
+
 ## 2026-11-12 (Phase 5 first pass: playbook metadata, AI-search playbook v2, more exams, D49; code and content change)
 - Code: `src/analysis/knowledge-meta.mjs` (new), `scripts/knowledge-review.mjs` (new), `cloud/portal/build.mjs` and `app/index.html` (sources, version, review due), `src/analysis/exams.mjs` (grader fix); tests `test/knowledge-meta.test.mjs` (new), `test/portal-agent.test.mjs` (false positive corrected).
 - Content: `knowledge/ai-search-visibility.md` v2 (labelled claims, per-purpose crawler control, two read sources); `exams/cases.json` 16 cases for 10 agents; `docs/product/KNOWLEDGE-REVIEW-2026-11.md` (unverified leads).

@@ -30,7 +30,9 @@ psql([readFileSync(join(t, "shim.sql"), "utf8"), readFileSync(join(m, "202610300
 psql(`insert into auth.users (id, email) values ('00000000-0000-0000-0000-00000000000a', 'alice@a.test'), ('00000000-0000-0000-0000-00000000000b', 'bob@b.test');`);
 // Existing users first, then the invite-only gate and GitHub execution (as production would get them).
 psql([readFileSync(join(m, "20261108100000_invite_only.sql"), "utf8"), readFileSync(join(t, "shim5.sql"), "utf8"), readFileSync(join(m, "20261108110000_github_execution.sql"), "utf8"),
-  readFileSync(join(m, "20261108120000_notifications_reports.sql"), "utf8"), readFileSync(join(m, "20261108130000_email.sql"), "utf8")].join("\n"));
+  readFileSync(join(m, "20261108120000_notifications_reports.sql"), "utf8"), readFileSync(join(m, "20261108130000_email.sql"), "utf8"),
+  // Everything since Release 1 (D42 to D50), so the Worker runs against the production schema.
+  ...["20261112000000_activity.sql", "20261113000000_business_brief.sql", "20261114000000_agent_pages.sql", "20261115000000_gsc_sites.sql", "20261116000000_budgets_alerts.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
 const asUser = (user, sql) => psql(`set role authenticated; set request.jwt.claim.sub = '${user}'; set request.jwt.claim.role = 'authenticated'; ${sql}`).split("\n").pop();
 const A_USER = "00000000-0000-0000-0000-00000000000a", B_USER = "00000000-0000-0000-0000-00000000000b";
 const A = JSON.parse(asUser(A_USER, `select public.create_site('Plumber', 'https://plumber.test/')->'site';`)).id;
@@ -106,8 +108,11 @@ try {
   check((await fetch(`${W}/internal/run-job`, { method: "POST" })).status === 403, "internal routes refuse calls without the token");
   check((await fetch(`${W}/internal/run-job`, { method: "POST", headers: { "x-god-token": "wrong-token-of-the-same-length!" } })).status === 403, "and with a wrong token");
 
+  psql(`update public.sites set daily_budget_usd = 1.5 where id = ${lit(A)};`); // D50: site A's own budget, B on the default
   await cron();
   let run = lastRun();
+  const applied = (site) => psql(`select outcome->>'budgetUsd' from public.god_site_ticks where site_id = ${lit(site)};`);
+  check(Number(applied(A)) === 1.5 && applied(B) !== "1.5", `the scheduler applies each site's own daily budget (A ${applied(A)}, B default ${applied(B)})`);
   check(run.sites_planned === 2 && run.invocations >= 3, `Cron planned both sites in separate invocations (${run.invocations} invocations, ${run.subrequests} subrequests)`);
   check(jobs(A) === "scan:completed,strategy_proposal:awaiting_approval" && jobs(B) === "scan:completed,strategy_proposal:awaiting_approval", "each site: scan ran through the scan function, strategy drafted at once and waits for its agency (D35)");
   check(calls.scan === 2 && calls.badKey === 0, "one scan per site (the draft reused it); every database call carried the service key");

@@ -831,8 +831,8 @@ function pClientHome() {
 /* ---------- Operations: every site of the agency at a glance; platform health for platform admins only (D32) ---------- */
 let OPS = null;
 async function loadOps() {
-  const [overview, health, gsc] = await Promise.all([rpc("agency_overview").catch((e) => ({ error: e.message })), rpc("platform_health", { p_days: 1 }).catch(() => null), rpc("gsc_sites").catch(() => null)]);
-  OPS = { overview, health, gsc }; // health and gsc are null for everyone who is not a platform admin
+  const [overview, health, gsc, alerts] = await Promise.all([rpc("agency_overview").catch((e) => ({ error: e.message })), rpc("platform_health", { p_days: 1 }).catch(() => null), rpc("gsc_sites").catch(() => null), rpc("ops_alerts").catch(() => null)]);
+  OPS = { overview, health, gsc, alerts }; // health and gsc are null for everyone who is not a platform admin
 }
 const ago = (t) => { if (!t) return "never"; const m = Math.round((Date.now() - Date.parse(t)) / 60000); return m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 2880 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} days ago`; };
 function pOps() {
@@ -841,10 +841,10 @@ function pOps() {
   if (!o || o.error) return head + `<div class="callout">Operations are not switched on for this workspace yet. ${esc(o?.error || "")}</div>`;
   const sum = (k) => o.reduce((a, s) => a + Number(s[k] || 0), 0);
   const STRAT_PILL = { approved: ["Strategy approved", "ok"], proposed: ["Strategy waiting", "warn"] };
-  let html = head + `<div class="grid g4">${kpi("Waiting for you", fmt(sum("waiting")), null, "Approvals across all websites.")}${kpi("Client requests", fmt(sum("requests")), null, "New or waiting for your answer.")}${kpi("Needs a person", fmt(sum("escalated")), null, "Stopped after repeated failures or a refusal.")}${kpi("Spend this month", usd(sum("spendMonth")), null, `${usd(sum("spendToday"))} today, from your own AI key.`)}</div>
+  let html = head + alertsCard(OPS.alerts) + `<div class="grid g4">${kpi("Waiting for you", fmt(sum("waiting")), null, "Approvals across all websites.")}${kpi("Client requests", fmt(sum("requests")), null, "New or waiting for your answer.")}${kpi("Needs a person", fmt(sum("escalated")), null, "Stopped after repeated failures or a refusal.")}${kpi("Spend this month", usd(sum("spendMonth")), null, `${usd(sum("spendToday"))} today, from your own AI key.`)}</div>
   <div class="card pad0"><div class="ch"><h2>Websites</h2></div><div class="list">${o.map((s) => { const p = STRAT_PILL[s.strategy] || ["No strategy yet", ""]; return `<div class="row" style="flex-wrap:wrap;gap:8px">
     <div style="flex:1;min-width:200px"><div class="t"><a href="#/s/${esc(s.id)}/god">${esc(s.name)}</a></div><div class="s">${esc(host(s.url))} · planned ${esc(ago(s.lastPlanned))}${s.lastError ? ` · <span style="color:var(--bad,#c33)">${esc(s.lastError)}</span>` : ""}</div></div>
-    <span class="pill ${p[1]}">${p[0]}</span>${Number(s.waiting) ? `<span class="pill warn">${fmt(s.waiting)} waiting</span>` : ""}${Number(s.requests) ? `<span class="pill info"><a href="#/s/${esc(s.id)}/requests">${fmt(s.requests)} requests</a></span>` : ""}${Number(s.escalated) ? `<span class="pill bad">${fmt(s.escalated)} stuck</span>` : ""}${s.status === "paused" ? '<span class="pill">paused</span>' : ""}<span class="xs muted">${usd(s.spendMonth)} this month</span></div>`; }).join("") || '<div class="empty">No websites yet.</div>'}</div></div>`;
+    <span class="pill ${p[1]}">${p[0]}</span>${Number(s.waiting) ? `<span class="pill warn">${fmt(s.waiting)} waiting</span>` : ""}${Number(s.requests) ? `<span class="pill info"><a href="#/s/${esc(s.id)}/requests">${fmt(s.requests)} requests</a></span>` : ""}${Number(s.escalated) ? `<span class="pill bad">${fmt(s.escalated)} stuck</span>` : ""}${s.status === "paused" ? '<span class="pill">paused</span>' : ""}<span class="xs muted">${usd(s.spendMonth)} this month · ${usd(s.spendLastMonth || 0)} last month · budget ${s.budgetUsd != null ? `${usd(s.budgetUsd)}/day` : `default${s.appliedBudgetUsd != null ? ` (${usd(s.appliedBudgetUsd)}/day)` : ""}`}</span>${s.canSetBudget ? `<button class="btn" data-budget="${esc(s.id)}" data-current="${s.budgetUsd ?? ""}">Daily budget</button>` : ""}</div>`; }).join("") || '<div class="empty">No websites yet.</div>'}</div></div>`;
   if (h) {
     const c = h.control || {}, u = h.usage || {}, pct = ((Number(u.invocations || 0) / 100000) * 100).toFixed(2);
     html += `<div class="card"><div class="ch"><h2>Scheduler (platform)</h2><span class="pill ${c.paused ? "warn" : "ok"}">${c.paused ? "Paused" : "Running"}</span></div>
@@ -859,6 +859,21 @@ function pOps() {
     <div class="list">${OPS.gsc.map((x) => `<div class="row" style="flex-wrap:wrap;gap:8px"><div style="flex:1;min-width:200px"><div class="t">${esc(x.name)}</div><div class="s">${esc(host(x.url))} · ${esc(x.agency || "")}${x.status === "paused" ? " · paused" : ""}</div></div>
       ${x.conflict ? '<span class="pill bad"><i></i>Also registered in another agency</span>' : x.allowed ? `<span class="pill ok"><i></i>Confirmed ${esc(String(x.allowedAt || "").slice(0, 10))}</span><button class="btn" data-gsc="${esc(x.id)}" data-on="0">Revoke</button>` : '<span class="pill"><i></i>Not confirmed</span>' + `<button class="btn primary" data-gsc="${esc(x.id)}" data-on="1">Confirm</button>`}</div>`).join("") || '<div class="empty">No websites yet.</div>'}</div></div>`;
   return html;
+}
+
+// What needs a person (D50): the scheduler's heartbeat and, per website, long waits, stuck work, budget hits, plan errors.
+const ALERT_TEXT = {
+  scheduler_silent: (a) => `The scheduler has not run since ${a.since ? esc(ago(a.since)) : "it was set up"}. Check the Worker in Cloudflare.`,
+  scheduler_errors: () => "Three of the scheduler's last four runs reported errors. Operations → Recent runs shows them to platform admins.",
+  waiting_long: (a) => `${esc(a.siteName)}: ${fmt(a.count)} item${a.count === 1 ? "" : "s"} waiting for your decision for more than 3 days.`,
+  escalated: (a) => `${esc(a.siteName)}: ${fmt(a.count)} job${a.count === 1 ? "" : "s"} stopped and need${a.count === 1 ? "s" : ""} a person.`,
+  budget_hit: (a) => `${esc(a.siteName)}: today's AI budget${a.budgetUsd != null ? ` (${usd(a.budgetUsd)})` : ""} is used up; ${fmt(a.count)} job${a.count === 1 ? "" : "s"} wait until tomorrow.`,
+  plan_error: (a) => `${esc(a.siteName)}: the last planning run failed: ${esc(a.error || "")}`,
+};
+function alertsCard(list) {
+  if (!Array.isArray(list)) return "";
+  if (!list.length) return '<div class="card"><div class="ch"><h2>Alerts</h2><span class="pill ok"><i></i>Nothing needs you</span></div></div>';
+  return `<div class="card pad0"><div class="ch"><h2>Alerts</h2><p>${fmt(list.length)}</p></div><div class="list">${list.map((a) => `<div class="row"><span class="pill ${a.level === "bad" ? "bad" : a.level === "warn" ? "warn" : "info"}"><i></i>${a.level === "bad" ? "Act now" : a.level === "warn" ? "Waiting" : "Note"}</span><div style="flex:1;min-width:0">${(ALERT_TEXT[a.kind] || (() => esc(a.kind)))(a)}</div>${a.site ? `<a class="btn" href="#/s/${esc(a.site)}/god">Open</a>` : ""}</div>`).join("")}</div></div>`;
 }
 
 function pTeamPage() {
@@ -1028,6 +1043,13 @@ function wire(s) {
   };
   const op = $("#ops-pause"); if (op) op.onclick = () => opsSet(true);
   const orz = $("#ops-resume"); if (orz) orz.onclick = () => opsSet(false);
+  document.querySelectorAll("[data-budget]").forEach((b) => (b.onclick = async () => {
+    const v = prompt("Daily AI budget for this website in US dollars (0 to 100). Leave empty for the default.", b.dataset.current || "");
+    if (v === null) return;
+    const n = String(v).trim() === "" ? null : Number(v);
+    if (n !== null && !(n >= 0 && n <= 100)) return toast("Enter a number from 0 to 100, or leave it empty.");
+    try { await rpc("set_site_budget", { p_site: b.dataset.budget, p_usd: n }); toast(n === null ? "Back to the default budget." : `Budget set to ${usd(n)} a day.`); await loadOps(); render(); } catch (e) { toast(e.message); }
+  }));
   document.querySelectorAll("[data-gsc]").forEach((b) => (b.onclick = async () => {
     const on = b.dataset.on === "1";
     if (on && !confirm("Confirm that this website's owner added the scanning Google account in Search Console?")) return;
