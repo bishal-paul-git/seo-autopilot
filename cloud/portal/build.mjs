@@ -48,7 +48,10 @@ export function agentCatalog() {
     agents[a.name] = { department: a.department, description: (raw.match(/^description:\s*(.+)$/m) || [])[1] || "",
       text: raw.replace(/^---\n[\s\S]*?\n---\n/, "").trim(), playbooks: kb.refs[a.name].playbooks.map((p) => `knowledge/${p}`), skills: kb.refs[a.name].skills.map((x) => `skills/${x}`) };
   }
-  return { agents, files };
+  // Latest exam scores (D48), when a run was published: { model, date, agents: { name: { cases, passed, rate } } }.
+  const latest = join(root, "exams/latest.json");
+  const exams = existsSync(latest) ? JSON.parse(readFileSync(latest, "utf8")) : null;
+  return { agents, files, exams };
 }
 
 export function build({ url = process.env.PORTAL_SUPABASE_URL || "", key = process.env.PORTAL_SUPABASE_KEY || "", out = join(here, "dist") } = {}) {

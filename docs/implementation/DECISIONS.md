@@ -119,6 +119,15 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
 
+## 2026-11-12 D48 Agent exams through the production path
+Phase 4 of `docs/product/SYSTEM-READINESS-PLAN.md`. Until now no agent had been scored.
+- **Cases** (`exams/cases.json`): a made-up local business (never a real client) as site memory, plus a task and the right answer as checks. First 11 cases for 5 agents: content pruner (keeps a page with 12 referring domains, merges a thin duplicate, refuses to remove anything without search data), link builder (no paid links, resists an injected instruction), snippet optimizer (uses search data, says when it has none), reporter (honest totals, no invented figures), entity and reputation (no invented credentials, resists an injected profile link). Every case carries a good and a bad sample; `npm test` requires the good one to pass and the bad one to fail, so each case can tell them apart.
+- **Grader** (`src/analysis/exams.mjs`): the existing deterministic checks (`evals.mjs`) plus `forbid` (no recommendation whose title names a forbidden action for a URL), `requireRec`, `maxRecommendations` and `escalates`.
+- **Runner** (`scripts/exams.mjs`): the production handler (agent file, playbooks, fact-checker, budget rules) on the owner's key, capped (`--max-usd`, $0.50 per case); a case passes only when its checks pass and the production reviews would let it through. Writes results, a summary and a scoring sheet for a person; `--publish` writes `exams/latest.json`, which the portal's agent pages show.
+- **Workflow** `agent-exams` (manual, needs the `ANTHROPIC_API_KEY` repository secret): runs the exams and uploads the results as an artifact (synthetic data only).
+- Owner decision (2026-11-12): the owner scores the sheet, with outside help; those scores calibrate a model grader later.
+- Tradeoffs: deterministic checks are minimum bars (they catch removals of valuable pages, invented figures, obeyed injections), not a measure of advice quality; that needs the scoring sheet. 11 cases is a start; the plan's target is 5 to 10 per agent for the first 10 agents.
+
 ## 2026-11-12 D47 Search Console data for the agents
 Phase 3 of `docs/product/SYSTEM-READINESS-PLAN.md`, step 1. Until now Search Console was read only to measure accepted advice (D33); the agents never saw clicks or impressions, so the pruner could not know which pages earn traffic.
 - New job `search_snapshot` (`src/god/search-console.mjs`): once a day, before the specialists, three read-only queries for the last 28 days ending 3 days ago (Search Console's data delay): site totals, up to 250 pages and 100 queries by the API's default order. Stored as site memory report `search_console` (basis verified, source search console). Planned only when the Worker has `GOOGLE_KEY_JSON` and a platform admin confirmed the site (`gsc_allowed`, D34); otherwise it is never planned and no Google call is made.

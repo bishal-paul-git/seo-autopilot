@@ -519,6 +519,12 @@ function agentTable(s) {
 // Everything from a run is agent output: shown as text only.
 const VERDICT = { pass: ["ok", "passed"], needs_changes: ["warn", "sent back"], fail: ["bad", "failed"] };
 const REVIEWER_NAME = { "quality-gate@1": "Quality gate (automatic checks)", "seo-fact-checker": "Fact-checker (second opinion)" };
+function examCard(name) {
+  const x = AGENTS.exams?.agents?.[name];
+  if (!x) return `<div class="card"><div class="ch"><h2>Exam score</h2><span class="pill warn"><i></i>Not examined yet</span></div><p class="xs muted" style="margin:0">${AGENTS.exams ? "This agent has no exam cases yet." : "No exam run has been published yet."} Exams are fixed test cases with known right answers, run through the same path as live work.</p></div>`;
+  const tone = x.passed === x.cases ? "ok" : x.rate >= 0.5 ? "warn" : "bad";
+  return `<div class="card"><div class="ch"><h2>Exam score</h2><span class="pill ${tone}"><i></i>${fmt(x.passed)}/${fmt(x.cases)} passed</span></div><p class="xs muted" style="margin:0">Fixed test cases with known right answers, run through the same path as live work (playbooks, quality gate, fact-checker) on ${esc(AGENTS.exams.date || "")} with ${esc(AGENTS.exams.model || "")}. Cost $${Number(x.costUsd || 0).toFixed(2)}. Passing means the checks hold; quality is also scored by a person.</p></div>`;
+}
 async function loadAgentRuns(s, name) { s.agentRuns = AGENTS.agents[name] ? await rpc("agent_runs", { p_site: s.id, p_agent: name, p_limit: 30 }).catch((e) => ({ error: e.message })) : []; }
 function pAgent(s, name) {
   const a = AGENTS.agents[name];
@@ -540,7 +546,7 @@ function pAgent(s, name) {
   const tile = (label, value) => `<div class="card"><div class="xs muted">${label}</div><div style="font-size:24px;font-weight:600">${value}</div></div>`;
   return `<div><p class="xs"><a href="${link(s, "team")}">← SEO team</a></p><h1>${esc(agentLabel(name))}</h1><p class="lead">${esc(a.description)}</p></div>
   <div class="grid g3">${tile("Runs on this site", fmt(runs.length))}${tile("Spent on these runs", `$${spend.toFixed(2)}`)}${tile("Reviews passed", all.length ? `${fmt(passed)}/${fmt(all.length)}` : "–")}</div>
-  <div class="card"><div class="ch"><h2>Exam score</h2><span class="pill warn"><i></i>Not examined yet</span></div><p class="xs muted" style="margin:0">Each agent will get a fixed set of test cases with known right answers. Its score and the date will show here once the exams run.</p></div>
+  ${examCard(name)}
   <div class="card pad0"><div class="ch"><h2>What it reads before every run</h2><p>${fmt(a.playbooks.length)} playbooks · ${fmt(a.skills.length)} skills</p></div><div class="list">${[...a.playbooks, ...a.skills].map(fileRow).join("")}</div></div>
   <div class="card pad0"><div class="ch"><h2>Its record on ${esc(host(s.url))}</h2><p>newest first</p></div><div class="list">${err ? `<div class="callout">${esc(err)}</div>` : runs.map(runHtml).join("") || '<div class="empty">It has not run on this site yet.</div>'}</div></div>
   <div class="card report"><div class="ch"><h2>Its instructions</h2><p>Read-only: changes are made in the repository, reviewed and tested</p></div>${md(a.text)}</div>`;
