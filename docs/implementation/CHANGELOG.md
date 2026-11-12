@@ -2,6 +2,12 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-12 (Phase 3 step 1: Search Console snapshot for the agents, D47; code change; D46 deployed)
+- Code: `src/god/search-console.mjs` (`makeSearchSnapshotHandler`, `snapshotDue`, `searchForAgents`), `src/god/tick.mjs` (plans it daily), `src/god/agent-runner.mjs` (input field and rule), `cloud/worker/src/app.mjs` (handler with the Google key); test `test/search-snapshot.test.mjs` (new, 4 tests, mocked Google).
+- Checks: `npm test` 603/603.
+- Deployment D46: PR #59 merged (8f6a287); migration 20261114000000 applied to production (anon has no grant; as an agency member on real data: 4 specialists listed, reporter run $0.0747); portal built from main and published to seo.erudience.com (live md5 = build md5 `8b7233f0…`, previous kept as `previous-2026-11-12c.html`; Chromium: 38 agents bundled, no errors). A first upload went to a wrong `seo-portal/` folder (the upload URL already points at the site root); those two files and the folder were removed.
+- Verification run: one low-risk `seo-snippet-optimizer` job queued on erudience.com (`verify-d45:2026-11-12`, budget $0.50) to check D45 live, since specialists are planned once a week.
+
 ## 2026-11-12 (Phase 2: agent pages, D46; code change)
 - Code: migration `cloud/portal/supabase/migrations/20261114000000_agent_pages.sql` (new, read-only functions), `cloud/portal/build.mjs` (`agentCatalog()`), `cloud/portal/app/index.html` (team page links and table, agent page); tests `test/portal-agent.test.mjs` (new), `cloud/portal/supabase/test/rls21.sql` (new).
 - Checks: `npm test` 599/599; `bash cloud/portal/supabase/test/run.sh` all suites through rls21.
