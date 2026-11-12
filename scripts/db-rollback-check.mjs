@@ -3,6 +3,7 @@
 // (the two portal migrations), applies the Release 1 chain, runs cloud/portal/supabase/rollback/release-1.sql and checks
 // that the catalog is back to the original exactly; then applies the chain again, as a redeploy after a rollback would.
 //   node scripts/db-rollback-check.mjs            (default chain)       node scripts/db-rollback-check.mjs --diff (list changes)
+// --post: the same rehearsal for everything after Release 1 (D42 to D50) with rollback/post-release-1.sql.
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -15,7 +16,13 @@ const sh = (c, a, o = {}) => execFileSync(c, a, { encoding: "utf8", ...o });
 const psql = (db, sql) => sh("psql", ["-qAtX", "-v", "ON_ERROR_STOP=1", "-d", db], { input: sql });
 const strip = (f) => readFileSync(f, "utf8").replace(/^create extension if not exists pg_(net|cron);$/gm, "");
 const BASE = [T + "shim.sql", M + "20261030000000_portal.sql", M + "20261030120000_portal_approvals_team_brand.sql"];
-const FULL = [T + "shim3.sql", "!" + M + "20261104000000_portal_url_sites.sql", T + "shim4.sql", ...chain.map((f) => M + f)];
+export const POST = ["20261112000000_activity.sql", "20261113000000_business_brief.sql", "20261114000000_agent_pages.sql", "20261115000000_gsc_sites.sql", "20261116000000_budgets_alerts.sql"];
+const FULL0 = [T + "shim3.sql", "!" + M + "20261104000000_portal_url_sites.sql", T + "shim4.sql", ...chain.map((f) => M + f)];
+const POSTMODE = process.argv.includes("--post");
+// In --post mode the "base" is Release 1 as applied (the whole chain) and the change under test is POST.
+const FULL = POSTMODE ? POST.map((f) => M + f) : FULL0;
+const BASE_FILES = POSTMODE ? [...BASE, ...FULL0] : BASE;
+const ROLLBACK = POSTMODE ? "post-release-1.sql" : "release-1.sql";
 const CAT = `select json_build_object(
  'tables', (select json_agg(n.nspname||'.'||c.relname||':'||c.relkind::text order by 1) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname in ('public','private') and c.relkind in ('r','v','m','S')),
  'columns', (select json_agg(table_schema||'.'||table_name||'.'||column_name||' '||data_type||' '||coalesce(column_default,'')||' '||is_nullable order by 1) from information_schema.columns where table_schema in ('public','private')),
@@ -35,18 +42,18 @@ const mk = (db, files) => {
 };
 const snap = (db) => JSON.parse(psql(db, CAT));
 try { sh("psql", ["-qd", "postgres", "-c", "drop role if exists anon, authenticated, service_role"]); } catch {}
-mk("cd_base", BASE); const base = snap("cd_base");
+mk("cd_base", BASE_FILES); const base = snap("cd_base");
 sh("dropdb", ["cd_base"]); try { sh("psql", ["-qd", "postgres", "-c", "drop role if exists anon, authenticated, service_role"]); } catch {}
-mk("cd_full", [...BASE, ...FULL]); const full = snap("cd_full");
+mk("cd_full", [...BASE_FILES, ...FULL]); const full = snap("cd_full");
 const diff = (a, b) => { const out = {}; for (const k of Object.keys(a)) { const A = new Set(a[k] || []), B = new Set(b[k] || []); const add = [...B].filter((x) => !A.has(x)), rem = [...A].filter((x) => !B.has(x)); if (add.length || rem.length) out[k] = { add, rem }; } return out; };
 let failed = false;
 if (process.argv.includes("--diff")) console.log(JSON.stringify(diff(base, full), null, 1));
 else {
-  psql("cd_full", readFileSync(R + "cloud/portal/supabase/rollback/release-1.sql", "utf8"));
+  psql("cd_full", readFileSync(R + "cloud/portal/supabase/rollback/" + ROLLBACK, "utf8"));
   const d = diff(base, snap("cd_full"));
   if (Object.keys(d).length) { failed = true; console.log("not ok - rollback leaves differences:\n" + JSON.stringify(d, null, 1)); }
-  else console.log(`ok - after ${chain.length + 1} migrations, the rollback restores the original catalog exactly`);
-  psql("cd_full", FULL.slice(1).map((f) => f.startsWith("!") ? strip(f.slice(1)) : readFileSync(f, "utf8")).join("\n"));
+  else console.log(`ok - after ${POSTMODE ? POST.length : chain.length + 1} migrations, ${ROLLBACK} restores the ${POSTMODE ? "Release 1" : "original"} catalog exactly`);
+  psql("cd_full", (POSTMODE ? FULL : FULL.slice(1)).map((f) => f.startsWith("!") ? strip(f.slice(1)) : readFileSync(f, "utf8")).join("\n"));
   const again = diff(full, snap("cd_full"));
   if (Object.keys(again).length) { failed = true; console.log("not ok - re-applying after rollback differs:\n" + JSON.stringify(again, null, 1)); }
   else console.log("ok - the chain applies again cleanly after the rollback");

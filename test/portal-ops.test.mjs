@@ -14,11 +14,16 @@ let playwright = null;
 for (const from of [import.meta.url, join(process.cwd(), "package.json")]) { try { playwright = createRequire(from)("playwright"); break; } catch { /* not installed */ } }
 
 const OVERVIEW = [
-  { id: "s1", name: "Plumber <b>Co</b>", url: "https://plumber.test/", status: "live", strategy: "approved", waiting: 2, escalated: 1, active: 1, requests: 3, spendToday: 0.1, spendMonth: 2.5, lastPlanned: new Date(Date.now() - 30 * 60000).toISOString(), lastError: null },
+  { id: "s1", name: "Plumber <b>Co</b>", url: "https://plumber.test/", status: "live", strategy: "approved", waiting: 2, escalated: 1, active: 1, requests: 3, spendToday: 0.1, spendMonth: 2.5, spendLastMonth: 1.25, budgetUsd: null, appliedBudgetUsd: 2, canSetBudget: true, lastPlanned: new Date(Date.now() - 30 * 60000).toISOString(), lastError: null },
   { id: "s2", name: "Bakery", url: "https://bakery.test/", status: "paused", strategy: null, waiting: 0, escalated: 0, active: 0, requests: 0, spendToday: 0, spendMonth: 0, lastPlanned: null, lastError: '<img src=x onerror="window.__pwned=1">scan failed' },
 ];
 const HEALTH = { control: { paused: false, reason: null }, usage: { runs: 96, invocations: 340, subrequests: 1800, jobsRun: 40, jobsRecovered: 1, runsWithErrors: 2 }, runs: [{ id: 1, runner: "cloudflare-cron", started_at: "2026-11-08T01:00:00Z", sites_planned: 5, jobs_run: 3, invocations: 9, subrequests: 60, errors: ["plan: timeout"], paused: false }], lastRunAt: new Date().toISOString(), sites: 2, pausedSites: 1 };
 
+const ALERTS = [
+  { kind: "waiting_long", level: "warn", site: "s1", siteName: "Plumber <b>Co</b>", count: 2, since: "2026-11-01T00:00:00Z" },
+  { kind: "budget_hit", level: "info", site: "s1", siteName: "Plumber <b>Co</b>", count: 1, budgetUsd: 2 },
+  { kind: "escalated", level: "bad", site: "s1", siteName: "Plumber <b>Co</b>", count: 1 },
+];
 const GSC = [
   { id: "s1", name: "Plumber", url: "https://plumber.test/", status: "live", allowed: false, conflict: false, agency: "Agency A" },
   { id: "s2", name: "Bakery", url: "https://bakery.test/", status: "paused", allowed: true, allowedAt: "2026-11-10T09:00:00Z", conflict: false, agency: "Agency A" },
@@ -40,6 +45,8 @@ function fake(admin) {
       if (fn === "agency_overview") return send(200, OVERVIEW);
       if (fn === "platform_health") return admin ? send(200, HEALTH) : send(400, { message: "not allowed" });
       if (fn === "set_platform_paused") return admin ? send(200, { paused: b.p_paused }) : send(400, { message: "not allowed" });
+      if (fn === "ops_alerts") return send(200, ALERTS);
+      if (fn === "set_site_budget") return b.p_usd > 100 ? send(400, { message: "the daily budget must be between 0 and 100 US dollars" }) : send(200, { site: b.p_site, dailyBudgetUsd: b.p_usd });
       if (fn === "gsc_sites") return admin ? send(200, GSC) : send(400, { message: "not allowed" });
       if (fn === "set_gsc_allowed") return admin ? send(200, { site: b.p_site, allowed: b.p_allowed }) : send(400, { message: "not allowed" });
     }
@@ -99,5 +106,22 @@ test("platform admin: confirms or revokes Search Console per website; a domain i
   await page.click('[data-gsc="s2"]');
   await page.waitForFunction(() => document.querySelector(".toast")?.textContent.includes("Revoked"));
   assert.deepEqual(calls.filter((c) => c.fn === "set_gsc_allowed").at(-1).b, { p_site: "s2", p_allowed: false });
+  assert.deepEqual(errors, []);
+});
+
+test("alerts for what needs a person; agency owners set a daily budget per website", { skip: !playwright && "Playwright not installed" }, async (t) => {
+  const { page, calls, errors } = await open(t, false);
+  const card = await page.textContent('.card:has(h2:has-text("Alerts"))');
+  assert.match(card, /Plumber <b>Co<\/b>: 2 items waiting for your decision for more than 3 days/);
+  assert.match(card, /today's AI budget \(\$2\.00\) is used up; 1 job wait/);
+  assert.match(card, /1 job stopped and needs a person/);
+  assert.equal(await page.locator("#page b:has-text('Co')").count(), 0, "site names stay text");
+  const text = await page.textContent("#page");
+  assert.match(text, /\$2\.50 this month · \$1\.25 last month · budget default \(\$2\.00\/day\)/);
+  page.removeAllListeners("dialog"); page.on("dialog", (d) => d.accept(d.type() === "prompt" ? "3.5" : undefined));
+  await page.click('[data-budget="s1"]');
+  await page.waitForFunction(() => document.querySelector(".toast")?.textContent.includes("Budget set"));
+  assert.deepEqual(calls.find((c) => c.fn === "set_site_budget").b, { p_site: "s1", p_usd: 3.5 });
+  assert.equal(await page.locator('[data-budget="s2"]').count(), 0, "no budget button where the caller is not the owner");
   assert.deepEqual(errors, []);
 });

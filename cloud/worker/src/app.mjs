@@ -73,10 +73,13 @@ export function context(env, fetchImpl) {
   const store = new SupabaseStore({ url: env.SUPABASE_URL, key: env.SUPABASE_SERVICE_ROLE_KEY, fetchImpl });
   let sites = null;
   const siteOf = async (id) => (sites ??= await store.listSites()).find((x) => x.id === id) || null;
+  // D50: a site's own daily budget when its agency owner set one, else the platform default.
+  const budgets = new Map();
+  const budgetOf = async (id) => { if (!budgets.has(id)) budgets.set(id, await rpc(env, fetchImpl, "god_site_budget", { p_site: id }).then((v) => (v === null || v === undefined || v === "" ? s.dailyBudgetUsd : Number(v)), () => s.dailyBudgetUsd)); return budgets.get(id); };
   const handlers = makeHandlers({ store, siteOf, scan: remoteScan(env, fetchImpl, s.scanMaxPages) });
   // Agent jobs only with the user's own key (rule 6); otherwise the planner reports them as deferred, never queued.
   if (env.ANTHROPIC_API_KEY) handlers["agent:*"] = handlers.client_request = makeAgentHandler({ store, siteOf, apiKey: env.ANTHROPIC_API_KEY, model: env.SEO_GOD_MODEL || "claude-opus-5-5", effort: env.SEO_GOD_EFFORT || "medium", fetchImpl, promptOf: (name) => PROMPTS[name] || null, knowledge: KNOWLEDGE || null, departmentOf: (name) => DEPARTMENTS?.[name] || null, baseUrl: env.ANTHROPIC_BASE_URL || "https://api.anthropic.com",
-    dailyRemaining: async (job) => s.dailyBudgetUsd - (await store.spendSince(job.siteId, `${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`)) });
+    dailyRemaining: async (job) => (await budgetOf(job.siteId)) - (await store.spendSince(job.siteId, `${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`)) });
   // Search Console only with a service account key (GOOGLE_KEY_JSON); without it the measurement is never queued.
   if (env.GOOGLE_KEY_JSON) {
     let tok = null; const gsc = { store, siteOf, fetchImpl, getToken: () => (tok ??= googleToken(env.GOOGLE_KEY_JSON, { fetchImpl })), allowed: (id) => rpc(env, fetchImpl, "gsc_allowed", { p_site: id }).then(Boolean, () => false) };
@@ -84,17 +87,19 @@ export function context(env, fetchImpl) {
     handlers.search_snapshot = makeSearchSnapshotHandler(gsc); // D47: the 28-day snapshot the agents read
   }
   if (handlers.client_request) handlers.client_request = makeClientRequestHandler({ store, agentHandler: handlers["agent:*"] });
-  return { s, store, siteOf, handlers };
+  return { s, store, siteOf, handlers, budgetOf };
 }
 
 /** Plan ONE site (its own invocation). The site comes from the scheduler, never from a public request. */
 export async function tickSite(env, site, fetchImpl) {
-  const { s, store, handlers } = context(env, fetchImpl);
+  const { s, store, handlers, budgetOf } = context(env, fetchImpl);
   // D37: the site's own repository, when an agency owner connected it; the token stays in this invocation.
   const github = async (x) => { const t = await store.githubTarget(x.id); return t?.repo && t?.token ? makeGitHub({ repo: t.repo, token: t.token, fetchImpl, api: env.GITHUB_API_URL || undefined }) : null; }; // GITHUB_API_URL: local tests only
-  const r = await tick({ store, sites: [site], handlers, maxJobs: 0, dailyBudgetUsd: s.dailyBudgetUsd, agentRunUsd: s.agentRunUsd, github });
+  const budgetUsd = await budgetOf(site.id);
+  const r = await tick({ store, sites: [site], handlers, maxJobs: 0, dailyBudgetUsd: s.dailyBudgetUsd, budgets: { [site.id]: budgetUsd }, agentRunUsd: s.agentRunUsd, github });
   const e = r.sites[0] || {};
-  const outcome = { strategy: e.strategy ?? null, queued: (e.queued || []).length, deferred: (e.deferred || []).length, waiting: (e.waiting || []).length, error: e.error || null };
+  const outcome = { strategy: e.strategy ?? null, queued: (e.queued || []).length, deferred: (e.deferred || []).length, waiting: (e.waiting || []).length, error: e.error || null,
+    budgetUsd, spentTodayUsd: e.spentTodayUsd ?? null, deferredForBudget: (e.deferred || []).filter((d) => /over today's budget/.test(d.reason || "")).length };
   await rpc(env, fetchImpl, "record_site_tick", { p_site: site.id, p_outcome: outcome });
   return outcome;
 }
