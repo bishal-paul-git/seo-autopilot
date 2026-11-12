@@ -101,6 +101,9 @@ test("portal app: sign in, websites, connect a website, client link, client view
     await page.goto(`${origin}/#/add`);
     await page.fill("#url-form input[name=url]", "corner-shop.test");
     await page.click("#url-form button[type=submit]");
+    // D44: the business brief comes first; it is optional.
+    await page.waitForSelector("h1:has-text('Tell us about the business')");
+    await page.click("text=Skip for now");
     await page.waitForSelector("text=Reading corner-shop.test now");
     assert.equal(fake.calls.find((c) => c.path === "/rest/v1/rpc/add_site_by_url").body.p_url, "https://corner-shop.test");
     assert.ok(await page.isVisible("#scan-now"));

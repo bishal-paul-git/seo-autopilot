@@ -119,6 +119,10 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
 
+## 2026-11-12 D44 Onboarding questions become one optional business brief; $2/day agent budget
+Owner feedback: the questions belong in onboarding, not on the SEO God page. Adding a website by address now opens one form, "Tell us about the business", with every question the dossier can ask (`BRIEF` in `src/god/onboarding.mjs`), all optional, with "Skip for now"; the fields the scan could not answer are marked. It stays editable as the agency-only "Business brief" page. The SEO God page shows only a one-line summary with a link; the live-activity line about open questions is a note, not "your move". Answers are the same `site_memory` 'answer' rows (new `save_brief`/`site_brief`, migration 20261113000000: members only, fixed keys, 2,000 characters, audited), so the planner, the dossier and the approval step (D43) read them unchanged.
+Also: production `SEO_GOD_DAILY_BUDGET_USD` set to "2" (per site per day) in `cloud/worker/wrangler.toml`, the owner's choice; with $0.50 estimated per agent run that is about four specialist runs a day for Erudience. The value lives in the file because every deploy resets dashboard variables.
+
 ## 2026-11-12 D43 Approving the strategy carries the agency's answers in
 Found before the owner's first approval: the strategy is drafted right after the first scan, before any question is answered, and approval adopted that draft unchanged, so the pilot would have frozen "objective: not set". Now `advance()` (`src/god/tick.mjs`) passes the draft through `withAnswers()` (`src/god/onboarding.mjs`) at approval: the goal becomes the objective, conversions become the first KPI, the open-question risk is recounted, and the answers are stored with the strategy. Deterministic, no AI call. Tradeoff: the first steps are not redrafted from the answers (they come from the audit); redrafting them is the specialists' work after approval.
 

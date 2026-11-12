@@ -132,7 +132,7 @@ svg text { fill: var(--muted); font: 10px var(--mono) }
 .report p { margin: 0 0 6px; font-size: 14px }
 .form { display: grid; gap: 12px; max-width: 420px }
 .form label { display: grid; gap: 6px; font-size: 13.5px; font-weight: 500 }
-.form input { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); font: inherit; color: var(--ink) }
+.form input, .form textarea { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); font: inherit; color: var(--ink) }
 .form .err { color: var(--bad); font-size: 13.5px; min-height: 1em }
 .secret { font-family: var(--mono); font-size: 12.5px; padding: 10px 12px; border-radius: 10px; background: var(--line-2); overflow-wrap: anywhere; user-select: all }
 .steps { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 14px }
@@ -199,6 +199,7 @@ td { padding: 11px 16px; border-bottom: 1px solid var(--line-2) } tr:last-child 
 // The portal app. Reads from the portal's Supabase project over its REST API with the public (publishable) key; what a
 // person can see is decided by the database (row level security), not by this page. No libraries.
 const CFG = __CONFIG__;
+const BRIEF = __BRIEF__; // the business brief asked when a website is added (src/god/onboarding.mjs, D44)
 const ORG_CHART = __ORG__; // the director and the eight departments of the master spec, with their agents and engine jobs
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -277,8 +278,8 @@ const I = {
   inbox: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13l2.5-7h11L20 13v6H4z"/><path d="M4 13h5l1 2h4l1-2h5"/></svg>',
   out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg>',
 };
-const PAGES = [["overview", "Overview", I.home], ["traffic", "Traffic", I.trend], ["keywords", "Keywords", I.key], ["pages", "Pages", I.page], ["locations", "Locations", I.pin], ["plan", "Coming next", I.plan], ["report", "Weekly report", I.report], ["god", "SEO God", I.spark], ["requests", "Requests", I.inbox], ["approvals", "Approvals", I.check], ["team", "SEO team", I.team], ["connect", "Connection", I.plug]];
-const AGENCY_ONLY = new Set(["god", "approvals", "team", "connect"]); // never shown to clients (D27: reporting only)
+const PAGES = [["overview", "Overview", I.home], ["traffic", "Traffic", I.trend], ["keywords", "Keywords", I.key], ["pages", "Pages", I.page], ["locations", "Locations", I.pin], ["plan", "Coming next", I.plan], ["report", "Weekly report", I.report], ["god", "SEO God", I.spark], ["brief", "Business brief", I.page], ["requests", "Requests", I.inbox], ["approvals", "Approvals", I.check], ["team", "SEO team", I.team], ["connect", "Connection", I.plug]];
+const AGENCY_ONLY = new Set(["god", "brief", "approvals", "team", "connect"]); // never shown to clients (D27: reporting only)
 const MOBILE_TABS = ["overview", "traffic", "keywords", "pages"];
 let state = { kwTab: "ranking", kwQ: "", pgFilter: "all", newToken: null };
 
@@ -650,7 +651,7 @@ function activityGates(a) {
   else out.push(["ok", `Scheduler running: last check ${agoAt(sch.lastRunAt, a.now)}, ${fmt(sch.runsLastHour)} in the last hour${sch.runsWithErrorsOfLast4 ? `, ${fmt(sch.runsWithErrorsOfLast4)} of the last 4 with errors` : ", no errors"}.`]);
   if (a.site?.status === "paused") out.push(["warn", "This website is paused: nothing is planned for it."]);
   if (!g.strategyApproved) out.push(["warn", g.waitingForYou ? "The strategy is waiting for your approval. Until you adopt it, the specialists only read the site." : "No strategy yet: it is drafted after the first scan."]);
-  if (g.openQuestions) out.push(["warn", `${fmt(g.openQuestions)} question${g.openQuestions === 1 ? "" : "s"} open: your answers sharpen the strategy.`]);
+  if (g.openQuestions) out.push(["info", `Business brief: ${fmt(g.openQuestions)} thing${g.openQuestions === 1 ? "" : "s"} the site does not say are still blank (optional).`]);
   if (g.strategyApproved && g.waitingForYou) out.push(["warn", `${fmt(g.waitingForYou)} item${g.waitingForYou === 1 ? "" : "s"} waiting for your decision.`]);
   if (g.needsAPerson) out.push(["bad", `${fmt(g.needsAPerson)} job${g.needsAPerson === 1 ? "" : "s"} stopped and need a person.`]);
   if (!g.agentRunsEver) out.push(["info", g.strategyApproved ? "No AI specialist has run on this site yet. They need the platform's AI key and a daily budget." : "AI specialists start after the strategy is approved (and with the platform's AI key and budget)."]);
@@ -684,6 +685,20 @@ function startActivityTimer(s) {
   }, window.__ACT_MS || 30000); // tests shorten it
 }
 
+/* ---------- Business brief (D44): asked once when a website is added, editable any time ---------- */
+async function loadBrief(s) { try { s.brief = await rpc("site_brief", { p_site: s.id }); s.briefError = null; } catch (e) { s.brief = null; s.briefError = e.message; } }
+function pBrief(s) {
+  const b = s.brief, isNew = state.justAdded === s.id;
+  const head = `<div><h1>${isNew ? "Tell us about the business" : "Business brief"}</h1><p class="lead">${isNew ? `${esc(host(s.url))} is added and its first scan is running. ` : ""}Everything here is optional and can be changed later. It sets the strategy's goal and how results are measured; anything you leave blank the team works out from the site.</p></div>`;
+  if (!b) return head + `<div class="callout">The business brief is not switched on for this workspace yet. ${esc(s.briefError || "")}</div><a class="btn" href="${link(s, isNew ? "overview" : "god")}">${isNew ? "Skip for now" : "Back to SEO God"}</a>`;
+  const asked = new Set(b.asked || []);
+  const fields = BRIEF.map((f) => `<label>${esc(f.label)}${asked.has(f.key) ? ' <span class="pill warn">the site does not say</span>' : ""}
+    <textarea name="${esc(f.key)}" rows="2" maxlength="2000" placeholder="${esc(f.hint)}">${esc((b.answers || {})[f.key] || "")}</textarea></label>`).join("");
+  return head + `<form class="card form" id="brief-form" style="max-width:720px">${fields}
+    <div class="err" id="brief-err"></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="submit">Save${isNew ? " and continue" : ""}</button>
+    <a class="btn" href="${link(s, isNew ? "overview" : "god")}">${isNew ? "Skip for now" : "Back to SEO God"}</a></div></form>`;
+}
+
 function pGod(s) {
   const c = s.console;
   const head = `<div><h1>SEO God</h1><p class="lead">This website's own SEO director. It reads the site, drafts the strategy, plans the work and runs the specialists. Nothing it proposes goes ahead without your approval, and your clients never see this page.</p></div>`;
@@ -694,7 +709,7 @@ function pGod(s) {
     ${kpi("Waiting for you", fmt(waiting.length), null, "Work that needs your decision.")}${kpi("Needs a person", fmt(esc8.length), null, "Work that failed repeatedly or was refused.")}
     ${kpi("Spend", `${usd(c.costs?.today)} today`, null, `${usd(c.costs?.month)} this month, from your own AI key.`)}</div>
   <div id="activity">${activityHtml(s)}</div>
-  ${c.strategy ? `<div class="card"><div class="ch"><h2>Strategy</h2><span class="pill ${st[1]}">${st[0]}</span></div>${proposalHtml({ proposal: c.strategy })}${c.strategy.status === "approved" ? "" : '<p class="xs muted" style="margin:8px 0 0">Answer the questions below to sharpen it: your goal and what counts as a conversion are written into the strategy when you approve it from \u201cWaiting for you\u201d.</p>'}</div>` : ""}
+  ${c.strategy ? `<div class="card"><div class="ch"><h2>Strategy</h2><span class="pill ${st[1]}">${st[0]}</span></div>${proposalHtml({ proposal: c.strategy })}${c.strategy.status === "approved" ? "" : '<p class="xs muted" style="margin:8px 0 0">Approve it from \u201cWaiting for you\u201d. Your business brief (goal, conversions) is written into it when you do.</p>'}</div>` : ""}
   <div class="card pad0"><div class="ch"><h2>Waiting for you</h2><span class="xs muted">${c.lastPlanned?.at ? `planned ${esc(String(c.lastPlanned.at).slice(0, 16).replace("T", " "))} UTC` : "not planned yet"}</span></div><div class="list">${waiting.map((j) => `
     <div class="row" style="display:block"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><div class="t" style="flex:1;min-width:200px">${esc(j.title)}</div><span class="pill ${RISK[j.risk] || ""}">${esc(j.risk)} risk</span><span class="pill info">${j.stage === "result" ? "Approve this result" : "Approve to start"}</span></div>
       <div class="s">${esc(j.kind)}${j.why ? ` · ${esc(j.why)}` : ""}${j.review ? ` · review: ${esc(j.review.verdict)}` : ""}${Number(j.costUsd) ? ` · spent ${usd(j.costUsd)}` : ""}</div>
@@ -702,9 +717,8 @@ function pGod(s) {
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;align-items:center"><input id="note-${esc(j.id)}" placeholder="Note (optional, saved with your decision)" style="flex:1;min-width:200px">
         <button class="btn primary" data-jdec="approve" data-job="${esc(j.id)}">Approve</button><button class="btn" data-jdec="request_changes" data-job="${esc(j.id)}">Request changes</button><button class="btn" data-jdec="reject" data-job="${esc(j.id)}">Reject</button></div></div>`).join("") || '<div class="empty">Nothing waiting. New work appears here after each planning run.</div>'}</div></div>
   <div class="grid g2">
-    <div class="card pad0"><div class="ch"><h2>Questions for you</h2></div><div class="list">${qs.map((q) => `<div class="row" style="display:block"><div class="t">${esc(q.question)}</div><div class="s">${esc(q.why || "")}</div>
-      <div style="display:flex;gap:6px;margin-top:8px"><input id="ans-${esc(q.key)}" maxlength="2000" placeholder="Your answer" style="flex:1"><button class="btn" data-qsave="${esc(q.key)}">Save</button></div></div>`).join("") || '<div class="empty">No open questions.</div>'}</div>
-      ${(c.answers || []).length ? `<details style="padding:0 16px 14px"><summary class="xs" style="cursor:pointer">${c.answers.length} answered</summary>${c.answers.map((a) => `<div class="xs" style="margin-top:6px"><b>${esc(a.key)}</b>: ${esc(a.value)}</div>`).join("")}</details>` : ""}</div>
+    <div class="card"><div class="ch"><h2>Business brief</h2><a class="r btn" href="${link(s, "brief")}">${(c.answers || []).length ? "Edit" : "Fill in"}</a></div>
+      <p class="xs muted" style="margin:0">${fmt((c.answers || []).length)} of ${fmt(BRIEF.length)} answered${qs.length ? ` · ${fmt(qs.length)} the site itself does not answer` : ""}. Optional: the strategy works without it, and your answers are written into it when you approve.</p></div>
     <div class="card pad0"><div class="ch"><h2>Needs a person</h2></div><div class="list">${esc8.map((j) => `<div class="row" style="flex-wrap:wrap;gap:8px"><div style="flex:1;min-width:180px"><div class="t">${esc(j.title)}</div><div class="s">${esc(j.kind)} · ${esc(j.error || "stopped")} · ${fmt(j.attempts)} attempts</div></div><button class="btn" data-retry="${esc(j.id)}">Try again</button></div>`).join("") || '<div class="empty">Nothing stuck.</div>'}</div></div>
   </div>
   <div class="grid g2">
@@ -917,11 +931,6 @@ function wire(s) {
     if (d === "reject" && !confirm("Reject this work? It will not run.")) return;
     consoleAction("approve_job", { p_job: id, p_decision: d, p_note: ($(`#note-${CSS.escape(id)}`)?.value || "").trim() || null }, { approve: "Approved. It runs at the next planning run.", reject: "Rejected.", request_changes: "Sent back for changes." }[d]);
   }));
-  document.querySelectorAll("[data-qsave]").forEach((b) => (b.onclick = () => {
-    const k = b.dataset.qsave, v = ($(`#ans-${CSS.escape(k)}`)?.value || "").trim();
-    if (!v) return toast("Type an answer first.");
-    consoleAction("answer_question", { p_site: s.id, p_key: k, p_value: v }, "Answer saved. The next strategy draft uses it.");
-  }));
   document.querySelectorAll("[data-retry]").forEach((b) => (b.onclick = () => consoleAction("retry_job", { p_job: b.dataset.retry, p_note: null }, "Queued again.")));
   document.querySelectorAll("[data-wmonth]").forEach((b) => (b.onclick = async () => { if (!s) return; s.workMonth = b.dataset.wmonth; await loadWork(s); render(); }));
   const pr = $("#print-report"); if (pr) pr.onclick = () => window.print();
@@ -985,12 +994,23 @@ function wire(s) {
   const sn = $("#scan-now");
   if (sn && s) sn.onclick = async () => { sn.disabled = true; try { await rpc("scan_now", { p_site: s.id }); toast("Scan started. Results arrive in a few minutes."); loaded = false; setTimeout(render, 1500); } catch (e) { toast(e.message); sn.disabled = false; } };
   if (s && s.byUrl && s.status !== "live" && s.scanState !== "failed") { clearTimeout(state.poll); state.poll = setTimeout(() => { if (location.hash.includes(s.key)) { loaded = false; render(); } }, 20000); }
+  const briefForm = $("#brief-form");
+  if (briefForm && s) briefForm.onsubmit = async (e) => {
+    e.preventDefault(); const f = new FormData(briefForm), err = $("#brief-err"); err.textContent = "";
+    const answers = Object.fromEntries(BRIEF.map((x) => [x.key, String(f.get(x.key) || "").trim()]));
+    const btn = briefForm.querySelector("button[type=submit]"); btn.disabled = true;
+    try {
+      const r = await rpc("save_brief", { p_site: s.id, p_answers: answers });
+      const next = state.justAdded === s.id ? "overview" : "god"; state.justAdded = null;
+      toast(r.saved || r.cleared ? "Brief saved. The strategy uses it." : "Nothing changed."); location.hash = link(s, next);
+    } catch (x) { err.textContent = x.message; btn.disabled = false; }
+  };
   const uf = $("#url-form");
   if (uf) uf.onsubmit = async (e) => {
     e.preventDefault(); const f = new FormData(uf), err = $("#url-err"); err.textContent = "";
     let url = String(f.get("url")).trim(); if (!/^https?:\/\//i.test(url)) url = `https://${url}`; url = url.replace(/^http:\/\//i, "https://");
     const btn = uf.querySelector("button"); btn.disabled = true;
-    try { const j = await rpc("add_site_by_url", { p_url: url, p_name: f.get("name") || null }); loaded = false; location.hash = `#/s/${j.id}/overview`; }
+    try { const j = await rpc("add_site_by_url", { p_url: url, p_name: f.get("name") || null }); loaded = false; state.justAdded = j.id; location.hash = `#/s/${j.id}/brief`; }
     catch (x) { err.textContent = x.message; btn.disabled = false; }
   };
   const af = $("#add-form");
@@ -1040,7 +1060,7 @@ function workHtml(s) {
     <p class="xs muted" style="margin:12px 0 0">Every item comes from recorded work and the site audit. Search traffic is in the other pages of this dashboard.</p></div>`;
 }
 
-const PAGE_FN = { overview: pOverview, traffic: pTraffic, keywords: pKeywords, pages: pPages, locations: pLocations, plan: pPlan, report: pReport, team: pTeam, connect: pConnect, approvals: pApprovals, god: pGod, requests: (s) => (mode === "agency" ? pInbox(s) : pRequests(s)) };
+const PAGE_FN = { brief: pBrief, overview: pOverview, traffic: pTraffic, keywords: pKeywords, pages: pPages, locations: pLocations, plan: pPlan, report: pReport, team: pTeam, connect: pConnect, approvals: pApprovals, god: pGod, requests: (s) => (mode === "agency" ? pInbox(s) : pRequests(s)) };
 async function render() {
   clearInterval(ACT_TIMER);
   const h = location.hash || "#/";
@@ -1100,11 +1120,12 @@ async function render() {
     const page = m[3] || "overview";
     if (page === "overview" && s.status === "live") await loadGrowth(s);
     if (page === "god") await loadConsole(s);
+    if (page === "brief") await loadBrief(s);
     if (page === "requests") await loadInbox(s);
     if (page === "report") await loadWork(s);
     if (page === "team") await loadWorkforce(s);
     shell(s, page); document.title = `${s.name} · SEO dashboard`;
-    $("#page").innerHTML = s.status !== "live" && page !== "connect" && page !== "god" && page !== "requests" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
+    $("#page").innerHTML = s.status !== "live" && page !== "connect" && page !== "god" && page !== "brief" && page !== "requests" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
     wire(s);
     if (page === "god") startActivityTimer(s);
   } catch (e) { $("#page").innerHTML = `<div class="callout">${esc(e.message)}</div>`; }

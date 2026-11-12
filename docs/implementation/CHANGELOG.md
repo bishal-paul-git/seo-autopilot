@@ -2,6 +2,10 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-12 (Business brief at onboarding, $2/day budget, D44; code change)
+- Code: `BRIEF` in `src/god/onboarding.mjs`; migration `20261113000000_business_brief.sql` (`site_brief`, `save_brief`); portal brief page, add-website flow, SEO God summary card (`cloud/portal/app/index.html`, `cloud/portal/build.mjs`); `cloud/worker/wrangler.toml` budget "2".
+- Tests: `cloud/portal/supabase/test/rls20.sql`, `test/portal-brief.test.mjs`; updated `portal-god`, `portal-activity`, `portal-app` for the new flow. `npm test` 594/594; SQL suites incl. rls20 pass.
+
 ## 2026-11-12 (Answers carried into the approved strategy, D43; code change)
 - Code: `withAnswers()` in `src/god/onboarding.mjs`, used by `advance()` in `src/god/tick.mjs`; portal hint on the strategy card. Test in `test/onboarding.test.mjs`.
 - Checks: `npm test` 592/592; `node scripts/god-pg-e2e.mjs` and `node scripts/cf-local-e2e.mjs` pass.
