@@ -2,6 +2,9 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-12 (D50 deployed; deployment only)
+- Migration 20261116000000 applied to production; PR #64 merged (58e9f72); Worker deployed with run=true; portal published (live md5 = build `a8db52f4…`, previous kept as `previous-2026-11-12f.html`). Scheduler runs 97 and 98 without errors. D45 to D49 also deployed earlier today (see entries below).
+
 ## 2026-11-12 (Phase 7: per-site budgets, alerts, rollback rehearsal, load check, D50; code change)
 - Code: migration `20261116000000_budgets_alerts.sql`; `cloud/worker/src/app.mjs` (per-site budget, tick outcome); portal Operations (alerts card, budget per site, last month's spend); `cloud/portal/supabase/rollback/post-release-1.sql`; `scripts/db-rollback-check.mjs --post`; `scripts/load-check.mjs`; `scripts/cf-local-e2e.mjs` (all migrations, budget check); `docs/runbook.md` (Hosted SEO God section).
 - Tests: `npm test` 612/612 (one run had the share-link portal test fail once; it passed on the next two runs and on the full suite; unrelated to this change); SQL suites through new `rls23.sql`; `cf-local-e2e.mjs` passes in workerd; both rollback rehearsals pass; load check as in D50.
