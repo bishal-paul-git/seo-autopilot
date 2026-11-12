@@ -15,7 +15,7 @@ import { tick } from "../../../src/god/tick.mjs";
 import { makeSearchConsoleHandler, googleToken } from "../../../src/god/search-console.mjs";
 import { runOnce } from "../../../src/god/worker.mjs";
 import { makeGitHub } from "../../../src/god/github.mjs";
-import { PROMPTS } from "./agents.generated.mjs";
+import { PROMPTS, DEPARTMENTS, KNOWLEDGE } from "./agents.generated.mjs";
 
 export const VERSION = "0.1.0";
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "cache-control": "no-store" } });
@@ -75,7 +75,7 @@ export function context(env, fetchImpl) {
   const siteOf = async (id) => (sites ??= await store.listSites()).find((x) => x.id === id) || null;
   const handlers = makeHandlers({ store, siteOf, scan: remoteScan(env, fetchImpl, s.scanMaxPages) });
   // Agent jobs only with the user's own key (rule 6); otherwise the planner reports them as deferred, never queued.
-  if (env.ANTHROPIC_API_KEY) handlers["agent:*"] = handlers.client_request = makeAgentHandler({ store, siteOf, apiKey: env.ANTHROPIC_API_KEY, model: env.SEO_GOD_MODEL || "claude-opus-5-5", effort: env.SEO_GOD_EFFORT || "medium", fetchImpl, promptOf: (name) => PROMPTS[name] || null, baseUrl: env.ANTHROPIC_BASE_URL || "https://api.anthropic.com",
+  if (env.ANTHROPIC_API_KEY) handlers["agent:*"] = handlers.client_request = makeAgentHandler({ store, siteOf, apiKey: env.ANTHROPIC_API_KEY, model: env.SEO_GOD_MODEL || "claude-opus-5-5", effort: env.SEO_GOD_EFFORT || "medium", fetchImpl, promptOf: (name) => PROMPTS[name] || null, knowledge: KNOWLEDGE || null, departmentOf: (name) => DEPARTMENTS?.[name] || null, baseUrl: env.ANTHROPIC_BASE_URL || "https://api.anthropic.com",
     dailyRemaining: async (job) => s.dailyBudgetUsd - (await store.spendSince(job.siteId, `${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`)) });
   // Search Console only with a service account key (GOOGLE_KEY_JSON); without it the measurement is never queued.
   if (env.GOOGLE_KEY_JSON) { let tok = null; handlers.search_console = makeSearchConsoleHandler({ store, siteOf, fetchImpl, getToken: () => (tok ??= googleToken(env.GOOGLE_KEY_JSON, { fetchImpl })), allowed: (id) => rpc(env, fetchImpl, "gsc_allowed", { p_site: id }).then(Boolean, () => false) }); }

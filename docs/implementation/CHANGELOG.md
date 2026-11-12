@@ -2,9 +2,25 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-12 (Phase 1: playbooks, review of every AI output, second opinion, D45; code change)
+- Code: `src/god/knowledge.mjs` (new), `src/god/agent-runner.mjs`, `src/god/worker.mjs`, `cloud/worker/build.mjs`, `cloud/worker/src/app.mjs`; tests in `test/agent-runner.test.mjs` (4 new or changed).
+- Checks: `npm test` 597/597; `scripts/cf-local-e2e.mjs` and `scripts/god-pg-e2e.mjs` pass. Mocked API only until the live run.
+- Docs: D45; STATUS rewritten (previous kept as `history/STATUS-to-2026-11-12.md`).
+- Owner answers (2026-11-12): go on phases 0 and 1; build pruner/link builder but hold them; exams scored by the owner with outside help; budget stays $2/day.
+
+## 2026-11-12 (System readiness plan; documentation only)
+- Added `docs/product/SYSTEM-READINESS-PLAN.md`: phases 0 to 8 (sort out open items, trustworthy output, agent pages, real data, exams, sourced SEO/AEO/GEO knowledge, changes on the site, full multi-site readiness, ongoing), each with my work, owner actions and where, checks and costs. Proposal only; nothing built or deployed.
+- STATUS.md section 7 points to it. No code, migration or deployment change.
+
+## 2026-11-12 (First live specialist runs; evidence only)
+- Owner approved the Erudience strategy at 19:39:59 UTC. Run 83 (19:45 UTC) adopted it, planned 4 specialists and ran 2 with the owner's Anthropic key: `seo-entity-reputation` ($0.0974) and `seo-reporter` ($0.0747), total $0.1721 of the $2/day budget, no errors. First real model calls of the agent runner (until now mocked only).
+- Output check (read in the database): both stayed with supplied facts and named what they could not know (no Search Console, no entity data) instead of guessing; recommendations: Organization markup from confirmed facts only, logo, contact consistency, www redirect, Search Console and conversion tracking.
+- `seo-content-pruner` and `seo-link-builder` are high risk (removals, outreach): waiting for agency approval before they start, as designed (D17).
+
 ## 2026-11-12 (Business brief at onboarding, $2/day budget, D44; code change)
 - Code: `BRIEF` in `src/god/onboarding.mjs`; migration `20261113000000_business_brief.sql` (`site_brief`, `save_brief`); portal brief page, add-website flow, SEO God summary card (`cloud/portal/app/index.html`, `cloud/portal/build.mjs`); `cloud/worker/wrangler.toml` budget "2".
 - Tests: `cloud/portal/supabase/test/rls20.sql`, `test/portal-brief.test.mjs`; updated `portal-god`, `portal-activity`, `portal-app` for the new flow. `npm test` 594/594; SQL suites incl. rls20 pass.
+- Deployment 2026-11-12 ~19:35 UTC: migration applied to production (`apply_migration business_brief`); PR #57 merged (fd7226c); deploy-seo-god run #7 (run=true) succeeded with the $2/day budget; Worker secret names checked (ANTHROPIC_API_KEY present, values never read); portal published, live md5 = build md5 (a44aab42…), previous kept as `previous-2026-11-12b.html`; Chromium loads it with no errors.
 
 ## 2026-11-12 (Answers carried into the approved strategy, D43; code change)
 - Code: `withAnswers()` in `src/god/onboarding.mjs`, used by `advance()` in `src/god/tick.mjs`; portal hint on the strategy card. Test in `test/onboarding.test.mjs`.

@@ -60,8 +60,57 @@ test("handler: calls the user's key with fallbacks, budget-bounded max_tokens, a
   assert.match(c.body.system, /ADVISE mode/);
   assert.equal(out.proposal.mode, "advise");
   assert.equal(out.proposal.recommendations[0].title, "Add a title to /x");
-  assert.equal(out.costUsd, 3000 * 4 / 1e6 + 1000 * 20 / 1e6);
+  assert.equal(calls.length, 2, "content work: the agent, then the fact-checker");
+  assert.equal(out.costUsd, 2 * (3000 * 4 / 1e6 + 1000 * 20 / 1e6), "both calls counted");
   assert.ok(!out.changes, "advice only: no site changes");
+});
+
+// Replies in order: the agent's advice, then (for content and high-risk work) the fact-checker's verdict.
+const seqFetch = (replies, calls = []) => async (url, o) => { calls.push({ url, headers: o.headers, body: JSON.parse(o.body) }); return new Response(JSON.stringify(replies[Math.min(calls.length - 1, replies.length - 1)]), { status: 200 }); };
+const VERDICT = (verdict, problems = []) => reply({ verdict, problems, summary: verdict });
+
+test("knowledge: every agent reads its playbooks and skills, and each one it names exists", async () => {
+  const { readKnowledge, knowledgeBlock, referencesOf } = await import("../src/god/knowledge.mjs");
+  const { listAgents } = await import("../src/core/agents.mjs");
+  const { readFileSync, existsSync } = await import("node:fs");
+  const kb = readKnowledge();
+  for (const a of listAgents()) {
+    const text = readFileSync(a.file, "utf8").replace(/\r\n/g, "\n");
+    const read = (text.match(/## Read first\n([\s\S]*?)(\n## |$)/) || [])[1] || "";
+    for (const m of read.matchAll(/`(?:seo-autopilot\/knowledge\/)?([a-z0-9-]+\.md)`/g)) {
+      if (["site-profile.json"].includes(m[1])) continue;
+      assert.ok(existsSync(new URL(`../knowledge/${m[1]}`, import.meta.url)), `${a.name} names knowledge/${m[1]}, which does not exist`);
+    }
+    assert.ok(kb.refs[a.name].playbooks.length > 0, `${a.name} reads at least one playbook`);
+    const b = knowledgeBlock(a.name, kb);
+    assert.deepEqual(b.skipped, [], `${a.name}: everything fits`);
+  }
+  assert.deepEqual(kb.refs["seo-content-pruner"].playbooks.slice(0, 1), ["refreshing-and-pruning-content.md"]);
+  assert.ok(kb.refs["seo-link-builder"].skills.includes("digital-pr"));
+  const r = referencesOf("## Read first\n`seo-autopilot/knowledge/a.md`, `b.md`, `missing.md`\n## Method\n`c.md`", { playbooks: new Set(["a.md", "b.md", "c.md"]), skills: new Set() });
+  assert.deepEqual(r.playbooks, ["a.md", "b.md"], "only Read first, only files that exist");
+  const small = knowledgeBlock("seo-content-pruner", kb, 9000);
+  assert.ok(small.skipped.length > 0 && small.used.length > 0, "over the limit: later files are left out and reported");
+});
+
+test("handler: the agent gets its playbooks; content work gets the fact-checker's second opinion", async () => {
+  const store = memoryStore(), calls = [];
+  const h = makeAgentHandler({ store, siteOf: async () => SITE, apiKey: "k", fetchImpl: seqFetch([reply(GOOD), VERDICT("needs_changes", [{ item: "claim 1", issue: "no source in the data" }])], calls) });
+  const out = await h({ siteId: "A", kind: "agent:seo-content-pruner", title: "Prune", risk: "high", inputs: { agent: "seo-content-pruner" }, budgetUsd: 0.5 }, { budgetUsd: 0.5 });
+  assert.match(calls[0].body.system, /<reference name="knowledge\/refreshing-and-pruning-content.md">/);
+  assert.match(calls[0].body.system, /ADVISE mode/);
+  assert.ok(out.evidence.some((e) => /^read: knowledge\/refreshing-and-pruning-content.md/.test(e)));
+  assert.deepEqual(out.proposal.knowledge.slice(0, 1), ["knowledge/refreshing-and-pruning-content.md"]);
+  assert.match(calls[1].body.system, /# SEO fact-checker/); assert.match(calls[1].body.system, /ANOTHER agent's advice/);
+  assert.match(calls[1].body.messages[0].content, /<advice_to_review>[\s\S]*Add a title to \/x[\s\S]*<\/advice_to_review>/);
+  assert.equal((calls[1].body.messages[0].content.match(/<\/site_data>/g) || []).length, 1);
+  assert.equal(out.secondReview.reviewer, "seo-fact-checker"); assert.equal(out.secondReview.verdict, "needs_changes");
+  assert.match(out.secondReview.reasons[0], /no source/);
+  // The reporter (command department, low risk) gets no second opinion; an unreadable verdict goes to a person.
+  const one = []; await makeAgentHandler({ store, siteOf: async () => SITE, apiKey: "k", fetchImpl: seqFetch([reply(GOOD)], one) })({ siteId: "A", kind: "agent:seo-reporter", title: "R", inputs: { agent: "seo-reporter" } }, { budgetUsd: 0.5 });
+  assert.equal(one.length, 1);
+  const bad = await makeAgentHandler({ store, siteOf: async () => SITE, apiKey: "k", fetchImpl: seqFetch([reply(GOOD), reply({ nonsense: true })]) })({ siteId: "A", kind: "agent:seo-refresher", title: "R", inputs: { agent: "seo-refresher" } }, { budgetUsd: 0.5 });
+  assert.match(bad.escalate, /unreadable; a person must check/); assert.ok(bad.proposal, "the advice is still kept for the person");
 });
 
 test("handler: no key, too little budget, refusal and invalid replies escalate instead of retrying", async () => {
@@ -87,6 +136,26 @@ test("worker with the runner: low-risk advice completes with the proposal stored
   const r = await runOnce({ store, handlers });
   assert.equal(r.outcome, "escalated"); assert.equal(store.get(b.id).status, "escalated");
   assert.equal(store.get(b.id).attempts, 1, "not retried");
+});
+
+test("worker: every AI output is reviewed; the fact-checker's verdict decides content work", async () => {
+  const store = memoryStore();
+  const a = queue(store, "agent:seo-reporter");
+  assert.equal((await runOnce({ store, handlers: { "agent:*": makeAgentHandler({ store, siteOf: async () => SITE, apiKey: "k", fetchImpl: seqFetch([reply(GOOD)]) }) } })).outcome, "completed");
+  assert.deepEqual(store.reviews.filter((r) => r.jobId === a.id).map((r) => [r.reviewer, r.verdict]), [["quality-gate@1", "pass"]], "low-risk advice no longer skips the gate");
+  const b = queue(store, "agent:seo-refresher");
+  assert.equal((await runOnce({ store, handlers: { "agent:*": makeAgentHandler({ store, siteOf: async () => SITE, apiKey: "k", fetchImpl: seqFetch([reply(GOOD), VERDICT("pass")]) }) } })).outcome, "completed");
+  assert.deepEqual(store.reviews.filter((r) => r.jobId === b.id).map((r) => r.reviewer), ["quality-gate@1", "seo-fact-checker"]);
+  // A planted invented number: the gate passes it (it has a "source"), the fact-checker does not; the job is redone.
+  const c = queue(store, "agent:seo-refresher");
+  const planted = { ...GOOD, claims: [{ text: "Traffic grew 340% last year", source: "site data" }] };
+  const r = await runOnce({ store, handlers: { "agent:*": makeAgentHandler({ store, siteOf: async () => SITE, apiKey: "k", fetchImpl: seqFetch([reply(planted), VERDICT("needs_changes", [{ item: "Traffic grew 340%", issue: "not in the site data" }])]) }) } });
+  assert.equal(r.outcome, "review_needs_changes"); assert.equal(store.get(c.id).status, "queued");
+  assert.match(store.reviews.filter((x) => x.jobId === c.id).at(-1).reasons[0], /340%/);
+  // Non-AI routine work still completes directly.
+  const st = memoryStore(), s = st.createJob({ siteId: "A", kind: "scan", title: "Scan", risk: "low", budgetUsd: 0 }); st.transition(s.id, "scoped", "god"); st.transition(s.id, "queued", "god");
+  assert.equal((await runOnce({ store: st, handlers: { scan: async () => ({ evidence: ["read 3 pages"], costUsd: 0 }) } })).outcome, "completed");
+  assert.equal(st.reviews.length, 0);
 });
 
 test("worker: review-driven retries stop at the attempt cap and the budget covers all attempts together", async () => {
