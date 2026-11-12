@@ -1,12 +1,13 @@
 # Implementation status
 
-Kept short; read at the start of every session, together with [REVIEW-QUESTIONS.md](REVIEW-QUESTIONS.md) (open questions and the owner's replies). History: [history/STATUS-to-2026-11-03.md](history/STATUS-to-2026-11-03.md). Detail: [CHANGELOG.md](CHANGELOG.md), [DECISIONS.md](DECISIONS.md). Deployed state: [../deployment-status.md](../deployment-status.md). Tests: [../test-matrix.md](../test-matrix.md).
+Kept short; read at the start of every session. Plan: [../product/SYSTEM-READINESS-PLAN.md](../product/SYSTEM-READINESS-PLAN.md) (phases 0 to 8). Agent detail: [../product/AGENT-INTELLIGENCE-PLAN.md](../product/AGENT-INTELLIGENCE-PLAN.md). History: [history/STATUS-to-2026-11-12.md](history/STATUS-to-2026-11-12.md) (full capability table and earlier checks), [history/STATUS-to-2026-11-03.md](history/STATUS-to-2026-11-03.md). Detail: [CHANGELOG.md](CHANGELOG.md), [DECISIONS.md](DECISIONS.md). Deployed state: [../deployment-status.md](../deployment-status.md).
 
 ## 1. Snapshot
-- Last updated: 2026-11-12 ~18:50 UTC (see 1b). Earlier: 2026-11-08 ~17:30 UTC. Release 1 merged into `main` as `5b5f103` ([#51](https://github.com/bishal-paul-git/seo-autopilot/pull/51), owner-authorized; carries #33–#50). Follow-up docs on `claude/hopeful-euler-662mu5`. Release `v2.22.1` (no new tag yet).
-- Environment: Linux cloud container, Node 22, Postgres 16 (local SQL checks); network allowed to Supabase, GitHub and the owner's three websites.
+- Last updated: 2026-11-12 ~21:40 UTC. Branch `claude/hopeful-euler-662mu5`, PR [#58](https://github.com/bishal-paul-git/seo-autopilot/pull/58). Release 1 is on `main` (#51, then #56 and #57).
+- Environment: Linux cloud container, Node 22, Postgres 16 for local SQL checks.
+- Phase: **pilot running on erudience.com (read-only, advice only)**; readiness plan Phase 0 (sort out) and Phase 1 (trustworthy output, D45) in progress on owner's go (2026-11-12).
 
-## 1b. Production (2026-11-08, Supabase `ymwwwhdlyjnqbxxhtcew`)
+## 1b. Production (Supabase `ymwwwhdlyjnqbxxhtcew`, Worker `seo-god`, portal seo.erudience.com)
 | Step | State | Evidence |
 |---|---|---|
 | Backup | done | schema `backup_20261108` (9 tables + function definitions) |
@@ -24,71 +25,36 @@ Kept short; read at the start of every session, together with [REVIEW-QUESTIONS.
 | Portal publish (P6), unpause (P7), GitHub execution for the pilot (P8) | not done; not authorized for the pilot | n/a |
 Rollback: `cloud/portal/supabase/rollback/release-1.sql`; previous scan is v2 (redeploy from the pre-Release-1 source).
 
-## 2. Goal and phase
-Release 1: agency-ready multi-client platform (`docs/product/SEO-GOD-MASTER-SPEC.md`). Phase: **M1 audit done** (`docs/product/R1-AUDIT-AND-PLAN.md`), **M2 shared contracts started** (`docs/product/R1-CONTRACTS.md`, D27).
-Architecture: [../system-architecture.md](../system-architecture.md). Every job and agent: [../registry.md](../registry.md).
+## 2. Architecture (short)
+Cloudflare Worker `seo-god` (`cloud/worker/`) runs every 15 min: plans each due site (`src/god/tick.mjs`), runs one job per invocation (`src/god/worker.mjs`), agent jobs through `src/god/agent-runner.mjs` with playbooks from `src/god/knowledge.mjs`, reviewed by `src/god/review.mjs` and (content/high risk) the fact-checker. Supabase holds jobs, reviews, memory, costs and the portal API (`cloud/portal/supabase/migrations/`). Portal: one file, `cloud/portal/app/index.html`. Full map: [../system-architecture.md](../system-architecture.md).
 
-## 3. Capabilities
-| Area | Built | Verified | Deployed |
-|---|---|---|---|
-| Engine (58 jobs, 57 audit rules) | yes | `npm test` 498/498 (mocked network); 16 jobs observed in real runs | v2.22.1 on 3 sites; new rules unreleased |
-| Agents (38) | definitions | definition tests only; output never graded | 7 wired to workflows, but `SEO_AGENT`/`SEO_AUTOPILOT` off: none runs in production |
-| Portal (auth, tenancy, approvals, invites, brand, share links) | yes | SQL checks `rls.sql`, `rls2.sql`; browser test | live; no site pushes snapshots yet |
-| Address-only sites (D25) with SSRF guard and robots (D26) | yes | `rls3.sql`, `safe-fetch.test.mjs`, real scans of 3 live sites | `scan` v2 (pre-guard) deployed, migration **not applied** |
-| Live providers (research, AEO/GEO, backlinks) | yes | mocked only | no keys |
-| R1 contracts (clients, jobs, reviews, agency-only approvals, submissions, memory, audit) | migration + `job-lifecycle.mjs` | `rls4.sql`, `job-lifecycle.test.mjs` | **not applied** |
-| R1 orchestration (per-site planner, reviewer, worker) | `src/god/` | `god.test.mjs`, `scripts/god-pg-e2e.mjs` on Postgres 16 | not deployed |
-| Learning from results (D31): accepted advice re-checked by later scans; lessons per agent change planning and reach agents; shown to the agency | `src/god/learning.mjs`, migration 060000 | `learning.test.mjs`, `rls10.sql`, workerd e2e (26 checks) | not deployed; real outcomes need a live site |
-| Operations (D32): agency overview of all sites; platform health and pause switch for platform admins | portal, migration 070000 | `rls11.sql`, `portal-ops.test.mjs` | not deployed |
-| Search Console for hosted sites (D33): accepted advice measured against the rest of the site | `src/god/search-console.mjs` | `search-console.test.mjs` (mocked Google) | not deployed; needs `GOOGLE_KEY_JSON` (Q11) |
-| Security fixes from an independent review (D34) and a go-live preflight check | migration 080000, `scripts/god-preflight.mjs` | `rls12.sql`, `security-fixes.test.mjs`, `god-preflight.test.mjs` | not deployed |
-| One agency approval per strategy (D35): drafted right after the scan; only the agency adopts it | `src/god/`, migration 090000 | `rls13.sql`, `tick.test.mjs`, `god-pg-e2e.mjs`, workerd e2e | not deployed |
-| Verified execution through the site's own GitHub (D37): work order, agency approval, issue + seo-implement, pull request followed, verified by the next scan | `src/god/github.mjs`, `tick.mjs`, migration 110000, portal | `github-execution.test.mjs`, `rls16.sql`, `portal-github.test.mjs`, workerd e2e (full path) | not deployed; never run against real GitHub |
-| Notifications, monthly work report, team page by department (D38) | migration 120000, portal | `rls17.sql`, `portal-notes.test.mjs`, `portal-team.test.mjs` | not deployed |
-| Brand discovery, stated/inferred (D39) | `src/analysis/discover.mjs`, `onboarding.mjs` | `discover.test.mjs`, `portal-app.test.mjs` | not deployed |
-| R1 onboarding (dossier, questions, strategy proposal, site memory) | `src/god/onboarding.mjs`, `handlers.mjs`, memory migration | `onboarding.test.mjs`, `rls5.sql`; live runs on 2 sites (in-memory store) | not deployed |
-| R1 scheduler (tick, budgets, costs; strategy drafted at once, one agency approval adopts it, D35) | `src/god/tick.mjs`, `scripts/god-run.mjs`, scheduler migration | `tick.test.mjs`, `rls6.sql`, `god-pg-e2e.mjs`; live dry run on 2 sites | not scheduled or deployed |
-| R1 agent runner (advise only, user's key, budget-bounded; D29) | `src/god/agent-runner.mjs` | `agent-runner.test.mjs` (mocked API only) | no live model call yet |
-| Cloudflare execution (Worker scheduler, scan job mode, pause, lease recovery, run log; D30) | `cloud/worker/`, scan function, migration 030000 | `cf-worker.test.mjs`, `rls7.sql`, `cf-local-e2e.mjs` in workerd, `scan-fn-local.mjs` in Deno on a real site | **not deployed**; see `docs/cloudflare/README.md` |
-| Agency console: the SEO God page (approvals, questions, escalations, results, spend) | `cloud/portal/app/index.html`, migration 040000 | `rls8.sql`, `portal-god.test.mjs` (Chromium) | not deployed (portal unchanged) |
-| Client portal: client accounts with reports and requests; agency inbox and client access; requests assessed as advice after agency approval | portal, migration 050000, `tick.mjs`, `agent-runner.mjs` | `rls9.sql`, `portal-requests.test.mjs`, `client-request.test.mjs`, workerd e2e (24 checks) | not deployed |
+## 3. This session (2026-11-12, after the strategy approval)
+| Change | Kind | State |
+|---|---|---|
+| Readiness plan and agent-intelligence plan | docs | pushed |
+| D45: playbooks and skills sent to each agent; every AI output reviewed; fact-checker second opinion for content and high-risk work | code (`src/god/knowledge.mjs`, `agent-runner.mjs`, `worker.mjs`, `cloud/worker/build.mjs`, `src/app.mjs`) | built and tested; deploy recorded in 1b when done |
+| STATUS rewritten (old table moved to history) | docs | done |
+No migration, no new dependency, no new secret.
 
-## 4. Checks this session
-- Head 5f9948a: `npm test` 580/580.
-- `bash cloud/portal/supabase/test/run.sh`: 17 suites pass.
-  - `rls13.sql`: one-approval strategy.
-  - `rls14.sql`: invite-only sign-up.
-  - `rls15.sql`: every outsider-callable function called against another agency's ids. 1,250 calls to 39 functions; none leaked or changed data; a planted leak was caught.
-  - `rls16.sql`: GitHub execution (token in Vault, owner only). `rls17.sql`: notifications, work report, workforce.
-- `node scripts/db-rollback-check.mjs`: after 14 migrations, the rollback restores the production-equivalent catalog exactly, and the chain re-applies cleanly.
-- Read-only production fingerprint (2026-11-08): the schema equals the two portal migrations, with 3 noted exceptions (manifest section 0).
-- `god-pg-e2e.mjs`: passes.
-- `cf-local-e2e.mjs`: the Worker ran in workerd against all migrations through 110000; 31 checks pass. They include one-approval strategy adoption, the client request path, learning, and the full GitHub execution path with a GitHub stand-in.
-- `scan-fn-local.mjs`: the scan function ran in Deno on a real site; 8 checks pass.
-- `cf-measure.mjs`: CPU measured on 3 real sites. A scan costs 0.8-1.6 s of CPU; Worker steps cost 0.4-2.5 ms.
-- Cloudflare and Supabase limits were read from the official docs.
-- Read-only Supabase check: production is unchanged.
+## 4. Checks
+- `npm test`: 597/597 (mocked network). New: knowledge references resolve for all 38 agents; runner sends playbooks and calls the fact-checker; worker reviews every AI output; a planted invented figure (340%) is sent back by the fact-checker.
+- `node scripts/cf-local-e2e.mjs`: all checks pass in workerd against all migrations (Anthropic and scan stand-ins, no spend).
+- `node scripts/god-pg-e2e.mjs`: passes.
+- Not yet: a live run with playbooks and the second opinion (after deploy); exams (Phase 4).
 
-## 5. Blockers and owner items
-Owner answered Q1, Q2, Q3 and Q8 (2026-11-08). The other open decisions are in [REVIEW-QUESTIONS.md](REVIEW-QUESTIONS.md) and [RELEASE-1-PRODUCTION-GATES-2026-11-08.md](RELEASE-1-PRODUCTION-GATES-2026-11-08.md).
-1. **Gate A/B:**
-   - Review PR #51.
-   - Approve each step in [RELEASE-1-PRODUCTION-CHANGE-MANIFEST.md](RELEASE-1-PRODUCTION-CHANGE-MANIFEST.md): backup, P1 migrations, P2 Vault, P3 scan v3, P4 paused Worker.
-   - P6 (portal publish) and P7 (unpause) are not authorized.
-2. Portal secrets on each site repository (E2E-GH flow).
-3. Keys for live-provider tests (`docs/runbook.md` lists names); `SEO_AGENT=true` on one site to grade agents.
-4. Supabase Auth: leaked-password protection (Q9). Invite-only sign-up is handled by migration 100000 (D36), with no Auth setting change.
-5. Confirm who the platform admin is (Q10). D1 was confirmed and D35 is merged into #51.
-6. Old PRs #23, #24 and #31: see [STALE-PR-AUDIT-2026-11-08.md](STALE-PR-AUDIT-2026-11-08.md). Nothing was closed.
+## 5. Open items and owner actions
+1. Cloudflare dashboard → Workers & Pages → seo-god → Settings → Builds → Disconnect (red "Workers Builds" and Pages checks on every commit; not the code).
+2. Supabase → Authentication: leaked-password protection (Q9). Confirm platform admins (Q10).
+3. Search Console: new JSON key for the existing service account → Worker secret `GOOGLE_KEY_JSON` (Phase 3).
+4. Providers for AI-answer tests and research (Perplexity first; DataForSEO; optional OpenAI, Gemini) with monthly caps (Phase 3).
+5. SMTP (Supabase Auth → SMTP, plus `SMTP_*`, `PORTAL_URL` function secrets) for email summaries.
+6. Old PRs: #31 (portal Style A; conflicts with Release 1) and #23 (work evidence; superseded except 3 files): recommend close both; port `src/core/work-state.mjs`, `src/jobs/work.mjs` and its test only if wanted. Nothing closed. Details: [STALE-PR-AUDIT-2026-11-08.md](STALE-PR-AUDIT-2026-11-08.md).
+7. Pruner and link builder: held, waiting for approval (owner: build, run later).
+Risks: live providers tested with mocks only; the fact-checker is the same model family (exams will measure it); budget $2/site/day.
 
 ## 6. Cost
-No provider spend. Hosted scan within the Supabase free plan (about 3 sites per wake, 144 wakes a day).
+Measured: $0.17 for the first 2 specialist runs (2026-11-12). Estimate after D45: about $0.10 to $0.15 per run, plus a reviewer call on content and high-risk work. Hosting within Cloudflare and Supabase free plans.
 
 ## 7. Next
-**Current plan (2026-11-12): [../product/SYSTEM-READINESS-PLAN.md](../product/SYSTEM-READINESS-PLAN.md)**: phases 0 to 8, waiting for the owner's go and its 6 decisions. Agent detail: [../product/AGENT-INTELLIGENCE-PLAN.md](../product/AGENT-INTELLIGENCE-PLAN.md). The text below is older and gets rewritten in Phase 0.
-
-Owner: review #51 and approve the manifest steps one at a time. After approval, Claude applies P1–P4 exactly as written, with the backup first, and records the evidence. Then: a day of paused runs (CPU p99, X1), then a separate approval to unpause erudience.com read-only (manifest section 3).
-Next check needing the owner: one live agent run on a pilot site with the owner's own Anthropic key (set it as an environment secret, never in chat), then grade the advice. Needs a decision: the R1-P2 portal (build on #31 or not), a schedule for `god-run.mjs`.
-R1 order: owner merges #33/#34 → #35/#36 → contracts PR; then R1-P2 (client portal + submission inbox) and R1-A2 (SEO God planner and queue worker) in parallel.
-
-Milestone: **both end-to-end flows pass on real sites** (test-matrix rows E2E-URL and E2E-GH), then live-provider tests and agent grading. Resume prompt: "seo-autopilot: read AGENTS.md and docs/implementation/STATUS.md; continue the blockers in order."
+Milestone: Phase 1 live on the pilot: one specialist run whose evidence lists its playbooks, with a review row, cost inside the budget. Then Phase 2 (agent pages in the portal), Phase 3 (Search Console once the key is set), Phase 4 (exams; owner scores ~20 outputs).
+Resume prompt: "seo-autopilot: read docs/implementation/STATUS.md and docs/product/SYSTEM-READINESS-PLAN.md; continue with the next phase."

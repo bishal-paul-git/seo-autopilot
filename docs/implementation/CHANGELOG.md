@@ -2,6 +2,12 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-12 (Phase 1: playbooks, review of every AI output, second opinion, D45; code change)
+- Code: `src/god/knowledge.mjs` (new), `src/god/agent-runner.mjs`, `src/god/worker.mjs`, `cloud/worker/build.mjs`, `cloud/worker/src/app.mjs`; tests in `test/agent-runner.test.mjs` (4 new or changed).
+- Checks: `npm test` 597/597; `scripts/cf-local-e2e.mjs` and `scripts/god-pg-e2e.mjs` pass. Mocked API only until the live run.
+- Docs: D45; STATUS rewritten (previous kept as `history/STATUS-to-2026-11-12.md`).
+- Owner answers (2026-11-12): go on phases 0 and 1; build pruner/link builder but hold them; exams scored by the owner with outside help; budget stays $2/day.
+
 ## 2026-11-12 (System readiness plan; documentation only)
 - Added `docs/product/SYSTEM-READINESS-PLAN.md`: phases 0 to 8 (sort out open items, trustworthy output, agent pages, real data, exams, sourced SEO/AEO/GEO knowledge, changes on the site, full multi-site readiness, ongoing), each with my work, owner actions and where, checks and costs. Proposal only; nothing built or deployed.
 - STATUS.md section 7 points to it. No code, migration or deployment change.

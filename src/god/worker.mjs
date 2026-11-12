@@ -28,13 +28,17 @@ export async function runOnce({ store, handlers, worker = "worker-1", timeoutMs 
       await store.transition(job.id, "escalated", "system", "needs a person");
       log(`escalated ${job.kind}: ${output.escalate}`); return { job: job.id, outcome: "escalated", reason: output.escalate };
     }
-    if (job.risk === "low" && !job.requiresApproval && !(output.changes || []).length && !overBudget) {
+    // Routine non-AI work (scans, measurements) completes here. Every AI output goes through review (D45).
+    const fromAI = job.kind.startsWith("agent:") || job.kind === "client_request";
+    if (!fromAI && job.risk === "low" && !job.requiresApproval && !(output.changes || []).length && !overBudget) {
       await store.transition(job.id, "completed", worker, "done", { evidence: output.evidence || [] });
       log(`completed ${job.kind}`); return { job: job.id, outcome: "completed" };
     }
     await store.transition(job.id, "awaiting_review", worker, "ready for review", { evidence: output.evidence || [], changes: (output.changes || []).length });
-    const review = reviewOutput(job, { ...output, costUsd: spent }, { siteHost: await siteHostOf(job) });
+    let review = reviewOutput(job, { ...output, costUsd: spent }, { siteHost: await siteHostOf(job) });
     await store.recordReview(job.id, review);
+    // A second opinion from a reviewer agent (content and high-risk work) counts only when the gate passed.
+    if (review.verdict === "pass" && output.secondReview) { review = { ...output.secondReview, producer: job.agent || job.kind }; await store.recordReview(job.id, review); }
     if (review.verdict !== "pass") {
       // Changes asked for are retried within the attempt cap; after it, or on a hard failure, the job stops.
       const retry = review.verdict === "needs_changes" && (job.attempts ?? 0) < (job.maxAttempts ?? 3);
