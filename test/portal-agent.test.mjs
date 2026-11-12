@@ -29,7 +29,7 @@ test("catalog: every agent with its instructions and the files it reads, each fi
   assert.equal(p.department, "content"); assert.match(p.text, /## Mission/); assert.ok(!p.text.startsWith("---"));
   assert.equal(p.playbooks[0], "knowledge/refreshing-and-pruning-content.md");
   for (const a of Object.values(c.agents)) for (const f of [...a.playbooks, ...a.skills]) assert.ok(c.files[f]?.words > 0, `${f} has metadata`);
-  assert.equal(c.files["knowledge/keyword-research-and-clustering.md"].sources, true, "a playbook with a Sources section is marked");
+  assert.equal(c.files["knowledge/keyword-research-and-clustering.md"].sources, 0, "its \"Sources, best first\" heading is about data, not citations: not counted");
 });
 
 test("SEO team → agent page: instructions, playbooks, record on this site, verdicts; output stays text", { skip: !playwright && "Playwright not installed" }, async (t) => {

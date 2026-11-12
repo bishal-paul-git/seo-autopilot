@@ -9,6 +9,7 @@ import { DEPARTMENTS } from "../../src/god/departments.mjs";
 import { BRIEF } from "../../src/god/onboarding.mjs";
 import { listAgents } from "../../src/core/agents.mjs";
 import { readKnowledge } from "../../src/god/knowledge.mjs";
+import { playbookMeta, reviewState } from "../../src/analysis/knowledge-meta.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url)), root = resolve(here, "../..");
 const ORDER = ["command", "research", "content", "quality", "technical", "authority", "ai-search", "verticals"];
@@ -38,8 +39,9 @@ export function organisation(dir = join(root, "departments")) {
  */
 export function agentCatalog() {
   const kb = readKnowledge(), files = {};
-  const meta = (text) => ({ title: (String(text).match(/^# (.+)$/m) || [])[1] || null, words: String(text).split(/\s+/).filter(Boolean).length,
-    sources: /^##+ (Sources|References)\b/im.test(text), reviewed: (String(text).match(/^(?:Last reviewed|Reviewed):\s*(\d{4}-\d{2}-\d{2})/im) || [])[1] || null });
+  // D49: one parser for review date and sources (src/analysis/knowledge-meta.mjs); stale after 90 days.
+  const meta = (text) => { const m = playbookMeta(text), r = reviewState(m); return { title: (String(text).match(/^# (.+)$/m) || [])[1] || null, words: String(text).split(/\s+/).filter(Boolean).length,
+    sources: m.sources.length, reviewed: m.reviewed, version: m.version, state: r.state }; };
   for (const [f, t] of Object.entries(kb.playbooks)) files[`knowledge/${f}`] = meta(t);
   for (const [n, t] of Object.entries(kb.skills)) files[`skills/${n}`] = meta(t);
   const agents = {};
