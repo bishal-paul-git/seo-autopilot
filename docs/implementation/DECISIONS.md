@@ -119,6 +119,13 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
 
+## 2026-11-12 D42 Live activity for the agency, read-only
+The owner asked to see inside the portal what the scheduler and the AI agents are doing. One read-only function, `public.site_activity` (migration 20261112000000), feeds a "Live activity" card at the top of the SEO God page: the scheduler heartbeat, what is holding the team back (strategy approval, open questions, AI key and budget, GitHub), who is working now, each worker's 30-day record, and every job step (`job_events`) with the actor named (director, quality reviewer, cloud worker, specialist, or a person by email if they belong to the agency). It refreshes every 30 seconds and replaces only that card, so typed answers survive.
+- Agency members only, like `god_console`; clients and other agencies get "not allowed", anon has no grant.
+- The scheduler heartbeat is platform-wide, so only its times, pause state and an error count are returned: the Worker's error strings can name other agencies' sites.
+- Tradeoff: polling (30 s) instead of Supabase Realtime. Realtime would need table-level RLS publication of `job_events` for members; polling one function is simpler, and the scheduler only moves every 15 minutes.
+- "AI key present" is not visible to the database (it is a Worker secret), so the card says honestly whether any specialist has run and what it cost, not whether a key is set.
+
 ## 2026-11-12 D41 Health alerts as a GitHub issue; deploys keep the scheduler's chosen state
 **Context:** the pilot is live, email (SMTP) is not configured, and the only place a failure showed was the `god_runs` table. A routine redeploy would also silently re-pause a running scheduler, because the dashboard variable is replaced by `wrangler.toml`.
 
