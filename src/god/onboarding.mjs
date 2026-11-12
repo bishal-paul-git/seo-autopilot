@@ -27,13 +27,16 @@ export function buildDossier({ site, discovered = {}, profile = null, audit = nu
   for (const [k, v] of Object.entries(answers)) if (v != null && v !== "") facts.push(fact(k, v, "answered", "onboarding answer", 1));
 
   const has = (k) => facts.some((f) => f.key === k);
-  const local = (d.addresses || []).length > 0 || (d.businessTypes || []).some((t) => /LocalBusiness|Store|Restaurant|Plumber|Dentist|Attorney|LegalService|Electrician|HVAC|Locksmith|RealEstate|Medical/.test(t));
+  // An address alone is not a local business (an office of a company that serves clients anywhere); only the site's own
+  // business type says that. With an address but no local type, the question asks instead of assuming.
+  const local = (d.businessTypes || []).some((t) => /LocalBusiness|Store|Restaurant|Plumber|Dentist|Attorney|LegalService|Electrician|HVAC|Locksmith|RealEstate|Medical/.test(t));
+  const hasAddress = (d.addresses || []).length > 0;
   const shop = (d.businessTypes || []).some((t) => /Store|Product|Offer/.test(t)) || /shopify|woocommerce|magento|bigcommerce/i.test(profile?.platform?.name || "");
   // Questions only where the site does not already say it, and only those relevant to this kind of site.
   const ask = [
     ["goals", "What should search bring you in the next 6 months: more enquiries, sales, bookings, or brand visibility?", "sets the strategy's objective and KPIs", true],
     ["conversions", "What counts as a conversion on the site (form, call, booking, purchase), and is it tracked today?", "needed to measure results, not just traffic", true],
-    ["target_locations", `Which areas or countries do you want customers from?${local ? " The site lists an address; is that the only area you serve?" : ""}`, local ? "the site is a local business: service areas shape every local page" : "decides the market for keyword research", true],
+    ["target_locations", `Which areas or countries do you want customers from?${local ? " The site lists an address; is that the only area you serve?" : hasAddress ? " The site lists an address; do you serve customers beyond that area?" : ""}`, local ? "the site is a local business: service areas shape every local page" : "decides the market for keyword research", true],
     ["services_priority", `Which ${shop ? "products or categories" : "services"} matter most commercially?`, "the site lists several; priorities decide what to work on first", (d.topics || []).length > 1],
     ["competitors", "Who do you see as your main competitors online?", "competitor research starts from the ones you name", true],
     ["brand_voice", "Any words, claims or topics we must avoid, or a tone we should keep?", "content must match the brand and legal limits", true],

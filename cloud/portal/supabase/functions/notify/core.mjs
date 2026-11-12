@@ -25,12 +25,12 @@ export function composeSummary(items, portalUrl) {
 
 /**
  * One run: invite emails first (through Supabase Auth), then summaries (through SMTP when configured).
- * Returns counts and errors; never throws for one bad address, so one failure does not block the rest.
+ * Returns counts, errors and notes (settings, not failures); never throws for one bad address, so one failure does not block the rest.
  * @param {{ rpc: (fn: string, args?: any) => Promise<any>, invite: (email: string, o: any) => Promise<any>,
  *   sendMail?: ((m: { to: string, subject: string, text: string, html: string }) => Promise<any>) | null, portalUrl: string, limit?: number }} o
  */
 export async function runNotify({ rpc, invite, sendMail = null, portalUrl, limit = 50 }) {
-  const out = { invited: 0, summaries: 0, skippedSummaries: 0, errors: [] };
+  const out = { invited: 0, summaries: 0, skippedSummaries: 0, errors: [], notes: [] };
   const q = (await rpc("email_queue", { p_limit: limit })) || {};
   for (const i of q.invites || []) {
     try {
@@ -49,6 +49,7 @@ export async function runNotify({ rpc, invite, sendMail = null, portalUrl, limit
       out.summaries++;
     } catch (e) { out.errors.push(`summary: ${String(e.message || e).slice(0, 160)}`); }
   }
-  if (!sendMail && out.skippedSummaries) out.errors.push("summaries not sent: set the SMTP_* function secrets");
+  // Not an error: running without SMTP is a supported setting (the owner may add it later), so the run log stays clean.
+  if (!sendMail && out.skippedSummaries) out.notes.push("summaries not sent: set the SMTP_* function secrets");
   return out;
 }

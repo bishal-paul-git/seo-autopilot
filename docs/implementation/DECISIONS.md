@@ -119,6 +119,17 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
 
+## 2026-11-12 D41 Health alerts as a GitHub issue; deploys keep the scheduler's chosen state
+**Context:** the pilot is live, email (SMTP) is not configured, and the only place a failure showed was the `god_runs` table. A routine redeploy would also silently re-pause a running scheduler, because the dashboard variable is replaced by `wrangler.toml`.
+
+**Decision:**
+- `god-health` (GitHub Actions, hourly) reads the run log with the service role and keeps one issue labelled `seo-god-health` open while there is no run for 40 minutes or every one of the last 4 runs has errors; it closes the issue when healthy. It is read-only: it never pauses or unpauses.
+- A missing SMTP setting is a note in the notify result, not a run error, so it does not keep the run log red.
+- `deploy-seo-god` has a "run" tick box: unticked deploys paused (the default, as before); ticked deploys with `SEO_GOD_PAUSED=false`. `wrangler.toml` still says paused, and the database switch still pauses either way.
+- Onboarding no longer treats any address as a local business: only the site's own local business types do; an office address leads to "do you serve customers beyond that area?" (found in the erudience.com pilot).
+
+**Tradeoffs:** GitHub issues reach the owner through GitHub's own notifications, not the inbox; email alerts can be added once SMTP exists. One bad run does not raise an issue, so a failure is reported after at most about an hour.
+
 ## 2026-11-08 D40 Email through Supabase's SMTP; the Worker reads the scan secret from Vault
 **Context:** the owner asked for email through Supabase SMTP (Q7 answered in chat, 2026-11-08).
 

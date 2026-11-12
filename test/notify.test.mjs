@@ -44,7 +44,7 @@ test("without SMTP secrets: invites still go out; summaries are skipped with the
   const f = fakes({ smtp: false });
   const r = await runNotify({ rpc: f.rpc, invite: f.invite, sendMail: null, portalUrl: PORTAL });
   assert.equal(r.invited, 2); assert.equal(r.summaries, 0); assert.equal(r.skippedSummaries, 1);
-  assert.ok(r.errors.some((e) => /SMTP_/.test(e)));
+  assert.ok(r.notes.some((e) => /SMTP_/.test(e))); assert.ok(!r.errors.some((e) => /SMTP_/.test(e)), "a missing SMTP setting is a note, not an error");
   assert.ok(!f.marked.some((x) => x.p_kind === "summary"));
 });
 

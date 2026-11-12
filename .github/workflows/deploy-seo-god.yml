@@ -1,6 +1,7 @@
 # Deploys the hosted SEO God (cloud/worker) to Cloudflare. Manual only: Actions -> deploy-seo-god -> Run workflow.
-# It always deploys what wrangler.toml says, which is PAUSED (SEO_GOD_PAUSED = "true"); un-pausing is a separate,
-# deliberate step (the database switch public.set_god_paused, or the var plus a new run of this workflow).
+# By default it deploys what wrangler.toml says, which is PAUSED (SEO_GOD_PAUSED = "true"). A deploy replaces any value
+# set in the Cloudflare dashboard, so a running scheduler would be paused by a routine redeploy: tick "run" to deploy it
+# running instead. The database switch (public.set_god_paused) still pauses it either way.
 #
 # Repository secrets it needs (Settings -> Secrets and variables -> Actions -> New repository secret):
 #   CLOUDFLARE_API_TOKEN        a Cloudflare API token with "Workers Scripts: Edit" on your account
@@ -11,6 +12,11 @@
 name: deploy-seo-god
 on:
   workflow_dispatch:
+    inputs:
+      run:
+        description: "Deploy it running (SEO_GOD_PAUSED=false). Leave unticked to deploy paused."
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -45,10 +51,12 @@ jobs:
           if [ -n "$missing" ]; then echo "::error::Add these repository secrets first:$missing"; exit 1; fi
       - name: Install the pinned wrangler
         run: npm ci
-      - name: Refuse to deploy un-paused
+      - name: Refuse a wrangler.toml that is not paused by default
         run: grep -q '^SEO_GOD_PAUSED = "true"' wrangler.toml || { echo "::error::wrangler.toml must say SEO_GOD_PAUSED = \"true\""; exit 1; }
-      - name: Deploy (paused)
-        run: npx wrangler deploy
+      - name: Deploy (paused unless "run" was ticked)
+        run: |
+          if [ "${{ inputs.run }}" = "true" ]; then npx wrangler deploy --var SEO_GOD_PAUSED:false
+          else npx wrangler deploy; fi
       - name: Set the Worker's secrets (values never printed)
         env:
           SRK: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
