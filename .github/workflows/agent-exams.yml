@@ -1,0 +1,48 @@
+# Agent exams (D48): runs exams/cases.json through the production agent path on YOUR Anthropic key and uploads the
+# results, the summary and a scoring sheet. Manual only, capped. Cases are made-up businesses, never client data.
+# Repository secret it needs (Settings -> Secrets and variables -> Actions): ANTHROPIC_API_KEY.
+name: agent-exams
+on:
+  workflow_dispatch:
+    inputs:
+      max_usd:
+        description: "Spending cap for this run in US dollars"
+        default: "5"
+      agents:
+        description: "Only these agents (comma-separated), or blank for all"
+        default: ""
+permissions:
+  contents: read
+concurrency:
+  group: agent-exams
+  cancel-in-progress: false
+jobs:
+  exams:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Check the key is set (name only)
+        env:
+          K: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: '[ -n "$K" ] || { echo "Add the ANTHROPIC_API_KEY repository secret first."; exit 1; }'
+      - name: Run the exams
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          MAX_USD: ${{ inputs.max_usd }}
+          AGENTS: ${{ inputs.agents }}
+        run: |
+          set -o pipefail
+          args="--max-usd $MAX_USD --out exam-results --publish"
+          [ -n "$AGENTS" ] && args="$args --agents $AGENTS"
+          node scripts/exams.mjs $args | tee exam-log.txt || echo "some cases failed (see the summary)"
+          cp exams/latest.json exam-results/latest.json
+          cat exam-results/*.md | grep -v '^> ' >> "$GITHUB_STEP_SUMMARY" || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: agent-exams
+          path: exam-results/
+          retention-days: 30

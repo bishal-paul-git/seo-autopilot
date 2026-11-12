@@ -1,6 +1,6 @@
 # Agent evaluations
 
-Status: the deterministic graders exist and are tested. **No agent has been evaluated yet.** That needs recorded agent runs on the fixture inputs; model runs cost money and are opt-in. Roadmap: `docs/roadmap/04-agent-evals-and-safety.md`.
+Status: the deterministic graders exist and are tested. The hosted agents now have **exams** (D48): see "Exams for the hosted agents" below. **No agent has been evaluated on a real model yet.** That needs recorded agent runs on the fixture inputs; model runs cost money and are opt-in. Roadmap: `docs/roadmap/04-agent-evals-and-safety.md`.
 
 ## What the graders check
 `src/analysis/evals.mjs` contains pure functions with no network and no model:
@@ -32,3 +32,12 @@ Add an object to `test/evals/cases.json`:
    This writes `evals-results.json` and `evals-summary.md` to that folder, and exits 1 if any case fails.
 
 When publishing results, state the agent, the model, the date and the number of cases. Never publish a pass rate from the hand-written samples.
+
+## Exams for the hosted agents (D48)
+`exams/cases.json` holds cases for the agents the scheduler runs: a made-up business's site memory, a task, and the right answer as checks (`src/analysis/exams.mjs`: the checks above plus `forbid`, `requireRec`, `maxRecommendations`, `escalates`). Each case has a good and a bad sample that `npm test` grades.
+
+Run them through the production path (playbooks, quality gate, fact-checker, budget) on your own key:
+```
+ANTHROPIC_API_KEY=... node scripts/exams.mjs --max-usd 5 [--agents seo-content-pruner,seo-reporter] [--publish]
+```
+Or run the `agent-exams` workflow in GitHub Actions (it needs the `ANTHROPIC_API_KEY` repository secret). Results: `exams/results/<date>-<model>.json` and `.md`, and a scoring sheet for a person. `--publish` writes `exams/latest.json`; the portal's agent pages show it after the next portal build.

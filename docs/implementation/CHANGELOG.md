@@ -2,6 +2,11 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-12 (Phase 4: agent exams, D48; code change)
+- Code: `src/analysis/exams.mjs`, `scripts/exams.mjs`, `exams/cases.json` (11 cases, 5 agents), `.github/workflows/agent-exams.yml` (manual), `cloud/portal/build.mjs` and `app/index.html` (exam score on agent pages from `exams/latest.json`); test `test/exams.test.mjs`.
+- Checks: `npm test` 607/607 (mocked model). No exam has run on a real model yet: it needs the `ANTHROPIC_API_KEY` repository secret, or a local run with the key.
+- Deployment (this morning's button): PR #61 merged (900916b); migration 20261115000000 applied (as the platform admin on production: 4 websites listed, none confirmed, no conflicts); portal published (live md5 = build `6f11a03e…`, previous kept as `previous-2026-11-12d.html`).
+
 ## 2026-11-12 (Search Console confirmation button for platform admins; code change; D47 deployed)
 - Code: migration `20261115000000_gsc_sites.sql` (read-only `gsc_sites()`, platform admins only), Operations page card "Search Console access" with Confirm/Revoke (calls the existing `set_gsc_allowed`, unchanged; no button for a domain also registered in another agency); tests `test/portal-ops.test.mjs` (new case), `rls22.sql`.
 - Checks: `npm test` 604/604; SQL suites through rls22.
