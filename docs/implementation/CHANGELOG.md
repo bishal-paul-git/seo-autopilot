@@ -2,6 +2,10 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-12 (System readiness plan; documentation only)
+- Added `docs/product/SYSTEM-READINESS-PLAN.md`: phases 0 to 8 (sort out open items, trustworthy output, agent pages, real data, exams, sourced SEO/AEO/GEO knowledge, changes on the site, full multi-site readiness, ongoing), each with my work, owner actions and where, checks and costs. Proposal only; nothing built or deployed.
+- STATUS.md section 7 points to it. No code, migration or deployment change.
+
 ## 2026-11-12 (First live specialist runs; evidence only)
 - Owner approved the Erudience strategy at 19:39:59 UTC. Run 83 (19:45 UTC) adopted it, planned 4 specialists and ran 2 with the owner's Anthropic key: `seo-entity-reputation` ($0.0974) and `seo-reporter` ($0.0747), total $0.1721 of the $2/day budget, no errors. First real model calls of the agent runner (until now mocked only).
 - Output check (read in the database): both stayed with supplied facts and named what they could not know (no Search Console, no entity data) instead of guessing; recommendations: Organization markup from confirmed facts only, logo, contact consistency, www redirect, Search Console and conversion tracking.

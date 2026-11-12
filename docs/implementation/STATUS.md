@@ -85,6 +85,8 @@ Owner answered Q1, Q2, Q3 and Q8 (2026-11-08). The other open decisions are in [
 No provider spend. Hosted scan within the Supabase free plan (about 3 sites per wake, 144 wakes a day).
 
 ## 7. Next
+**Current plan (2026-11-12): [../product/SYSTEM-READINESS-PLAN.md](../product/SYSTEM-READINESS-PLAN.md)**: phases 0 to 8, waiting for the owner's go and its 6 decisions. Agent detail: [../product/AGENT-INTELLIGENCE-PLAN.md](../product/AGENT-INTELLIGENCE-PLAN.md). The text below is older and gets rewritten in Phase 0.
+
 Owner: review #51 and approve the manifest steps one at a time. After approval, Claude applies P1–P4 exactly as written, with the backup first, and records the evidence. Then: a day of paused runs (CPU p99, X1), then a separate approval to unpause erudience.com read-only (manifest section 3).
 Next check needing the owner: one live agent run on a pilot site with the owner's own Anthropic key (set it as an environment secret, never in chat), then grade the advice. Needs a decision: the R1-P2 portal (build on #31 or not), a schedule for `god-run.mjs`.
 R1 order: owner merges #33/#34 → #35/#36 → contracts PR; then R1-P2 (client portal + submission inbox) and R1-A2 (SEO God planner and queue worker) in parallel.
