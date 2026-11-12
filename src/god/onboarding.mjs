@@ -61,6 +61,23 @@ export function buildDossier({ site, discovered = {}, profile = null, audit = nu
   return { facts, unknowns, questions, strategyDraft };
 }
 
+/**
+ * The draft as the agency adopts it: answers given after it was drafted (goals, conversions) are carried in, so approving
+ * never freezes an objective of "not set" when the agency has since stated one. openQuestions: questions still unanswered.
+ */
+export function withAnswers(draft = {}, answers = {}, openQuestions = 0) {
+  const given = Object.fromEntries(Object.entries(answers).filter(([, v]) => v != null && String(v).trim() !== ""));
+  const kpis = (draft.kpis || []).filter((k) => !/^Conversions: /.test(k));
+  const risks = (draft.risks || []).filter((r) => !/questions? open/.test(r));
+  return {
+    ...draft,
+    objective: given.goals ? String(given.goals) : draft.objective ?? null,
+    kpis: [given.conversions ? `Conversions: ${given.conversions}` : null, ...kpis].filter(Boolean),
+    risks: [openQuestions ? `${openQuestions} question${openQuestions === 1 ? "" : "s"} open: the strategy is provisional until they are answered` : null, ...risks].filter(Boolean),
+    answers: given,
+  };
+}
+
 /** Memory rows for the site from a dossier (src/god/stores.mjs writeMemory). */
 // Facts that can have several values (phones, emails, addresses, profiles) get one key each (phone#1, phone#2), so a
 // second value does not supersede the first.

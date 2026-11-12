@@ -590,7 +590,7 @@ async function loadConsole(s) {
   try { s.console = await rpc("god_console", { p_site: s.id }); s.consoleError = null; }
   catch (e) { s.console = null; s.consoleError = e.message; }
   // D37: GitHub connection and changes on their way to the site (older databases without them: the page still works).
-  const [ints, deps] = await Promise.all([rpc("site_integrations", { p_site: s.id }).catch(() => null), rpc("site_deployments", { p_site: s.id }).catch(() => null)]);
+  const [ints, deps, act] = await Promise.all([rpc("site_integrations", { p_site: s.id }).catch(() => null), rpc("site_deployments", { p_site: s.id }).catch(() => null), loadActivity(s)]);
   s.integrations = ints; s.deployments = deps;
 }
 const githubOf = (s) => (s.integrations || []).find((i) => i.provider === "github" && i.scope === "write") || null;
@@ -627,6 +627,63 @@ function proposalHtml(o, opts = {}) {
     <p class="muted" style="margin:6px 0 0">${opts.implement ? "Advice; with GitHub connected, you can turn any item into a reviewed pull request." : "Advice only: nothing on the website is changed."}</p></div>`;
   return "";
 }
+/* ---------- Live activity (D42): what the scheduler and every agent are doing, from public.site_activity ---------- */
+// Read-only. Notes, titles and names come from the database (some from model output): always escaped.
+async function loadActivity(s) { s.activity = await rpc("site_activity", { p_site: s.id, p_limit: 60 }).catch(() => null); }
+const ACT_VERB = { proposed: "created", scoped: "planned", queued: "queued", running: "started working", awaiting_review: "was sent for quality review",
+  awaiting_approval: "is waiting for your approval", authorized: "was approved", deploying: "is opening the pull request", verifying: "is checking the change on the site",
+  completed: "finished", failed: "failed", escalated: "needs a person", rejected: "was rejected", cancelled: "was cancelled" };
+const KIND_NAME = { scan: "Site scan", strategy_proposal: "Strategy draft", implement: "Website change", search_console: "Search Console check", client_request: "Client request" };
+const kindName = (k, agent) => (agent ? agentLabel(agent) : String(k).startsWith("agent:") ? agentLabel(String(k).slice(6)) : KIND_NAME[k] || String(k).replace(/_/g, " "));
+const actorName = (e) => (e.actorKind === "user" ? e.actor || "a person" : e.actor === "seo-god" ? "SEO God (director)" : /^quality-gate/.test(e.actor || "") ? "Quality reviewer"
+  : /^cf-/.test(e.actor || "") ? "Cloud worker" : /^seo-/.test(e.actor || "") ? agentLabel(e.actor) : "System");
+function agoAt(t, now) {
+  const m = Math.round((Date.parse(now || new Date().toISOString()) - Date.parse(t)) / 60000);
+  return m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 48 * 60 ? `${Math.round(m / 60)} h ago` : `${Math.round(m / 1440)} days ago`;
+}
+// What is holding the team back, from facts only (counts and switches), in the order the agency can act on them.
+function activityGates(a) {
+  const g = a.gates || {}, sch = a.scheduler || {}, out = [];
+  const age = sch.lastRunAt ? Math.round((Date.parse(a.now) - Date.parse(sch.lastRunAt)) / 60000) : null;
+  if (sch.paused) out.push(["bad", "The scheduler is paused for the whole platform. No agent runs until a platform admin switches it back on."]);
+  else if (age == null || age > 40) out.push(["bad", age == null ? "The scheduler has not run yet." : `The scheduler has not run for ${age} minutes (it runs every 15).`]);
+  else out.push(["ok", `Scheduler running: last check ${agoAt(sch.lastRunAt, a.now)}, ${fmt(sch.runsLastHour)} in the last hour${sch.runsWithErrorsOfLast4 ? `, ${fmt(sch.runsWithErrorsOfLast4)} of the last 4 with errors` : ", no errors"}.`]);
+  if (a.site?.status === "paused") out.push(["warn", "This website is paused: nothing is planned for it."]);
+  if (!g.strategyApproved) out.push(["warn", g.waitingForYou ? "The strategy is waiting for your approval. Until you adopt it, the specialists only read the site." : "No strategy yet: it is drafted after the first scan."]);
+  if (g.openQuestions) out.push(["warn", `${fmt(g.openQuestions)} question${g.openQuestions === 1 ? "" : "s"} open: your answers sharpen the strategy.`]);
+  if (g.strategyApproved && g.waitingForYou) out.push(["warn", `${fmt(g.waitingForYou)} item${g.waitingForYou === 1 ? "" : "s"} waiting for your decision.`]);
+  if (g.needsAPerson) out.push(["bad", `${fmt(g.needsAPerson)} job${g.needsAPerson === 1 ? "" : "s"} stopped and need a person.`]);
+  if (!g.agentRunsEver) out.push(["info", g.strategyApproved ? "No AI specialist has run on this site yet. They need the platform's AI key and a daily budget." : "AI specialists start after the strategy is approved (and with the platform's AI key and budget)."]);
+  else out.push(["ok", `AI specialists have worked ${fmt(g.agentRunsEver)} time${g.agentRunsEver === 1 ? "" : "s"} on this site; ${usd(g.agentCostMonth)} this month.`]);
+  out.push(g.githubConnected ? ["ok", "GitHub connected: approved work can become pull requests."] : ["info", "Advice only: connect GitHub below to let approved work become reviewed pull requests."]);
+  return out;
+}
+function activityHtml(s) {
+  const a = s.activity;
+  if (!a) return "";
+  const live = (a.working || []), workers = a.workers || [], ev = a.events || [];
+  return `<div class="card"><div class="ch"><h2>Live activity</h2><span class="xs muted" id="act-stamp">updated ${esc(new Date(a.now).toLocaleTimeString("en-GB"))} · refreshes every 30 seconds</span></div>
+    <ul class="xs" style="margin:0 0 10px 0;padding:0;list-style:none">${activityGates(a).map(([k, t]) => `<li style="margin:0 0 4px"><span class="pill ${k}"><i></i>${{ ok: "OK", warn: "Your move", bad: "Problem", info: "Note" }[k]}</span> ${esc(t)}</li>`).join("")}</ul>
+    <div class="grid g2" style="margin:0">
+      <div><h3 class="xs" style="margin:0 0 6px">Working now</h3><div class="list">${live.map((j) => `<div class="row"><div><div class="t">${esc(kindName(j.kind, j.agent))}</div><div class="s">${esc(j.title)} · ${esc(ACT_VERB[j.status] || j.status)} · since ${esc(agoAt(j.since, a.now))}${j.attempts > 1 ? ` · attempt ${fmt(j.attempts)}` : ""}</div></div></div>`).join("") || '<div class="empty">Nobody is working on this site right now.</div>'}</div></div>
+      <div><h3 class="xs" style="margin:0 0 6px">The team on this site (30 days)</h3><div class="list">${workers.map((w) => `<div class="row"><div><div class="t">${esc(kindName(w.who, w.isAgent && !String(w.who).startsWith("agent:") ? w.who : null))}${w.isAgent ? ' <span class="pill info">AI</span>' : ""}</div><div class="s">${esc(w.lastTitle || "")} · ${esc(ACT_VERB[w.lastStatus] || w.lastStatus)} · ${esc(agoAt(w.lastAt, a.now))}</div></div><span class="xs muted">${fmt(w.completed)}/${fmt(w.runs)} done${Number(w.costUsd) ? ` · ${usd(w.costUsd)}` : ""}</span></div>`).join("") || '<div class="empty">No work in the last 30 days.</div>'}</div></div>
+    </div>
+    <h3 class="xs" style="margin:12px 0 6px">Step by step</h3>
+    <div class="list" style="max-height:340px;overflow:auto">${ev.map((e) => `<div class="row"><div><div class="t">${esc(actorName(e))} <span class="muted">·</span> ${esc(kindName(e.kind, e.agent))} ${esc(ACT_VERB[e.to] || e.to || "")}</div><div class="s">${esc(e.title)}${e.note && !["queued", "claimed", "done", "created"].includes(e.note) ? ` · ${esc(e.note)}` : ""}</div></div><span class="xs muted mono" title="${esc(String(e.at))}">${esc(agoAt(e.at, a.now))}</span></div>`).join("") || '<div class="empty">No activity yet.</div>'}</div></div>`;
+}
+// Only the activity card is refreshed, so answers being typed elsewhere on the page are never lost.
+let ACT_TIMER = null;
+function startActivityTimer(s) {
+  clearInterval(ACT_TIMER);
+  const hash = location.hash;
+  ACT_TIMER = setInterval(async () => {
+    if (location.hash !== hash) { clearInterval(ACT_TIMER); return; }
+    if (document.hidden) return;
+    await loadActivity(s);
+    const box = $("#activity"); if (box && s.activity) box.innerHTML = activityHtml(s);
+  }, window.__ACT_MS || 30000); // tests shorten it
+}
+
 function pGod(s) {
   const c = s.console;
   const head = `<div><h1>SEO God</h1><p class="lead">This website's own SEO director. It reads the site, drafts the strategy, plans the work and runs the specialists. Nothing it proposes goes ahead without your approval, and your clients never see this page.</p></div>`;
@@ -636,7 +693,8 @@ function pGod(s) {
   return head + `<div class="grid g4">${kpi("Strategy", `<span class="pill ${st[1]}">${st[0]}</span>`, null, "Nothing beyond reading the site runs until you approve a strategy.")}
     ${kpi("Waiting for you", fmt(waiting.length), null, "Work that needs your decision.")}${kpi("Needs a person", fmt(esc8.length), null, "Work that failed repeatedly or was refused.")}
     ${kpi("Spend", `${usd(c.costs?.today)} today`, null, `${usd(c.costs?.month)} this month, from your own AI key.`)}</div>
-  ${c.strategy ? `<div class="card"><div class="ch"><h2>Strategy</h2><span class="pill ${st[1]}">${st[0]}</span></div>${proposalHtml({ proposal: c.strategy })}${c.strategy.status === "approved" ? "" : '<p class="xs muted" style="margin:8px 0 0">Answer the questions below to sharpen it; approve it from \u201cWaiting for you\u201d.</p>'}</div>` : ""}
+  <div id="activity">${activityHtml(s)}</div>
+  ${c.strategy ? `<div class="card"><div class="ch"><h2>Strategy</h2><span class="pill ${st[1]}">${st[0]}</span></div>${proposalHtml({ proposal: c.strategy })}${c.strategy.status === "approved" ? "" : '<p class="xs muted" style="margin:8px 0 0">Answer the questions below to sharpen it: your goal and what counts as a conversion are written into the strategy when you approve it from \u201cWaiting for you\u201d.</p>'}</div>` : ""}
   <div class="card pad0"><div class="ch"><h2>Waiting for you</h2><span class="xs muted">${c.lastPlanned?.at ? `planned ${esc(String(c.lastPlanned.at).slice(0, 16).replace("T", " "))} UTC` : "not planned yet"}</span></div><div class="list">${waiting.map((j) => `
     <div class="row" style="display:block"><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><div class="t" style="flex:1;min-width:200px">${esc(j.title)}</div><span class="pill ${RISK[j.risk] || ""}">${esc(j.risk)} risk</span><span class="pill info">${j.stage === "result" ? "Approve this result" : "Approve to start"}</span></div>
       <div class="s">${esc(j.kind)}${j.why ? ` · ${esc(j.why)}` : ""}${j.review ? ` · review: ${esc(j.review.verdict)}` : ""}${Number(j.costUsd) ? ` · spent ${usd(j.costUsd)}` : ""}</div>
@@ -984,6 +1042,7 @@ function workHtml(s) {
 
 const PAGE_FN = { overview: pOverview, traffic: pTraffic, keywords: pKeywords, pages: pPages, locations: pLocations, plan: pPlan, report: pReport, team: pTeam, connect: pConnect, approvals: pApprovals, god: pGod, requests: (s) => (mode === "agency" ? pInbox(s) : pRequests(s)) };
 async function render() {
+  clearInterval(ACT_TIMER);
   const h = location.hash || "#/";
   $("#overlay").innerHTML = "";
   if (!CFG.supabaseUrl || !CFG.anonKey) { shell(null); $("#page").innerHTML = '<div class="callout">This portal is not configured yet (no Supabase address or key at build time).</div>'; return; }
@@ -1047,6 +1106,7 @@ async function render() {
     shell(s, page); document.title = `${s.name} · SEO dashboard`;
     $("#page").innerHTML = s.status !== "live" && page !== "connect" && page !== "god" && page !== "requests" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
     wire(s);
+    if (page === "god") startActivityTimer(s);
   } catch (e) { $("#page").innerHTML = `<div class="callout">${esc(e.message)}</div>`; }
 }
 let lastHash = "";
