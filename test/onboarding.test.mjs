@@ -66,3 +66,16 @@ test("handlers through the worker: scan writes stated facts; the strategy draft 
   store.approve(sp.id, "approve", "alice@agency");
   assert.equal(store.get(sp.id).status, "authorized", "one agency approval adopts the strategy");
 });
+
+test("approval carries answers given after the draft into the adopted strategy", async () => {
+  const { withAnswers } = await import("../src/god/onboarding.mjs");
+  const draft = { status: "proposed", objective: null, kpis: ["Pages indexed"], risks: ["8 questions open: the strategy is provisional until they are answered", "content needs JavaScript"], firstSteps: [{ title: "x" }] };
+  const s = withAnswers(draft, { goals: "More enquiries from UK businesses", conversions: "contact form and bookings", competitors: "" }, 2);
+  assert.equal(s.objective, "More enquiries from UK businesses");
+  assert.deepEqual(s.kpis, ["Conversions: contact form and bookings", "Pages indexed"]);
+  assert.deepEqual(s.risks, ["2 questions open: the strategy is provisional until they are answered", "content needs JavaScript"]);
+  assert.deepEqual(Object.keys(s.answers), ["goals", "conversions"], "blank answers are left out");
+  assert.deepEqual(s.firstSteps, draft.firstSteps);
+  const none = withAnswers(draft, {}, 0);
+  assert.equal(none.objective, null); assert.ok(!none.risks.some((r) => /questions open/.test(r)));
+});

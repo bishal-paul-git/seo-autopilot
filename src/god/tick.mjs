@@ -7,6 +7,7 @@ import { enqueue, runOnce } from "./worker.mjs";
 import { learn, applyLessons } from "./learning.mjs";
 import { trafficDue } from "./search-console.mjs";
 import { rulesOnPage, verifyChange, WAIT_FOR_PR_DAYS } from "./github.mjs";
+import { withAnswers } from "./onboarding.mjs";
 
 const OPEN = new Set(["proposed", "scoped", "queued", "running", "awaiting_review", "awaiting_approval", "authorized", "deploying", "verifying", "failed", "escalated"]);
 
@@ -55,7 +56,10 @@ export async function advance(store, site, jobs, memory, actor = "seo-god", { gi
     if (!j.attempts) { await store.transition(j.id, "queued", actor, "approved by the agency: run it"); moved.push({ job: j.id, kind: j.kind, to: "queued" }); continue; }
     if (j.kind === "implement") continue; // handled by executeChanges
     if (j.kind === "strategy_proposal") {
-      const draft = memory.find((m) => m.kind === "strategy" && m.key === "initial")?.value || j.outputs?.proposal || {};
+      const base = memory.find((m) => m.kind === "strategy" && m.key === "initial")?.value || j.outputs?.proposal || {};
+      const answers = Object.fromEntries(memory.filter((m) => m.kind === "answer").map((m) => [m.key, m.value?.value]));
+      const open = memory.filter((m) => m.kind === "question" && answers[m.key] == null).length;
+      const draft = withAnswers(base, answers, open);
       await store.writeMemory(site.id, [{ kind: "strategy", key: "initial", value: { ...draft, status: "approved", approvedJob: j.id }, basis: "verified", confidence: null, source: "agency approval" }]);
       await store.transition(j.id, "completed", actor, "strategy accepted by the agency");
       moved.push({ job: j.id, kind: j.kind, to: "completed" }); continue;

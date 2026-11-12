@@ -119,6 +119,9 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
 
+## 2026-11-12 D43 Approving the strategy carries the agency's answers in
+Found before the owner's first approval: the strategy is drafted right after the first scan, before any question is answered, and approval adopted that draft unchanged, so the pilot would have frozen "objective: not set". Now `advance()` (`src/god/tick.mjs`) passes the draft through `withAnswers()` (`src/god/onboarding.mjs`) at approval: the goal becomes the objective, conversions become the first KPI, the open-question risk is recounted, and the answers are stored with the strategy. Deterministic, no AI call. Tradeoff: the first steps are not redrafted from the answers (they come from the audit); redrafting them is the specialists' work after approval.
+
 ## 2026-11-12 D42 Live activity for the agency, read-only
 The owner asked to see inside the portal what the scheduler and the AI agents are doing. One read-only function, `public.site_activity` (migration 20261112000000), feeds a "Live activity" card at the top of the SEO God page: the scheduler heartbeat, what is holding the team back (strategy approval, open questions, AI key and budget, GitHub), who is working now, each worker's 30-day record, and every job step (`job_events`) with the actor named (director, quality reviewer, cloud worker, specialist, or a person by email if they belong to the agency). It refreshes every 30 seconds and replaces only that card, so typed answers survive.
 - Agency members only, like `god_console`; clients and other agencies get "not allowed", anon has no grant.

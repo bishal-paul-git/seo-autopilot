@@ -2,6 +2,11 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-12 (Answers carried into the approved strategy, D43; code change)
+- Code: `withAnswers()` in `src/god/onboarding.mjs`, used by `advance()` in `src/god/tick.mjs`; portal hint on the strategy card. Test in `test/onboarding.test.mjs`.
+- Checks: `npm test` 592/592; `node scripts/god-pg-e2e.mjs` and `node scripts/cf-local-e2e.mjs` pass.
+- Deployment: needs a Worker redeploy (deploy-seo-god with run=true) before the owner approves; recorded below when done.
+
 ## 2026-11-12 (Live activity, D42; code change and one production migration)
 - Code: `cloud/portal/supabase/migrations/20261112000000_activity.sql` (`site_activity`), "Live activity" card on the SEO God page (`cloud/portal/app/index.html`), tests `cloud/portal/supabase/test/rls19.sql` and `test/portal-activity.test.mjs`.
 - Checks: `npm test` 591/591; `bash cloud/portal/supabase/test/run.sh` all suites incl. rls19 (no cross-agency rows, no Worker error text, clients/anon refused, read changes nothing).
