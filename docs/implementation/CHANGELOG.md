@@ -5,6 +5,7 @@ Dated session entries; history is preserved. Product release notes are in the ro
 ## 2026-11-12 (Business brief at onboarding, $2/day budget, D44; code change)
 - Code: `BRIEF` in `src/god/onboarding.mjs`; migration `20261113000000_business_brief.sql` (`site_brief`, `save_brief`); portal brief page, add-website flow, SEO God summary card (`cloud/portal/app/index.html`, `cloud/portal/build.mjs`); `cloud/worker/wrangler.toml` budget "2".
 - Tests: `cloud/portal/supabase/test/rls20.sql`, `test/portal-brief.test.mjs`; updated `portal-god`, `portal-activity`, `portal-app` for the new flow. `npm test` 594/594; SQL suites incl. rls20 pass.
+- Deployment 2026-11-12 ~19:35 UTC: migration applied to production (`apply_migration business_brief`); PR #57 merged (fd7226c); deploy-seo-god run #7 (run=true) succeeded with the $2/day budget; Worker secret names checked (ANTHROPIC_API_KEY present, values never read); portal published, live md5 = build md5 (a44aab42…), previous kept as `previous-2026-11-12b.html`; Chromium loads it with no errors.
 
 ## 2026-11-12 (Answers carried into the approved strategy, D43; code change)
 - Code: `withAnswers()` in `src/god/onboarding.mjs`, used by `advance()` in `src/god/tick.mjs`; portal hint on the strategy card. Test in `test/onboarding.test.mjs`.
