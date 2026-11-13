@@ -3,7 +3,7 @@
 // plain note on what a missing page means. Mocked Google; no network.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { makeSearchSnapshotHandler, snapshotDue, searchForAgents, SNAPSHOT_PAGES } from "../src/god/search-console.mjs";
+import { makeSearchSnapshotHandler, snapshotDue, searchForAgents, SNAPSHOT_PAGES, propertyCandidates } from "../src/god/search-console.mjs";
 import { agentInput } from "../src/god/agent-runner.mjs";
 import { MemoryStore } from "../src/god/stores.mjs";
 import { tick } from "../src/god/tick.mjs";
@@ -87,4 +87,21 @@ test("planner: one snapshot a day, only with a Google key, before the specialist
   assert.ok(!again.sites[0].queued.some((q) => q.kind === "search_snapshot"), "not twice in a day");
   const noKey = await tick({ store: new MemoryStore(), sites: [SITE], handlers: {}, now: NOW, maxJobs: 0 });
   assert.ok(!noKey.sites[0].queued.some((q) => q.kind === "search_snapshot"), "without a key it is never planned");
+});
+
+test("property lookup: every form an owner may have added (domain, with and without www, https and http); the escalation names what the account can see", async () => {
+  assert.deepEqual(propertyCandidates("https://erudience.com/"), ["sc-domain:erudience.com", "https://erudience.com/", "https://www.erudience.com/", "http://erudience.com/", "http://www.erudience.com/"]);
+  const store = new MemoryStore(); store.clock = () => NOW;
+  const tried = [];
+  const fetchImpl = async (url, o) => {
+    if (url.endsWith("/webmasters/v3/sites")) return new Response(JSON.stringify({ siteEntry: [{ siteUrl: "https://other.test/" }] }), { status: 200 });
+    const prop = decodeURIComponent(url.split("/sites/")[1].split("/")[0]); tried.push(prop);
+    if (prop !== "https://www.plumber.test/") return new Response(JSON.stringify({ error: { message: "no permission" } }), { status: 403 });
+    return new Response(JSON.stringify({ rows: [{ keys: [], clicks: 1, impressions: 2, ctr: 0.5, position: 3 }] }), { status: 200 });
+  };
+  await makeSearchSnapshotHandler({ store, siteOf: async () => ({ id: "A", url: "https://plumber.test/" }), getToken: async () => "t", fetchImpl, now: () => NOW })({ siteId: "A" });
+  assert.equal(store.readMemory("A").find((m) => m.key === "search_console").value.property, "https://www.plumber.test/", "the www prefix property is found");
+  const none = async (url) => url.endsWith("/webmasters/v3/sites") ? new Response(JSON.stringify({ siteEntry: [{ siteUrl: "https://other.test/" }] }), { status: 200 }) : new Response("{}", { status: 403 });
+  const out = await makeSearchSnapshotHandler({ store, siteOf: async () => ({ id: "A", url: "https://plumber.test/" }), getToken: async () => "t", fetchImpl: none, now: () => NOW })({ siteId: "A" });
+  assert.match(out.escalate, /no access to plumber\.test.*It can see: https:\/\/other\.test\//);
 });

@@ -59,12 +59,9 @@ export function makeSearchConsoleHandler({ store, siteOf, getToken, fetchImpl = 
     const host = new URL(site.url).hostname.replace(/^www\./, "");
     const from = addDays(day(Math.min(...due.map((e) => Date.parse(e.openedAt)))), -SPAN - 1), to = addDays(day(Date.parse(now())), -2);
     // The property the owner shared with us: the domain property first, then the address prefix.
-    let property = null, total = null;
-    for (const p of [`sc-domain:${host}`, new URL("/", site.url).toString()]) {
-      try { total = await query(fetchImpl, token, p, { startDate: from, endDate: to, dimensions: ["date"], rowLimit: 500 }); property = p; break; }
-      catch (e) { if (![403, 404].includes(e.status)) throw e; }
-    }
-    if (!property) return { escalate: `Search Console: the service account has no access to ${host}; the site owner must add it as a user`, evidence: [], costUsd: 0 };
+    const f = await findProperty(fetchImpl, token, site.url, { startDate: from, endDate: to, dimensions: ["date"], rowLimit: 500 });
+    if (!f.property) return { escalate: noAccessMessage({ host, visible: f.visible }), evidence: [], costUsd: 0 };
+    const property = f.property, total = f.rows;
     const siteSeries = toSeries(total), today = day(Date.parse(now()));
     let measured = 0;
     const updates = [];
@@ -89,14 +86,39 @@ export function makeSearchConsoleHandler({ store, siteOf, getToken, fetchImpl = 
 }
 
 // The property the owner shared with the service account: the domain property first, then the address prefix.
+/**
+ * Every form an owner may have added the site as: the domain property, then address prefixes with and without www and
+ * on https or http. The first live pilot failed because the site was stored as https://erudience.com/ while only one
+ * form had been tried besides the domain property.
+ */
+export function propertyCandidates(siteUrl) {
+  const u = new URL(siteUrl), host = u.hostname.replace(/^www\./, "");
+  const forms = [`sc-domain:${host}`, new URL("/", siteUrl).toString()];
+  for (const proto of ["https:", "http:"]) for (const h of [host, `www.${host}`]) forms.push(`${proto}//${h}/`);
+  return [...new Set(forms)];
+}
+
+/** The properties the service account can see (for a useful message when none matches); [] when the list fails. */
+async function visibleProperties(fetchImpl, token) {
+  try {
+    const r = await fetchImpl("https://www.googleapis.com/webmasters/v3/sites", { headers: { Authorization: `Bearer ${token}` } });
+    const j = await r.json().catch(() => ({}));
+    return r.ok ? (j.siteEntry || []).map((s) => s.siteUrl).filter(Boolean) : [];
+  } catch { return []; }
+}
+
 async function findProperty(fetchImpl, token, siteUrl, body) {
   const host = new URL(siteUrl).hostname.replace(/^www\./, "");
-  for (const p of [`sc-domain:${host}`, new URL("/", siteUrl).toString()]) {
+  for (const p of propertyCandidates(siteUrl)) {
     try { return { property: p, rows: await query(fetchImpl, token, p, body) }; }
     catch (e) { if (![403, 404].includes(e.status)) throw e; }
   }
-  return { property: null, rows: null, host };
+  return { property: null, rows: null, host, visible: await visibleProperties(fetchImpl, token) };
 }
+
+/** The escalation when no property matches: names what the account can see, so the owner knows what to fix. */
+export const noAccessMessage = ({ host, visible = [] }) => `Search Console: the service account has no access to ${host}; the site owner must add it as a user (Restricted) on the ${host} property` +
+  (visible.length ? `. It can see: ${visible.slice(0, 10).join(", ")}` : ". It can see no properties at all yet: check the email that was added");
 
 export const SNAPSHOT_DAYS = 28, SNAPSHOT_PAGES = 250, SNAPSHOT_QUERIES = 100, SNAPSHOT_PAIRS = 250;
 const r4 = (x) => Number(Number(x || 0).toFixed(4)), r1 = (x) => Number(Number(x || 0).toFixed(1));
@@ -114,7 +136,7 @@ export function makeSearchSnapshotHandler({ store, siteOf, getToken, fetchImpl =
     const token = await getToken();
     const to = addDays(day(Date.parse(now())), -LAG), from = addDays(to, -(SNAPSHOT_DAYS - 1));
     const found = await findProperty(fetchImpl, token, site.url, { startDate: from, endDate: to, rowLimit: 1 });
-    if (!found.property) return { escalate: `Search Console: the service account has no access to ${found.host}; the site owner must add it as a user`, evidence: [], costUsd: 0 };
+    if (!found.property) return { escalate: noAccessMessage(found), evidence: [], costUsd: 0 };
     const { property } = found, base = { startDate: from, endDate: to };
     const pages = await query(fetchImpl, token, property, { ...base, dimensions: ["page"], rowLimit: SNAPSHOT_PAGES });
     const queries = await query(fetchImpl, token, property, { ...base, dimensions: ["query"], rowLimit: SNAPSHOT_QUERIES });
