@@ -11,6 +11,11 @@ import { makeAgentHandler, PRICES } from "../src/god/agent-runner.mjs";
 import { reviewOutput } from "../src/god/review.mjs";
 import { MemoryStore } from "../src/god/stores.mjs";
 import { caseMemory, gradeExam, scoreboard, examText } from "../src/analysis/exams.mjs";
+import { readKnowledge } from "../src/god/knowledge.mjs";
+
+// The text of the playbooks and skills an agent read (labels as knowledgeBlock reports them), for the figure check.
+let KB = null;
+const knowledgeText = (used) => { KB ||= readKnowledge(); return used.map((l) => l.startsWith("knowledge/") ? KB.playbooks[l.slice(10)] : KB.skills[l.slice(7)]).filter(Boolean).join("\n"); };
 
 const ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
 export const loadCases = (file = join(ROOT, "exams/cases.json")) => JSON.parse(readFileSync(file, "utf8"));
@@ -31,7 +36,7 @@ export async function runExams({ cases, fixtures, apiKey, model = "claude-opus-5
     try { out = await handler(job, { budgetUsd: perCaseUsd }); } catch (e) { out = { escalate: `error: ${e.message}`, costUsd: 0 }; }
     spent += Number(out.costUsd || 0);
     const gate = out.escalate ? null : reviewOutput(job, { ...out, costUsd: out.costUsd }, { siteHost: "plumber.test" });
-    const g = gradeExam(c, out, memory);
+    const g = gradeExam(c, out, memory, knowledgeText(out.proposal?.knowledge || []));
     // The run passes only when the grader's checks pass AND the production reviews would let it through.
     const reviews = [gate && { reviewer: gate.reviewer, verdict: gate.verdict, reasons: gate.reasons }, out.secondReview && { reviewer: out.secondReview.reviewer, verdict: out.secondReview.verdict, reasons: out.secondReview.reasons }].filter(Boolean);
     const reviewsPass = !c.expect?.escalates ? reviews.every((r) => r.verdict === "pass") && !out.escalate : true;

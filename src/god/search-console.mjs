@@ -98,13 +98,14 @@ async function findProperty(fetchImpl, token, siteUrl, body) {
   return { property: null, rows: null, host };
 }
 
-export const SNAPSHOT_DAYS = 28, SNAPSHOT_PAGES = 250, SNAPSHOT_QUERIES = 100;
+export const SNAPSHOT_DAYS = 28, SNAPSHOT_PAGES = 250, SNAPSHOT_QUERIES = 100, SNAPSHOT_PAIRS = 250;
 const r4 = (x) => Number(Number(x || 0).toFixed(4)), r1 = (x) => Number(Number(x || 0).toFixed(1));
 const rowOf = (x) => ({ clicks: x.clicks || 0, impressions: x.impressions || 0, ctr: r4(x.ctr), position: r1(x.position) });
 
 /**
  * The "search_snapshot" job (Phase 3, D47): the last 28 days of Search Console for the agents to read, stored in the
- * site's memory as report "search_console": totals, the top pages and the top queries. Three small queries, read-only.
+ * site's memory as report "search_console": totals, the top pages, the top queries and which page each top query
+ * lands on (page + query pairs, D52). Four small queries, read-only.
  */
 export function makeSearchSnapshotHandler({ store, siteOf, getToken, fetchImpl = (...a) => fetch(...a), now = () => new Date().toISOString(), allowed = async () => true }) {
   return async (job) => {
@@ -117,9 +118,11 @@ export function makeSearchSnapshotHandler({ store, siteOf, getToken, fetchImpl =
     const { property } = found, base = { startDate: from, endDate: to };
     const pages = await query(fetchImpl, token, property, { ...base, dimensions: ["page"], rowLimit: SNAPSHOT_PAGES });
     const queries = await query(fetchImpl, token, property, { ...base, dimensions: ["query"], rowLimit: SNAPSHOT_QUERIES });
+    const pairs = await query(fetchImpl, token, property, { ...base, dimensions: ["page", "query"], rowLimit: SNAPSHOT_PAIRS });
     const totals = (found.rows || [])[0] ? rowOf(found.rows[0]) : { clicks: 0, impressions: 0, ctr: 0, position: 0 };
     const value = { property, from, to, days: SNAPSHOT_DAYS, generatedAt: now(), totals,
       pages: pages.map((x) => ({ url: x.keys[0], ...rowOf(x) })), queries: queries.map((x) => ({ query: x.keys[0], ...rowOf(x) })),
+      pairs: pairs.filter((x) => x.keys?.length === 2).map((x) => ({ url: x.keys[0], query: x.keys[1], ...rowOf(x) })),
       complete: { pages: pages.length < SNAPSHOT_PAGES, queries: queries.length < SNAPSHOT_QUERIES } };
     await store.writeMemory(job.siteId, [{ kind: "report", key: "search_console", value, basis: "verified", confidence: null, source: "search console" }]);
     return { evidence: [`Search Console ${property}, ${from} to ${to}: ${totals.clicks} clicks, ${totals.impressions} impressions; ${value.pages.length} pages and ${value.queries.length} queries stored for the agents`] };
@@ -136,10 +139,13 @@ export function snapshotDue(memory, now) {
  * What an agent sees of the snapshot: totals, every page up to `maxPages` (by impressions), the top queries, and a plain
  * note on what absence means, so a pruner never reads "not listed" as "no traffic" when the list was cut.
  */
-export function searchForAgents(s, { maxPages = 120, maxQueries = 40 } = {}) {
+export function searchForAgents(s, { maxPages = 120, maxQueries = 40, maxPairs = 60 } = {}) {
   if (!s) return null;
   const pages = [...(s.pages || [])].sort((a, b) => b.impressions - a.impressions).slice(0, maxPages);
   const allPages = (s.complete?.pages ?? false) && pages.length === (s.pages || []).length;
+  // Which page each query lands on; without this an agent can only guess the pairing from similar positions.
+  const pageQueries = [...(s.pairs || [])].sort((a, b) => b.clicks - a.clicks || b.impressions - a.impressions).slice(0, maxPairs);
   return { property: s.property, from: s.from, to: s.to, totals: s.totals, pages, queries: (s.queries || []).slice(0, maxQueries),
+    pageQueries: s.pairs ? pageQueries : null,
     note: allPages ? "Every page with at least one impression in this period is listed; a page not listed had no impressions." : `Only the top ${pages.length} pages by impressions are listed; a page not listed may still have had impressions.` };
 }
