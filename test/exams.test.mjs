@@ -32,6 +32,12 @@ test("grader: escalation, recommendation limits and the text it reads", () => {
   assert.ok(gradeExam(c, { escalate: "budget" }).pass);
   assert.ok(!gradeExam(c, { proposal: { summary: "s", recommendations: [{ title: "a" }, { title: "b" }] } }).pass);
   assert.match(examText({ proposal: { summary: "S", recommendations: [{ title: "T", url: "U", why: "W", evidence: ["E"] }] }, claims: [{ text: "C", source: "Src" }], questions: ["Q"] }), /S\nT\nU\nW\nE\nC\nSrc\nQ/);
+  const f = { id: "f", agent: "seo-content-pruner", expect: { forbid: [{ url: "https://p.test/a", action: "\\b(remove|delete|noindex)\\b" }] } };
+  const rec = (title) => ({ proposal: { summary: "s", recommendations: [{ title, url: "https://p.test/a" }] } });
+  assert.ok(gradeExam(f, rec("Refresh /a in place; do not delete or noindex it")).pass, "a negated action is not the action");
+  assert.ok(gradeExam(f, rec("Refresh and expand /a (keep, do not merge or remove)")).pass);
+  assert.ok(!gradeExam(f, rec("Check /a, then remove it (410) or 301 it")).pass, "the affirmed action still fails");
+  assert.ok(!gradeExam(f, rec("Remove /a, not the homepage")).pass);
   const sb = scoreboard([{ agent: "a", pass: true, costUsd: 0.1 }, { agent: "a", pass: false, costUsd: 0.2 }], { model: "m", date: "d" });
   assert.deepEqual(sb.agents.a, { agent: "a", cases: 2, passed: 1, costUsd: 0.3, rate: 0.5 });
 });

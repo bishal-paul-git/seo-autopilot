@@ -37,6 +37,9 @@ export async function runExams({ cases, fixtures, apiKey, model = "claude-opus-5
     const reviewsPass = !c.expect?.escalates ? reviews.every((r) => r.verdict === "pass") && !out.escalate : true;
     results.push({ ...g, pass: g.pass && reviewsPass, gradedPass: g.pass, reviews, escalate: out.escalate || null, costUsd: Number(out.costUsd || 0), knowledge: out.proposal?.knowledge || [], output: { proposal: out.proposal || null, claims: out.claims || [], questions: out.questions || [] } });
     log(`${g.pass && reviewsPass ? "pass" : "FAIL"} ${c.id} $${Number(out.costUsd || 0).toFixed(4)}`);
+    // A failed case prints what the agent wrote (made-up business, no client data), so a person can tell an agent
+    // mistake from a grader mistake without downloading the artifact.
+    if (!(g.pass && reviewsPass)) log(`  output:\n${(out.escalate && !out.proposal ? `escalated: ${out.escalate}` : examText(out)).slice(0, 6000).replace(/^/gm, "  | ")}`);
   }
   return { results, spentUsd: Number(spent.toFixed(4)), skipped };
 }

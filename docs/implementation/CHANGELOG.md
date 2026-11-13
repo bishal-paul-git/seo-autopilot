@@ -2,6 +2,12 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-13 (first real agent-exam run; grader fix; code change)
+- Evidence: GitHub Actions run 43342999204 (agent-exams, main 215ed37, owner's key, cap $5): 16 cases, 6 passed, spent $2.22, 12 minutes. Passed: both snippet-optimizer cases, refresher, technical fixer, reporter totals, entity credentials. The fact-checker asked for changes on two outputs (pruner, link builder) for stating inferences as facts ("near-duplicate", "/contact supports bookings"): real findings.
+- Grader fault found from the run log: a `forbid` check matched titles that rule the action out ("Refresh in place; do not delete or noindex it"). Fixed: negated clauses are dropped before matching (`src/analysis/exams.mjs` `affirmed`); "Check /a, then remove it (410)" still fails. The runner now prints a failed case's output in the log (made-up business only) so agent and grader mistakes can be told apart without the artifact (the artifact host is blocked in this environment).
+- Not yet judged (need the outputs from the next run): injection cases (marker present, no recognised flag phrase), "no data" wording checks, HTTP status codes counted as unsupported figures, "guarantee"/"aggregateRating" possibly inside a negation.
+- Tests: `node --test test/exams.test.mjs` 3/3 (4 new assertions); `npm test` 612/612.
+
 ## 2026-11-12 (D50 deployed; deployment only)
 - Migration 20261116000000 applied to production; PR #64 merged (58e9f72); Worker deployed with run=true; portal published (live md5 = build `a8db52f4…`, previous kept as `previous-2026-11-12f.html`). Scheduler runs 97 and 98 without errors. D45 to D49 also deployed earlier today (see entries below).
 
