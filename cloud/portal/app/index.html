@@ -182,6 +182,50 @@ td { padding: 11px 16px; border-bottom: 1px solid var(--line-2) } tr:last-child 
   .note.unread{background:var(--accent-soft,rgba(16,185,129,.08))}
   @media print{#rail,#hdr,#tabbar,.no-print,.toast{display:none!important}.card{break-inside:avoid;box-shadow:none}body{background:#fff}}
   .swatch{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin:0 4px 0 0;border:1px solid var(--line)}
+/* Live pipeline and connections (D54): a tilted 3D board of stations with flowing connectors; flat and stacked on phones. */
+.pipe-head { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 14px }
+.pipe-stage { perspective: 1400px; margin: 4px 0 18px }
+.pipe-board { position: relative; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 26px; padding: 26px 22px 30px; border-radius: 22px;
+  background: radial-gradient(120% 140% at 50% 0%, color-mix(in srgb, var(--accent) 14%, var(--panel)) 0%, var(--panel) 62%);
+  border: 1px solid var(--line); transform: rotateX(16deg); transform-style: preserve-3d; transform-origin: 50% 100%;
+  box-shadow: 0 30px 60px -30px rgb(0 0 0 / .35) }
+.pipe-board::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 28px 28px; opacity: .35 }
+.pnode { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 6px; padding: 14px 12px 12px; min-height: 132px; border-radius: 16px; cursor: pointer; text-align: left;
+  font: inherit; color: inherit; background: var(--panel); border: 1px solid var(--line); transform: translateZ(26px);
+  box-shadow: 0 1px 0 var(--line), 0 14px 24px -14px rgb(0 0 0 / .45); transition: transform .2s ease, box-shadow .2s ease }
+.pnode:hover, .pnode:focus-visible { transform: translateZ(46px) translateY(-3px); box-shadow: 0 22px 34px -16px rgb(0 0 0 / .5) }
+.pnode .ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--line-2); color: var(--muted) }
+.pnode .ic svg { width: 18px; height: 18px }
+.pnode b { font-size: 14px } .pnode .sub { font-size: 12px; color: var(--muted); line-height: 1.35 }
+.pnode .num { font: 600 22px/1 var(--mono, ui-monospace, monospace); margin-top: auto }
+.pnode.ok .ic { background: var(--accent-soft); color: var(--accent) }
+.pnode.busy .ic { background: var(--info-soft); color: var(--info) } .pnode.busy { border-color: color-mix(in srgb, var(--info) 45%, var(--line)) }
+.pnode.warn .ic { background: var(--warn-soft); color: var(--warn) } .pnode.warn { border-color: color-mix(in srgb, var(--warn) 45%, var(--line)) }
+.pnode.bad .ic { background: var(--bad-soft); color: var(--bad) } .pnode.bad { border-color: color-mix(in srgb, var(--bad) 45%, var(--line)) }
+.pnode.off { opacity: .6 }
+.pnode.busy::after { content: ""; position: absolute; inset: -1px; border-radius: inherit; border: 2px solid var(--info); opacity: 0; animation: pulse 2s ease-out infinite }
+.pflow { position: absolute; z-index: 0; top: 50%; right: -26px; width: 26px; height: 4px; transform: translateY(-50%) translateZ(10px); border-radius: 4px; background: var(--line); overflow: hidden }
+.pflow.on { background: color-mix(in srgb, var(--accent) 25%, var(--line)) }
+.pflow.on::after { content: ""; position: absolute; top: 0; left: -40%; width: 40%; height: 100%; border-radius: 4px; background: var(--accent); animation: flow 1.4s linear infinite }
+@keyframes flow { to { left: 100% } }
+@keyframes pulse { 0% { opacity: .7; transform: scale(1) } 100% { opacity: 0; transform: scale(1.06) } }
+.dotlive { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none }
+.dotlive.ok { background: var(--accent) } .dotlive.busy { background: var(--info); animation: blink 1.2s ease-in-out infinite } .dotlive.warn { background: var(--warn) } .dotlive.bad { background: var(--bad) }
+@keyframes blink { 50% { opacity: .3 } }
+.agent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px }
+.agent-card { display: flex; flex-direction: column; gap: 4px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); text-decoration: none; color: inherit }
+.agent-card .t { display: flex; align-items: center; gap: 8px; font-weight: 600; text-transform: capitalize }
+.conn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px }
+.conn { padding: 14px; border: 1px solid var(--line); border-left-width: 4px; border-radius: 12px; background: var(--panel); display: flex; flex-direction: column; gap: 6px }
+.conn.connected { border-left-color: var(--accent) } .conn.waiting { border-left-color: var(--info) } .conn.missing { border-left-color: var(--warn) } .conn.error { border-left-color: var(--bad) } .conn.off { border-left-color: var(--line) }
+.feed .row { display: flex; flex-wrap: nowrap; align-items: flex-start; justify-content: flex-start; text-align: left; gap: 10px } .feed .row > div { text-align: left } .feed .row > .xs { flex: none; white-space: nowrap }
+@media (prefers-reduced-motion: reduce) { .pflow.on::after, .pnode.busy::after, .dotlive.busy { animation: none } .pnode, .pnode:hover { transition: none } }
+@media (max-width: 960px) { .pipe-board { grid-template-columns: repeat(3, minmax(0, 1fr)); transform: rotateX(8deg) } .pflow { display: none } }
+@media (max-width: 560px) { .pipe-stage { perspective: none } .pipe-board { grid-template-columns: 1fr; gap: 12px; padding: 14px; transform: none }
+  .pnode { min-height: 0; transform: none } .pnode:hover { transform: none } .pflow { display: block; top: auto; bottom: -12px; right: auto; left: 28px; width: 4px; height: 12px; transform: none }
+  .pflow.on::after { left: 0; top: -40%; width: 100%; height: 40%; animation-name: flowv } }
+@keyframes flowv { to { top: 100% } }
 </style>
 </head>
 <body>
@@ -277,11 +321,13 @@ const I = {
   plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
   spark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/></svg>',
   inbox: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13l2.5-7h11L20 13v6H4z"/><path d="M4 13h5l1 2h4l1-2h5"/></svg>',
+  flow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="6" height="6" rx="1.5"/><rect x="15" y="14" width="6" height="6" rx="1.5"/><path d="M9 7h4a2 2 0 0 1 2 2v5"/></svg>',
   out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg>',
 };
-const PAGES = [["overview", "Overview", I.home], ["traffic", "Traffic", I.trend], ["keywords", "Keywords", I.key], ["pages", "Pages", I.page], ["locations", "Locations", I.pin], ["plan", "Coming next", I.plan], ["report", "Weekly report", I.report], ["god", "SEO God", I.spark], ["brief", "Business brief", I.page], ["requests", "Requests", I.inbox], ["approvals", "Approvals", I.check], ["team", "SEO team", I.team], ["connect", "Connection", I.plug]];
+const PAGES = [["overview", "Overview", I.home], ["pipeline", "Live pipeline", I.flow], ["connections", "Connections", I.plug], ["traffic", "Traffic", I.trend], ["keywords", "Keywords", I.key], ["pages", "Pages", I.page], ["locations", "Locations", I.pin], ["plan", "Coming next", I.plan], ["report", "Weekly report", I.report], ["god", "SEO God", I.spark], ["brief", "Business brief", I.page], ["requests", "Requests", I.inbox], ["approvals", "Approvals", I.check], ["team", "SEO team", I.team], ["connect", "Connection", I.plug]];
 const AGENCY_ONLY = new Set(["god", "brief", "approvals", "team", "connect", "agent"]); // never shown to clients (D27: reporting only)
 const MOBILE_TABS = ["overview", "traffic", "keywords", "pages"];
+const ACCOUNT_ONLY = new Set(["pipeline", "connections"]); // need a signed-in agency member or client user: not on anonymous share links
 let state = { kwTab: "ranking", kwQ: "", pgFilter: "all", newToken: null };
 
 const last = (s) => s.history[s.history.length - 1] || {};
@@ -925,10 +971,110 @@ function pLogin() {
   <p class="xs muted" style="margin:0">Clients do not need an account: open the link your SEO team sent you.</p></div>`;
 }
 
+/* ---------- Live pipeline and connections (D54): agency and signed-in clients; never share links ---------- */
+// Clients see status, names and times only (the RPC leaves out costs, budgets, repositories and notes).
+const STATUS_TEXT = { proposed: "Planned", scoped: "Planned", queued: "Queued", running: "Working", awaiting_review: "Being checked", authorized: "Approved, running",
+  awaiting_approval: "Waiting for a decision", escalated: "Stopped: needs a person", completed: "Done", failed: "Failed", rejected: "Declined", cancelled: "Cancelled" };
+const STATUS_TONE = { queued: "busy", running: "busy", awaiting_review: "busy", authorized: "busy", awaiting_approval: "warn", escalated: "bad", failed: "bad", completed: "ok" };
+const CONN_TEXT = { connected: "Connected", waiting: "Waiting", missing: "Not connected", error: "Needs attention", off: "Off" };
+const CONN_TONE = { connected: "ok", waiting: "busy", missing: "warn", error: "bad", off: "" };
+const until = (t) => { const m = Math.round((Date.parse(t) - Date.now()) / 60000); return m <= 0 ? "due now" : m < 60 ? `in ${m} min` : `in ${Math.round(m / 60)} h`; };
+const workName = (x) => (x.agent ? agentLabel(x.agent) : KIND_NAME[x.kind] || String(x.kind || "work").replace(/_/g, " "));
+async function loadPipeline(s) { s.pipe = await rpc("site_pipeline", { p_site: s.id }); }
+
+function pipeStations(p) {
+  const C = Object.fromEntries((p.connections || []).map((c) => [c.key, c])), n = p.counts || {}, sc = p.schedule || {};
+  const live = (p.connections || []).filter((c) => c.state !== "off");
+  const okSources = live.filter((c) => c.state === "connected").length;
+  const fresh = sc.lastRun && Date.now() - Date.parse(sc.lastRun) < 40 * 60000;
+  return [
+    { key: "sources", name: "Data sources", ic: I.plug, tone: okSources === live.length ? "ok" : okSources ? "warn" : "bad", num: `${okSources}/${live.length}`, sub: "connected" },
+    { key: "scan", name: "Website scan", ic: I.page, tone: CONN_TONE[C.scan?.state] || "", num: C.scan?.at ? ago(C.scan.at).replace(" ago", "") : "–", sub: C.scan?.at ? "since the last scan" : CONN_TEXT[C.scan?.state] || "" },
+    { key: "director", name: "SEO director", ic: I.spark, tone: sc.paused ? "off" : !fresh ? "bad" : n.active ? "busy" : "ok", num: sc.paused ? "Paused" : sc.lastPlanned ? ago(sc.lastPlanned).replace(" ago", "") : "–",
+      sub: sc.paused ? "no new work" : `since planning; strategy ${esc(sc.strategy || "not drafted")}` },
+    { key: "agents", name: "Specialists", ic: I.team, tone: n.active ? "busy" : (p.agents || []).length ? "ok" : "", num: fmt(n.active || 0), sub: `working now · ${fmt((p.agents || []).length)} have worked here` },
+    { key: "checks", name: "Quality checks", ic: I.check, tone: n.reviews30 ? (n.passed30 === n.reviews30 ? "ok" : "warn") : "", num: `${fmt(n.passed30 || 0)}/${fmt(n.reviews30 || 0)}`, sub: "passed in 30 days" },
+    { key: "decisions", name: "Decisions and results", ic: I.inbox, tone: n.stopped ? "bad" : n.waiting ? "warn" : "ok", num: fmt(n.done30 || 0), sub: `done in 30 days · ${fmt(n.waiting || 0)} waiting${n.stopped ? ` · ${fmt(n.stopped)} stopped` : ""}` },
+  ];
+}
+
+function pPipeline(s) {
+  const p = s.pipe;
+  if (!p) return '<div class="empty">Loading…</div>';
+  const sc = p.schedule || {}, st = pipeStations(p);
+  const fresh = sc.lastRun && Date.now() - Date.parse(sc.lastRun) < 40 * 60000;
+  const head = `<div><h1>Live pipeline</h1><p class="lead">How work on ${esc(host(s.url))} flows: data comes in, the SEO director plans, specialists work, every result is checked, and ${p.agency ? "you decide" : "your SEO team decides"} what goes ahead. It refreshes by itself.</p></div>
+    <div class="pipe-head"><span class="pill ${sc.paused ? "warn" : fresh ? "ok" : "bad"}"><i></i>${sc.paused ? "Paused" : fresh ? `Running every ${sc.everyMinutes} min` : "Scheduler silent"}</span>
+      <span class="pill">Last run ${esc(ago(sc.lastRun))}</span>${sc.nextPlan && !sc.paused ? `<span class="pill">Next plan ${esc(until(sc.nextPlan))}</span>` : ""}
+      ${p.agency && sc.budgetUsd != null ? `<span class="pill">${usd(sc.spentTodayUsd)} of ${usd(sc.budgetUsd)} today</span>` : ""}</div>`;
+  const board = `<div class="pipe-stage"><div class="pipe-board" role="list">${st.map((x, i) => `<button class="pnode ${x.tone}" role="listitem" data-node="${x.key}" aria-label="${esc(x.name)}: open details">
+      <span class="ic">${x.ic}</span><b>${esc(x.name)}</b><span class="num">${x.num}</span><span class="sub">${x.sub}</span>
+      ${i < st.length - 1 ? `<span class="pflow ${!sc.paused && fresh && x.tone !== "off" ? "on" : ""}" aria-hidden="true"></span>` : ""}</button>`).join("")}</div></div>`;
+  const agents = (p.agents || []).length ? `<div class="agent-grid">${p.agents.map((a) => `<${p.agency ? `a href="${link(s, "agent")}/${esc(a.agent)}"` : "div"} class="agent-card">
+      <span class="t"><span class="dotlive ${STATUS_TONE[a.status] || ""}"></span>${esc(agentLabel(a.agent))}</span>
+      <span class="xs muted">${esc(STATUS_TEXT[a.status] || a.status)} · ${esc(ago(a.at))}</span><span class="xs">${esc(a.title || "")}</span>
+      <span class="xs muted">${fmt(a.runs30)} run${a.runs30 === 1 ? "" : "s"} in 30 days</span></${p.agency ? "a" : "div"}>`).join("")}</div>` : '<div class="empty">No specialist has worked on this website yet.</div>';
+  return `${head}${board}
+    <div class="grid g2"><div class="card"><div class="ch"><h2>Specialists</h2><p>${fmt((p.agents || []).length)}</p></div>${agents}</div>
+    <div class="card pad0"><div class="ch"><h2>Live activity</h2><p>latest steps</p></div><div class="list feed" id="pipe-feed">${pipeFeed(p)}</div></div></div>`;
+}
+const pipeFeed = (p) => (p.events || []).map((e) => `<div class="row"><span class="dotlive ${STATUS_TONE[e.to] || ""}" style="margin-top:7px"></span><div style="flex:1;min-width:0">
+    <div class="t"><span style="text-transform:capitalize">${esc(workName(e))}</span>: ${esc(STATUS_TEXT[e.to] || e.to || "update")}</div><div class="s">${esc(e.title || "")}${e.note ? ` · ${esc(e.note)}` : ""}</div></div>
+    <span class="xs muted">${esc(ago(e.at))}</span></div>`).join("") || '<div class="empty">No activity yet.</div>';
+
+function pipeDetail(s, key) {
+  const p = s.pipe, n = p.counts || {}, sc = p.schedule || {};
+  const conns = (list) => list.map((c) => `<div class="row"><span class="dotlive ${CONN_TONE[c.state]}" style="margin-top:7px"></span><div style="flex:1;min-width:0"><div class="t">${esc(c.name)} · ${esc(CONN_TEXT[c.state] || c.state)}</div><div class="s">${esc(c.detail || "")}</div></div><span class="xs muted">${c.at ? esc(ago(c.at)) : ""}</span></div>`).join("");
+  const items = (list) => list.map((x) => `<div class="row"><span class="dotlive ${STATUS_TONE[x.status] || ""}" style="margin-top:7px"></span><div style="flex:1;min-width:0"><div class="t" style="text-transform:capitalize">${esc(workName(x))}</div><div class="s">${esc(x.title || "")} · ${esc(STATUS_TEXT[x.status] || x.status)}</div></div><span class="xs muted">${esc(ago(x.at))}</span></div>`).join("") || '<div class="empty">Nothing here right now.</div>';
+  const live = p.live || [];
+  const body = {
+    sources: [`Data sources`, conns(p.connections || []), `<a class="btn" href="${link(s, "connections")}">${I.plug}All connections</a>`],
+    scan: [`Website scan`, conns((p.connections || []).filter((c) => c.key === "scan")) + '<p class="xs muted">The scan reads every page: titles, descriptions, links, speed and structured data. The specialists start from it.</p>', `<a class="btn" href="${link(s, "pages")}">${I.page}Pages</a>`],
+    director: [`SEO director`, `<div class="list"><div class="row"><div class="t">Strategy</div><span class="end">${esc(sc.strategy || "not drafted yet")}</span></div><div class="row"><div class="t">Last planned</div><span class="end">${esc(ago(sc.lastPlanned))}</span></div><div class="row"><div class="t">Scheduler</div><span class="end">${sc.paused ? "paused" : `every ${sc.everyMinutes} min, last ${esc(ago(sc.lastRun))}`}</span></div></div><p class="xs muted">The director reads everything known about the website, plans the next work and hands it to the specialists. It plans each website every few hours, sooner when approved work is waiting.</p>`, p.agency ? `<a class="btn" href="${link(s, "god")}">${I.spark}SEO God page</a>` : ""],
+    agents: [`Specialists at work`, items(live.filter((x) => ["queued", "running", "awaiting_review", "authorized"].includes(x.status))), p.agency ? `<a class="btn" href="${link(s, "team")}">${I.team}SEO team</a>` : ""],
+    checks: [`Quality checks`, `<p>Every specialist's result is checked before anyone sees it: an automatic quality gate, and for content and high-risk work a second agent that checks every claim against the data.</p><div class="list"><div class="row"><div class="t">Checks in the last 30 days</div><span class="end">${fmt(n.reviews30 || 0)}</span></div><div class="row"><div class="t">Passed</div><span class="end">${fmt(n.passed30 || 0)}</span></div></div>`, ""],
+    decisions: [`Decisions and results`, items(live.filter((x) => ["awaiting_approval", "escalated"].includes(x.status))) + `<p class="xs muted">${fmt(n.done30 || 0)} pieces of work finished in the last 30 days. Nothing changes on the website without a person's approval.</p>`, p.agency ? `<a class="btn primary" href="${link(s, "god")}">${I.check}Decide on the SEO God page</a>` : `<a class="btn" href="${link(s, "report")}">${I.report}Weekly report</a>`],
+  }[key];
+  if (!body) return;
+  $("#overlay").innerHTML = `<div class="sheet" id="sheet"><div class="panel" role="dialog" aria-label="${esc(body[0])}" style="max-width:720px;margin:0 auto;max-height:80vh;overflow:auto"><div class="grab"></div><h2 style="margin:4px 4px 10px">${esc(body[0])}</h2><div class="list">${body[1]}</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">${body[2]}<button class="btn" id="sheet-close">Close</button></div></div></div>`;
+  $("#sheet").onclick = (e) => { if (e.target.id === "sheet" || e.target.id === "sheet-close" || e.target.closest("a")) $("#overlay").innerHTML = ""; };
+}
+
+function pConnections(s) {
+  const p = s.pipe;
+  if (!p) return '<div class="empty">Loading…</div>';
+  const how = {
+    github: p.agency ? `In the repository ${esc(p.site.repo || "")}: Settings › Secrets and variables › Actions, add <code>SEO_PORTAL_URL</code> and <code>SEO_PORTAL_TOKEN</code> from the <a href="${link(s, "connect")}">Connection page</a>. The next daily run sends Search Console, keywords, indexing and IndexNow results here, and the agents use them.` : "",
+    search_console: p.agency ? "Either connect the daily GitHub run (it uses the website's own Google key), or add the service account email shown on the Connection page as a Restricted user of this property in Search Console, then confirm the site on Operations." : "",
+    scan: "", agents: "",
+  };
+  const list = p.connections || [];
+  const ok = list.filter((c) => c.state === "connected").length;
+  return `<div><h1>Connections</h1><p class="lead">Everything that feeds the SEO team for ${esc(host(s.url))}. ${fmt(ok)} of ${fmt(list.filter((c) => c.state !== "off").length)} connected.${p.agency ? "" : " Your SEO team manages these; nothing here needs a password from you."}</p></div>
+    <div class="conn-grid">${list.map((c) => `<div class="conn ${esc(c.state)}"><div style="display:flex;align-items:center;gap:8px"><span class="dotlive ${CONN_TONE[c.state]}"></span><b style="flex:1">${esc(c.name)}</b><span class="pill ${CONN_TONE[c.state] === "busy" ? "info" : CONN_TONE[c.state] || ""}">${esc(CONN_TEXT[c.state] || c.state)}</span></div>
+      <div class="xs">${esc(c.detail || "")}</div>${c.at ? `<div class="xs muted">Last: ${esc(ago(c.at))}</div>` : ""}
+      ${["missing", "error"].includes(c.state) && how[c.key] ? `<div class="xs muted" style="border-top:1px solid var(--line);padding-top:6px">${how[c.key]}</div>` : ""}</div>`).join("")}</div>`;
+}
+
+let PIPE_TIMER = null;
+function startPipelineTimer(s, page) {
+  clearInterval(PIPE_TIMER);
+  const hash = location.hash;
+  PIPE_TIMER = setInterval(async () => {
+    if (location.hash !== hash) { clearInterval(PIPE_TIMER); return; }
+    if (document.hidden) return;
+    try { await loadPipeline(s); } catch { return; }
+    if (location.hash !== hash) return;
+    $("#page").innerHTML = page === "connections" ? pConnections(s) : pPipeline(s);
+  }, window.__PIPE_MS || 15000); // tests shorten it
+}
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-node]"); if (b && CUR_SITE?.pipe) pipeDetail(CUR_SITE, b.dataset.node); });
+let CUR_SITE = null;
+
 /* ---------- Shell ---------- */
 let mode = "agency", clientAccount = false;
 const link = (s, page) => `#/${mode === "client" ? (clientAccount ? "k" : "c") : "s"}/${s.key}/${page}`;
-const visible = ([k]) => !(mode === "client" && AGENCY_ONLY.has(k)) && !(k === "requests" && mode === "client" && !clientAccount);
+const visible = ([k]) => !(mode === "client" && AGENCY_ONLY.has(k)) && !((k === "requests" || ACCOUNT_ONLY.has(k)) && mode === "client" && !clientAccount);
 const brandMark = '<span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="#052a1e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8"/><path d="M15 8h5v5"/></svg></span>';
 function shell(s, page) {
   const pages = PAGES.filter(visible).map(([k, t, ic]) => [k, k === "requests" && mode === "agency" ? "Client requests" : t, ic]);
@@ -1140,7 +1286,7 @@ function workHtml(s) {
 
 const PAGE_FN = { brief: pBrief, overview: pOverview, traffic: pTraffic, keywords: pKeywords, pages: pPages, locations: pLocations, plan: pPlan, report: pReport, team: pTeam, connect: pConnect, approvals: pApprovals, god: pGod, requests: (s) => (mode === "agency" ? pInbox(s) : pRequests(s)) };
 async function render() {
-  clearInterval(ACT_TIMER);
+  clearInterval(ACT_TIMER); clearInterval(PIPE_TIMER); CUR_SITE = null;
   const h = location.hash || "#/";
   $("#overlay").innerHTML = "";
   if (!CFG.supabaseUrl || !CFG.anonKey) { shell(null); $("#page").innerHTML = '<div class="callout">This portal is not configured yet (no Supabase address or key at build time).</div>'; return; }
@@ -1148,11 +1294,11 @@ async function render() {
   const m = h.match(/^#\/(s|c|k)\/([\w-]+)(?:\/(\w+)(?:\/(seo-[a-z0-9-]+))?)?/);
   try {
     if (m && m[1] === "c") {
-      mode = "client";
+      mode = "client"; clientAccount = false; // a share link is anonymous even in a tab where a client is signed in
       $("#page").innerHTML = '<div class="empty">Loading…</div>';
       const s = await loadShared(m[2]);
       if (!s) { shell(null); $("#page").innerHTML = '<div class="callout">This link is not valid any more. Ask your SEO team for a new one.</div>'; return; }
-      let page = m[3] || "overview"; if (AGENCY_ONLY.has(page) || page === "requests") page = "overview"; // share links are anonymous: no requests
+      let page = m[3] || "overview"; if (AGENCY_ONLY.has(page) || ACCOUNT_ONLY.has(page) || page === "requests") page = "overview"; // share links are anonymous: no requests, no pipeline
       if (/^#[0-9a-f]{6}$/i.test(s.brand?.color || "")) { document.documentElement.style.setProperty("--accent", s.brand.color); document.documentElement.style.setProperty("--chart", s.brand.color); }
       shell(s, page); document.title = `${s.name} · SEO dashboard`;
       $("#page").innerHTML = s.status !== "live" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
@@ -1169,6 +1315,7 @@ async function render() {
       if (/^#[0-9a-f]{6}$/i.test(s.brand?.color || "")) { document.documentElement.style.setProperty("--accent", s.brand.color); document.documentElement.style.setProperty("--chart", s.brand.color); }
       if (page === "requests") await loadRequests(s);
       if (page === "report") await loadWork(s);
+      if (ACCOUNT_ONLY.has(page)) { await loadPipeline(s); CUR_SITE = s; shell(s, page); refreshNotes(); document.title = `${(PAGES.find(([k]) => k === page) || [])[1]} · ${s.name}`; $("#page").innerHTML = page === "connections" ? pConnections(s) : pPipeline(s); wire(s); return startPipelineTimer(s, page); }
       shell(s, page); refreshNotes(); document.title = `${s.name} · SEO dashboard`;
       $("#page").innerHTML = page === "requests" ? pRequests(s) : s.status !== "live" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
       return wire(s);
@@ -1202,6 +1349,7 @@ async function render() {
     if (page === "requests") await loadInbox(s);
     if (page === "report") await loadWork(s);
     if (page === "team") await loadWorkforce(s);
+    if (ACCOUNT_ONLY.has(page)) { await loadPipeline(s); CUR_SITE = s; shell(s, page); document.title = `${(PAGES.find(([k]) => k === page) || [])[1]} · ${s.name}`; $("#page").innerHTML = page === "connections" ? pConnections(s) : pPipeline(s); wire(s); return startPipelineTimer(s, page); }
     if (page === "agent") { await loadAgentRuns(s, m[4] || ""); shell(s, "team"); document.title = `${agentLabel(m[4] || "agent")} · ${s.name}`; $("#page").innerHTML = pAgent(s, m[4] || ""); return wire(s); }
     shell(s, page); document.title = `${s.name} · SEO dashboard`;
     $("#page").innerHTML = s.status !== "live" && page !== "connect" && page !== "god" && page !== "brief" && page !== "requests" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);
