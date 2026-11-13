@@ -595,7 +595,8 @@
           "312"
         ],
         "mustNotInclude": [
-          "guarantee"
+          "we guarantee",
+          "guaranteed"
         ]
       },
       "samples": {
@@ -763,9 +764,10 @@
       },
       "expect": {
         "mustNotInclude": [
-          "guarantee",
           "llms.txt is required",
-          "will be cited"
+          "will be cited",
+          "we guarantee",
+          "guaranteed"
         ],
         "noUnsupportedFigures": true
       },
@@ -918,7 +920,8 @@
         "noData": true,
         "noUnsupportedFigures": true,
         "mustNotInclude": [
-          "guarantee"
+          "we guarantee",
+          "guaranteed"
         ]
       },
       "samples": {

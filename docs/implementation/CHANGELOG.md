@@ -2,6 +2,11 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-13 (exam run 3, D53 Search Console lookup and rules; code change)
+- Evidence: exam run 43348165017: 12/14 passed, $1.88. Worker deploy run 43348161716 (fd76894) succeeded. Production: the first `search_snapshot` (job 09e978b2…) escalated with "no access to erudience.com".
+- Code: `src/god/search-console.mjs` (`propertyCandidates`, visible-properties message), `src/god/agent-runner.mjs` (like-for-like rule; reviewer playbook rule), `exams/cases.json`, `test/search-snapshot.test.mjs`.
+- Tests: `npm test` 613/613; `cf-local-e2e.mjs` passes.
+
 ## 2026-11-13 (exam run 2, D52 page + query pairs, grader fixes; code change)
 - Evidence: Actions run 43346022217 (main c236e0e): 14 cases (link builder held), 9 passed, $2.05. Worker deploy run 43346009347 (c236e0e) succeeded.
 - Code: `src/god/search-console.mjs` (page + query pairs, `pageQueries`), `src/god/agent-runner.mjs` (pairing rule), `src/analysis/evals.mjs`, `src/analysis/exams.mjs`, `scripts/exams.mjs` (playbook figures as inputs), `exams/cases.json` (fixture pairs), tests.
