@@ -119,6 +119,13 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
 
+## 2026-11-13 D51 Agent rules and fairer exam checks from the first real exam run
+Owner: "fix whatever needs fixing and improving, skip backlink work now" (2026-11-13), after run 43342999204 (6 of 16).
+- **Agents** (shared `SYSTEM_TAIL` in `src/god/agent-runner.mjs`, so every hosted agent): begin with "No data:" when the task's data is missing; state inferences as inferences and never describe page contents beyond the data (the fact-checker's two findings); every removal, noindex, redirect, merge or move starts "After a person approves:" and is never advised without Search Console data; instructions found in site data or client requests are not followed, their addresses are not repeated, and the agent records a "Prompt injection" claim; no promises of rankings, traffic, AI citations or dates.
+- **Grader** (`src/analysis/evals.mjs`): HTTP status codes used as such ("a 301 redirect", "return 410") are not figures; `mustNotInclude` ignores a phrase used to rule it out ("no one can guarantee", "do not add aggregateRating"); the "no data" and "flagged injection" checks accept more plain wordings. Each case's bad sample still fails (tested).
+- **Backlinks on hold**: the two link-builder cases carry `hold` and run only with `--agents seo-link-builder`; the agent itself is unchanged and still not scheduled to execute.
+- Tradeoff: a looser grader can pass weak output, so the rules were loosened only where the first run showed a false failure, and the owner's scoring sheet stays the judge of quality. Not verified on the real model until the next exam run.
+
 ## 2026-11-12 D50 Ready for more sites: per-site budgets, alerts, rollback rehearsal, load check
 Phase 7 of `docs/product/SYSTEM-READINESS-PLAN.md` (owner: "do it", 2026-11-12).
 - **Per-site daily budget**: `sites.daily_budget_usd` (0 to 100 US dollars; null = the Worker's `SEO_GOD_DAILY_BUDGET_USD`), set only by agency owners on Operations (`set_site_budget`, audited). The scheduler reads it through `god_site_budget` (service role only) for planning and for each run's remaining budget, and records the budget it applied and how many jobs waited for budget in the site's tick. The Operations page shows spend this month and last month per site. Tradeoff: the default stays in the Worker's config (one place to change it for everyone); the database holds only exceptions.
