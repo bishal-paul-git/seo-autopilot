@@ -26,6 +26,11 @@ do $$ declare site uuid := ((select r from t_pipe)->'site'->>'id')::uuid; o json
   update public.sites set status = 'live' where id = site;
 end $$;
 reset role;
+-- Production jobs carry the specialist only in their kind: it still counts as that specialist.
+set role service_role; set request.jwt.claim.role = 'service_role';
+insert into public.jobs (org_id, site_id, kind, title, source, risk, requires_approval, status)
+  select s.org_id, s.id, 'agent:seo-reporter', 'Monthly report', 'seo_god', 'low', false, 'completed' from public.sites s where s.id = ((select r from t_pipe)->'site'->>'id')::uuid;
+reset role;
 -- Alice (agency A) sees the whole pipeline of her site, with repository, budget and connection details.
 set role authenticated; set request.jwt.claim.role = 'authenticated';
 set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a';
@@ -38,6 +43,7 @@ do $$ declare p jsonb := public.site_pipeline(((select r from t_pipe)->'site'->>
   assert c->>'state' = 'connected' and c->>'detail' like '12 clicks, 900 impressions%GitHub run%', 'search console: ' || c::text;
   assert exists (select 1 from jsonb_array_elements(p->'connections') x where x->>'name' = 'IndexNow' and x->>'state' = 'connected'), 'run integrations listed';
   assert exists (select 1 from jsonb_array_elements(p->'connections') x where x->>'name' = 'Google Analytics 4' and x->>'detail' like 'Not connected: set%'), 'agency sees the setup note';
+  assert exists (select 1 from jsonb_array_elements(p->'agents') a where a->>'agent' = 'seo-reporter' and a->>'status' = 'completed'), 'agent from the job kind: ' || (p->'agents')::text;
   assert jsonb_typeof(p->'live') = 'array' and jsonb_typeof(p->'events') = 'array' and jsonb_typeof(p->'agents') = 'array', 'lists';
 end $$;
 -- The site's client user sees the pipeline without repository, budget, spend or notes.

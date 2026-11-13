@@ -2,6 +2,10 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-13 (D54 deployed; agent-from-kind fix; deployment and code change)
+- Deployment: migration `20261117000000_pipeline_connections.sql` applied to production by the owner in the Supabase SQL editor (the connector's approval prompt timed out three times). Verified: `site_pipeline` executable by authenticated only, `ingest_snapshot` keeps paused sites paused; Erudience pipeline returns scan connected, GitHub run "no data for more than 3 days" (last push 2026-10-31), Search Console error (service account sees only manchesterdisrepairclaims.co.uk), GA4 and PageSpeed missing.
+- Bug found on real data: production agent jobs keep the agent in `kind` (`agent:seo-reporter`) with `jobs.agent` empty, so the specialists list was empty. Fix: `20261117010000_pipeline_agent_from_kind.sql` (site_pipeline takes the agent from either); `rls24.sql` covers it. SQL suites pass.
+
 ## 2026-11-13 (D54 live pipeline and connections; GitHub run to agents bridge; code change)
 - Code: migration `20261117000000_pipeline_connections.sql` (`site_pipeline`, `ingest_snapshot` bridge and pause fix); portal `pPipeline`, `pConnections` (routes `#/s|k/<site>/pipeline|connections`); `test/portal-pipeline.test.mjs`; SQL suite `rls24.sql`; `test/portal-requests.test.mjs` (checks the agency Connection link, not the word).
 - Tests: `npm test` 615/615; `bash cloud/portal/supabase/test/run.sh` rls through rls24 ok.
