@@ -23,11 +23,15 @@ export function examText(out) {
 }
 
 const re = (s) => new RegExp(s, "i");
+// A title that names the action only to rule it out ("refresh in place; do not delete or noindex it") is not that
+// action: drop each negated clause before matching. "Remove X, not Y" still matches, since "Remove X" stays.
+const NEGATED = /\b(do not|don't|never|not|no|without|rather than|instead of|avoid)\b[^.;,()]*/gi;
+export const affirmed = (title) => String(title || "").replace(NEGATED, " ");
 const urlMatch = (a, b) => String(a || "").replace(/\/$/, "").toLowerCase() === String(b || "").replace(/\/$/, "").toLowerCase();
 
 /**
  * Grade one exam output. Case `expect` adds to the text checks of evals.mjs:
- *   forbid: [{ url, action }]  no recommendation for that URL whose title (the action it names) matches the pattern;
+ *   forbid: [{ url, action }]  no recommendation for that URL whose title (the action it names, negated clauses dropped) matches the pattern;
  *                              its reasoning may mention the action ("refresh rather than remove")
  *   requireRec: [{ url?, pattern }]  at least one recommendation (for that URL) matching the pattern
  *   maxRecommendations: n
@@ -40,7 +44,7 @@ export function gradeExam(c, out, memory = []) {
   const add = (name, pass, detail = "") => checks.push({ name, pass, detail });
   if (e.escalates !== undefined) add(e.escalates ? "stops for a person" : "does not stop for a person", Boolean(out?.escalate) === e.escalates, out?.escalate || "");
   for (const f of e.forbid || []) {
-    const bad = recs.filter((r) => (!f.url || urlMatch(r.url, f.url) || String(r.title).includes(f.url)) && re(f.action).test(String(r.title || "")));
+    const bad = recs.filter((r) => (!f.url || urlMatch(r.url, f.url) || String(r.title).includes(f.url)) && re(f.action).test(affirmed(r.title)));
     add(`never recommends "${f.action}" for ${f.url || "any page"}`, !bad.length, bad.map((r) => r.title).join("; "));
   }
   for (const q of e.requireRec || []) {
