@@ -10,6 +10,24 @@ Dated session entries; history is preserved. Product release notes are in the ro
 - Deployment: migration `20261117000000_pipeline_connections.sql` applied to production by the owner in the Supabase SQL editor (the connector's approval prompt timed out three times). Verified: `site_pipeline` executable by authenticated only, `ingest_snapshot` keeps paused sites paused; Erudience pipeline returns scan connected, GitHub run "no data for more than 3 days" (last push 2026-10-31), Search Console error (service account sees only manchesterdisrepairclaims.co.uk), GA4 and PageSpeed missing.
 - Bug found on real data: production agent jobs keep the agent in `kind` (`agent:seo-reporter`) with `jobs.agent` empty, so the specialists list was empty. Fix: `20261117010000_pipeline_agent_from_kind.sql` (site_pipeline takes the agent from either); `rls24.sql` covers it. SQL suites pass.
 
+## 2026-11-13 (D55 pull requests held for a person, setup guide, cost ledger; code change)
+- **Code:**
+  - `src/analysis/autonomy.mjs`: `seo-hosted` pull requests never auto-merge.
+  - `templates/workflows/seo-implement.yml`: the label reaches the pull request.
+  - Portal `setupGuide()` on the Connections page; the agency route also loads `site_integrations` for it.
+  - Tests: `test/autonomy.test.mjs`, `test/portal-pipeline.test.mjs`.
+- **Docs:** new `docs/implementation/COSTS.md` with measured spend to date: $0.40 production plus $6.15 exams, $6.55 in total.
+- **Read-only checks:**
+  - Production: the fix migration 20261117010000 is applied (`site_pipeline` reads the agent from the kind).
+  - No site has a GitHub write integration.
+  - Erudience's snapshots come from the hosted scan, not the GitHub run.
+- **Repository logs, 2026-11-13** (secret names only, no values):
+  - No site repository has `SEO_PORTAL_URL`/`SEO_PORTAL_TOKEN`.
+  - excel-error-finder: seo-daily has failed daily since at least 11-11, because `GOOGLE_KEY_JSON` is empty.
+  - tenanthousingdisrepair: `INDEXNOW_KEY` is empty, and it has its own `ANTHROPIC_API_KEY`, which is spend outside the records.
+  - erudience-flow-engine: Search Console, GA4 and IndexNow work in the run, and it pushes to an older ingest URL on another project.
+  - No repository has Bing, PageSpeed or CrUX keys; the PageSpeed shared quota is used up.
+
 ## 2026-11-13 (D54 live pipeline and connections; GitHub run to agents bridge; code change)
 - Code: migration `20261117000000_pipeline_connections.sql` (`site_pipeline`, `ingest_snapshot` bridge and pause fix); portal `pPipeline`, `pConnections` (routes `#/s|k/<site>/pipeline|connections`); `test/portal-pipeline.test.mjs`; SQL suite `rls24.sql`; `test/portal-requests.test.mjs` (checks the agency Connection link, not the word).
 - Tests: `npm test` 615/615; `bash cloud/portal/supabase/test/run.sh` rls through rls24 ok.

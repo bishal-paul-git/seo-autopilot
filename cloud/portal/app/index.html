@@ -218,6 +218,9 @@ td { padding: 11px 16px; border-bottom: 1px solid var(--line-2) } tr:last-child 
 .agent-card .t { display: flex; align-items: center; gap: 8px; font-weight: 600; text-transform: capitalize }
 .conn-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px }
 .conn { padding: 14px; border: 1px solid var(--line); border-left-width: 4px; border-radius: 12px; background: var(--panel); display: flex; flex-direction: column; gap: 6px }
+.guide-list { margin: 0; padding: 0 16px 14px 34px; display: grid; gap: 8px } .guide-list > li { padding: 8px 0; border-top: 1px solid var(--line) }
+.guide-list summary { cursor: pointer; display: flex; gap: 8px; align-items: center; flex-wrap: wrap } .guide-list ol { margin: 4px 0 0; padding-left: 18px; display: grid; gap: 4px }
+.guide-list code { overflow-wrap: anywhere } .guide { margin-top: 16px }
 .conn.connected { border-left-color: var(--accent) } .conn.waiting { border-left-color: var(--info) } .conn.missing { border-left-color: var(--warn) } .conn.error { border-left-color: var(--bad) } .conn.off { border-left-color: var(--line) }
 .feed .row { display: flex; flex-wrap: nowrap; align-items: flex-start; justify-content: flex-start; text-align: left; gap: 10px } .feed .row > div { text-align: left } .feed .row > .xs { flex: none; white-space: nowrap }
 @media (prefers-reduced-motion: reduce) { .pflow.on::after, .pnode.busy::after, .dotlive.busy { animation: none } .pnode, .pnode:hover { transition: none } }
@@ -1053,7 +1056,62 @@ function pConnections(s) {
   return `<div><h1>Connections</h1><p class="lead">Everything that feeds the SEO team for ${esc(host(s.url))}. ${fmt(ok)} of ${fmt(list.filter((c) => c.state !== "off").length)} connected.${p.agency ? "" : " Your SEO team manages these; nothing here needs a password from you."}</p></div>
     <div class="conn-grid">${list.map((c) => `<div class="conn ${esc(c.state)}"><div style="display:flex;align-items:center;gap:8px"><span class="dotlive ${CONN_TONE[c.state]}"></span><b style="flex:1">${esc(c.name)}</b><span class="pill ${CONN_TONE[c.state] === "busy" ? "info" : CONN_TONE[c.state] || ""}">${esc(CONN_TEXT[c.state] || c.state)}</span></div>
       <div class="xs">${esc(c.detail || "")}</div>${c.at ? `<div class="xs muted">Last: ${esc(ago(c.at))}</div>` : ""}
-      ${["missing", "error"].includes(c.state) && how[c.key] ? `<div class="xs muted" style="border-top:1px solid var(--line);padding-top:6px">${how[c.key]}</div>` : ""}</div>`).join("")}</div>`;
+      ${["missing", "error"].includes(c.state) && how[c.key] ? `<div class="xs muted" style="border-top:1px solid var(--line);padding-top:6px">${how[c.key]}</div>` : ""}</div>`).join("")}</div>
+    ${setupGuide(s)}`;
+}
+
+// D55: the agency's setup guide on the Connections page. Every connection: what it gives, where to get it, where it goes,
+// and whether it is done (from site_pipeline and site_integrations; "not reported" when nothing tells us). Agency only.
+function setupGuide(s) {
+  const p = s.pipe; if (!p?.agency) return "";
+  const C = Object.fromEntries((p.connections || []).map((c) => [c.key, c]));
+  const byName = (re) => (p.connections || []).find((c) => re.test(c.name || ""));
+  const ok = (c) => (c ? c.state === "connected" : null);
+  const repo = p.site.repo || "", gh = githubOf(s);
+  const secrets = repo ? `<a href="https://github.com/${esc(repo)}/settings/secrets/actions" target="_blank" rel="noopener">${esc(repo)} › Settings › Secrets and variables › Actions</a>` : "the website's GitHub repository › Settings › Secrets and variables › Actions";
+  const sec = (n) => `<code>${n}</code>`;
+  const G = [
+    { title: "Daily SEO run sends its results here", need: "Required", done: ok(C.github),
+      gives: "Search Console numbers, keywords, indexing checks and IndexNow results reach this portal every day, and the AI specialists use them.",
+      steps: [`On the <a href="${link(s, "connect")}">Connection page</a> press <b>Make a new token</b> and copy both values.`,
+        `In ${secrets} add two secrets: ${sec("SEO_PORTAL_URL")} and ${sec("SEO_PORTAL_TOKEN")}.`,
+        `In the repository's <b>Actions</b> tab run <b>seo-daily</b> once (Run workflow). This page turns green after it finishes.`] },
+    { title: "Google Search Console", need: "Required", done: ok(C.search_console),
+      gives: "Real clicks, impressions, positions and which pages are indexed. Without it the specialists only see the website itself.",
+      steps: [`<a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud console</a>: choose a project, then APIs & Services › Library › enable <b>Google Search Console API</b>.`,
+        `IAM & Admin › Service accounts › Create (no roles needed) › Keys › Add key › JSON. A file downloads; it is the secret key. One service account can serve all your websites.`,
+        `<a href="https://search.google.com/search-console" target="_blank" rel="noopener">Search Console</a> › this property › Settings › Users and permissions › Add user: paste the service account's email (<code>client_email</code> in the file) with <b>Full</b> permission (needed to check indexing).`,
+        `In ${secrets} add ${sec("GOOGLE_KEY_JSON")} with the whole file as the value, then delete the file from your computer.`,
+        `In the repository's <code>seo-autopilot.config.json</code>, <code>searchConsoleProperty</code> must match the property: <code>sc-domain:${esc(host(s.url))}</code> for a domain property, or the exact address with its trailing slash.`] },
+    { title: "Google Analytics 4", need: "Recommended", done: ok(byName(/analytics/i)),
+      gives: "Visits and where they come from, next to the search numbers.",
+      steps: [`Google Cloud console (same project): enable <b>Google Analytics Data API</b>.`,
+        `<a href="https://analytics.google.com/" target="_blank" rel="noopener">Analytics</a> › Admin › Property access management › add the same service account email as <b>Viewer</b>.`,
+        `Admin › Property details: copy the numeric Property ID into <code>ga4PropertyId</code> in <code>seo-autopilot.config.json</code>. No new secret: it uses ${sec("GOOGLE_KEY_JSON")}.`] },
+    { title: "Bing Webmaster Tools", need: "Optional, free", done: ok(byName(/bing/i)),
+      gives: "Bing clicks and impressions, related searches and links pointing at the website.",
+      steps: [`<a href="https://www.bing.com/webmasters" target="_blank" rel="noopener">Bing Webmaster Tools</a>: add the website (Import from Google Search Console is quickest).`,
+        `Settings (gear) › API access › API key › Generate.`,
+        `In ${secrets} add ${sec("BING_WEBMASTER_API_KEY")}.`] },
+    { title: "IndexNow", need: "Optional, free", done: ok(byName(/indexnow/i)),
+      gives: "Bing, Yandex, Seznam and Naver hear about new and changed pages within minutes. Google does not use IndexNow.",
+      steps: [`Choose a key: 8 to 128 letters, digits or dashes.`,
+        `Put a file named <code>&lt;key&gt;.txt</code> containing only the key at the root of the website and publish it. This is a change to the website: a person does it.`,
+        `In ${secrets} add ${sec("INDEXNOW_KEY")} (or the name set in <code>indexNow.keyEnv</code> in <code>seo-autopilot.config.json</code>). The daily run skips IndexNow until the file is live.`] },
+    { title: "PageSpeed and real-user speed", need: "Optional, free", done: ok(byName(/pagespeed/i)),
+      gives: "Speed checks without the shared quota running out, and Chrome's real-user speed data.",
+      steps: [`Google Cloud console: enable <b>PageSpeed Insights API</b> and <b>Chrome UX Report API</b>, then APIs & Services › Credentials › Create credentials › API key (restrict it to those two APIs).`,
+        `In ${secrets} add ${sec("PAGESPEED_API_KEY")} and ${sec("CRUX_API_KEY")} (the same key works for both).`] },
+    { title: "Pull requests for approved changes", need: "When you want changes, not just advice", done: gh ? gh.status === "connected" : false,
+      gives: "Approved advice becomes a pull request in the website's repository. It always stops there: a person reviews and merges it.",
+      steps: [`GitHub › Settings › Developer settings › <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Fine-grained tokens</a> › Generate: only the repository ${repo ? `<b>${esc(repo)}</b>` : "of this website"}; Issues and Actions <b>read and write</b>; Pull requests and Metadata <b>read</b>.`,
+        `On the <a href="${link(s, "god")}">SEO God page</a>, under <b>Changes to the website</b>, paste it and press Connect GitHub (agency owners only). It is stored encrypted and never shown again.`] },
+  ];
+  const st = (d) => d === true ? '<span class="pill ok">Done</span>' : d === false ? '<span class="pill warn">To do</span>' : '<span class="pill">Not reported yet</span>';
+  return `<div class="card pad0 guide"><div class="ch"><h2>Setup guide</h2><span class="pill">${G.filter((g) => g.done === true).length} of ${G.length} done</span></div>
+    <p class="xs muted" style="margin:0;padding:0 16px 10px">Your own accounts and keys, added once per website. Never paste a key into a chat or an email. AI costs are not here: the specialists run on the agency's AI key within each site's daily cap, so the website's repository needs no AI key for them. An AI key added to the repository is spent there and does not show in this portal's costs.</p>
+    <ol class="guide-list">${G.map((g) => `<li class="${g.done === true ? "done" : ""}"><details${g.done === true ? "" : (g.need === "Required" ? " open" : "")}><summary><b>${esc(g.title)}</b> <span class="xs muted">${esc(g.need)}</span> ${st(g.done)}</summary>
+      <p class="xs" style="margin:6px 0">${esc(g.gives)}</p><ol class="xs">${g.steps.map((x) => `<li>${x}</li>`).join("")}</ol></details></li>`).join("")}</ol></div>`;
 }
 
 let PIPE_TIMER = null;
@@ -1065,7 +1123,9 @@ function startPipelineTimer(s, page) {
     if (document.hidden) return;
     try { await loadPipeline(s); } catch { return; }
     if (location.hash !== hash) return;
+    const open = [...document.querySelectorAll("#page details")].map((d) => d.open); // keep what the reader opened
     $("#page").innerHTML = page === "connections" ? pConnections(s) : pPipeline(s);
+    document.querySelectorAll("#page details").forEach((d, i) => { if (open[i] != null) d.open = open[i]; });
   }, window.__PIPE_MS || 15000); // tests shorten it
 }
 document.addEventListener("click", (e) => { const b = e.target.closest("[data-node]"); if (b && CUR_SITE?.pipe) pipeDetail(CUR_SITE, b.dataset.node); });
@@ -1349,7 +1409,7 @@ async function render() {
     if (page === "requests") await loadInbox(s);
     if (page === "report") await loadWork(s);
     if (page === "team") await loadWorkforce(s);
-    if (ACCOUNT_ONLY.has(page)) { await loadPipeline(s); CUR_SITE = s; shell(s, page); document.title = `${(PAGES.find(([k]) => k === page) || [])[1]} · ${s.name}`; $("#page").innerHTML = page === "connections" ? pConnections(s) : pPipeline(s); wire(s); return startPipelineTimer(s, page); }
+    if (ACCOUNT_ONLY.has(page)) { await loadPipeline(s); if (page === "connections") s.integrations = await rpc("site_integrations", { p_site: s.id }).catch(() => null); CUR_SITE = s; shell(s, page); document.title = `${(PAGES.find(([k]) => k === page) || [])[1]} · ${s.name}`; $("#page").innerHTML = page === "connections" ? pConnections(s) : pPipeline(s); wire(s); return startPipelineTimer(s, page); }
     if (page === "agent") { await loadAgentRuns(s, m[4] || ""); shell(s, "team"); document.title = `${agentLabel(m[4] || "agent")} · ${s.name}`; $("#page").innerHTML = pAgent(s, m[4] || ""); return wire(s); }
     shell(s, page); document.title = `${s.name} · SEO dashboard`;
     $("#page").innerHTML = s.status !== "live" && page !== "connect" && page !== "god" && page !== "brief" && page !== "requests" ? pSetup(s) : (PAGE_FN[page] || pOverview)(s);

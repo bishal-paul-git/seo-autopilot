@@ -66,7 +66,10 @@ export function classifyChange({ files = [], addedFiles = [], labels = [], conte
   if (!cls) { cls = "refresh"; reasons.push("content files, no class label: treated as a refresh"); }
   const hits = addedText ? topicList(review).filter(({ res }) => res.some(([, r]) => r.test(addedText))).map((t) => t.topic) : [];
   if (hits.length && !HUMAN_ONLY.has(cls)) { reasons.push(`sensitive topics in the added text: ${hits.join(", ")}`); cls = "sensitive"; }
-  return { cls, reasons, sensitiveTopics: hits };
+  // D55: pull requests the hosted SEO team opened (label seo-hosted) stop at "prepare" whatever the site's policy says.
+  const hosted = labels.includes("seo-hosted");
+  if (hosted) reasons.push("opened by the hosted SEO team");
+  return { cls, reasons, sensitiveTopics: hits, hosted };
 }
 
 /**
@@ -79,6 +82,7 @@ export function decide(change, policy, counts = {}) {
   const no = (why) => ({ merge: false, level, cls: change.cls, watch: level === "undo", reasons: [...reasons, why] });
   if (!policy.enabled) return no("autopilot is switched off in the config");
   if (policy.paused) return no("autopilot is paused (kill switch)");
+  if (change.hosted) return no("the hosted SEO team's pull requests always wait for a person to merge (D55)");
   if (rank(level) < rank("autopilot")) return no(`${change.cls} changes are set to "${level}": a person merges`);
   if ((counts.today ?? 0) >= policy.limits.changesPerDay) return no(`daily limit reached (${policy.limits.changesPerDay} changes)`);
   if (change.cls === "new-page" && (counts.newPagesThisWeek ?? 0) >= policy.limits.newPagesPerWeek) return no(`weekly new-page limit reached (${policy.limits.newPagesPerWeek}): publishing many new pages at once looks like scaled content`);
