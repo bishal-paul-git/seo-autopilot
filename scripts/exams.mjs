@@ -21,7 +21,7 @@ export async function runExams({ cases, fixtures, apiKey, model = "claude-opus-5
   if (!PRICES[model]) throw new Error(`no price for ${model}`);
   const results = [], skipped = []; let spent = 0;
   for (const c of cases) {
-    if (agents && !agents.includes(c.agent)) continue;
+    if (agents ? !agents.includes(c.agent) : c.hold) continue; // held cases run only when their agent is named
     if (spent + perCaseUsd > maxUsd) { skipped.push({ id: c.id, reason: `would pass the $${maxUsd} cap` }); continue; }
     const store = new MemoryStore(), memory = caseMemory(c, fixtures), site = { id: "exam", name: "Exam site", url: "https://plumber.test/" };
     store.writeMemory("exam", memory);

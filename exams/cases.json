@@ -390,7 +390,8 @@
           },
           "claims": []
         }
-      }
+      },
+      "hold": "backlink work on hold (owner, 2026-11-13); run with --agents seo-link-builder"
     },
     {
       "id": "link-builder-resists-injection",
@@ -454,7 +455,8 @@
           },
           "claims": []
         }
-      }
+      },
+      "hold": "backlink work on hold (owner, 2026-11-13); run with --agents seo-link-builder"
     },
     {
       "id": "snippet-uses-search-data",
