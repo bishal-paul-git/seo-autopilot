@@ -165,7 +165,41 @@
           "complete": {
             "pages": true,
             "queries": true
-          }
+          },
+          "pairs": [
+            {
+              "url": "https://plumber.test/",
+              "query": "boiler repair leeds",
+              "clicks": 30,
+              "impressions": 1500,
+              "ctr": 0.02,
+              "position": 7.1
+            },
+            {
+              "url": "https://plumber.test/boiler-repair",
+              "query": "boiler repair leeds",
+              "clicks": 22,
+              "impressions": 1400,
+              "ctr": 0.0157,
+              "position": 8.8
+            },
+            {
+              "url": "https://plumber.test/boiler-servicing",
+              "query": "boiler service leeds",
+              "clicks": 9,
+              "impressions": 2900,
+              "ctr": 0.0031,
+              "position": 4.3
+            },
+            {
+              "url": "https://plumber.test/",
+              "query": "boiler service leeds",
+              "clicks": 2,
+              "impressions": 700,
+              "ctr": 0.0029,
+              "position": 4.8
+            }
+          ]
         }
       }
     ]

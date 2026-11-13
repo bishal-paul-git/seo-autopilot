@@ -11,7 +11,7 @@ const norm = (s) => String(s || "").replace(/\r\n/g, "\n");
  * markers, URLs, ISO dates and four-digit years 1900-2099 (dates are checked by the fact-checker, not here).
  */
 // HTTP status codes named as such ("a 301 redirect", "return 410") are vocabulary, not claims about the site.
-const STATUS = /\b(301|302|303|307|308|404|410|500|503)\b(?=\s*(redirects?|status|response|error|gone|not found|to\b|or\b|,|\)|\.|;))|\b(return|serve|send|use|via|an?|with|returns|serves)\s+(301|302|307|308|404|410)\b/gi;
+const STATUS = /\b(301|302|303|307|308|404|410|500|503)\b(?=\s*(redirects?|status|response|error|gone|not found|to\b|or\b|,|\)|\.|;))|\b(return|serve|send|use|via|an?|with|returns|serves)\s+(301|302|307|308|404|410)\b|\b(301|302|307|308|410)\s+(it|them|this|that|the)\b/gi;
 export function extractFigures(text) {
   const t = norm(text).replace(STATUS, " ").replace(/^\s*\d+[.)]\s/gm, " ").replace(/https?:\/\/\S+/g, " ").replace(/\b\d{4}-\d{2}-\d{2}\b/g, " ");
   const out = [];
@@ -34,13 +34,14 @@ export function unsupportedFigures(output, inputs = []) {
 }
 
 /**
- * Clauses that use a forbidden phrase as advice, not to rule it out: "we guarantee page one" counts, "no one can
- * guarantee rankings" and "do not add aggregateRating" do not. A clause runs between punctuation marks.
+ * Clauses that use a forbidden phrase as advice, not to rule it out: "we guarantee page one" counts; "none of this can
+ * guarantee citations", "do not add aggregateRating" and "adding aggregateRating without real values would mislead"
+ * do not. A negation anywhere in the clause rules it out. A clause runs between punctuation marks.
  */
-const NEG = /\b(no|not|never|cannot|can't|don't|do not|does not|doesn't|without|avoid|leave out|omit|isn't|is not|nobody|no one|unless)\b/i;
+const NEG = /\b(none|no|not|never|cannot|can't|don't|do not|does not|doesn't|without|avoid|leave out|omit|isn't|is not|nobody|no one|unless)\b/i;
 export function affirmedHits(output, phrase) {
   const p = String(phrase).toLowerCase();
-  return norm(output).split(/[.;:!?\n()]+|,\s+(?:but|and|so)\s+/).filter((c) => { const i = c.toLowerCase().indexOf(p); return i >= 0 && !NEG.test(c.slice(0, i)); }).map((c) => c.trim());
+  return norm(output).split(/[.;:!?\n()]+|,\s+(?:but|and|so)\s+/).filter((c) => { const i = c.toLowerCase().indexOf(p); return i >= 0 && !NEG.test(c); }).map((c) => c.trim());
 }
 
 export const missingSections = (output, headings = []) => headings.filter((h) => !norm(output).toLowerCase().includes(h.toLowerCase()));

@@ -17,6 +17,7 @@ function google({ access = "domain", pages = 3 } = {}) {
     const prop = decodeURIComponent(url.split("/sites/")[1].split("/")[0]), b = JSON.parse(o.body); calls.push({ prop, b });
     if (access === "none" || (access === "prefix" && prop.startsWith("sc-domain:"))) return new Response(JSON.stringify({ error: { message: "no permission" } }), { status: 403 });
     const dim = (b.dimensions || [])[0];
+    if ((b.dimensions || []).length === 2) return new Response(JSON.stringify({ rows: [{ keys: ["https://www.plumber.test/p0", "boiler repair leeds"], clicks: 5, impressions: 200, ctr: 0.025, position: 7.04 }] }), { status: 200 });
     const rows = !dim ? [{ keys: [], clicks: 40, impressions: 2000, ctr: 0.02, position: 18.234 }]
       : dim === "page" ? Array.from({ length: pages }, (_, i) => ({ keys: [`https://www.plumber.test/p${i}`], clicks: 10 - i, impressions: 500 - i, ctr: 0.0123456, position: 12.34 }))
         : [{ keys: ["boiler repair leeds"], clicks: 7, impressions: 300, ctr: 0.0233, position: 8.61 }];
@@ -32,11 +33,15 @@ test("snapshot: last 28 days ending 3 days ago; totals, pages and queries stored
   const out = await h({ siteId: "A" });
   assert.match(out.evidence[0], /sc-domain:plumber\.test, 2026-10-31 to 2026-11-27: 40 clicks, 2000 impressions; 3 pages and 1 queries stored/);
   assert.equal(calls[0].b.startDate, "2026-10-31"); assert.equal(calls[0].b.endDate, "2026-11-27");
-  assert.equal(calls.length, 3, "three small queries");
+  assert.equal(calls.length, 4, "four small queries");
+  assert.deepEqual(calls[3].b.dimensions, ["page", "query"]);
   const r = store.readMemory("A").find((m) => m.kind === "report" && m.key === "search_console");
   assert.equal(r.basis, "verified"); assert.equal(r.value.pages[0].url, "https://www.plumber.test/p0");
   assert.equal(r.value.pages[0].ctr, 0.0123); assert.equal(r.value.totals.position, 18.2);
   assert.deepEqual(r.value.complete, { pages: true, queries: true });
+  assert.deepEqual(r.value.pairs, [{ url: "https://www.plumber.test/p0", query: "boiler repair leeds", clicks: 5, impressions: 200, ctr: 0.025, position: 7 }]);
+  assert.equal(searchForAgents(r.value).pageQueries[0].query, "boiler repair leeds");
+  assert.equal(searchForAgents({ ...r.value, pairs: undefined }).pageQueries, null, "older snapshots: no pairing, not an empty one");
 });
 
 test("snapshot: falls back to the address-prefix property; no access escalates; an unconfirmed site is never read", async () => {

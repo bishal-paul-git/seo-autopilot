@@ -2,6 +2,11 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-13 (exam run 2, D52 page + query pairs, grader fixes; code change)
+- Evidence: Actions run 43346022217 (main c236e0e): 14 cases (link builder held), 9 passed, $2.05. Worker deploy run 43346009347 (c236e0e) succeeded.
+- Code: `src/god/search-console.mjs` (page + query pairs, `pageQueries`), `src/god/agent-runner.mjs` (pairing rule), `src/analysis/evals.mjs`, `src/analysis/exams.mjs`, `scripts/exams.mjs` (playbook figures as inputs), `exams/cases.json` (fixture pairs), tests.
+- Tests: `npm test` 612/612; `cf-local-e2e.mjs` passes in workerd.
+
 ## 2026-11-13 (D51 agent rules, fairer exam checks, backlink cases held; code change)
 - Code: `src/god/agent-runner.mjs` (SYSTEM_TAIL rules), `src/analysis/evals.mjs` (status codes, negation-aware `mustNotInclude`, wider no-data and injection wording), `scripts/exams.mjs` + `exams/cases.json` (held cases), tests in `test/evals.test.mjs`.
 - Tests: `npm test` 612/612 (one earlier run failed before Postgres was started in the new container; passed after); `node scripts/cf-local-e2e.mjs` all checks pass in workerd.
