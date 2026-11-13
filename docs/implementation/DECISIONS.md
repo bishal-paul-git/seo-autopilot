@@ -119,6 +119,33 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
 
+## 2026-11-13 D55 Changes stop at a pull request; setup guide in the portal; cost ledger
+The owner, 2026-11-13: "keep the agent doing PRs ... and hold it there for now with routine changes"; "keep tracking all costs from this project and record"; the instructions for connecting each website must be in the portal.
+
+**Pull requests:**
+- The hosted SEO team's way to change a website is unchanged: the D37 pull-request path.
+- New: a pull request it opened (label `seo-hosted`) is never merged by the site's autopilot, whatever the site's policy level. `decide()` in `src/analysis/autonomy.mjs` refuses it.
+- `seo-implement.yml` now copies the `seo-hosted` label from the issue to the pull request. A site picks this up with `seo-autopilot upgrade`.
+- Until then, there is still no path to an automatic merge: no site has a GitHub write integration in production (checked 2026-11-13), and a person merges.
+- Automatic merging of routine changes is the next stage, to be built when the owner says.
+
+**Setup guide (Connections page, agency only):** seven connections. Each says what it gives, where to get it, where it goes (a direct link to the repository's Actions secrets) and whether it's done. The state comes from `site_pipeline` and `site_integrations`, and reads "not reported yet" when nothing reports it. The connections:
+1. Daily run to portal
+2. Search Console
+3. GA4
+4. Bing Webmaster
+5. IndexNow
+6. PageSpeed/CrUX
+7. Pull requests
+
+The portal needed no SQL change. A refresh keeps the steps the reader opened.
+
+**Cost ledger:** `docs/implementation/COSTS.md` records measured spend with its source, lists spend outside the records, and lists the caps. Sessions append to it.
+
+**Tradeoffs:**
+- The guide's done state for Bing and IndexNow stays "not reported" until the daily run reports them.
+- The merge guard needs each site's workflows refreshed. Until they are, the guarantee rests on no write token being connected.
+
 ## 2026-11-13 D54 Live pipeline and connections pages; each website's GitHub run feeds the agents
 Owner (2026-11-13): the other websites "were connected from GitHub"; show the agents and flows running live, what is connected and what is not, to customers; keep the current portal as admin.
 - **Finding:** all four repositories run the GitHub engine daily (seo-daily: Search Console with the repository's own key, URL inspection, IndexNow, rank, audit; seo-backlinks with Bing), but none has the `SEO_PORTAL_URL`/`SEO_PORTAL_TOKEN` secrets (run log 2026-11-13, Manchester: both empty), so nothing reaches the portal. Last push: Manchester, 2026-10-31.

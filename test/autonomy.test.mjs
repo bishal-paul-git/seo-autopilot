@@ -109,3 +109,12 @@ test("autopilot job --pick: prints the choice and writes the issue number for th
   assert.match(said, /#12 \(refresh\)/);
   assert.equal(readFileSync(out, "utf8"), "issue=12\n");
 });
+
+test("D55: a pull request the hosted SEO team opened always waits for a person, even at autopilot level", () => {
+  const p = resolvePolicy({ levels: { snippet: "undo" } });
+  const own = classifyChange({ files: ["content/a.md"], labels: ["seo-snippet"], contentGlobs: ["content/**"] });
+  assert.equal(decide(own, p).merge, true, "the site's own snippet change still merges on its policy");
+  const hosted = classifyChange({ files: ["content/a.md"], labels: ["seo-snippet", "seo-hosted"], contentGlobs: ["content/**"] });
+  const d = decide(hosted, p);
+  assert.equal(d.merge, false); assert.equal(d.cls, "snippet"); assert.match(d.reasons.at(-1), /person to merge/);
+});

@@ -81,6 +81,14 @@ test("agency: live pipeline stations, specialists and feed; details on click; re
   const conn = await page.textContent("#page");
   assert.match(conn, /2 of 4 connected/); assert.match(conn, /SEO_PORTAL_URL[\s\S]*Connection page/); assert.match(conn, /No access to plumber\.test/);
   assert.ok(await page.locator(".conn.error").count() && await page.locator(".conn.missing").count());
+  // D55 setup guide: every connection, where to get it and where it goes, with its state.
+  assert.equal(await page.locator(".guide-list > li").count(), 7);
+  assert.match(conn, /GOOGLE_KEY_JSON[\s\S]*BING_WEBMASTER_API_KEY[\s\S]*INDEXNOW_KEY[\s\S]*PAGESPEED_API_KEY/);
+  assert.ok(await page.locator('.guide a[href="https://github.com/acme/plumber/settings/secrets/actions"]').count(), "links to the repository's secrets");
+  assert.match(conn, /0 of 7 done/);
+  await page.click(".guide-list > li:nth-child(4) summary"); // open Bing, then wait for a refresh: it stays open
+  await page.waitForFunction(() => (window.__n = (window.__n || 0) + 1) > 3, null, { polling: 400 });
+  assert.ok(await page.locator(".guide-list > li:nth-child(4) details[open]").count(), "a refresh keeps what the reader opened");
   assert.deepEqual(errors, []);
 });
 
@@ -95,7 +103,7 @@ test("client: the same pipeline without money, repository or setup hints; share 
   await page.click("#sheet-close");
   await page.goto(`${base}/#/k/${SITE.id}/connections`); await page.waitForSelector("h1:has-text('Connections')");
   const conn = await page.textContent("#page");
-  assert.match(conn, /Your SEO team manages these/); assert.doesNotMatch(conn, /SEO_PORTAL|acme\/plumber|No access/);
+  assert.match(conn, /Your SEO team manages these/); assert.doesNotMatch(conn, /SEO_PORTAL|acme\/plumber|No access|GOOGLE_KEY_JSON|Setup guide/);
   assert.ok(await page.locator('#rail a[href$="/pipeline"]').count(), "in the client's menu");
   await page.goto(`${base}/#/c/share-token/pipeline`); await page.waitForSelector('#rail a[href^="#/c/share-token/"]');
   assert.doesNotMatch(await page.textContent("#page"), /Live pipeline/, "a share link opens the overview instead");
