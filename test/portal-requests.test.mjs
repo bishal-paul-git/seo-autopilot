@@ -112,7 +112,8 @@ test("signed-in client: reports and own requests only; sends a request; no agenc
   await page.waitForURL(/#\/k\/11111111-1111-4111-8111-111111111111\/overview/);
   const nav = await page.textContent("#rail");
   assert.ok(nav.includes("Requests") && nav.includes("Sign out"));
-  for (const hidden of ["SEO God", "Approvals", "Connection", "SEO team", "Client requests"]) assert.ok(!nav.includes(hidden), `client never sees ${hidden}`);
+  for (const hidden of ["SEO God", "Approvals", "SEO team", "Client requests"]) assert.ok(!nav.includes(hidden), `client never sees ${hidden}`);
+  assert.equal(await page.locator('#rail a[href$="/connect"]').count(), 0, "client never sees the agency's Connection page (Connections, D54, is for clients)");
   await page.goto(`${base}/#/k/${SITE.id}/requests`); await page.waitForSelector("h1:has-text('Requests')");
   const text = await page.textContent("#page");
   assert.ok(text.includes("Agency has a question") && text.includes("Which areas besides Leeds?"), "status and the agency's note");

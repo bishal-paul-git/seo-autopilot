@@ -2,6 +2,10 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-13 (D54 live pipeline and connections; GitHub run to agents bridge; code change)
+- Code: migration `20261117000000_pipeline_connections.sql` (`site_pipeline`, `ingest_snapshot` bridge and pause fix); portal `pPipeline`, `pConnections` (routes `#/s|k/<site>/pipeline|connections`); `test/portal-pipeline.test.mjs`; SQL suite `rls24.sql`; `test/portal-requests.test.mjs` (checks the agency Connection link, not the word).
+- Tests: `npm test` 615/615; `bash cloud/portal/supabase/test/run.sh` rls through rls24 ok.
+
 ## 2026-11-13 (exam run 3, D53 Search Console lookup and rules; code change)
 - Evidence: exam run 43348165017: 12/14 passed, $1.88. Worker deploy run 43348161716 (fd76894) succeeded. Production: the first `search_snapshot` (job 09e978b2…) escalated with "no access to erudience.com".
 - Code: `src/god/search-console.mjs` (`propertyCandidates`, visible-properties message), `src/god/agent-runner.mjs` (like-for-like rule; reviewer playbook rule), `exams/cases.json`, `test/search-snapshot.test.mjs`.

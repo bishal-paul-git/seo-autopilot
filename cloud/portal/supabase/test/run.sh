@@ -29,4 +29,5 @@ p -f shim.sql -f ../migrations/20261030000000_portal.sql -f rls.sql \
   -f ../migrations/20261113000000_business_brief.sql -f rls20.sql \
   -f ../migrations/20261114000000_agent_pages.sql -f rls21.sql \
   -f ../migrations/20261115000000_gsc_sites.sql -f rls22.sql \
-  -f ../migrations/20261116000000_budgets_alerts.sql -f rls23.sql
+  -f ../migrations/20261116000000_budgets_alerts.sql -f rls23.sql \
+  -f ../migrations/20261117000000_pipeline_connections.sql -f rls24.sql
