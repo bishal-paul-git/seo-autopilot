@@ -10,6 +10,9 @@ Dated session entries; history is preserved. Product release notes are in the ro
 - Deployment: migration `20261117000000_pipeline_connections.sql` applied to production by the owner in the Supabase SQL editor (the connector's approval prompt timed out three times). Verified: `site_pipeline` executable by authenticated only, `ingest_snapshot` keeps paused sites paused; Erudience pipeline returns scan connected, GitHub run "no data for more than 3 days" (last push 2026-10-31), Search Console error (service account sees only manchesterdisrepairclaims.co.uk), GA4 and PageSpeed missing.
 - Bug found on real data: production agent jobs keep the agent in `kind` (`agent:seo-reporter`) with `jobs.agent` empty, so the specialists list was empty. Fix: `20261117010000_pipeline_agent_from_kind.sql` (site_pipeline takes the agent from either); `rls24.sql` covers it. SQL suites pass.
 
+## 2026-11-13 (D55 deployed; deployment action)
+- PR #73 merged (c57b0b2). Portal built from main and published to seo.erudience.com ~19:10 UTC; previous version kept as `previous-2026-11-13b.html`. Live md5 = build md5 (3b2cef53…); Chromium loads the sign-in page with no errors. No SQL, Worker or function change. No AI spend this session.
+
 ## 2026-11-13 (D55 pull requests held for a person, setup guide, cost ledger; code change)
 - **Code:**
   - `src/analysis/autonomy.mjs`: `seo-hosted` pull requests never auto-merge.
