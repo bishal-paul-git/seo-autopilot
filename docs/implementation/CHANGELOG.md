@@ -2,6 +2,10 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-13 (portal published with Live pipeline and Connections; deployment only)
+- Portal built from main 4ea3212 with the live config and uploaded to seo.erudience.com (Hostinger file upload); live md5 = build md5 (7c1f4942…); Chromium loads the sign-in page with no errors. Previous version kept as `previous-2026-11-13.html` (md5 a8db52f4…).
+- Pending: `20261117010000_pipeline_agent_from_kind.sql` (owner to run in the Supabase SQL editor); until then the specialists list on Live pipeline is empty for production jobs.
+
 ## 2026-11-13 (D54 deployed; agent-from-kind fix; deployment and code change)
 - Deployment: migration `20261117000000_pipeline_connections.sql` applied to production by the owner in the Supabase SQL editor (the connector's approval prompt timed out three times). Verified: `site_pipeline` executable by authenticated only, `ingest_snapshot` keeps paused sites paused; Erudience pipeline returns scan connected, GitHub run "no data for more than 3 days" (last push 2026-10-31), Search Console error (service account sees only manchesterdisrepairclaims.co.uk), GA4 and PageSpeed missing.
 - Bug found on real data: production agent jobs keep the agent in `kind` (`agent:seo-reporter`) with `jobs.agent` empty, so the specialists list was empty. Fix: `20261117010000_pipeline_agent_from_kind.sql` (site_pipeline takes the agent from either); `rls24.sql` covers it. SQL suites pass.
