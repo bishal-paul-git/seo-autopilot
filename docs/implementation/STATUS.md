@@ -3,7 +3,7 @@
 Kept short; read at the start of every session. Plan: [../product/SYSTEM-READINESS-PLAN.md](../product/SYSTEM-READINESS-PLAN.md) (phases 0 to 8). Agent detail: [../product/AGENT-INTELLIGENCE-PLAN.md](../product/AGENT-INTELLIGENCE-PLAN.md). History: [history/STATUS-to-2026-11-12.md](history/STATUS-to-2026-11-12.md) (full capability table and earlier checks), [history/STATUS-to-2026-11-03.md](history/STATUS-to-2026-11-03.md). Detail: [CHANGELOG.md](CHANGELOG.md), [DECISIONS.md](DECISIONS.md). Deployed state: [../deployment-status.md](../deployment-status.md).
 
 ## 1. Snapshot
-- Last updated: 2026-11-14 UTC. Branch `claude/hopeful-euler-662mu5`, base `main` 0dc3ea1; D56 PR: see CHANGELOG 2026-11-14 (draft, not merged). Release 1 is on `main` (#51, then #56 and #57).
+- Last updated: 2026-11-14 UTC. Branch `claude/hopeful-euler-662mu5`, base `main` 0dc3ea1; D56 merged as #75 (08a4154) and deployed 2026-11-14 22:32-22:35 UTC. Release 1 is on `main` (#51, then #56 and #57).
 - Environment: Linux cloud container, Node 22, Postgres 16 for local SQL checks.
 - Phase: **pilot running on erudience.com (read-only, advice only)**; readiness plan: Phase 1 (D45) and Phase 2 (agent pages, D46) deployed; Phase 3 step 1 (Search Console for the agents, D47) built, waits on the owner's Google key.
 
@@ -31,7 +31,7 @@ Cloudflare Worker `seo-god` (`cloud/worker/`) runs every 15 min: plans each due 
 ## 3. This session (2026-11-12, after the strategy approval)
 | Change | Kind | State |
 |---|---|---|
-| D56: read access through the shared service account (email + Copy, Check access, property pickers, one property per website, refusals for the admin), GA4 read, weekly central speed checks with one platform PageSpeed key, three-step Set up card (dev guide under Advanced). The first version (Google sign-in, OAuth) was declined by the owner and removed | code (`src/god/google-access.mjs`, `speed.mjs`, `search-console.mjs`, `tick.mjs`, Worker, portal, migration 20261118000000) | **built and tested with stand-ins, not deployed**: migration not applied; owner steps in [../hosted-google-access.md](../hosted-google-access.md) |
+| D56: read access through the shared service account (email + Copy, Check access, property pickers, one property per website, refusals for the admin), GA4 read, weekly central speed checks with one platform PageSpeed key, three-step Set up card (dev guide under Advanced). The first version (Google sign-in, OAuth) was declined by the owner and removed | code (`src/god/google-access.mjs`, `speed.mjs`, `search-console.mjs`, `tick.mjs`, Worker, portal, migration 20261118000000) | **deployed** 2026-11-14: migration applied by owner, Worker #15, portal published; real Check access not yet tried |
 | Readiness plan and agent-intelligence plan | docs | pushed |
 | D45: playbooks and skills sent to each agent; every AI output reviewed; fact-checker second opinion for content and high-risk work | code (`src/god/knowledge.mjs`, `agent-runner.mjs`, `worker.mjs`, `cloud/worker/build.mjs`, `src/app.mjs`) | **deployed** 2026-11-12 ~21:30 UTC: PR #58 merged (167fa60), deploy-seo-god run 8 (run=true) succeeded, god_runs 90 no errors; **verified live** 22:15 UTC: a snippet-optimizer run read its 4 playbooks and 1 skill, passed the quality gate and the fact-checker, cost $0.1333 |
 | STATUS rewritten (old table moved to history) | docs | done |

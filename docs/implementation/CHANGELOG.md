@@ -2,6 +2,12 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-14 (D56 deployed; deployment actions)
+- #75 merged (08a4154). Owner applied migration `20261118000000_google_access.sql` (15 functions present). Worker redeployed by deploy-seo-god #15 (run=true): `/health` ok, `/google/account` returns the service account email. Portal built with `PORTAL_WORKER_URL` and published (live md5 = build md5 cc273bd0…; previous kept as `previous-2026-11-14.html`); Chromium loads sign-in with no errors.
+- Owner set a $10 GitHub Actions budget; site runs work again (Manchester deploy run 43550994269 attempt 3 succeeded; IndexNow key file live, HTTP 200).
+- Not yet verified: a real Check access on a site; the weekly speed job with the Worker `PAGESPEED_API_KEY`; AudioScriptor GA4 (403: no permission on property 552290527).
+- Owner worksheet: Google Sheet "SEO Autopilot – Worksheet" (records, architecture, activity, costs, to-do).
+
 ## 2026-11-14 (D56 read access through the service account, central speed checks, three-step set-up; code change, not deployed)
 - **Reworked the same day.** The first version (Google sign-in, OAuth) was declined by the owner and removed before merge: its routes, PKCE, state table, Vault refresh tokens, client-id/secret secrets and `docs/google-oauth-setup.md`.
 - **Code:**
