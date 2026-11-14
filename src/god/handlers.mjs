@@ -3,6 +3,7 @@
 // work that changes a website gets its own handler per authorized integration (R1-E1).
 import { buildDossier, dossierMemory } from "./onboarding.mjs";
 import { workOrder } from "./github.mjs";
+import { makePrioritiesHandler } from "./insights.mjs";
 
 // The crawler loads only where it runs (Node, the Supabase scan function); the Cloudflare Worker passes a remote scan.
 const scanSite = (...a) => import("../hosted/scan.mjs").then((m) => m.scanSite(...a));
@@ -14,12 +15,16 @@ const FRESH_MS = 36 * 3600e3;
 export function makeHandlers({ store, siteOf, scan = scanSite, scanOptions = {} }) {
   const last = new Map(); // siteId -> latest scan result in this worker process
   return {
+    // D57: the CLI's priority engine on the hosted reports, after each new snapshot, inspection, scan or speed check.
+    priorities: makePrioritiesHandler({ store, siteOf }),
     async scan(job) {
       const site = await siteOf(job.siteId);
       const r = await scan(site, scanOptions);
       last.set(job.siteId, r);
       const dossier = buildDossier({ site, discovered: r.discovered, profile: r.profile, audit: r.audit, answers: await answersOf(store, job.siteId) });
-      await store.writeMemory(job.siteId, [...dossierMemory(dossier).filter((m) => m.kind !== "strategy" && m.kind !== "question"), ...reportMemory(r)]);
+      // D57: the previous scan's errors and blocks travel with the new audit, so a new problem can be told from an old one.
+      const before = ((await store.readMemory?.(job.siteId, "report")) || []).find((m) => m.key === "audit")?.value || null;
+      await store.writeMemory(job.siteId, [...dossierMemory(dossier).filter((m) => m.kind !== "strategy" && m.kind !== "question"), ...reportMemory(r, before)]);
       return { evidence: [`${r.audit.summary.pagesCrawled} pages read from ${site.url}`, `${r.audit.issues.length} findings`, `${dossier.facts.length} facts with sources`], snapshot: r.snapshot };
     },
     async strategy_proposal(job) {
@@ -57,11 +62,28 @@ async function scanFromMemory(store, siteId) {
   return { audit: { ...audit, pages: [] }, discovered, profile: get("profile") || {} };
 }
 
-/** The compact reports the planner needs on its next tick (audit age and findings, site profile), kept in site memory. */
-export function reportMemory(r) {
+// Findings the alert detector compares between two scans (D57): errors and blocks.
+const WATCHED = new Set(["status-error", "noindex-in-sitemap", "robots-blocked", "robots-blocks-all"]);
+const compactIssue = (i) => ({ rule: i.rule, severity: i.severity, url: i.url, ...(i.rule === "status-error" && i.detail ? { detail: String(i.detail).slice(0, 40) } : {}) });
+/** Error statuses and noindex pages from the crawl (the scan function sends them as `signals`; a local scan has pages). */
+function signalsOf(a) {
+  if (a.signals) return { errors: (a.signals.errors || []).slice(0, 100), noindex: (a.signals.noindex || []).slice(0, 100) };
+  const pages = a.pages || [];
+  if (!pages.length) return null;
+  return { errors: pages.filter((p) => p.status >= 400 || p.status === 0).slice(0, 100).map((p) => ({ url: p.url, status: p.status })), noindex: pages.filter((p) => p.noindex).slice(0, 100).map((p) => p.url) };
+}
+
+/**
+ * The compact reports the planner needs on its next tick (audit age and findings, site profile), kept in site memory.
+ * before: the audit report kept from the previous scan, if any; its errors and blocks are kept as `previous` (one level).
+ */
+export function reportMemory(r, before = null) {
   const a = r.audit || {}, p = r.profile || {};
-  const audit = { generatedAt: a.generatedAt || new Date().toISOString(), summary: a.summary || {}, issues: (a.issues || []).slice(0, 200).map((i) => ({ rule: i.rule, severity: i.severity, url: i.url })),
+  const audit = { generatedAt: a.generatedAt || new Date().toISOString(), summary: a.summary || {}, issues: (a.issues || []).slice(0, 200).map(compactIssue),
     crawled: (a.crawled || (a.pages || []).map((p) => p.url)).filter(Boolean).slice(0, 100) };
+  const signals = signalsOf(a);
+  if (signals) audit.signals = signals;
+  if (before?.generatedAt && before.generatedAt !== audit.generatedAt) audit.previous = { generatedAt: before.generatedAt, issues: (before.issues || []).filter((i) => WATCHED.has(i.rule)).slice(0, 100), ...(before.signals ? { signals: before.signals } : {}) };
   const profile = { mode: p.mode || null, platform: p.platform?.name ? { name: p.platform.name } : null, rendering: p.rendering || null, inRepository: !!p.inRepository };
   return [
     { kind: "report", key: "audit", value: audit, basis: "verified", confidence: null, source: "scan" },

@@ -52,6 +52,27 @@ deployed and what is only built is in [deployment-status.md](deployment-status.m
 4. The daily `search_snapshot` job reads the bound Search Console and GA4 properties with the service account. A weekly
    `speed_snapshot` job checks the home page and the top pages with the platform's PageSpeed key.
 
+**D. What the hosted engine knows, and how it reacts (D57)**
+1. Every day per site: `search_snapshot` (28-day Search Console snapshot, GA4, and now 35 days of daily site totals
+   merged into report `history`: 120 days of totals, 9 weekly points for the top 30 queries and pages);
+   `index_inspect` (URL Inspection API, at most 20 pages a day, important pages first; report `inspect` in the CLI's
+   inspect shape, previous state per page; a 403 is recorded as "needs Full permission" and retried after a week);
+   `priorities` (free; the CLI's priority engine, `src/analysis/priorities.mjs`, on the hosted reports, re-run whenever
+   its inputs change). Sources: `src/god/search-console.mjs`, `inspect.mjs`, `insights.mjs`,
+   `src/analysis/search-history.mjs`.
+2. Planning (`src/god/tick.mjs`, `planner.mjs`) passes audit, profile, priorities, inspect, speed (D56, router shape)
+   and the history's query movement (`rank`) to `routeAgents`; agents get `indexStatus`, `priorities` and
+   `searchHistory` (bounded) next to `searchConsole`, `analytics` and `speed`.
+3. Fast reaction: `src/analysis/alerts.mjs` compares the latest data with the previous (clicks down 30% week over week
+   with at least 50 clicks the week before; an important page de-indexed or newly blocked; new 5xx/4xx or noindex on an
+   important page since the previous scan). An alert queues its specialist with a day period (priority 1), within the
+   budget and approval rules, not again within 7 days; that week's routine run of the same specialist is skipped.
+4. Once a day after 07:00 UTC the scheduler calls `record_daily_digests` (migration 20261119000000): per agency, work
+   waiting for a person and for how long, stopped work, failures, data freshness, spend against budget. It is a portal
+   notification when something needs attention, so the daily summary email (D40) carries it when SMTP is set. Stale
+   data (no snapshot in 48 h for a connected site, no scan in 72 h) and refused inspection also appear in the agency's
+   alerts and, for platform admins, in platform health on Operations.
+
 ## Tenancy
 Every row belongs to an org through `sites.org_id`. Reads are row-level security (`private.is_member`); writes go through
 `SECURITY DEFINER` functions that check membership themselves. Clients see one site through a share link

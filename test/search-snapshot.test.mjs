@@ -17,6 +17,7 @@ function google({ access = "domain", pages = 3 } = {}) {
     const prop = decodeURIComponent(url.split("/sites/")[1].split("/")[0]), b = JSON.parse(o.body); calls.push({ prop, b });
     if (access === "none" || (access === "prefix" && prop.startsWith("sc-domain:"))) return new Response(JSON.stringify({ error: { message: "no permission" } }), { status: 403 });
     const dim = (b.dimensions || [])[0];
+    if (dim === "date") return new Response(JSON.stringify({ rows: Array.from({ length: 35 }, (_, i) => ({ keys: [new Date(Date.parse("2026-10-24T00:00:00Z") + i * 864e5).toISOString().slice(0, 10)], clicks: 3, impressions: 90, ctr: 0.03, position: 9.04 })) }), { status: 200 });
     if ((b.dimensions || []).length === 2) return new Response(JSON.stringify({ rows: [{ keys: ["https://www.plumber.test/p0", "boiler repair leeds"], clicks: 5, impressions: 200, ctr: 0.025, position: 7.04 }] }), { status: 200 });
     const rows = !dim ? [{ keys: [], clicks: 40, impressions: 2000, ctr: 0.02, position: 18.234 }]
       : dim === "page" ? Array.from({ length: pages }, (_, i) => ({ keys: [`https://www.plumber.test/p${i}`], clicks: 10 - i, impressions: 500 - i, ctr: 0.0123456, position: 12.34 }))
@@ -33,8 +34,14 @@ test("snapshot: last 28 days ending 3 days ago; totals, pages and queries stored
   const out = await h({ siteId: "A" });
   assert.match(out.evidence[0], /sc-domain:plumber\.test, 2026-10-31 to 2026-11-27: 40 clicks, 2000 impressions; 3 pages and 1 queries stored/);
   assert.equal(calls[0].b.startDate, "2026-10-31"); assert.equal(calls[0].b.endDate, "2026-11-27");
-  assert.equal(calls.length, 4, "four small queries");
+  assert.equal(calls.length, 5, "five small queries (D57: the daily totals for the history)");
   assert.deepEqual(calls[3].b.dimensions, ["page", "query"]);
+  assert.deepEqual([calls[4].b.dimensions, calls[4].b.startDate, calls[4].b.endDate], [["date"], "2026-10-24", "2026-11-27"], "35 days of site totals");
+  const hist = store.readMemory("A").find((m) => m.key === "history").value;
+  assert.equal(Object.keys(hist.daily).length, 35); assert.deepEqual(hist.daily["2026-11-27"], [3, 90, 9]);
+  assert.deepEqual(Object.keys(hist.weeks), ["2026-W48"]); assert.deepEqual(hist.weeks["2026-W48"].queries["boiler repair leeds"], [7, 300, 8.6]);
+  assert.match(out.evidence[1], /history: 35 days of site totals, 1 weekly points/);
+  assert.ok(!store.readMemory("A").some((m) => m.key === "priorities"), "ranking is its own small job (CPU per invocation)");
   const r = store.readMemory("A").find((m) => m.kind === "report" && m.key === "search_console");
   assert.equal(r.basis, "verified"); assert.equal(r.value.pages[0].url, "https://www.plumber.test/p0");
   assert.equal(r.value.pages[0].ctr, 0.0123); assert.equal(r.value.totals.position, 18.2);

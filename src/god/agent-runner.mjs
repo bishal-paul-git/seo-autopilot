@@ -10,6 +10,9 @@ import { NO_FAKE_RULES } from "../lib/llm.mjs";
 import { knowledgeBlock, readKnowledge, haveKnowledge } from "./knowledge.mjs";
 import { searchForAgents, analyticsForAgents } from "./search-console.mjs";
 import { speedForAgents } from "./speed.mjs";
+import { inspectForAgents } from "./inspect.mjs";
+import { prioritiesForAgents } from "./insights.mjs";
+import { historyForAgents } from "../analysis/search-history.mjs";
 
 /** US dollars per million tokens (Anthropic first-party prices, 2026-10). Unknown models are refused, not guessed. */
 export const PRICES = {
@@ -53,6 +56,10 @@ is unknown. Compare click rates only like for like (the same query on two pages,
 page's total includes brand and other searches. Never say a page is the only one for a topic, or offers something (bookings, a form, prices), unless the
 data lists every page or states it.
 When it is null, Search Console is not connected: say so and do not estimate traffic.
+site_data.indexStatus is Google's own URL inspection of the pages listed (a rotating batch); a page not listed has not
+been inspected, so its index status is unknown. site_data.priorities is a ranked list computed from the same data
+(scores are estimates, not forecasts). site_data.searchHistory holds daily site totals and query movement; follow its
+note. task.alerts, when present, means a sudden change triggered this run: diagnose it from task.evidence first.
 When data the task needs is missing, begin the summary with "No data:" and name what is missing and what would supply it.
 You have URLs, scan findings, stated facts and metrics, not the pages' full text. Say what you infer as an inference
 ("the URLs suggest", "check whether") and never describe what a page contains, offers or duplicates beyond the data.
@@ -75,7 +82,7 @@ export function agentInput(job, memory, site) {
   const audit = pick("report", "audit");
   const data = {
     site: { url: site.url, name: site.name || null },
-    task: { agent: job.inputs?.agent || job.kind.slice(6), why: job.title, instruction: job.inputs?.instruction || null, evidence: job.inputs?.evidence || [], clientRequest: job.inputs?.request || null },
+    task: { agent: job.inputs?.agent || job.kind.slice(6), why: job.title, instruction: job.inputs?.instruction || null, evidence: job.inputs?.evidence || [], clientRequest: job.inputs?.request || null, ...(job.inputs?.alerts ? { alerts: job.inputs.alerts } : {}) },
     strategy: pick("strategy", "initial"), profile: pick("report", "profile"),
     audit: audit ? { generatedAt: audit.generatedAt, summary: audit.summary, issues: (audit.issues || []).slice(0, 80) } : null,
     facts: facts.slice(0, 60),
@@ -83,6 +90,8 @@ export function agentInput(job, memory, site) {
     searchConsole: searchForAgents(pick("report", "search_console")),
     // D56: visits per landing page (GA4, through the site's Google connection) and the weekly phone speed check, or null.
     analytics: analyticsForAgents(pick("report", "analytics")), speed: speedForAgents(pick("report", "speed")),
+    // D57: Google's index status for the inspected pages, the ranked to-do list and the search history (bounded).
+    indexStatus: inspectForAgents(pick("report", "inspect")), priorities: prioritiesForAgents(pick("report", "priorities")), searchHistory: historyForAgents(pick("report", "history")),
     // What earlier advice on this site led to (from later scans and the agency's decisions).
     lessons: memory.filter((m) => m.kind === "lesson").map((m) => m.value?.text).filter(Boolean).slice(0, 10),
   };

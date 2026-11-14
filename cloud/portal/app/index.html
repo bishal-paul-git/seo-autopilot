@@ -907,7 +907,7 @@ function pOps() {
   if (h) {
     const c = h.control || {}, u = h.usage || {}, pct = ((Number(u.invocations || 0) / 100000) * 100).toFixed(2);
     html += `<div class="card"><div class="ch"><h2>Scheduler (platform)</h2><span class="pill ${c.paused ? "warn" : "ok"}">${c.paused ? "Paused" : "Running"}</span></div>
-      <p class="xs muted" style="margin:0 0 8px">Only platform admins see this. ${c.paused ? `Paused${c.reason ? `: ${esc(c.reason)}` : ""}${c.by ? ` by ${esc(c.by)}` : ""}.` : ""} Last run ${esc(ago(h.lastRunAt))}. ${fmt(h.sites)} websites, ${fmt(h.pausedSites)} paused.</p>
+      <p class="xs muted" style="margin:0 0 8px">Only platform admins see this. ${c.paused ? `Paused${c.reason ? `: ${esc(c.reason)}` : ""}${c.by ? ` by ${esc(c.by)}` : ""}.` : ""} Last run ${esc(ago(h.lastRunAt))}. ${fmt(h.sites)} websites, ${fmt(h.pausedSites)} paused.${Array.isArray(h.stale) ? ` ${h.stale.length ? `<b>Stale data on ${fmt(h.stale.length)}:</b> ${h.stale.slice(0, 10).map((x) => `${esc(x.siteName)} (${(x.stale || []).map((k) => (k === "search_console" ? "Search Console over 48 h" : k === "scan" ? "scan over 72 h" : esc(k))).join(", ")})`).join("; ")}.` : "Data is fresh on every live website."}` : ""}</p>
       <div class="grid g4">${kpi("Runs (24 h)", fmt(u.runs), null, `${fmt(u.runsWithErrors)} with errors`)}${kpi("Worker requests (24 h)", fmt(u.invocations), null, `${pct}% of the 100,000 a day on Workers Free`)}${kpi("Outbound requests", fmt(u.subrequests), null, "Database, scans, AI provider")}${kpi("Jobs run", fmt(u.jobsRun), null, `${fmt(u.jobsRecovered)} recovered after a stop`)}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">${c.paused ? '<button class="btn primary" id="ops-resume">Resume the scheduler</button>' : '<button class="btn" id="ops-pause">Pause the scheduler</button>'}</div>
       <details style="margin-top:10px"><summary class="xs" style="cursor:pointer">Recent runs</summary><div class="list">${(h.runs || []).map((r) => `<div class="row"><div><div class="t">${esc(String(r.started_at).slice(0, 16).replace("T", " "))} · ${esc(r.runner)}</div><div class="s">${fmt(r.sites_planned)} sites planned · ${fmt(r.jobs_run)} jobs · ${fmt(r.invocations)} invocations · ${fmt(r.subrequests)} requests${r.paused ? " · paused" : ""}${(r.errors || []).length ? ` · <span style="color:var(--bad,#c33)">${esc(r.errors.join("; "))}</span>` : ""}</div></div></div>`).join("") || '<div class="empty">No runs yet.</div>'}</div></details></div>`;
@@ -932,6 +932,8 @@ const ALERT_TEXT = {
   escalated: (a) => `${esc(a.siteName)}: ${fmt(a.count)} job${a.count === 1 ? "" : "s"} stopped and need${a.count === 1 ? "s" : ""} a person.`,
   budget_hit: (a) => `${esc(a.siteName)}: today's AI budget${a.budgetUsd != null ? ` (${usd(a.budgetUsd)})` : ""} is used up; ${fmt(a.count)} job${a.count === 1 ? "" : "s"} wait until tomorrow.`,
   plan_error: (a) => `${esc(a.siteName)}: the last planning run failed: ${esc(a.error || "")}`,
+  stale_data: (a) => `${esc(a.siteName)}: ${(a.stale || []).map((k) => (k === "search_console" ? "no Search Console data in 48 hours" : k === "scan" ? "no scan in 72 hours" : esc(k))).join(" and ")}. The agents are working from old data.`,
+  inspect_blocked: (a) => `${esc(a.siteName)}: Google refused URL inspection. Give the service account Full permission on the Search Console property to see index status.`,
 };
 function alertsCard(list) {
   if (!Array.isArray(list)) return "";
@@ -1408,10 +1410,10 @@ async function loadNotes() { try { NOTES = await rpc("my_notifications"); } catc
 // In the background on every page: the menu badge updates when the answer arrives, the page never waits for it.
 const refreshNotes = () => loadNotes().then(() => document.querySelectorAll('#rail a[href="#/notes"]').forEach((a) => { a.querySelector(".count")?.remove(); a.insertAdjacentHTML("beforeend", unreadBadge()); }));
 const unreadBadge = () => (NOTES?.unread ? ` <span class="count" aria-label="${fmt(NOTES.unread)} unread">${NOTES.unread > 99 ? "99+" : fmt(NOTES.unread)}</span>` : "");
-const NOTE_KIND = { approval: ["Waiting for your approval", "info"], stuck: ["Needs a person", "bad"], request: ["Client request", "warn"], verified: ["Change verified", "ok"], change_failed: ["Change stopped", "bad"], integration: ["Integration error", "bad"], planning: ["Planning error", "bad"], answer: ["Your agency answered", "ok"] };
+const NOTE_KIND = { approval: ["Waiting for your approval", "info"], stuck: ["Needs a person", "bad"], request: ["Client request", "warn"], verified: ["Change verified", "ok"], change_failed: ["Change stopped", "bad"], integration: ["Integration error", "bad"], planning: ["Planning error", "bad"], answer: ["Your agency answered", "ok"], digest: ["Daily digest", "warn"] };
 function pNotes() {
   const items = NOTES?.items || [];
-  const href = (n) => (n.kind === "answer" ? `#/k/${encodeURIComponent(n.site)}/requests` : `#/s/${encodeURIComponent(n.site)}/${encodeURIComponent(n.page || "overview")}`);
+  const href = (n) => (n.kind === "digest" ? "#/ops" : n.kind === "answer" ? `#/k/${encodeURIComponent(n.site)}/requests` : `#/s/${encodeURIComponent(n.site)}/${encodeURIComponent(n.page || "overview")}`);
   return `<div><h1>Notifications</h1><p class="lead">What needs you, and what happened, across your websites. Newest first.</p></div>
   ${EMAIL_SUMMARY == null ? "" : `<label class="card" style="display:flex;gap:10px;align-items:center;padding:12px 16px;cursor:pointer"><input type="checkbox" id="email-summary" ${EMAIL_SUMMARY ? "checked" : ""}><span><b>Email me a daily summary</b><br><span class="xs muted">At most once a day, only when something new needs you. Sent from your agency's address.</span></span></label>`}
   <div class="card pad0"><div class="list">${items.map((n) => { const [label, cls] = NOTE_KIND[n.kind] || [n.kind, ""]; return `<a class="row note${n.unread ? " unread" : ""}" href="${href(n)}" style="display:block;text-decoration:none;color:inherit">

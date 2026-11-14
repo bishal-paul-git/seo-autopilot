@@ -7,6 +7,10 @@ import { enqueue, runOnce } from "./worker.mjs";
 import { learn, applyLessons } from "./learning.mjs";
 import { trafficDue, snapshotDue } from "./search-console.mjs";
 import { speedDue } from "./speed.mjs";
+import { inspectDue } from "./inspect.mjs";
+import { plannerReports, prioritiesDue } from "./insights.mjs";
+import { detectAlerts, unhandledAlerts } from "../analysis/alerts.mjs";
+import { isoWeek } from "../analysis/search-history.mjs";
 import { rulesOnPage, verifyChange, WAIT_FOR_PR_DAYS } from "./github.mjs";
 import { withAnswers } from "./onboarding.mjs";
 
@@ -22,11 +26,17 @@ export function strategyStatus(jobs, memory) {
   return jobs.some((j) => j.kind === "strategy_proposal" && OPEN.has(j.status)) ? "proposed" : "none";
 }
 
-/** The reports the planner reads, rebuilt from the compact copies the scan handler keeps in memory. */
-export function reportsFrom(memory) {
-  const r = {};
-  for (const m of memory) if (m.kind === "report") r[m.key] = m.value;
-  return r;
+/**
+ * The reports the planner reads, rebuilt from the compact copies the jobs keep in memory: audit, profile, priorities,
+ * the URL inspection map, the speed check in the router's shape and the search history's query movement (D57).
+ */
+export const reportsFrom = (memory) => plannerReports(memory);
+
+/** Sudden problems (D57) not yet handled by a job, from the reports in memory. */
+export function alertsFor(site, memory, jobs, now) {
+  const get = (k) => memory.find((m) => m.kind === "report" && m.key === k)?.value ?? null;
+  const found = detectAlerts({ siteUrl: site.url, history: get("history"), inspect: get("inspect"), audit: get("audit"), searchConsole: get("search_console"), now });
+  return unhandledAlerts(found, jobs, now);
 }
 
 /**
@@ -203,19 +213,30 @@ export async function tick({ store, sites = null, handlers = {}, now = new Date(
       // Money already promised to open work counts against today's budget, so a tick cannot queue more than the day allows.
       let reserved = spent + jobs.filter((j) => OPEN.has(j.status) && j.status !== "failed").reduce((a, j) => a + Math.max(0, (Number(j.budgetUsd) || 0) - (Number(j.costUsd) || 0)), 0);
       entry.spentTodayUsd = round(spent); entry.budgetUsd = budget;
-      const plan = planSite({ site, reports: reportsFrom(memory), strategy: { status: entry.strategy }, agents, now });
+      const alerts = entry.strategy === "approved" ? alertsFor(site, memory, jobs, now) : [];
+      entry.alerts = alerts.map((a) => ({ id: a.id, kind: a.kind, agent: a.agent, title: a.title }));
+      const plan = planSite({ site, reports: reportsFrom(memory), strategy: { status: entry.strategy }, agents, alerts, now });
       const keep = [], existing = new Set(jobs.map((j) => j.idempotencyKey).filter(Boolean));
       // Measure accepted advice in Search Console once its after-window is complete (only with a Google key).
       // A fresh 28-day Search Console snapshot for the agents to read, once a day, before the specialists (D47).
       if (has("search_snapshot") && snapshotDue(memory, now) && (await applies("search_snapshot", site.id))) plan.jobs.push({ kind: "search_snapshot", title: "Read the last 28 days from Search Console", department: "analytics", risk: "low", priority: 1, source: "seo_god", requiresApproval: false, idempotencyKey: `search_snapshot:${now.slice(0, 10)}`, inputs: { site: site.id }, why: "the agents read clicks and impressions per page and query" });
       // D56: a weekly phone speed check (home and top pages) with the platform's PageSpeed key; only when the Worker has it.
       if (has("speed_snapshot") && speedDue(memory, now)) plan.jobs.push({ kind: "speed_snapshot", title: "Check page speed on phones", department: "technical", risk: "low", priority: 2, source: "seo_god", requiresApproval: false, idempotencyKey: `speed_snapshot:${now.slice(0, 10)}`, inputs: { site: site.id }, why: "the agents read lab and real-user speed for the home page and the top pages" });
+      // D57: Google's index status for a small rotating batch of pages, after the snapshot (it names the property).
+      if (has("index_inspect") && inspectDue(memory, now) && (await applies("index_inspect", site.id))) plan.jobs.push({ kind: "index_inspect", title: "Check which pages Google has indexed", department: "technical", risk: "low", priority: 2, source: "seo_god", requiresApproval: false, idempotencyKey: `index_inspect:${now.slice(0, 10)}`, inputs: { site: site.id }, why: "the agents and the alerts read Google's index status for the important pages" });
+      // D57: re-rank the to-do list when its inputs changed (free; keyed by the inputs' time, so once per new data).
+      const rankAt = has("priorities") ? prioritiesDue(memory) : null;
+      if (rankAt) plan.jobs.push({ kind: "priorities", title: "Rank the to-do list from the latest data", department: "analytics", risk: "low", priority: 2, source: "seo_god", requiresApproval: false, idempotencyKey: `priorities:${rankAt}`, inputs: { site: site.id }, why: "new search, index, scan or speed data: the agents and the router read the ranked list" });
       if (has("search_console") && trafficDue(learned.experiments, now).length) plan.jobs.push({ kind: "search_console", title: "Measure accepted advice in Search Console", department: "analytics", risk: "low", priority: 3, source: "seo_god", requiresApproval: false, idempotencyKey: `search_console:${now.slice(0, 10)}`, inputs: { site: site.id }, why: "accepted advice has a complete 14-day after-window" });
       const guided = applyLessons(plan.jobs, learned.lessons);
       entry.deferred.push(...guided.deferred); entry.adjusted = guided.adjusted;
+      // An alert run of a specialist this week stands in for its weekly run, so a sudden problem never doubles the spend.
+      const week = isoWeek(now);
+      const alertRun = new Set([...guided.keep.filter((j) => j.inputs?.alerts), ...jobs.filter((j) => j.inputs?.alerts && (!Number.isFinite(Date.parse(j.createdAt)) || isoWeek(j.createdAt) === week))].map((j) => j.kind));
       for (const spec of guided.keep) {
         if (!has(spec.kind)) { entry.deferred.push({ kind: spec.kind, reason: "no runner for this kind yet" }); continue; }
         if (existing.has(spec.idempotencyKey)) continue; // already planned this period; its budget is already reserved
+        if (spec.kind.startsWith("agent:") && !spec.inputs?.alerts && alertRun.has(spec.kind)) { entry.deferred.push({ kind: spec.kind, reason: "an alert run of this specialist already covers this week" }); continue; }
         const est = estimateCost(spec.kind, { agentRunUsd });
         if (est > 0 && reserved + est > budget + 1e-9) { entry.deferred.push({ kind: spec.kind, reason: `over today's budget ($${round(reserved)} used or reserved of $${budget})` }); continue; }
         reserved += est; keep.push({ ...spec, budgetUsd: est });

@@ -24,7 +24,7 @@ const isoWeek = (d) => {
  * from the registry. now: ISO time. Returns { strategyApproved, jobs: [{ kind, title, department, risk, priority,
  * source, requiresApproval, idempotencyKey, inputs, why }] }.
  */
-export function planSite({ site, reports = {}, strategy = { status: "none" }, agents = [], now = new Date().toISOString() }) {
+export function planSite({ site, reports = {}, strategy = { status: "none" }, agents = [], alerts = [], now = new Date().toISOString() }) {
   const week = isoWeek(new Date(now)), day = now.slice(0, 10);
   const approved = strategy?.status === "approved";
   const jobs = [];
@@ -44,8 +44,22 @@ export function planSite({ site, reports = {}, strategy = { status: "none" }, ag
   }
 
   // Delegation: the existing deterministic router decides which specialists are needed and in what order.
-  const plan = routeAgents({ profile: reports.profile || null, audit: reports.audit || null, priorities: reports.priorities || null, inspect: reports.inspect || {}, speed: reports.speed || null, geo: reports.geo || null });
+  // D57: the hosted engine now keeps inspect, priorities, speed and the search history (as `rank`), so routing sees them.
+  const plan = routeAgents({ profile: reports.profile || null, audit: reports.audit || null, priorities: reports.priorities || null, inspect: reports.inspect || {}, speed: reports.speed || null, geo: reports.geo || null, rank: reports.rank || null });
   const byName = new Map(agents.map((a) => [a.name, a]));
+  // D57 fast reaction: a sudden problem queues its specialist for TODAY (period = day), one job per specialist with every
+  // alert it covers, ahead of the weekly work. Same budget, review and approval rules as any other agent job.
+  const byAgent = new Map();
+  for (const al of alerts) (byAgent.get(al.agent) || byAgent.set(al.agent, []).get(al.agent)).push(al);
+  for (const [agent, list] of byAgent) {
+    const a = byName.get(agent) || { name: agent };
+    const why = `Alert: ${list.map((x) => x.title).join("; ")}`;
+    add({
+      kind: `agent:${agent}`, title: why.slice(0, 200), department: departmentOf({ agent, agentDir: a.department }), risk: agentRisk(agent, a), priority: 1, period: day,
+      inputs: { agent, alerts: list.map((x) => x.id), instruction: `Something changed suddenly on this site. Diagnose the cause from the evidence and the site data, say what a person should check or do first, and what to watch next. ${list.map((x) => x.title).join("; ")}.`,
+        evidence: list.flatMap((x) => x.evidence).slice(0, 10) }, why,
+    });
+  }
   for (const step of plan.steps || []) {
     const a = byName.get(step.agent) || { name: step.agent };
     const risk = agentRisk(step.agent, a);

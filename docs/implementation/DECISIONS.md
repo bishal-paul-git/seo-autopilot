@@ -119,6 +119,102 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
 
+## 2026-11-14 D57 The hosted engine sees index status, history and priorities; reacts the same day; reminds people daily
+Phase 1 of moving SEO Autopilot off GitHub Actions. Production data (14 Nov) showed the hosted engine's memory for a live
+site holds only `audit`, `discovered`, `profile` and `search_console`. The planner's router (`routeAgents`) reads
+profile, audit, priorities, inspect, speed and geo, so specialist routing was half-blind. Specialists ran once per ISO
+week and nothing reacted to sudden problems. Approvals waited silently (two since 12 Nov): a notification is dated by
+the job's last change, so nothing reminded anyone after the first day.
+
+**Decision:**
+- **Index status** (`src/god/inspect.mjs`): a daily `index_inspect` job calls Google's URL Inspection API with the
+  shared service account for the bound property (D56), or the property the snapshot found for an admin-confirmed site
+  (D34). At most 20 pages a day (Google allows 2,000 a day and 600 a minute per property), four at a time: important
+  pages (home, then top pages by impressions) every 7 days, then pages never inspected, then the oldest. Report
+  `inspect` keeps the CLI's inspect shape (`results: { url: { coverage, verdict, ... } }`), compact, at most 150 pages,
+  with each page's previous state and when it changed. A 403 (Restricted access) is recorded as "needs Full permission"
+  and not retried for 7 days; a 429 stops the batch and keeps what was read. Read-only scope; nothing escalates.
+- **History** (`src/analysis/search-history.mjs`): the daily snapshot adds one small date query (35 days of site
+  totals). Report `history` keeps 120 days of daily totals and 9 weekly points for the top 30 queries and pages.
+  Query movement between the two latest weekly points uses the rank tracker's `summarise` (`rank.mjs`).
+- **Priorities** (`src/god/insights.mjs`): a free `priorities` job runs the CLI's priority engine
+  (`src/analysis/priorities.mjs`, with `search.mjs` striking distance, CTR, cannibalisation and decay) on the hosted
+  reports whenever the snapshot, inspection, scan or speed check is newer than the last ranking. Content gaps are left
+  out: they need page titles, which the hosted scan does not keep, and they are the costliest step for a Worker.
+- **The planner sees it all**: `reportsFrom(memory)` gives `routeAgents` priorities, the inspection map, the D56 speed
+  check in the router's shape (score and rating) and the history's query movement as `rank`. Agents get
+  `indexStatus`, `priorities` and `searchHistory` (bounded) in their data block.
+- **Fast reaction** (`src/analysis/alerts.mjs`, pure): clicks down at least 30% week over week (7 days vs the 7
+  before, at least 50 clicks and 6 days of data in each week); an important page indexed at its previous inspection
+  and not now; a new noindex or robots block on an important page (inspection or scan); new 5xx (technical fixer) or
+  4xx (redirect guardian) on an important page since the previous scan. Important = home plus the top 20 pages with at
+  least one click or 100 impressions. The first reading of anything raises nothing. An alert queues its specialist
+  with a **day** period and priority 1, merged per specialist, with the alert's evidence and ids in the job's inputs.
+  The usual rules hold: strategy approved first, daily budget, review, and agency approval for high-risk specialists
+  (D17, D29 advise-only, D55). An alert id is not acted on twice in 7 days, and an alert waits while the same
+  specialist is already queued or running. An alert run counts as that specialist's run for the week.
+- **Daily digest and stale data** (migration 20261119000000): once a day after 07:00 UTC the scheduler calls
+  `record_daily_digests`, also while paused. Per agency it records:
+  - work waiting for a person and the oldest wait;
+  - stopped work, and failures in the last 24 hours;
+  - freshness per site: no Search Console snapshot in 48 h for a connected site, no scan in 72 h, inspection refused;
+  - yesterday's spend against each site's budget.
+
+  When something needs attention it is a portal notification (`private.notifications_for`, kind `digest`). The D40
+  summary email therefore carries it when SMTP is set; without SMTP it is still in the portal. Stale data and refused
+  inspection also appear in `ops_alerts` and, for platform admins, in `platform_health`. The same daily call prunes
+  superseded copies (older than 14 days) of the large derived reports. Each day writes new copies, and `history` keeps
+  the trend. Audit copies are kept for the monthly work report.
+
+**CPU budget (Workers Free, 10 ms per invocation).** Each step stays its own invocation: planning one site, the
+snapshot, the inspection and the ranking. Estimated with `scripts/cf-measure-signals.mjs` (Node V8, synthetic site at
+every size cap, about 173 KB of reports; first call / warm):
+- planning one site: 7 to 11 ms / 2 to 2.6 ms. Of the first-call cost, about 4 to 6 ms is the router's warm-up,
+  which existed before D57.
+- the snapshot's work after Google answers: about 3 to 5 / 2 ms.
+- the ranking job: about 4 / 2 to 3 ms.
+- an inspection batch: about 4 to 5 / 1.5 to 2.5 ms.
+- alert detection: under 1 ms once warm.
+
+Outbound requests: the snapshot uses 6 Google calls, and the inspection at most 20 plus about 5 database calls (limit
+50). A cold isolate planning a large site can come near the 10 ms limit. Workers Paid (30 s CPU) removes that risk; on
+Free, a planning error is retried at the next run and shows as a plan error on Operations.
+
+**Not chosen:**
+- Computing the digest in the Worker. It needs every site's jobs and memory, many requests per agency. SQL does it in
+  one call.
+- Escalating a refused inspection. That would put a stopped job in front of the agency every day for a settings
+  question; the digest and the alerts say it once.
+- Re-inspecting every page daily. Twenty a day keeps the important pages within a week and stays far from Google's
+  quota with many sites on one property quota.
+
+**GitHub Actions exit plan:**
+- **Phase 1 (this):** hosted sites get index status, history, priorities, alerts and the daily digest without a
+  repository or Actions.
+- **Phase 2:** the deep crawl (more pages than the 40-page scan function) and the weekly research jobs (`keywords`,
+  `rank` with live checks, `gap`, `authority`, `ai-visibility`). These run on Cloudflare Queues and Workflows on Workers
+  Paid: durable steps with retries and per-step CPU, results written to site memory in the same compact shapes. On Free
+  they stay where they are.
+- **Phase 3:** implementation pull requests through the GitHub API directly, without Actions. The Worker creates the
+  branch, commits the reviewed change and opens the pull request with the agency's token. It keeps D55: a person
+  merges, and checks run in the site's own CI. `seo-implement` and the scheduled workflows are then optional for hosted
+  sites.
+
+**Tradeoffs:**
+- A platform identity reads index status, as in D56. Customers grant Full access only if they want it.
+- Weekly query points overlap (28-day windows), so movement is damped. The data says so.
+- Thresholds are first guesses on small sites (one pilot) and should be tuned on real alerts.
+- Pruning deletes old copies of derived reports: the daily `history` keeps the trend, but a past day's full snapshot is
+  gone after 14 days.
+- Nothing is verified with real Google yet: unit tests with mocked responses, the SQL suite and the workerd end-to-end
+  run use stand-ins.
+
+**Evidence:**
+- `test/inspect.test.mjs` and `test/alerts.test.mjs` (history, detector, priorities, planner and tick integration).
+- `test/search-snapshot.test.mjs` and `test/cf-worker.test.mjs` (the digest call).
+- `cloud/portal/supabase/test/rls26.sql`.
+- `scripts/cf-local-e2e.mjs`, D57 section: inspection for the bound property in workerd, and the digest notification.
+
 ## 2026-11-14 D56 Give us read access; central speed checks; a three-step set-up in the portal
 The owner, 2026-11-14: "make the setup easy from portal and easy for customers". Today a hosted customer needs a Google Cloud service account, a JSON key, GitHub secrets and a config edit before the agents see any search data. A first version used Google sign-in (OAuth). The owner declined it: no OAuth client and no consent screen. This record describes the version that replaced it.
 

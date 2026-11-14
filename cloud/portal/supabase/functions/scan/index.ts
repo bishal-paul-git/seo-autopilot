@@ -28,8 +28,11 @@ const MAX_PAGES = 40; // keeps a scan well inside the 2 s CPU limit (measured 13
 // What the Worker needs from a scan (onboarding facts, profile, a compact audit): small, so parsing it costs little CPU.
 const compact = (r: any) => ({
   discovered: r.discovered, profile: { mode: r.profile?.mode ?? null, platform: r.profile?.platform?.name ? { name: r.profile.platform.name } : null, rendering: r.profile?.rendering ?? null, inRepository: false },
-  audit: { generatedAt: r.audit?.generatedAt ?? new Date().toISOString(), summary: r.audit?.summary ?? {}, issues: (r.audit?.issues ?? []).slice(0, 200).map((i: any) => ({ rule: i.rule, severity: i.severity, url: i.url })), pages: [],
-    crawled: (r.audit?.pages ?? []).map((p: any) => p.url).filter(Boolean).slice(0, 100) },
+  audit: { generatedAt: r.audit?.generatedAt ?? new Date().toISOString(), summary: r.audit?.summary ?? {}, issues: (r.audit?.issues ?? []).slice(0, 200).map((i: any) => ({ rule: i.rule, severity: i.severity, url: i.url, ...(i.rule === "status-error" && i.detail ? { detail: String(i.detail).slice(0, 40) } : {}) })), pages: [],
+    crawled: (r.audit?.pages ?? []).map((p: any) => p.url).filter(Boolean).slice(0, 100),
+    // D57: error statuses and noindex pages, so the Worker can tell a new problem on an important page from an old one.
+    signals: { errors: (r.audit?.pages ?? []).filter((p: any) => p.status >= 400 || p.status === 0).slice(0, 100).map((p: any) => ({ url: p.url, status: p.status })),
+      noindex: (r.audit?.pages ?? []).filter((p: any) => p.noindex).slice(0, 100).map((p: any) => p.url) } },
 });
 
 Deno.serve(async (req) => {

@@ -3,12 +3,13 @@
 // SMTP secrets are not set). Everything in an email comes from the database's email_queue; text is escaped for HTML.
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-const LABEL = { approval: "Waiting for your approval", stuck: "Needs a person", request: "Client request", verified: "Change verified", change_failed: "Change stopped", integration: "Integration error", planning: "Planning error", answer: "Your agency answered" };
+const LABEL = { approval: "Waiting for your approval", stuck: "Needs a person", request: "Client request", verified: "Change verified", change_failed: "Change stopped", integration: "Integration error", planning: "Planning error", answer: "Your agency answered", digest: "Daily digest" };
 
 /** Portal link for one item: agency pages for agency items, the client view for answers to a client's own request. */
 export function itemLink(portalUrl, it) {
   const base = String(portalUrl || "").replace(/#.*$/, "").replace(/\/?$/, "/");
   const site = encodeURIComponent(String(it.site || "")), page = encodeURIComponent(String(it.page || "overview"));
+  if (it.kind === "digest") return `${base}#/ops`; // D57: the agency's daily digest is about every website: Operations
   return it.kind === "answer" ? `${base}#/k/${site}/requests` : `${base}#/s/${site}/${page}`;
 }
 

@@ -5,6 +5,7 @@
 // group is the rest of the site (totals minus the page). A Google service account the site owner added as a user on
 // their Search Console property signs in with Web Crypto (works in Node and Workers). Read-only scope.
 import { evaluate, controlGroup } from "../analysis/experiments.mjs";
+import { mergeHistory } from "../analysis/search-history.mjs";
 
 const day = (t) => new Date(t).toISOString().slice(0, 10);
 const addDays = (d, n) => day(Date.parse(`${d}T00:00:00Z`) + n * 864e5);
@@ -136,7 +137,7 @@ export async function searchAccess(job, { boundOf = null, getToken = null, allow
 }
 const lostAccess = (property) => `Search Console: the service account can no longer read ${property}; the owner may have removed it. Add the email shown on the Connections page again (Search Console › Settings › Users and permissions), then press Check access`;
 
-export const SNAPSHOT_DAYS = 28, SNAPSHOT_PAGES = 250, SNAPSHOT_QUERIES = 100, SNAPSHOT_PAIRS = 250;
+export const SNAPSHOT_DAYS = 28, SNAPSHOT_PAGES = 250, SNAPSHOT_QUERIES = 100, SNAPSHOT_PAIRS = 250, HISTORY_FETCH_DAYS = 35;
 const r4 = (x) => Number(Number(x || 0).toFixed(4)), r1 = (x) => Number(Number(x || 0).toFixed(1));
 const rowOf = (x) => ({ clicks: x.clicks || 0, impressions: x.impressions || 0, ctr: r4(x.ctr), position: r1(x.position) });
 
@@ -165,13 +166,19 @@ export function makeSearchSnapshotHandler({ store, siteOf, getToken, fetchImpl =
     const pages = await query(fetchImpl, token, property, { ...base, dimensions: ["page"], rowLimit: SNAPSHOT_PAGES });
     const queries = await query(fetchImpl, token, property, { ...base, dimensions: ["query"], rowLimit: SNAPSHOT_QUERIES });
     const pairs = await query(fetchImpl, token, property, { ...base, dimensions: ["page", "query"], rowLimit: SNAPSHOT_PAIRS });
+    // D57: the site's daily totals for the history (5 weeks, so a week-over-week change is visible the first day).
+    const daily = await query(fetchImpl, token, property, { startDate: addDays(to, -(HISTORY_FETCH_DAYS - 1)), endDate: to, dimensions: ["date"], rowLimit: HISTORY_FETCH_DAYS });
     const totals = (found.rows || [])[0] ? rowOf(found.rows[0]) : { clicks: 0, impressions: 0, ctr: 0, position: 0 };
     const value = { property, from, to, days: SNAPSHOT_DAYS, generatedAt: now(), totals,
       pages: pages.map((x) => ({ url: x.keys[0], ...rowOf(x) })), queries: queries.map((x) => ({ query: x.keys[0], ...rowOf(x) })),
       pairs: pairs.filter((x) => x.keys?.length === 2).map((x) => ({ url: x.keys[0], query: x.keys[1], ...rowOf(x) })),
       complete: { pages: pages.length < SNAPSHOT_PAGES, queries: queries.length < SNAPSHOT_QUERIES } };
-    await store.writeMemory(job.siteId, [{ kind: "report", key: "search_console", value, basis: "verified", confidence: null, source: "search console" }]);
-    return { evidence: [`Search Console ${property}, ${from} to ${to}: ${totals.clicks} clicks, ${totals.impressions} impressions; ${value.pages.length} pages and ${value.queries.length} queries stored for the agents${a.bound ? " (property connected in the portal)" : ""}`, ...(ga ? [ga] : [])] };
+    const saved = (await store.readMemory(job.siteId, "report")) || [];
+    const history = mergeHistory(saved.find((m) => m.key === "history")?.value || null, { daily: daily.map((x) => ({ date: x.keys[0], ...rowOf(x) })), snapshot: value, now: value.generatedAt });
+    await store.writeMemory(job.siteId, [{ kind: "report", key: "search_console", value, basis: "verified", confidence: null, source: "search console" },
+      { kind: "report", key: "history", value: history, basis: "verified", confidence: null, source: "search console" }]);
+    return { evidence: [`Search Console ${property}, ${from} to ${to}: ${totals.clicks} clicks, ${totals.impressions} impressions; ${value.pages.length} pages and ${value.queries.length} queries stored for the agents${a.bound ? " (property connected in the portal)" : ""}`, ...(ga ? [ga] : []),
+      `history: ${Object.keys(history.daily).length} days of site totals, ${Object.keys(history.weeks).length} weekly points`] };
   };
 }
 

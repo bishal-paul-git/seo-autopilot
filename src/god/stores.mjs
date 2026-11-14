@@ -10,7 +10,7 @@ export class MemoryStore {
   constructor() { this.jobs = new Map(); this.events = []; this.reviews = []; this.approvals = []; this.n = 0; }
   createJob(s) {
     for (const j of this.jobs.values()) if (j.siteId === s.siteId && s.idempotencyKey && j.idempotencyKey === s.idempotencyKey) return j;
-    const j = { id: `job-${++this.n}`, status: "proposed", attempts: 0, maxAttempts: 3, risk: "low", priority: 3, source: "seo_god", dependsOn: [], createdAt: String(this.n).padStart(6, "0"), ...s };
+    const j = { id: `job-${++this.n}`, status: "proposed", attempts: 0, maxAttempts: 3, risk: "low", priority: 3, source: "seo_god", dependsOn: [], seq: this.n, createdAt: this.clock?.() || new Date().toISOString(), ...s };
     j.requiresApproval = needsApproval(j);
     this.jobs.set(j.id, j); this.events.push({ jobId: j.id, to: "proposed", actor: "planner" });
     return j;
@@ -29,7 +29,7 @@ export class MemoryStore {
   }
   claimJob(worker) {
     const ready = [...this.jobs.values()].filter((j) => j.status === "queued" && !j.lease && (j.dependsOn || []).every((d) => this.jobs.get(d)?.status === "completed"))
-      .sort((a, b) => a.priority - b.priority || a.createdAt.localeCompare(b.createdAt));
+      .sort((a, b) => a.priority - b.priority || a.seq - b.seq);
     for (const j of ready) { try { this.transition(j.id, "running", worker, "claimed"); j.lease = worker; return j; } catch { /* gated */ } }
     return null;
   }

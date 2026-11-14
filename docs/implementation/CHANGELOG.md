@@ -2,6 +2,33 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-14 (D57 index status, history, priorities, alerts and daily digest in the hosted engine; code change, not deployed)
+- **Code:**
+  - `src/god/inspect.mjs` (new): the daily `index_inspect` job (URL Inspection API, at most 20 pages a day, rotation, compact `inspect` report with previous state and `changedAt`, 403 recorded as "needs Full permission" for 7 days, 429 stops the batch), `inspectForAgents`.
+  - `src/analysis/search-history.mjs` (new): bounded `history` (120 days of totals, 9 weekly points, top 30 queries and pages), week over week, query movement through `rank.mjs` `summarise`, `historyForAgents`.
+  - `src/analysis/alerts.mjs` (new, pure): the detector (clicks drop, de-indexed, newly blocked, new 5xx/4xx on important pages) and `unhandledAlerts` (7-day cooldown, specialist already running).
+  - `src/god/insights.mjs` (new): `plannerReports` (inspect map, speed in the router's shape, `rank` from history), `prioritiesFrom` (the CLI's priority engine and search analysis), the free `priorities` job, `prioritiesForAgents`.
+  - `src/god/search-console.mjs`: the snapshot adds one date query and merges `history`.
+  - `src/god/handlers.mjs`: the scan keeps status-error details, `signals` (error statuses and noindex pages) and the previous scan's errors and blocks; registers `priorities`.
+  - `src/god/planner.mjs`: `alerts` input (a day-period job per specialist, priority 1); `rank` to the router.
+  - `src/god/tick.mjs`: `reportsFrom` through `plannerReports`, alerts per site, `index_inspect` and `priorities` planning, the weekly run of a specialist skipped after an alert run that week.
+  - `src/god/agent-runner.mjs`: agents get `indexStatus`, `priorities`, `searchHistory` and `task.alerts`, and four lines in the system text on reading them.
+  - `src/god/stores.mjs`: `MemoryStore` jobs carry a real `createdAt` (ordering by sequence).
+  - Worker `app.mjs`: the `index_inspect` handler (var `INSPECT_PER_DAY`, default 20), `record_daily_digests` once per run (skipped quietly before the migration), alerts in the site tick outcome, and `GOOGLE_API_BASE` also for the token (local tests only).
+  - Scan function `index.ts`: `signals` and status details in the compact audit.
+  - Notify `core.mjs` and portal: the `digest` notification (links to Operations), `stale_data` and `inspect_blocked` alerts, and stale websites in platform health.
+  - `scripts/cf-measure-signals.mjs` (new): an offline CPU estimate.
+- **Migration** `cloud/portal/supabase/migrations/20261119000000_daily_digest.sql`, **not applied**:
+  - `agency_digests` (RLS on, no policies);
+  - `private.site_freshness` and `private.agency_digest`;
+  - `record_daily_digests` (service role; also prunes superseded derived reports older than 14 days);
+  - `agency_digests` (members);
+  - new `private.notifications_for`, `ops_alerts` and `platform_health`.
+  - Test: `rls26.sql` in `run.sh`.
+- **Tests:** `npm test` 647/647 (18 new: `test/inspect.test.mjs`, `test/alerts.test.mjs`, the digest test in `test/cf-worker.test.mjs`, plus updated snapshot assertions). SQL suite rls1-26 pass. `node scripts/cf-local-e2e.mjs` all pass, with a new D57 section (inspection in workerd for the bound property; digest notification). `node scripts/god-pg-e2e.mjs` passes. All Google calls are mocked or stand-ins.
+- **Docs:** D57 in DECISIONS (with the GitHub Actions exit plan), `docs/system-architecture.md` flow D, `docs/hosted-google-access.md` §5, STATUS.
+- **Not done:** deployment, the migration, Worker or scan-function redeploys, and real Google calls.
+
 ## 2026-11-14 (D56 deployed; deployment actions)
 - #75 merged (08a4154). Owner applied migration `20261118000000_google_access.sql` (15 functions present). Worker redeployed by deploy-seo-god #15 (run=true): `/health` ok, `/google/account` returns the service account email. Portal built with `PORTAL_WORKER_URL` and published (live md5 = build md5 cc273bd0…; previous kept as `previous-2026-11-14.html`); Chromium loads sign-in with no errors.
 - Owner set a $10 GitHub Actions budget; site runs work again (Manchester deploy run 43550994269 attempt 3 succeeded; IndexNow key file live, HTTP 200).

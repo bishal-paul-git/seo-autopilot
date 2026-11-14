@@ -34,7 +34,7 @@ psql([readFileSync(join(m, "20261108100000_invite_only.sql"), "utf8"), readFileS
   readFileSync(join(m, "20261108120000_notifications_reports.sql"), "utf8"), readFileSync(join(m, "20261108130000_email.sql"), "utf8"),
   // Everything since Release 1 (D42 to D50), so the Worker runs against the production schema.
   ...["20261112000000_activity.sql", "20261113000000_business_brief.sql", "20261114000000_agent_pages.sql", "20261115000000_gsc_sites.sql", "20261116000000_budgets_alerts.sql",
-    "20261117000000_pipeline_connections.sql", "20261117010000_pipeline_agent_from_kind.sql", "20261118000000_google_access.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
+    "20261117000000_pipeline_connections.sql", "20261117010000_pipeline_agent_from_kind.sql", "20261118000000_google_access.sql", "20261119000000_daily_digest.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
 const asUser = (user, sql) => psql(`set role authenticated; set request.jwt.claim.sub = '${user}'; set request.jwt.claim.role = 'authenticated'; ${sql}`).split("\n").pop();
 const A_USER = "00000000-0000-0000-0000-00000000000a", B_USER = "00000000-0000-0000-0000-00000000000b";
 const A = JSON.parse(asUser(A_USER, `select public.create_site('Plumber', 'https://plumber.test/')->'site';`)).id;
@@ -44,7 +44,7 @@ const B = JSON.parse(asUser(B_USER, `select public.create_site('Bakery', 'https:
 const fnInfo = new Map(JSON.parse(psql(`select coalesce(jsonb_agg(jsonb_build_array(p.proname, p.proretset, t.typtype, t.typname)), '[]') from pg_proc p join pg_type t on t.oid = p.prorettype where p.pronamespace = 'public'::regnamespace;`)).map(([n, set, typ, name]) => [n, { set, typ, name }]));
 const calls = { rpc: 0, scan: 0, anthropic: 0, badKey: 0 };
 const gh = { issues: [], dispatches: [], pulls: {}, auth: [], fixed: false };
-const google = { tokens: 0, listed: 0 }; // D56 stand-in for Google's token and listing endpoints
+const google = { tokens: 0, listed: 0, inspected: [] }; // D56 stand-in for Google's token and listing endpoints; D57 URL inspection
 const PUB = "sb_publishable_e2e", SA = JSON.stringify({ client_email: "seo-reader@e2e.iam.gserviceaccount.com", private_key: generateKeyPairSync("rsa", { modulusLength: 2048 }).privateKey.export({ type: "pkcs8", format: "pem" }) });
 let lastBody = "";
 const rpc = (fn, args, user = null) => {
@@ -85,6 +85,11 @@ const server = createServer(async (req, res) => {
     if (p === "/v1beta/accountSummaries") return send(200, { accountSummaries: [{ displayName: "Plumber", propertySummaries: [{ property: "properties/111", displayName: "Plumber web" }] }, { displayName: "Bakery", propertySummaries: [{ property: "properties/222", displayName: "Bakery web" }] }] });
     if (p === "/v1beta/properties/111/dataStreams") return send(200, { dataStreams: [{ webStreamData: { defaultUri: "https://plumber.test" } }] });
     if (p === "/v1beta/properties/222/dataStreams") return send(200, { dataStreams: [{ webStreamData: { defaultUri: "https://bakery.test" } }] });
+    // D57: URL Inspection for the bound property only; the home page is indexed, other pages are not.
+    if (p === "/v1/urlInspection/index:inspect") { const b = JSON.parse(body); google.inspected.push(b);
+      if (b.siteUrl !== "sc-domain:plumber.test") return send(403, { error: { code: 403, message: "no permission" } });
+      const home = new URL(b.inspectionUrl).pathname === "/";
+      return send(200, { inspectionResult: { indexStatusResult: { verdict: home ? "PASS" : "NEUTRAL", coverageState: home ? "Submitted and indexed" : "Crawled - currently not indexed", indexingState: "INDEXING_ALLOWED", robotsTxtState: "ALLOWED", pageFetchState: "SUCCESSFUL" } } }); }
     return send(404, { error: { message: "not found" } });
   }
   if (u.pathname === "/functions/v1/scan") {
@@ -212,7 +217,7 @@ try {
   // Pause without a deploy.
   psql(`select public.set_god_paused(true, 'e2e');`, "service_role");
   const before = calls.rpc; await cron(); run = lastRun();
-  check(run.paused === true && run.jobs_run === 0 && calls.rpc - before <= 3, "paused: the run records itself and does nothing else");
+  check(run.paused === true && run.jobs_run === 0 && calls.rpc - before <= 4, "paused: the run records itself and the daily digest (D57), and does nothing else");
   psql(`select public.set_god_paused(false);`, "service_role");
 
   // D56: give read access, then Check access through the Worker in workerd, against the real database rules (Google stand-in).
@@ -229,6 +234,22 @@ try {
   await checkAs(A_USER, twin);
   const refusedBind = JSON.parse(asUser(A_USER, `select public.bind_google(${lit(twin)}, 'sc-domain:plumber.test', null);`));
   check(!refusedBind.ok && psql(`select count(*) from public.google_binding_conflicts where site_id = ${lit(twin)};`) === "1", "a second website cannot take the same property; the refusal is recorded");
+
+  // D57: index status for the bound property in workerd (Google stand-in). A fresh snapshot is already in memory, so the
+  // planner adds only the inspection; then the daily digest reaches the agency's notifications.
+  psql(`select public.remember(${lit(A)}, ${lit([{ kind: "report", key: "search_console", basis: "verified", source: "e2e", value: { generatedAt: new Date().toISOString(), property: "sc-domain:plumber.test", to: "2026-11-27",
+    pages: [{ url: "https://plumber.test/x", clicks: 3, impressions: 120, position: 7 }], queries: [], pairs: [] } }])});`, "service_role");
+  psql(`delete from public.god_site_ticks where site_id = ${lit(A)};`); await cron();
+  const insp = JSON.parse(psql(`select to_jsonb(j) from public.jobs j where site_id = ${lit(A)} and kind = 'index_inspect';`) || "null");
+  const ir = JSON.parse(psql(`select value from public.site_memory where site_id = ${lit(A)} and kind = 'report' and key = 'inspect' and superseded_at is null;`) || "null");
+  check(insp?.status === "completed" && google.inspected.length >= 2 && google.inspected.every((b) => b.siteUrl === "sc-domain:plumber.test") && ir?.results?.["https://plumber.test/"]?.coverage === "Submitted and indexed" && ir.counts.notIndexed >= 1,
+    `URL inspection ran in workerd for the bound property only and stored the index status (${google.inspected.length} pages${insp?.status === "completed" ? "" : `; job: ${JSON.stringify(insp)?.slice(0, 300)}`})`);
+  check(!lastRun().errors.some((e) => /^digest:/.test(e)), "the scheduler records the daily digest without errors");
+  const dg = JSON.parse(psql(`select public.record_daily_digests(50, 0);`, "service_role"));
+  const notes = JSON.parse(asUser(A_USER, `select public.my_notifications();`));
+  const digestNote = notes.items.find((n) => n.kind === "digest");
+  check(dg.recorded >= 0 && (dg.recorded > 0 || psql(`select count(*) from public.agency_digests;`) !== "0") && digestNote && /waiting for a decision|AI spend yesterday/.test(digestNote.title) && !JSON.parse(asUser(B_USER, `select public.my_notifications();`)).items.some((n) => n.kind === "digest" && n.title === digestNote.title && n.siteName === digestNote.siteName),
+    `daily digest for the agency: "${digestNote?.title}"`);
   const usage = JSON.parse(psql(`select public.god_usage(1);`, "service_role"));
   console.log(`usage over this test: ${JSON.stringify(usage)}`);
   console.log("all Cloudflare execution checks passed in workerd against the database");

@@ -43,7 +43,27 @@ after the merge.
 5. Refused attempts (a property or domain already used by another website) appear on Operations under "Google access
    refused" for platform admins.
 
+## 5. Index status, history, alerts and the daily digest (D57)
+1. **Permission for URL inspection.** Google's URL Inspection API answers only for a **Full** user or an owner of the
+   property. With Restricted access the daily `index_inspect` job records "needs Full permission" (shown in the
+   agency's alerts and digest) and tries again after a week. Everything else works with Restricted.
+2. **Migration** `cloud/portal/supabase/migrations/20261119000000_daily_digest.sql` (run in the SQL editor after
+   20261118000000). It adds `agency_digests` (RLS on, no policies), `record_daily_digests` (service role),
+   `agency_digests` (members), and new versions of `private.notifications_for`, `ops_alerts` and `platform_health`.
+   Until it is applied the Worker skips the digest quietly. Rollback: drop `public.agency_digests`, the functions
+   `record_daily_digests`, `agency_digests`, `private.agency_digest`, `private.site_freshness`, then re-run the
+   `notifications_for` definition from 20261108120000, `ops_alerts` from 20261116000000 and `platform_health` from
+   20261108070000. Note: the daily call also deletes superseded copies (older than 14 days) of the derived reports
+   `search_console`, `history`, `priorities`, `inspect`, `speed` and `analytics`; audit copies are kept.
+3. **Scan function**: redeploy `scan` so the Worker receives error statuses and noindex pages (`signals`) for the alert
+   detector. Without it, alerts on errors use the audit's sitemap findings only.
+4. **Worker**: redeploy (deploy-seo-god). Optional var `INSPECT_PER_DAY` (default 20, at most 40).
+5. Check: the next day, a site with a bound property has a completed "Check which pages Google has indexed" job and a
+   "Rank the to-do list" job; after 07:00 UTC, Notifications shows a "Daily digest" item when something waits.
+
 ## Quotas
+URL inspection: Google allows 2,000 inspections a day and 600 a minute per property; the job asks at most 20 a day.
+
 Google publishes default quotas for each API in the console (APIs & Services › the API › Quotas); this was not measured
 here. At 4 pages a week per site, 100 sites use about 400 PageSpeed calls and 100 Chrome UX Report calls a week. The
 service account's Search Console and Analytics quotas are shared by every hosted site.

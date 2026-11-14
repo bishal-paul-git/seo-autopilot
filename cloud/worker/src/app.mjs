@@ -17,6 +17,7 @@ import { runOnce } from "../../../src/god/worker.mjs";
 import { makeGitHub } from "../../../src/god/github.mjs";
 import { googleAccessRoute, GSC_SCOPE, GA_SCOPE } from "../../../src/god/google-access.mjs";
 import { makeSpeedHandler } from "../../../src/god/speed.mjs";
+import { makeInspectHandler } from "../../../src/god/inspect.mjs";
 import { PROMPTS, DEPARTMENTS, KNOWLEDGE } from "./agents.generated.mjs";
 
 export const VERSION = "0.1.0";
@@ -30,6 +31,7 @@ export function settings(env) {
     sitesPerRun: n(env.SITES_PER_RUN, 5, 1, 25), jobsPerRun: n(env.JOBS_PER_RUN, 4, 0, 20),
     dailyBudgetUsd: n(env.SEO_GOD_DAILY_BUDGET_USD, 0, 0, 1000), agentRunUsd: n(env.SEO_GOD_AGENT_RUN_USD, 0.5, 0, 50),
     minSiteAgeHours: n(env.SITE_MIN_AGE_HOURS, 6, 1, 168), scanMaxPages: n(env.SCAN_MAX_PAGES, 40, 1, 40), speedPages: n(env.SPEED_MAX_PAGES, 4, 1, 10),
+    inspectPerDay: n(env.INSPECT_PER_DAY, 20, 1, 40), // Google allows 2,000 a day per property; a Worker invocation 50 requests
   };
 }
 
@@ -85,13 +87,16 @@ export function context(env, fetchImpl) {
   // Search Console and GA4 with the shared service account (GOOGLE_KEY_JSON): the properties a customer bound to the site
   // in the portal (D56), else the D34 path for admin-confirmed sites. Without the key, the reads are never queued.
   if (env.GOOGLE_KEY_JSON) {
-    let tok = null; const gsc = { store, siteOf, fetchImpl, getToken: () => (tok ??= googleToken(env.GOOGLE_KEY_JSON, { fetchImpl, scopes: [GSC_SCOPE, GA_SCOPE] })),
+    let tok = null; const gsc = { store, siteOf, fetchImpl, getToken: () => (tok ??= googleToken(env.GOOGLE_KEY_JSON, { fetchImpl, scopes: [GSC_SCOPE, GA_SCOPE], tokenUrl: env.GOOGLE_API_BASE ? `${env.GOOGLE_API_BASE}/token` : null })),
       allowed: (id) => rpc(env, fetchImpl, "gsc_allowed", { p_site: id }).then(Boolean, () => false),
       boundOf: (id) => rpc(env, fetchImpl, "google_target", { p_site: id }).catch(() => null) };
     handlers.search_console = makeSearchConsoleHandler(gsc);
     handlers.search_snapshot = makeSearchSnapshotHandler(gsc); // D47: the 28-day snapshot the agents read (and GA4, D56)
     // Planned only for a site that can be read: a bound property, or a platform admin's confirmation (D34).
     handlers.search_snapshot.applies = async (id) => (await rpc(env, fetchImpl, "google_bound", { p_site: id }).then(Boolean, () => false)) || (await gsc.allowed(id));
+    // D57: Google's index status for a rotating batch of at most INSPECT_PER_DAY pages a day (URL Inspection API).
+    handlers.index_inspect = makeInspectHandler({ ...gsc, perDay: s.inspectPerDay, api: env.GOOGLE_API_BASE ? `${env.GOOGLE_API_BASE}/v1/urlInspection/index:inspect` : undefined }); // GOOGLE_API_BASE: local tests only
+    handlers.index_inspect.applies = handlers.search_snapshot.applies;
   }
   // D56: weekly phone speed checks with ONE platform key, so customers never add one; never queued without it.
   if (env.PAGESPEED_API_KEY) handlers.speed_snapshot = makeSpeedHandler({ store, siteOf, apiKey: env.PAGESPEED_API_KEY, fetchImpl, maxPages: s.speedPages });
@@ -108,7 +113,8 @@ export async function tickSite(env, site, fetchImpl) {
   const r = await tick({ store, sites: [site], handlers, maxJobs: 0, dailyBudgetUsd: s.dailyBudgetUsd, budgets: { [site.id]: budgetUsd }, agentRunUsd: s.agentRunUsd, github });
   const e = r.sites[0] || {};
   const outcome = { strategy: e.strategy ?? null, queued: (e.queued || []).length, deferred: (e.deferred || []).length, waiting: (e.waiting || []).length, error: e.error || null,
-    budgetUsd, spentTodayUsd: e.spentTodayUsd ?? null, deferredForBudget: (e.deferred || []).filter((d) => /over today's budget/.test(d.reason || "")).length };
+    budgetUsd, spentTodayUsd: e.spentTodayUsd ?? null, deferredForBudget: (e.deferred || []).filter((d) => /over today's budget/.test(d.reason || "")).length,
+    alerts: (e.alerts || []).map((a) => ({ kind: a.kind, agent: a.agent, title: String(a.title).slice(0, 120) })) };
   await rpc(env, fetchImpl, "record_site_tick", { p_site: site.id, p_outcome: outcome });
   return outcome;
 }
@@ -138,6 +144,11 @@ export async function schedule(env, { dispatch, fetchImpl = countingFetch(), now
     try { await rpc(env, fetchImpl, "record_god_run", { p_run: run }); } catch (e) { run.errors.push(`record: ${e.message}`); }
     return run;
   };
+  // D57: once a day per agency, a digest of what waits for a person, failures, data freshness and spend (computed in the
+  // database, one call; later runs the same day do nothing). It becomes a portal notification, so the summary email
+  // below carries it when SMTP is set up. Also while paused: approvals keep waiting either way.
+  try { const d = await rpc(env, fetchImpl, "record_daily_digests", { p_limit: 50 }); run.digests = Number(d?.recorded) || 0; }
+  catch (e) { if (!/could not find the function|does not exist/i.test(String(e.message))) run.errors.push(`digest: ${String(e.message || e)}`.slice(0, 200)); } // before migration 20261119000000: skipped quietly
   // D40: invitation emails and daily summaries are portal features, not SEO God work, so they go out even while the SEO
   // God is paused. One call to the notify Edge Function per run; its own queue makes repeats harmless.
   const notifySecret = env.NOTIFY_FUNCTION_URL ? await scanSecret(env, fetchImpl) : null;
