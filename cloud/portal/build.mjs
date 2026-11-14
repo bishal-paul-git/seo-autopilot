@@ -59,7 +59,7 @@ export function agentCatalog() {
 export function build({ url = process.env.PORTAL_SUPABASE_URL || "", key = process.env.PORTAL_SUPABASE_KEY || "", workerUrl = process.env.PORTAL_WORKER_URL || "", out = join(here, "dist") } = {}) {
   if (url && !/^(https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+|http:\/\/(127\.0\.0\.1|localhost)(:\d+)?)\/?$/.test(url)) throw new Error("PORTAL_SUPABASE_URL must be https://<project>.supabase.co");
   if (/service_role|^sb_secret_/.test(key)) throw new Error("Use the publishable (anon) key, never the service role or a secret key.");
-  // D56: the Worker that runs Connect with Google (its public /oauth/google/* routes); empty hides the button.
+  // D56: the Worker that serves the service account email and Check access (/google/*); empty hides them.
   if (workerUrl && !/^(https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+|http:\/\/(127\.0\.0\.1|localhost)(:\d+)?)\/?$/.test(workerUrl)) throw new Error("PORTAL_WORKER_URL must be https://<worker host>");
   const cfg = JSON.stringify({ supabaseUrl: url.replace(/\/$/, ""), anonKey: key, workerUrl: workerUrl.replace(/\/$/, "") }).replace(/</g, "\\u003c");
   const html = readFileSync(join(here, "app/index.html"), "utf8").replace("__CONFIG__", cfg).replace("__ORG__", JSON.stringify(organisation())).replace("__BRIEF__", JSON.stringify(BRIEF).replace(/</g, "\\u003c")).replace("__AGENTS__", () => JSON.stringify(agentCatalog()).replace(/</g, "\\u003c")); // a function: "$&" in agent text stays literal

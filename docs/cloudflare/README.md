@@ -25,7 +25,7 @@ Where every job runs: [runtime-matrix.md](runtime-matrix.md). Free-tier usage: [
 | Retries and escalation | at most 3 attempts, then escalated to a person; review-driven retries capped; refusals, a missing key or too little budget escalate at once | `god.test.mjs`, `agent-runner.test.mjs` |
 | Budgets | per-site daily budget reserved before queueing; per-job budget across attempts; cost from the provider's own usage | `tick.test.mjs`, `agent-runner.test.mjs`, `cf-local-e2e.mjs` |
 | Kill switches | Worker var `SEO_GOD_PAUSED` (default `"true"`) and the database switch `public.set_god_paused(true)`, which needs no deploy. If the database cannot be read, the scheduler pauses. | `cf-worker.test.mjs`, `cf-local-e2e.mjs` |
-| Internal routes | `/internal/*` need `INTERNAL_TOKEN` (constant-time compare; refused when unset); public: `/health` (no data) and, since D56, `/oauth/google/*`, each of which needs a one-time state created by a signed-in portal user (`google-oauth.test.mjs`) | `cf-worker.test.mjs`, `cf-local-e2e.mjs` |
+| Internal routes | `/internal/*` need `INTERNAL_TOKEN` (constant-time compare; refused when unset); public: `/health` (no data) and, since D56, `/google/account` (the service account's email only) and `/google/check` (needs a signed-in portal user's token, checked by the database; only the site's own host is returned; `google-access.test.mjs`) | `cf-worker.test.mjs`, `cf-local-e2e.mjs` |
 | Scan safety | public http(s) only, guarded fetch at every redirect, robots.txt, 40-page cap, shared secret | `safe-fetch.test.mjs`, `scan-fn-local.mjs` (Deno, real site) |
 | Monitoring | one `god_runs` row per run (sites planned, jobs run, leases recovered, invocations, subrequests, errors); `public.god_usage(days)`; Workers observability logs | `rls7.sql`, `cf-local-e2e.mjs` |
 
@@ -81,13 +81,12 @@ Nothing here has been done. Each step needs the owner.
      | `SCAN_SECRET` | the `scan_secret` from step 3 |
      | `ANTHROPIC_API_KEY` | optional, the agency's own key; without it agent jobs are deferred, never queued |
      | `GOOGLE_KEY_JSON` | optional, the agency's Google service account key (JSON); site owners add its email as a user in their Search Console; without it traffic is never measured |
-     | `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET` | optional, Connect with Google (D56): the platform's Web OAuth client; setup and redirect URI in [../google-oauth-setup.md](../google-oauth-setup.md) |
-     | `PAGESPEED_API_KEY` | optional, the weekly central speed checks (D56); without it they are never planned |
+     | `PAGESPEED_API_KEY` | optional, the weekly central speed checks (D56); without it they are never planned. Also set the plain var `SUPABASE_PUBLISHABLE_KEY` (the portal's publishable key) for Check access: [../hosted-google-access.md](../hosted-google-access.md) |
    - Plain vars are already in `wrangler.toml` and safe to commit: `SUPABASE_URL`, `SCAN_FUNCTION_URL`, budgets, model. Check them.
    - `npm run deploy` deploys **paused** (`SEO_GOD_PAUSED = "true"`). Then:
      - `curl https://seo-god.<your-subdomain>.workers.dev/health` must answer `{"ok":true,...}`;
      - `select * from public.god_runs order by id desc limit 3;` after 15 minutes must show `paused = true`.
-6. **Publish the portal** with the SEO God page: `PORTAL_SUPABASE_URL=… PORTAL_SUPABASE_KEY=<publishable key> PORTAL_WORKER_URL=https://seo-god.<your-subdomain>.workers.dev node cloud/portal/build.mjs` (the Worker address turns on Connect with Google, D56), then upload `cloud/portal/dist/` to seo.erudience.com (Hostinger) as before.
+6. **Publish the portal** with the SEO God page: `PORTAL_SUPABASE_URL=… PORTAL_SUPABASE_KEY=<publishable key> PORTAL_WORKER_URL=https://seo-god.<your-subdomain>.workers.dev node cloud/portal/build.mjs` (the Worker address turns on Check access, D56), then upload `cloud/portal/dist/` to seo.erudience.com (Hostinger) as before.
 7. **Go live for one pilot site:**
    - set the other sites to `status = 'paused'` in `public.sites`;
    - change `SEO_GOD_PAUSED` to `"false"` and `npm run deploy`;

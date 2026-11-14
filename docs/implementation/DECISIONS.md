@@ -119,64 +119,58 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
 
-## 2026-11-14 D56 Connect with Google; central speed checks; a three-step set-up in the portal
-The owner, 2026-11-14: "make the setup easy from portal and easy for customers". Today a hosted customer needs a Google Cloud service account, a JSON key, GitHub secrets and a config edit before the agents see any search data.
+## 2026-11-14 D56 Give us read access; central speed checks; a three-step set-up in the portal
+The owner, 2026-11-14: "make the setup easy from portal and easy for customers". Today a hosted customer needs a Google Cloud service account, a JSON key, GitHub secrets and a config edit before the agents see any search data. A first version used Google sign-in (OAuth). The owner declined it: no OAuth client and no consent screen. This record describes the version that replaced it.
 
 **Decision:**
-- **Connect with Google** (OAuth web-server flow) in the Worker `seo-god`:
-  - Routes: `/oauth/google/start`, `/oauth/google/callback`, plus `/oauth/google/properties` and `/oauth/google/disconnect`. Code in `src/god/google-oauth.mjs`.
-  - Scopes: `openid email webmasters.readonly analytics.readonly`, with `access_type=offline`, `prompt=consent` and PKCE (S256).
-  - The client ID and secret are Worker secrets.
-- **CSRF and login CSRF:**
-  - Each attempt is a one-time `state` row: site, person, 10 minutes, single use. The PKCE verifier stays in the database.
-  - Only an agency member, or the site's client user under the rule below, can create a state, through `google_begin`.
-  - The callback stores the refresh token as **pending**. It becomes the site's connection only when the same signed-in person confirms it from the portal (`google_confirm`).
-  - So a link someone else started cannot attach a victim's Google account to the attacker's site. A cookie would not stop that, because the attacker controls the start link.
-- **Storage (the D37 pattern):**
-  - The refresh token is kept in Supabase Vault: `google_token:<site>`, and `google_pending:<state>` until it is confirmed.
-  - The metadata is kept in `integrations` (provider `google`): email, granted scopes, the property lists, the chosen properties, who connected.
-  - Only the service role reads the token. No RPC returns it to a browser.
-  - Disconnect revokes the token at `oauth2.googleapis.com/revoke`, then deletes it. If the Worker cannot be reached, the portal deletes it and tells the person to remove access in their Google account.
-- **Pickers:**
-  - At sign-in, and on "Refresh lists", the Worker lists `webmasters/v3/sites` and `analyticsadmin/v1beta/accountSummaries`. The token never leaves the server.
-  - `set_google_properties` accepts only a property in that list. The Search Console property must also cover the site's own host: the domain property for the host or a parent domain, or the same host's address prefix.
-  - The property for the site's host is pre-selected, as is a single GA4 property.
+- **Read access through the platform's existing service account** (the one the Worker already uses, D47):
+  - The portal shows its email, with a Copy button, and two instructions with links:
+    - Search Console: Settings › Users and permissions › Add user, permission Restricted (or Full, for URL inspection);
+    - Analytics: Admin › Property access management › Add users, role Viewer.
+  - `GET /google/account` on the Worker returns only the email, taken from `GOOGLE_KEY_JSON`.
+- **Check access** (`POST /google/check`, `src/god/google-access.mjs`):
+  - The Worker first checks the signed-in user's Supabase token through a user-level RPC (`google_access_site`, called with the publishable key).
+  - It then lists, with the service account, what the account can read: `webmasters/v3/sites`, plus `accountSummaries` and each GA4 property's web streams.
+  - It returns only Search Console properties covering the site's host, and GA4 properties with a web stream on that host. The service account sees every customer who granted it access, so nothing else leaves the Worker.
+  - GA4 properties named like the site are checked first, at most 30 per check, because a Worker gets 50 outbound requests.
+- **Binding** (`bind_google`):
+  - The pick must be in the stored list for this site. The Search Console property must also cover the site's host.
+  - **One property can be bound to only one website across all agencies** (unique constraint), and one host holds only one Search Console binding (unique index).
+  - A domain also registered by another agency needs a platform admin's confirmation (the D34 rule).
+  - A refused attempt is recorded in `google_binding_conflicts` and the audit log. Platform admins see it on Operations and can release a binding (`release_google_binding`).
+  - Changing a site's address drops its Search Console binding.
+  - Agency members and the site's client users may check and bind.
 - **Use:**
-  - `search_snapshot` and `search_console` use the site's own token and its chosen property when it has one.
-  - The same job reads GA4: visits per landing page for the same 28 days, memory report `analytics`. Agents get `analytics` and `speed` next to `searchConsole`.
-  - The shared service account (D34/D53 property lookup with `set_gsc_allowed`) stays as the fallback.
-  - The daily read is planned only for a site that can be read (`google_connected`, or the shared key plus confirmation), so no job is created just to say "not connected".
-- **No admin confirmation for OAuth sites:**
-  - D34 required a platform admin to confirm a site before the *shared* account read it, because an agency could add a domain it does not own and read data its real owner granted to the platform.
-  - With OAuth, the customer's own Google account grants access. It can read only properties that Google says that account may read. The chosen property must also match the site's host.
-  - The confirmation protected nothing here, so it is skipped for OAuth-connected sites. It still applies to the shared account.
-- **Client users:** a client user of the site may connect their own Google when nothing is connected (they usually own the property). They may then change or disconnect only the connection they made. They never see the agency's Google email or lists. Agency members may manage any connection.
+  - `search_snapshot` and `search_console` read the bound properties with the service account (scopes `webmasters.readonly` and `analytics.readonly`; `googleToken` now takes a scope list).
+  - The same job reads GA4: visits per landing page, memory report `analytics`. Agents get `analytics` and `speed` next to `searchConsole`.
+  - Sites without a binding keep the D34/D53 path: a platform admin confirms them (`set_gsc_allowed`) and the lookup runs. `set_gsc_allowed` also stays as the override for a disputed domain.
+  - The daily read is planned only for a site that can be read: a binding, or a confirmation.
 - **Central speed checks:**
-  - A weekly `speed_snapshot` job checks the home page plus the top pages by Search Console clicks: `SPEED_MAX_PAGES`, default 4.
+  - A weekly `speed_snapshot` job checks the home page plus the top pages by clicks (`SPEED_MAX_PAGES`, default 4).
   - It uses PageSpeed Insights (phone, `fields` limited, because a Lighthouse result is about 1 MB and a Worker has little CPU) and the Chrome UX Report for the site's origin.
-  - One platform key, the Worker secret `PAGESPEED_API_KEY`, is used. Without it the job is never planned.
-  - The result is stored as memory report `speed` and shown on Connections.
+  - One platform key, `PAGESPEED_API_KEY`, is used. The job is never planned without it.
 - **Portal:**
-  - A "Set up" card at the top of Connections, and right after adding a site: Website ✓ → Connect with Google (button, two dropdowns, connected state with email and Disconnect) → GitHub (optional).
-  - The D55 seven-step guide moved under "Advanced: connect a GitHub run".
+  - A "Set up" card on Connections and right after adding a site: Website ✓ → Give us read access (email, Copy, steps, Check access, two dropdowns with properties used elsewhere disabled, Save, Remove) → GitHub (optional).
+  - The D55 seven-step guide is under "Advanced: connect a GitHub run".
+
+**Why exclusive binding replaces the admin confirmation:**
+- The D34 risk was an agency adding a domain it does not own and reading data its real owner granted to the shared account.
+- Now a property is read only for the one website it is bound to, and it can be bound only if the owner already granted access to the service account.
+- **Residual risk:**
+  - Someone registers a domain they do not own and binds its property **before** the real owner does. That needs the real owner to have already added the service account, for example for another agency's site on this platform, and not yet bound it.
+  - The D34 rule narrows this: if the real owner's site is registered in another agency, the binding needs a platform admin.
+  - The real owner then sees "already connected to another website". The refusal reaches the admin, who checks ownership and releases the binding.
 
 **Tradeoffs:**
-- **Rule 6 ("users bring their own keys"):**
-  - The hosted service now uses one platform key, for two *free* Google APIs (PageSpeed, CrUX), and a platform OAuth *client*.
-  - Each customer still grants access with their own Google account, and no customer data is read with a platform identity except the existing, confirmed service-account fallback.
-  - The open-source CLI path is unchanged: users keep their own keys.
-  - Risk: the platform key's quota is shared by all hosted sites. The 4-page weekly cap keeps it small.
-- **Google's rules:**
-  - While the OAuth app is in Testing, only listed test users (up to 100) can connect, and their grants end after 7 days.
-  - Opening it to everyone needs a privacy policy, a homepage and Google's verification of the two sensitive scopes, which can take weeks. Steps: `docs/google-oauth-setup.md`.
-- **Revoking:** a reconnect with a different Google account replaces the stored token without revoking the old one. Disconnect does revoke.
-- **CORS:** the property and disconnect routes allow only the portal's origin. They are authorised by a one-time state, not by cookies.
-- **Not verified with real Google:** everything is tested with stand-ins (unit, Chromium, workerd end-to-end against the real migrations). No live OAuth client exists yet.
+- **Rule 6 ("users bring their own keys"):** the hosted service reads customer data with a platform identity (the service account) and uses one platform key for two free Google APIs. Customers still decide what is shared, by adding or removing the email in their own Google accounts. The open-source CLI path is unchanged.
+- **Shared quotas:** every hosted site uses the same Search Console and Analytics quotas and the same PageSpeed key. The 4-page weekly cap keeps the speed check small.
+- **GA4 discovery** is capped at 30 properties per check. Past that, a property must be named like the site to be found.
+- **Not verified with real Google:** everything is tested with stand-ins (unit, Chromium, workerd end-to-end against the real migrations).
 
 **Evidence:**
-- `test/google-oauth.test.mjs`, `test/speed-snapshot.test.mjs`, `test/portal-google.test.mjs`.
+- `test/google-access.test.mjs`, `test/speed-snapshot.test.mjs`, `test/portal-google.test.mjs`.
 - `cloud/portal/supabase/test/rls25.sql`.
-- `scripts/cf-local-e2e.mjs`, the D56 section: start, callback, single use, login CSRF refused, confirm, lists, revoke.
+- `scripts/cf-local-e2e.mjs`, D56 section: email only, check refused for outsiders, only this host returned, bind, second website refused and recorded.
 
 ## 2026-11-13 D55 Changes stop at a pull request; setup guide in the portal; cost ledger
 The owner, 2026-11-13: "keep the agent doing PRs ... and hold it there for now with routine changes"; "keep tracking all costs from this project and record"; the instructions for connecting each website must be in the portal.

@@ -2,27 +2,23 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
-## 2026-11-14 (D56 Connect with Google, central speed checks, three-step set-up; code change, not deployed)
+## 2026-11-14 (D56 read access through the service account, central speed checks, three-step set-up; code change, not deployed)
+- **Reworked the same day.** The first version (Google sign-in, OAuth) was declined by the owner and removed before merge: its routes, PKCE, state table, Vault refresh tokens, client-id/secret secrets and `docs/google-oauth-setup.md`.
 - **Code:**
-  - `src/god/google-oauth.mjs`: the OAuth routes, PKCE, token exchange, refresh and revoke, the property lists, per-site job access.
+  - `src/god/google-access.mjs`: `/google/account` (the service account's email only) and `/google/check` (signed-in user checked by RPC; only this site's host returned).
   - `src/god/speed.mjs`: the weekly PageSpeed and CrUX job.
-  - `src/god/search-console.mjs`: the site's own token and chosen property first, the service account as the fallback, and a GA4 read in the same job.
+  - `src/god/search-console.mjs`: `googleToken` takes scopes; the bound properties are read first, the D34 path is the fallback; GA4 is read in the same job.
   - `src/god/tick.mjs`: the speed job, and a handler's `applies` gate on planning.
   - `src/god/agent-runner.mjs`: agents also get `analytics` and `speed`.
-  - `cloud/worker/src/app.mjs` and `wrangler.toml`: the `/oauth/google/*` routes, the vars `PORTAL_URL` and `SPEED_MAX_PAGES`, and the names of the new secrets (no values).
-  - Portal: the `setupCard()` on Connections and after adding a site, the dev guide under Advanced, and the return from Google confirmed as the signed-in person. `cloud/portal/build.mjs` gets `PORTAL_WORKER_URL`.
-- **Migration** `cloud/portal/supabase/migrations/20261118000000_google_oauth.sql`, **not applied**:
-  - `private.google_oauth` (attempts, RLS on, no policies) and provider `google`;
-  - the RPCs `google_begin`, `google_confirm`, `site_google`, `set_google_properties` and `disconnect_google` (signed-in users);
-  - the RPCs `google_oauth_peek`, `google_oauth_take`, `google_oauth_pending`, `google_set_choices`, `google_oauth_remove`, `google_target` and `google_connected` (service role);
-  - `site_pipeline` with the Google, Analytics and speed states.
-- **Tests:**
-  - `npm test` 633/633: new `google-oauth`, `speed-snapshot`, `portal-google` (Chromium); `portal-pipeline` updated.
-  - `bash cloud/portal/supabase/test/run.sh`: rls1-25 pass (new `rls25.sql`).
-  - `node scripts/cf-local-e2e.mjs`: all pass in workerd, including the new D56 section.
-  - `node scripts/god-pg-e2e.mjs`: passes.
-  - All Google calls are stand-ins; nothing was verified against real Google.
-- **Docs:** `docs/google-oauth-setup.md` (owner steps), D56, this entry, STATUS, `docs/system-architecture.md`, `docs/cloudflare/README.md`.
+  - Worker `app.mjs` and `wrangler.toml`: the vars `PORTAL_URL`, `SUPABASE_PUBLISHABLE_KEY` (empty, owner fills it) and `SPEED_MAX_PAGES`.
+  - Portal: the `setupCard()` (Give us read access, Check access, pickers, Save, Remove), the dev guide under Advanced, and "Google access refused" on Operations. `build.mjs` gets `PORTAL_WORKER_URL`.
+- **Migration** `cloud/portal/supabase/migrations/20261118000000_google_access.sql`, **not applied**:
+  - `google_bindings` (unique property; unique Search Console host) and `google_binding_conflicts`, both with RLS on and no policies;
+  - the RPCs `google_access_site`, `site_google`, `bind_google`, `google_conflicts` and `release_google_binding` (signed-in users; the last two for admins only);
+  - the RPCs `google_access_seen`, `google_target` and `google_bound` (service role);
+  - the address-change reset, and `site_pipeline` with the Google, Analytics and speed states.
+- **Tests:** `npm test` 629/629; SQL rls1-25 pass; `cf-local-e2e` and `god-pg-e2e` pass. New tests: `google-access`, `speed-snapshot`, `portal-google` (Chromium), `rls25.sql`; the workerd e2e has a D56 section. All Google calls are stand-ins.
+- **Docs:** `docs/hosted-google-access.md` (owner steps), D56, this entry, STATUS, `docs/system-architecture.md`, `docs/cloudflare/README.md`.
 - No deployment, no secret set, no migration applied, no AI spend.
 
 ## 2026-11-13 (portal published with Live pipeline and Connections; deployment only)

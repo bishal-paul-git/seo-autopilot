@@ -41,16 +41,16 @@ deployed and what is only built is in [deployment-status.md](deployment-status.m
 3. pg_cron wakes `scan` every 10 minutes; each site is due once a day; failures retry after 6 hours.
 4. Read-only: address-only sites get findings, business details and priorities, never changes.
 
-**C. Connect with Google (D56, hosted sites)**
-1. Portal "Connect with Google" calls `google_begin` (a one-time state) and opens the Worker's `/oauth/google/start`, which
-   sends the browser to Google's consent screen (PKCE, read-only scopes, offline).
-2. Google returns to `/oauth/google/callback`. The Worker exchanges the code with its client secret and lists the
-   account's Search Console and GA4 properties. It stores the refresh token as pending in Vault, then sends the browser to
-   the portal with the state.
-3. The portal calls `google_confirm` as the same signed-in person: the connection is made and the property for the
-   site's host is pre-selected. The person can change both dropdowns (`set_google_properties`).
-4. The daily `search_snapshot` job reads Search Console and GA4 with the site's own token. A weekly `speed_snapshot` job
-   checks the home page and top pages with the platform's PageSpeed key.
+**C. Read access for hosted sites (D56)**
+1. The portal shows the service account's email (Worker `GET /google/account`). The customer adds it as a user of their
+   Search Console property (Restricted) and GA4 property (Viewer).
+2. "Check access" (Worker `POST /google/check`, with the signed-in user's token checked by `google_access_site`) lists,
+   with the service account, the Search Console properties covering the site's host and the GA4 properties with a web
+   stream on it. `google_access_seen` stores the lists.
+3. The customer picks. `bind_google` checks the pick against the lists and the host, then binds each property to one
+   website only; a refusal is recorded for the platform admin.
+4. The daily `search_snapshot` job reads the bound Search Console and GA4 properties with the service account. A weekly
+   `speed_snapshot` job checks the home page and the top pages with the platform's PageSpeed key.
 
 ## Tenancy
 Every row belongs to an org through `sites.org_id`. Reads are row-level security (`private.is_member`); writes go through
