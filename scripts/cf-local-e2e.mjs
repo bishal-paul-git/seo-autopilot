@@ -11,6 +11,7 @@ import { createServer } from "node:http";
 import { readFileSync, writeFileSync, rmSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { generateKeyPairSync } from "node:crypto";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const t = join(root, "cloud/portal/supabase/test"), m = join(root, "cloud/portal/supabase/migrations"), w = join(root, "cloud/worker");
@@ -32,7 +33,8 @@ psql(`insert into auth.users (id, email) values ('00000000-0000-0000-0000-000000
 psql([readFileSync(join(m, "20261108100000_invite_only.sql"), "utf8"), readFileSync(join(t, "shim5.sql"), "utf8"), readFileSync(join(m, "20261108110000_github_execution.sql"), "utf8"),
   readFileSync(join(m, "20261108120000_notifications_reports.sql"), "utf8"), readFileSync(join(m, "20261108130000_email.sql"), "utf8"),
   // Everything since Release 1 (D42 to D50), so the Worker runs against the production schema.
-  ...["20261112000000_activity.sql", "20261113000000_business_brief.sql", "20261114000000_agent_pages.sql", "20261115000000_gsc_sites.sql", "20261116000000_budgets_alerts.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
+  ...["20261112000000_activity.sql", "20261113000000_business_brief.sql", "20261114000000_agent_pages.sql", "20261115000000_gsc_sites.sql", "20261116000000_budgets_alerts.sql",
+    "20261117000000_pipeline_connections.sql", "20261117010000_pipeline_agent_from_kind.sql", "20261118000000_google_access.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
 const asUser = (user, sql) => psql(`set role authenticated; set request.jwt.claim.sub = '${user}'; set request.jwt.claim.role = 'authenticated'; ${sql}`).split("\n").pop();
 const A_USER = "00000000-0000-0000-0000-00000000000a", B_USER = "00000000-0000-0000-0000-00000000000b";
 const A = JSON.parse(asUser(A_USER, `select public.create_site('Plumber', 'https://plumber.test/')->'site';`)).id;
@@ -42,13 +44,15 @@ const B = JSON.parse(asUser(B_USER, `select public.create_site('Bakery', 'https:
 const fnInfo = new Map(JSON.parse(psql(`select coalesce(jsonb_agg(jsonb_build_array(p.proname, p.proretset, t.typtype, t.typname)), '[]') from pg_proc p join pg_type t on t.oid = p.prorettype where p.pronamespace = 'public'::regnamespace;`)).map(([n, set, typ, name]) => [n, { set, typ, name }]));
 const calls = { rpc: 0, scan: 0, anthropic: 0, badKey: 0 };
 const gh = { issues: [], dispatches: [], pulls: {}, auth: [], fixed: false };
+const google = { tokens: 0, listed: 0 }; // D56 stand-in for Google's token and listing endpoints
+const PUB = "sb_publishable_e2e", SA = JSON.stringify({ client_email: "seo-reader@e2e.iam.gserviceaccount.com", private_key: generateKeyPairSync("rsa", { modulusLength: 2048 }).privateKey.export({ type: "pkcs8", format: "pem" }) });
 let lastBody = "";
-const rpc = (fn, args) => {
+const rpc = (fn, args, user = null) => {
   const info = fnInfo.get(fn); if (!info || !/^[a-z_]+$/.test(fn)) return [404, { message: `function ${fn} not found` }];
   const named = Object.entries(args || {}).map(([k, v]) => { if (!/^p_[a-z_]+$/.test(k)) throw new Error("bad arg"); return `${k} => ${v === null ? "null" : lit(v)}`; }).join(", ");
   const call = `public.${fn}(${named})`;
   const sql = info.set ? `select coalesce(jsonb_agg(to_jsonb(r)), '[]'::jsonb) from ${call} r;` : info.typ === "c" ? `select case when r is null then 'null'::jsonb else to_jsonb(r) end from ${call} r;` : info.name === "void" ? `select ${call}; select 'null';` : `select to_jsonb(${call});`;
-  try { const out = psql(sql, "service_role").split("\n").pop(); return [200, out ? JSON.parse(out) : null]; }
+  try { const out = (user ? psql(`set role authenticated; set request.jwt.claim.role = 'authenticated'; set request.jwt.claim.sub = '${user}'; ${sql}`) : psql(sql, "service_role")).split("\n").pop(); return [200, out ? JSON.parse(out) : null]; }
   catch (e) { const msg = String(e.stderr || e.message).match(/ERROR:\s+(.*)/)?.[1] || "error"; return [400, { message: msg }]; }
 };
 const REPLY = { summary: "Titles are missing on one page.", recommendations: [{ title: "Add a title to /x", url: "https://plumber.test/x", why: "the audit found no title", evidence: ["audit: title-missing on /x"], effort: "small" }], claims: [{ text: "4 pages read", source: "audit summary" }], questions: [] };
@@ -57,8 +61,10 @@ const server = createServer(async (req, res) => {
   const send = (code, obj) => { res.writeHead(code, { "content-type": "application/json" }); res.end(obj === undefined ? "" : JSON.stringify(obj)); };
   const u = new URL(req.url, "http://x");
   if (u.pathname.startsWith("/rest/v1/rpc/")) {
-    if (req.headers.apikey !== KEY || req.headers.authorization !== `Bearer ${KEY}`) { calls.badKey++; return send(401, { message: "bad key" }); }
-    calls.rpc++; const [code, out] = rpc(u.pathname.split("/").pop(), JSON.parse(body || "{}")); return send(code, out);
+    // A signed-in portal user (stand-in token "user:<uuid>") with the publishable key runs as that user, like PostgREST.
+    const asUserId = req.headers.apikey === PUB && /^Bearer user:[0-9a-f-]{36}$/.test(req.headers.authorization || "") ? req.headers.authorization.slice(12) : null;
+    if (!asUserId && (req.headers.apikey !== KEY || req.headers.authorization !== `Bearer ${KEY}`)) { calls.badKey++; return send(401, { message: "bad key" }); }
+    calls.rpc++; const [code, out] = rpc(u.pathname.split("/").pop(), JSON.parse(body || "{}"), asUserId); return send(code, out);
   }
   // GitHub stand-in for one repository (acme/plumber): issues, the seo-implement dispatch, pull requests by branch.
   if (u.pathname.startsWith("/gh/repos/")) {
@@ -69,6 +75,17 @@ const server = createServer(async (req, res) => {
     if (req.method === "POST" && p === "/repos/acme/plumber/actions/workflows/seo-implement.yml/dispatches") { gh.dispatches.push(JSON.parse(body)); res.writeHead(204); return res.end(); }
     if (req.method === "GET" && p === "/repos/acme/plumber/pulls") { const pr = gh.pulls[u.searchParams.get("head")]; return send(200, pr ? [pr] : []); }
     return send(404, { message: "Not Found" });
+  }
+  if (u.pathname.startsWith("/google/")) {
+    const p = u.pathname.slice(7);
+    if (p === "/token") { google.tokens++; return send(200, { access_token: "e2e-sa-access" }); }
+    if (req.headers.authorization !== "Bearer e2e-sa-access") return send(401, { error: { message: "no token" } });
+    google.listed++;
+    if (p === "/webmasters/v3/sites") return send(200, { siteEntry: [{ siteUrl: "sc-domain:plumber.test", permissionLevel: "siteRestrictedUser" }, { siteUrl: "https://bakery.test/", permissionLevel: "siteOwner" }] });
+    if (p === "/v1beta/accountSummaries") return send(200, { accountSummaries: [{ displayName: "Plumber", propertySummaries: [{ property: "properties/111", displayName: "Plumber web" }] }, { displayName: "Bakery", propertySummaries: [{ property: "properties/222", displayName: "Bakery web" }] }] });
+    if (p === "/v1beta/properties/111/dataStreams") return send(200, { dataStreams: [{ webStreamData: { defaultUri: "https://plumber.test" } }] });
+    if (p === "/v1beta/properties/222/dataStreams") return send(200, { dataStreams: [{ webStreamData: { defaultUri: "https://bakery.test" } }] });
+    return send(404, { error: { message: "not found" } });
   }
   if (u.pathname === "/functions/v1/scan") {
     if (req.headers["x-scan-secret"] !== SCAN_SECRET) return send(403, { error: "forbidden" });
@@ -85,7 +102,8 @@ const base = `http://127.0.0.1:${server.address().port}`;
 
 // --- the Worker in workerd -------------------------------------------------------------------------------------------
 const devVars = join(w, ".dev.vars");
-writeFileSync(devVars, [`SEO_GOD_PAUSED=false`, `SUPABASE_URL=${base}`, `SUPABASE_SERVICE_ROLE_KEY=${KEY}`, `INTERNAL_TOKEN=${TOKEN}`, `SCAN_FUNCTION_URL=${base}/functions/v1/scan`, `ANTHROPIC_API_KEY=fake-user-key`, `ANTHROPIC_BASE_URL=${base}`, `SEO_GOD_DAILY_BUDGET_USD=1`, `SITE_MIN_AGE_HOURS=1`, `GITHUB_API_URL=${base}/gh`].join("\n"));
+writeFileSync(devVars, [`SEO_GOD_PAUSED=false`, `SUPABASE_URL=${base}`, `SUPABASE_SERVICE_ROLE_KEY=${KEY}`, `INTERNAL_TOKEN=${TOKEN}`, `SCAN_FUNCTION_URL=${base}/functions/v1/scan`, `ANTHROPIC_API_KEY=fake-user-key`, `ANTHROPIC_BASE_URL=${base}`, `SEO_GOD_DAILY_BUDGET_USD=1`, `SITE_MIN_AGE_HOURS=1`, `GITHUB_API_URL=${base}/gh`,
+  `GOOGLE_KEY_JSON=${SA}`, `SUPABASE_PUBLISHABLE_KEY=${PUB}`, `PORTAL_URL=${base}/portal/`, `GOOGLE_API_BASE=${base}/google`].join("\n"));
 const PORT = 18787 + (process.pid % 1000);
 execFileSync("node", ["build.mjs"], { cwd: w, stdio: "ignore" });
 const env = { ...process.env }; for (const k of ["HTTPS_PROXY", "HTTP_PROXY", "https_proxy", "http_proxy"]) delete env[k];
@@ -196,6 +214,21 @@ try {
   const before = calls.rpc; await cron(); run = lastRun();
   check(run.paused === true && run.jobs_run === 0 && calls.rpc - before <= 3, "paused: the run records itself and does nothing else");
   psql(`select public.set_god_paused(false);`, "service_role");
+
+  // D56: give read access, then Check access through the Worker in workerd, against the real database rules (Google stand-in).
+  const acct = await (await fetch(`${W}/google/account`)).json();
+  check(acct.ok && acct.email === "seo-reader@e2e.iam.gserviceaccount.com" && !JSON.stringify(acct).includes("PRIVATE"), "the portal can show the service account's email, and nothing else of the key");
+  const checkAs = (user, site) => fetch(`${W}/google/check`, { method: "POST", headers: { "content-type": "application/json", origin: base, ...(user ? { authorization: `Bearer user:${user}` } : {}) }, body: JSON.stringify({ site }) });
+  check((await checkAs(null, A)).status === 401 && (await checkAs(B_USER, A)).status === 403 && google.listed === 0, "Check access: refused without a signed-in user, and for another agency's site, before any Google call");
+  const seen = await (await checkAs(A_USER, A)).json();
+  check(seen.ok && seen.sites.map((x) => x.url).join() === "sc-domain:plumber.test" && seen.ga4.map((x) => x.id).join() === "properties/111" && !JSON.stringify(seen).includes("bakery"),
+    "Check access for site A: only plumber.test's Search Console and GA4 properties, nothing of the other customer");
+  const bound = JSON.parse(asUser(A_USER, `select public.bind_google(${lit(A)}, 'sc-domain:plumber.test', 'properties/111');`));
+  check(bound.ok && bound.gscProperty === "sc-domain:plumber.test" && psql(`select public.google_bound(${lit(A)});`, "service_role") === "t", "bound: planning will read site A with the service account");
+  const twin = JSON.parse(asUser(A_USER, `select public.create_site('Plumber again', 'https://plumber.test/')->'site';`)).id;
+  await checkAs(A_USER, twin);
+  const refusedBind = JSON.parse(asUser(A_USER, `select public.bind_google(${lit(twin)}, 'sc-domain:plumber.test', null);`));
+  check(!refusedBind.ok && psql(`select count(*) from public.google_binding_conflicts where site_id = ${lit(twin)};`) === "1", "a second website cannot take the same property; the refusal is recorded");
   const usage = JSON.parse(psql(`select public.god_usage(1);`, "service_role"));
   console.log(`usage over this test: ${JSON.stringify(usage)}`);
   console.log("all Cloudflare execution checks passed in workerd against the database");

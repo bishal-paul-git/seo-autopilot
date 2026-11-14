@@ -41,6 +41,17 @@ deployed and what is only built is in [deployment-status.md](deployment-status.m
 3. pg_cron wakes `scan` every 10 minutes; each site is due once a day; failures retry after 6 hours.
 4. Read-only: address-only sites get findings, business details and priorities, never changes.
 
+**C. Read access for hosted sites (D56)**
+1. The portal shows the service account's email (Worker `GET /google/account`). The customer adds it as a user of their
+   Search Console property (Restricted) and GA4 property (Viewer).
+2. "Check access" (Worker `POST /google/check`, with the signed-in user's token checked by `google_access_site`) lists,
+   with the service account, the Search Console properties covering the site's host and the GA4 properties with a web
+   stream on it. `google_access_seen` stores the lists.
+3. The customer picks. `bind_google` checks the pick against the lists and the host, then binds each property to one
+   website only; a refusal is recorded for the platform admin.
+4. The daily `search_snapshot` job reads the bound Search Console and GA4 properties with the service account. A weekly
+   `speed_snapshot` job checks the home page and the top pages with the platform's PageSpeed key.
+
 ## Tenancy
 Every row belongs to an org through `sites.org_id`. Reads are row-level security (`private.is_member`); writes go through
 `SECURITY DEFINER` functions that check membership themselves. Clients see one site through a share link

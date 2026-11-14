@@ -2,6 +2,25 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-14 (D56 read access through the service account, central speed checks, three-step set-up; code change, not deployed)
+- **Reworked the same day.** The first version (Google sign-in, OAuth) was declined by the owner and removed before merge: its routes, PKCE, state table, Vault refresh tokens, client-id/secret secrets and `docs/google-oauth-setup.md`.
+- **Code:**
+  - `src/god/google-access.mjs`: `/google/account` (the service account's email only) and `/google/check` (signed-in user checked by RPC; only this site's host returned).
+  - `src/god/speed.mjs`: the weekly PageSpeed and CrUX job.
+  - `src/god/search-console.mjs`: `googleToken` takes scopes; the bound properties are read first, the D34 path is the fallback; GA4 is read in the same job.
+  - `src/god/tick.mjs`: the speed job, and a handler's `applies` gate on planning.
+  - `src/god/agent-runner.mjs`: agents also get `analytics` and `speed`.
+  - Worker `app.mjs` and `wrangler.toml`: the vars `PORTAL_URL`, `SUPABASE_PUBLISHABLE_KEY` (empty, owner fills it) and `SPEED_MAX_PAGES`.
+  - Portal: the `setupCard()` (Give us read access, Check access, pickers, Save, Remove), the dev guide under Advanced, and "Google access refused" on Operations. `build.mjs` gets `PORTAL_WORKER_URL`.
+- **Migration** `cloud/portal/supabase/migrations/20261118000000_google_access.sql`, **not applied**:
+  - `google_bindings` (unique property; unique Search Console host) and `google_binding_conflicts`, both with RLS on and no policies;
+  - the RPCs `google_access_site`, `site_google`, `bind_google`, `google_conflicts` and `release_google_binding` (signed-in users; the last two for admins only);
+  - the RPCs `google_access_seen`, `google_target` and `google_bound` (service role);
+  - the address-change reset, and `site_pipeline` with the Google, Analytics and speed states.
+- **Tests:** `npm test` 629/629; SQL rls1-25 pass; `cf-local-e2e` and `god-pg-e2e` pass. New tests: `google-access`, `speed-snapshot`, `portal-google` (Chromium), `rls25.sql`; the workerd e2e has a D56 section. All Google calls are stand-ins.
+- **Docs:** `docs/hosted-google-access.md` (owner steps), D56, this entry, STATUS, `docs/system-architecture.md`, `docs/cloudflare/README.md`.
+- No deployment, no secret set, no migration applied, no AI spend.
+
 ## 2026-11-13 (portal published with Live pipeline and Connections; deployment only)
 - Portal built from main 4ea3212 with the live config and uploaded to seo.erudience.com (Hostinger file upload); live md5 = build md5 (7c1f4942…); Chromium loads the sign-in page with no errors. Previous version kept as `previous-2026-11-13.html` (md5 a8db52f4…).
 - Pending: `20261117010000_pipeline_agent_from_kind.sql` (owner to run in the Supabase SQL editor); until then the specialists list on Live pipeline is empty for production jobs.
