@@ -43,7 +43,7 @@ SEO_GOD_EFFORT = "medium"
 # D56: the only origin allowed to call /google/account and /google/check from a browser.
 PORTAL_URL = "https://seo.erudience.com/"
 # The portal's PUBLISHABLE key (public, not a secret): "Check access" calls the database as the signed-in user with it.
-SUPABASE_PUBLISHABLE_KEY = ""
+SUPABASE_PUBLISHABLE_KEY = "sb_publishable_tyjs1Xduxa_w5ASX_BfxIw_4OrfZ6xC"
 SPEED_MAX_PAGES = "4"
 
 # Staging: `npx wrangler deploy --env staging` (separate Worker, separate secrets; point it at a Supabase branch or a test project).
