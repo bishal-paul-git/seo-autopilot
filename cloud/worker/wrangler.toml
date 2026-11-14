@@ -1,6 +1,8 @@
 # SEO God execution Worker (D30). Setup, secrets and deploy steps: README.md in this folder.
 # Secrets are never written here. Set them with `npx wrangler secret put <NAME>`:
 #   SUPABASE_SERVICE_ROLE_KEY  INTERNAL_TOKEN  SCAN_SECRET  ANTHROPIC_API_KEY (optional, the user's own key)
+#   GOOGLE_OAUTH_CLIENT_ID  GOOGLE_OAUTH_CLIENT_SECRET (Connect with Google, D56)  PAGESPEED_API_KEY (central speed checks, D56)
+#   Setup: docs/google-oauth-setup.md
 name = "seo-god"
 main = "src/worker.mjs"
 compatibility_date = "2026-10-01"
@@ -38,6 +40,9 @@ SEO_GOD_DAILY_BUDGET_USD = "2"
 SEO_GOD_AGENT_RUN_USD = "0.5"
 SEO_GOD_MODEL = "claude-opus-5-5"
 SEO_GOD_EFFORT = "medium"
+# D56: where Connect with Google returns people (and the only origin allowed to call the Google routes from a browser).
+PORTAL_URL = "https://seo.erudience.com/"
+SPEED_MAX_PAGES = "4"
 
 # Staging: `npx wrangler deploy --env staging` (separate Worker, separate secrets; point it at a Supabase branch or a test project).
 [env.staging]
@@ -60,3 +65,5 @@ SEO_GOD_DAILY_BUDGET_USD = "0"
 SEO_GOD_AGENT_RUN_USD = "0.25"
 SEO_GOD_MODEL = "claude-haiku-5-5"
 SEO_GOD_EFFORT = "low"
+PORTAL_URL = ""
+SPEED_MAX_PAGES = "2"

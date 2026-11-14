@@ -86,6 +86,8 @@ test("agency: live pipeline stations, specialists and feed; details on click; re
   assert.match(conn, /GOOGLE_KEY_JSON[\s\S]*BING_WEBMASTER_API_KEY[\s\S]*INDEXNOW_KEY[\s\S]*PAGESPEED_API_KEY/);
   assert.ok(await page.locator('.guide a[href="https://github.com/acme/plumber/settings/secrets/actions"]').count(), "links to the repository's secrets");
   assert.match(conn, /0 of 7 done/);
+  assert.equal(await page.locator("details#adv[open]").count(), 0, "D56: the developer guide is under Advanced, closed");
+  await page.click("details#adv > summary");
   await page.click(".guide-list > li:nth-child(4) summary"); // open Bing, then wait for a refresh: it stays open
   await page.waitForFunction(() => (window.__n = (window.__n || 0) + 1) > 3, null, { polling: 400 });
   assert.ok(await page.locator(".guide-list > li:nth-child(4) details[open]").count(), "a refresh keeps what the reader opened");
@@ -103,7 +105,7 @@ test("client: the same pipeline without money, repository or setup hints; share 
   await page.click("#sheet-close");
   await page.goto(`${base}/#/k/${SITE.id}/connections`); await page.waitForSelector("h1:has-text('Connections')");
   const conn = await page.textContent("#page");
-  assert.match(conn, /Your SEO team manages these/); assert.doesNotMatch(conn, /SEO_PORTAL|acme\/plumber|No access|GOOGLE_KEY_JSON|Setup guide/);
+  assert.match(conn, /Nothing here needs a password or a key from you/); assert.doesNotMatch(conn, /SEO_PORTAL|acme\/plumber|No access|GOOGLE_KEY_JSON|Setup guide|Advanced/);
   assert.ok(await page.locator('#rail a[href$="/pipeline"]').count(), "in the client's menu");
   await page.goto(`${base}/#/c/share-token/pipeline`); await page.waitForSelector('#rail a[href^="#/c/share-token/"]');
   assert.doesNotMatch(await page.textContent("#page"), /Live pipeline/, "a share link opens the overview instead");

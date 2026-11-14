@@ -8,7 +8,8 @@ import { readFileSync } from "node:fs";
 import { listAgents } from "../core/agents.mjs";
 import { NO_FAKE_RULES } from "../lib/llm.mjs";
 import { knowledgeBlock, readKnowledge, haveKnowledge } from "./knowledge.mjs";
-import { searchForAgents } from "./search-console.mjs";
+import { searchForAgents, analyticsForAgents } from "./search-console.mjs";
+import { speedForAgents } from "./speed.mjs";
 
 /** US dollars per million tokens (Anthropic first-party prices, 2026-10). Unknown models are refused, not guessed. */
 export const PRICES = {
@@ -80,6 +81,8 @@ export function agentInput(job, memory, site) {
     facts: facts.slice(0, 60),
     // Real search data (D47): clicks, impressions, CTR and position per page and query, or null when not connected.
     searchConsole: searchForAgents(pick("report", "search_console")),
+    // D56: visits per landing page (GA4, through the site's Google connection) and the weekly phone speed check, or null.
+    analytics: analyticsForAgents(pick("report", "analytics")), speed: speedForAgents(pick("report", "speed")),
     // What earlier advice on this site led to (from later scans and the agency's decisions).
     lessons: memory.filter((m) => m.kind === "lesson").map((m) => m.value?.text).filter(Boolean).slice(0, 10),
   };

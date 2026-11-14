@@ -15,6 +15,8 @@ import { tick } from "../../../src/god/tick.mjs";
 import { makeSearchConsoleHandler, makeSearchSnapshotHandler, googleToken } from "../../../src/god/search-console.mjs";
 import { runOnce } from "../../../src/god/worker.mjs";
 import { makeGitHub } from "../../../src/god/github.mjs";
+import { googleRoute, oauthConfig, makeGoogleAccess } from "../../../src/god/google-oauth.mjs";
+import { makeSpeedHandler } from "../../../src/god/speed.mjs";
 import { PROMPTS, DEPARTMENTS, KNOWLEDGE } from "./agents.generated.mjs";
 
 export const VERSION = "0.1.0";
@@ -27,7 +29,7 @@ export function settings(env) {
     paused: String(env.SEO_GOD_PAUSED ?? "true").toLowerCase() !== "false", // explicit "false" is required to run
     sitesPerRun: n(env.SITES_PER_RUN, 5, 1, 25), jobsPerRun: n(env.JOBS_PER_RUN, 4, 0, 20),
     dailyBudgetUsd: n(env.SEO_GOD_DAILY_BUDGET_USD, 0, 0, 1000), agentRunUsd: n(env.SEO_GOD_AGENT_RUN_USD, 0.5, 0, 50),
-    minSiteAgeHours: n(env.SITE_MIN_AGE_HOURS, 6, 1, 168), scanMaxPages: n(env.SCAN_MAX_PAGES, 40, 1, 40),
+    minSiteAgeHours: n(env.SITE_MIN_AGE_HOURS, 6, 1, 168), scanMaxPages: n(env.SCAN_MAX_PAGES, 40, 1, 40), speedPages: n(env.SPEED_MAX_PAGES, 4, 1, 10),
   };
 }
 
@@ -80,12 +82,20 @@ export function context(env, fetchImpl) {
   // Agent jobs only with the user's own key (rule 6); otherwise the planner reports them as deferred, never queued.
   if (env.ANTHROPIC_API_KEY) handlers["agent:*"] = handlers.client_request = makeAgentHandler({ store, siteOf, apiKey: env.ANTHROPIC_API_KEY, model: env.SEO_GOD_MODEL || "claude-opus-5-5", effort: env.SEO_GOD_EFFORT || "medium", fetchImpl, promptOf: (name) => PROMPTS[name] || null, knowledge: KNOWLEDGE || null, departmentOf: (name) => DEPARTMENTS?.[name] || null, baseUrl: env.ANTHROPIC_BASE_URL || "https://api.anthropic.com",
     dailyRemaining: async (job) => (await budgetOf(job.siteId)) - (await store.spendSince(job.siteId, `${new Date().toISOString().slice(0, 10)}T00:00:00.000Z`)) });
-  // Search Console only with a service account key (GOOGLE_KEY_JSON); without it the measurement is never queued.
-  if (env.GOOGLE_KEY_JSON) {
-    let tok = null; const gsc = { store, siteOf, fetchImpl, getToken: () => (tok ??= googleToken(env.GOOGLE_KEY_JSON, { fetchImpl })), allowed: (id) => rpc(env, fetchImpl, "gsc_allowed", { p_site: id }).then(Boolean, () => false) };
+  // Search Console with each site's own Google connection (D56, GOOGLE_OAUTH_CLIENT_ID/SECRET), else the shared service
+  // account (GOOGLE_KEY_JSON, admin-confirmed sites only). With neither, the reads are never queued.
+  const oauth = oauthConfig(env);
+  if (env.GOOGLE_KEY_JSON || oauth) {
+    let tok = null; const gsc = { store, siteOf, fetchImpl, getToken: env.GOOGLE_KEY_JSON ? () => (tok ??= googleToken(env.GOOGLE_KEY_JSON, { fetchImpl })) : null, allowed: (id) => rpc(env, fetchImpl, "gsc_allowed", { p_site: id }).then(Boolean, () => false),
+      oauthOf: oauth ? makeGoogleAccess({ cfg: oauth, fetchImpl, call: (fn, args) => rpc(env, fetchImpl, fn, args) }) : null };
     handlers.search_console = makeSearchConsoleHandler(gsc);
-    handlers.search_snapshot = makeSearchSnapshotHandler(gsc); // D47: the 28-day snapshot the agents read
+    handlers.search_snapshot = makeSearchSnapshotHandler(gsc); // D47: the 28-day snapshot the agents read (and GA4, D56)
+    // Planned only for a site that can be read: its own Google connection with a property chosen, or the shared key and a
+    // platform admin's confirmation.
+    handlers.search_snapshot.applies = async (id) => (oauth ? await rpc(env, fetchImpl, "google_connected", { p_site: id }).then(Boolean, () => false) : false) || (!!env.GOOGLE_KEY_JSON && (await gsc.allowed(id)));
   }
+  // D56: weekly phone speed checks with ONE platform key, so customers never add one; never queued without it.
+  if (env.PAGESPEED_API_KEY) handlers.speed_snapshot = makeSpeedHandler({ store, siteOf, apiKey: env.PAGESPEED_API_KEY, fetchImpl, maxPages: s.speedPages });
   if (handlers.client_request) handlers.client_request = makeClientRequestHandler({ store, agentHandler: handlers["agent:*"] });
   return { s, store, siteOf, handlers, budgetOf };
 }
@@ -175,6 +185,12 @@ export const handler = {
   async fetch(req, env) {
     const url = new URL(req.url);
     if (req.method === "GET" && url.pathname === "/health") return json({ ok: true, service: "seo-god", version: VERSION });
+    // D56: Connect with Google. Public routes: each needs a one-time state that a signed-in portal user created.
+    if (url.pathname.startsWith("/oauth/google/")) {
+      const f = countingFetch();
+      try { return await googleRoute(req, { env, fetchImpl: f, call: (fn, args) => rpc(env, f, fn, args) }); }
+      catch (e) { console.log(JSON.stringify({ msg: "google oauth", error: String(e.message || e).slice(0, 200) })); return json({ ok: false, error: "something went wrong: try again" }, 500); }
+    }
     if (!url.pathname.startsWith("/internal/")) return json({ error: "not found" }, 404);
     if (req.method !== "POST" || !tokenOk(req.headers.get("x-god-token") || "", env.INTERNAL_TOKEN || "")) return json({ error: "forbidden" }, 403);
     const f = countingFetch();

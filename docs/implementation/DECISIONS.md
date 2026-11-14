@@ -119,6 +119,65 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
 
+## 2026-11-14 D56 Connect with Google; central speed checks; a three-step set-up in the portal
+The owner, 2026-11-14: "make the setup easy from portal and easy for customers". Today a hosted customer needs a Google Cloud service account, a JSON key, GitHub secrets and a config edit before the agents see any search data.
+
+**Decision:**
+- **Connect with Google** (OAuth web-server flow) in the Worker `seo-god`:
+  - Routes: `/oauth/google/start`, `/oauth/google/callback`, plus `/oauth/google/properties` and `/oauth/google/disconnect`. Code in `src/god/google-oauth.mjs`.
+  - Scopes: `openid email webmasters.readonly analytics.readonly`, with `access_type=offline`, `prompt=consent` and PKCE (S256).
+  - The client ID and secret are Worker secrets.
+- **CSRF and login CSRF:**
+  - Each attempt is a one-time `state` row: site, person, 10 minutes, single use. The PKCE verifier stays in the database.
+  - Only an agency member, or the site's client user under the rule below, can create a state, through `google_begin`.
+  - The callback stores the refresh token as **pending**. It becomes the site's connection only when the same signed-in person confirms it from the portal (`google_confirm`).
+  - So a link someone else started cannot attach a victim's Google account to the attacker's site. A cookie would not stop that, because the attacker controls the start link.
+- **Storage (the D37 pattern):**
+  - The refresh token is kept in Supabase Vault: `google_token:<site>`, and `google_pending:<state>` until it is confirmed.
+  - The metadata is kept in `integrations` (provider `google`): email, granted scopes, the property lists, the chosen properties, who connected.
+  - Only the service role reads the token. No RPC returns it to a browser.
+  - Disconnect revokes the token at `oauth2.googleapis.com/revoke`, then deletes it. If the Worker cannot be reached, the portal deletes it and tells the person to remove access in their Google account.
+- **Pickers:**
+  - At sign-in, and on "Refresh lists", the Worker lists `webmasters/v3/sites` and `analyticsadmin/v1beta/accountSummaries`. The token never leaves the server.
+  - `set_google_properties` accepts only a property in that list. The Search Console property must also cover the site's own host: the domain property for the host or a parent domain, or the same host's address prefix.
+  - The property for the site's host is pre-selected, as is a single GA4 property.
+- **Use:**
+  - `search_snapshot` and `search_console` use the site's own token and its chosen property when it has one.
+  - The same job reads GA4: visits per landing page for the same 28 days, memory report `analytics`. Agents get `analytics` and `speed` next to `searchConsole`.
+  - The shared service account (D34/D53 property lookup with `set_gsc_allowed`) stays as the fallback.
+  - The daily read is planned only for a site that can be read (`google_connected`, or the shared key plus confirmation), so no job is created just to say "not connected".
+- **No admin confirmation for OAuth sites:**
+  - D34 required a platform admin to confirm a site before the *shared* account read it, because an agency could add a domain it does not own and read data its real owner granted to the platform.
+  - With OAuth, the customer's own Google account grants access. It can read only properties that Google says that account may read. The chosen property must also match the site's host.
+  - The confirmation protected nothing here, so it is skipped for OAuth-connected sites. It still applies to the shared account.
+- **Client users:** a client user of the site may connect their own Google when nothing is connected (they usually own the property). They may then change or disconnect only the connection they made. They never see the agency's Google email or lists. Agency members may manage any connection.
+- **Central speed checks:**
+  - A weekly `speed_snapshot` job checks the home page plus the top pages by Search Console clicks: `SPEED_MAX_PAGES`, default 4.
+  - It uses PageSpeed Insights (phone, `fields` limited, because a Lighthouse result is about 1 MB and a Worker has little CPU) and the Chrome UX Report for the site's origin.
+  - One platform key, the Worker secret `PAGESPEED_API_KEY`, is used. Without it the job is never planned.
+  - The result is stored as memory report `speed` and shown on Connections.
+- **Portal:**
+  - A "Set up" card at the top of Connections, and right after adding a site: Website ✓ → Connect with Google (button, two dropdowns, connected state with email and Disconnect) → GitHub (optional).
+  - The D55 seven-step guide moved under "Advanced: connect a GitHub run".
+
+**Tradeoffs:**
+- **Rule 6 ("users bring their own keys"):**
+  - The hosted service now uses one platform key, for two *free* Google APIs (PageSpeed, CrUX), and a platform OAuth *client*.
+  - Each customer still grants access with their own Google account, and no customer data is read with a platform identity except the existing, confirmed service-account fallback.
+  - The open-source CLI path is unchanged: users keep their own keys.
+  - Risk: the platform key's quota is shared by all hosted sites. The 4-page weekly cap keeps it small.
+- **Google's rules:**
+  - While the OAuth app is in Testing, only listed test users (up to 100) can connect, and their grants end after 7 days.
+  - Opening it to everyone needs a privacy policy, a homepage and Google's verification of the two sensitive scopes, which can take weeks. Steps: `docs/google-oauth-setup.md`.
+- **Revoking:** a reconnect with a different Google account replaces the stored token without revoking the old one. Disconnect does revoke.
+- **CORS:** the property and disconnect routes allow only the portal's origin. They are authorised by a one-time state, not by cookies.
+- **Not verified with real Google:** everything is tested with stand-ins (unit, Chromium, workerd end-to-end against the real migrations). No live OAuth client exists yet.
+
+**Evidence:**
+- `test/google-oauth.test.mjs`, `test/speed-snapshot.test.mjs`, `test/portal-google.test.mjs`.
+- `cloud/portal/supabase/test/rls25.sql`.
+- `scripts/cf-local-e2e.mjs`, the D56 section: start, callback, single use, login CSRF refused, confirm, lists, revoke.
+
 ## 2026-11-13 D55 Changes stop at a pull request; setup guide in the portal; cost ledger
 The owner, 2026-11-13: "keep the agent doing PRs ... and hold it there for now with routine changes"; "keep tracking all costs from this project and record"; the instructions for connecting each website must be in the portal.
 

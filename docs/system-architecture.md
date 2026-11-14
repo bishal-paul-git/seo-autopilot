@@ -41,6 +41,17 @@ deployed and what is only built is in [deployment-status.md](deployment-status.m
 3. pg_cron wakes `scan` every 10 minutes; each site is due once a day; failures retry after 6 hours.
 4. Read-only: address-only sites get findings, business details and priorities, never changes.
 
+**C. Connect with Google (D56, hosted sites)**
+1. Portal "Connect with Google" calls `google_begin` (a one-time state) and opens the Worker's `/oauth/google/start`, which
+   sends the browser to Google's consent screen (PKCE, read-only scopes, offline).
+2. Google returns to `/oauth/google/callback`. The Worker exchanges the code with its client secret and lists the
+   account's Search Console and GA4 properties. It stores the refresh token as pending in Vault, then sends the browser to
+   the portal with the state.
+3. The portal calls `google_confirm` as the same signed-in person: the connection is made and the property for the
+   site's host is pre-selected. The person can change both dropdowns (`set_google_properties`).
+4. The daily `search_snapshot` job reads Search Console and GA4 with the site's own token. A weekly `speed_snapshot` job
+   checks the home page and top pages with the platform's PageSpeed key.
+
 ## Tenancy
 Every row belongs to an org through `sites.org_id`. Reads are row-level security (`private.is_member`); writes go through
 `SECURITY DEFINER` functions that check membership themselves. Clients see one site through a share link

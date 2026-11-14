@@ -11,6 +11,7 @@ import { createServer } from "node:http";
 import { readFileSync, writeFileSync, rmSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createHash } from "node:crypto";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const t = join(root, "cloud/portal/supabase/test"), m = join(root, "cloud/portal/supabase/migrations"), w = join(root, "cloud/worker");
@@ -32,7 +33,8 @@ psql(`insert into auth.users (id, email) values ('00000000-0000-0000-0000-000000
 psql([readFileSync(join(m, "20261108100000_invite_only.sql"), "utf8"), readFileSync(join(t, "shim5.sql"), "utf8"), readFileSync(join(m, "20261108110000_github_execution.sql"), "utf8"),
   readFileSync(join(m, "20261108120000_notifications_reports.sql"), "utf8"), readFileSync(join(m, "20261108130000_email.sql"), "utf8"),
   // Everything since Release 1 (D42 to D50), so the Worker runs against the production schema.
-  ...["20261112000000_activity.sql", "20261113000000_business_brief.sql", "20261114000000_agent_pages.sql", "20261115000000_gsc_sites.sql", "20261116000000_budgets_alerts.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
+  ...["20261112000000_activity.sql", "20261113000000_business_brief.sql", "20261114000000_agent_pages.sql", "20261115000000_gsc_sites.sql", "20261116000000_budgets_alerts.sql",
+    "20261117000000_pipeline_connections.sql", "20261117010000_pipeline_agent_from_kind.sql", "20261118000000_google_oauth.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
 const asUser = (user, sql) => psql(`set role authenticated; set request.jwt.claim.sub = '${user}'; set request.jwt.claim.role = 'authenticated'; ${sql}`).split("\n").pop();
 const A_USER = "00000000-0000-0000-0000-00000000000a", B_USER = "00000000-0000-0000-0000-00000000000b";
 const A = JSON.parse(asUser(A_USER, `select public.create_site('Plumber', 'https://plumber.test/')->'site';`)).id;
@@ -42,6 +44,7 @@ const B = JSON.parse(asUser(B_USER, `select public.create_site('Bakery', 'https:
 const fnInfo = new Map(JSON.parse(psql(`select coalesce(jsonb_agg(jsonb_build_array(p.proname, p.proretset, t.typtype, t.typname)), '[]') from pg_proc p join pg_type t on t.oid = p.prorettype where p.pronamespace = 'public'::regnamespace;`)).map(([n, set, typ, name]) => [n, { set, typ, name }]));
 const calls = { rpc: 0, scan: 0, anthropic: 0, badKey: 0 };
 const gh = { issues: [], dispatches: [], pulls: {}, auth: [], fixed: false };
+const google = { exchanges: [], refreshes: [], revoked: [] }; // D56 stand-in for Google's OAuth and listing endpoints
 let lastBody = "";
 const rpc = (fn, args) => {
   const info = fnInfo.get(fn); if (!info || !/^[a-z_]+$/.test(fn)) return [404, { message: `function ${fn} not found` }];
@@ -70,6 +73,20 @@ const server = createServer(async (req, res) => {
     if (req.method === "GET" && p === "/repos/acme/plumber/pulls") { const pr = gh.pulls[u.searchParams.get("head")]; return send(200, pr ? [pr] : []); }
     return send(404, { message: "Not Found" });
   }
+  if (u.pathname.startsWith("/google/")) {
+    const p = u.pathname.slice(7), f = new URLSearchParams(body);
+    if (p === "/token" && f.get("grant_type") === "authorization_code") {
+      google.exchanges.push(Object.fromEntries(f));
+      if (f.get("code") !== "good-code" || f.get("client_secret") !== "e2e-client-secret") return send(400, { error: "invalid_grant" });
+      return send(200, { access_token: "e2e-access", refresh_token: "e2e-refresh-token-0123", scope: "openid email https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/analytics.readonly",
+        id_token: `h.${Buffer.from(JSON.stringify({ email: "owner@plumber.test", email_verified: true })).toString("base64url")}.s` });
+    }
+    if (p === "/token" && f.get("grant_type") === "refresh_token") { google.refreshes.push(f.get("refresh_token")); return send(200, { access_token: "e2e-access-2" }); }
+    if (p === "/revoke") { google.revoked.push(f.get("token")); return send(200, {}); }
+    if (p === "/webmasters/v3/sites") return send(200, { siteEntry: [{ siteUrl: "sc-domain:plumber.test", permissionLevel: "siteOwner" }, { siteUrl: "https://bakery.test/", permissionLevel: "siteOwner" }] });
+    if (p === "/v1beta/accountSummaries") return send(200, { accountSummaries: [{ displayName: "Plumber", propertySummaries: [{ property: "properties/111", displayName: "Plumber web" }] }] });
+    return send(404, { error: { message: "not found" } });
+  }
   if (u.pathname === "/functions/v1/scan") {
     if (req.headers["x-scan-secret"] !== SCAN_SECRET) return send(403, { error: "forbidden" });
     calls.scan++; const { site } = JSON.parse(body);
@@ -85,7 +102,8 @@ const base = `http://127.0.0.1:${server.address().port}`;
 
 // --- the Worker in workerd -------------------------------------------------------------------------------------------
 const devVars = join(w, ".dev.vars");
-writeFileSync(devVars, [`SEO_GOD_PAUSED=false`, `SUPABASE_URL=${base}`, `SUPABASE_SERVICE_ROLE_KEY=${KEY}`, `INTERNAL_TOKEN=${TOKEN}`, `SCAN_FUNCTION_URL=${base}/functions/v1/scan`, `ANTHROPIC_API_KEY=fake-user-key`, `ANTHROPIC_BASE_URL=${base}`, `SEO_GOD_DAILY_BUDGET_USD=1`, `SITE_MIN_AGE_HOURS=1`, `GITHUB_API_URL=${base}/gh`].join("\n"));
+writeFileSync(devVars, [`SEO_GOD_PAUSED=false`, `SUPABASE_URL=${base}`, `SUPABASE_SERVICE_ROLE_KEY=${KEY}`, `INTERNAL_TOKEN=${TOKEN}`, `SCAN_FUNCTION_URL=${base}/functions/v1/scan`, `ANTHROPIC_API_KEY=fake-user-key`, `ANTHROPIC_BASE_URL=${base}`, `SEO_GOD_DAILY_BUDGET_USD=1`, `SITE_MIN_AGE_HOURS=1`, `GITHUB_API_URL=${base}/gh`,
+  `GOOGLE_OAUTH_CLIENT_ID=e2e-client.apps.googleusercontent.com`, `GOOGLE_OAUTH_CLIENT_SECRET=e2e-client-secret`, `PORTAL_URL=${base}/portal/`, `GOOGLE_API_BASE=${base}/google`].join("\n"));
 const PORT = 18787 + (process.pid % 1000);
 execFileSync("node", ["build.mjs"], { cwd: w, stdio: "ignore" });
 const env = { ...process.env }; for (const k of ["HTTPS_PROXY", "HTTP_PROXY", "https_proxy", "http_proxy"]) delete env[k];
@@ -196,6 +214,29 @@ try {
   const before = calls.rpc; await cron(); run = lastRun();
   check(run.paused === true && run.jobs_run === 0 && calls.rpc - before <= 3, "paused: the run records itself and does nothing else");
   psql(`select public.set_god_paused(false);`, "service_role");
+
+  // D56: Connect with Google through the Worker in workerd, against the real database rules (Google is a stand-in).
+  const st = JSON.parse(asUser(A_USER, `select public.google_begin(${lit(A)}, 'connect');`)).state;
+  const start = await fetch(`${W}/oauth/google/start?state=${st}`, { redirect: "manual" });
+  const consent = new URL(start.headers.get("location"));
+  check(start.status === 302 && consent.pathname === "/google/auth" && consent.searchParams.get("code_challenge_method") === "S256" && consent.searchParams.get("access_type") === "offline" && !start.headers.get("location").includes("e2e-client-secret"),
+    "Google start: to the consent screen with PKCE and offline access, no secret in the address");
+  const back = await fetch(`${W}/oauth/google/callback?state=${st}&code=good-code`, { redirect: "manual" });
+  const ex = google.exchanges[0] || {};
+  check(back.status === 302 && back.headers.get("location") === `${base}/portal/?google_state=${st}`, "Google callback: back to the portal with only the state");
+  check(createHash("sha256").update(ex.code_verifier || "").digest("base64url") === consent.searchParams.get("code_challenge") && ex.client_secret === "e2e-client-secret", "the code was exchanged with the client secret and the verifier behind the challenge");
+  check((await fetch(`${W}/oauth/google/callback?state=${st}&code=good-code`, { redirect: "manual" })).status === 400 && google.exchanges.length === 1, "the state works once");
+  let notYours = ""; try { asUser(B_USER, `select public.google_confirm(${lit(st)});`); } catch (e) { notYours = String(e.stderr || e.message); }
+  check(/not yours/.test(notYours), "another person cannot confirm the sign-in (login CSRF)");
+  const gc = JSON.parse(asUser(A_USER, `select public.google_confirm(${lit(st)});`));
+  check(gc.connected && gc.email === "owner@plumber.test" && gc.gscProperty === "sc-domain:plumber.test" && gc.ga4Property === "properties/111", `confirmed by Alice: connected, ${gc.gscProperty} and ${gc.ga4Property} picked`);
+  check(psql(`select count(*) from public.integrations where detail::text like '%e2e-refresh%';`) === "0" && psql(`select count(*) from public.god_runs where errors::text like '%e2e-refresh%';`) === "0", "the refresh token is only in Vault");
+  check(psql(`select public.google_connected(${lit(A)});`, "service_role") === "t" && psql(`select public.google_connected(${lit(B)});`, "service_role") === "f", "planning sees which site can be read");
+  const post = async (path, purpose) => { const s2 = JSON.parse(asUser(A_USER, `select public.google_begin(${lit(A)}, '${purpose}');`)).state; return (await fetch(`${W}${path}`, { method: "POST", headers: { "content-type": "application/json", origin: base }, body: JSON.stringify({ state: s2 }) })).json(); };
+  const lists = await post("/oauth/google/properties", "list");
+  check(lists.ok && lists.sites === 2 && lists.ga4 === 1 && google.refreshes.at(-1) === "e2e-refresh-token-0123" && !JSON.stringify(lists).includes("e2e-"), "lists refreshed with the stored token; no token in the answer");
+  const off = await post("/oauth/google/disconnect", "disconnect");
+  check(off.ok && off.revokedAtGoogle && google.revoked.includes("e2e-refresh-token-0123") && !JSON.parse(asUser(A_USER, `select public.site_google(${lit(A)});`)).connected, "disconnect: revoked at Google, then removed");
   const usage = JSON.parse(psql(`select public.god_usage(1);`, "service_role"));
   console.log(`usage over this test: ${JSON.stringify(usage)}`);
   console.log("all Cloudflare execution checks passed in workerd against the database");

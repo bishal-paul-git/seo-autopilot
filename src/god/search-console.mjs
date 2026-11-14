@@ -46,21 +46,21 @@ const toSeries = (rows) => Object.fromEntries(rows.map((x) => [x.keys[0], [x.cli
  * The "search_console" job: for accepted advice whose after-window is complete, read Search Console and store a
  * traffic verdict on each item. deps: { store, siteOf, getToken: async () => token, fetchImpl, now }.
  */
-export function makeSearchConsoleHandler({ store, siteOf, getToken, fetchImpl = (...a) => fetch(...a), now = () => new Date().toISOString(), allowed = async () => true }) {
+export function makeSearchConsoleHandler({ store, siteOf, getToken, fetchImpl = (...a) => fetch(...a), now = () => new Date().toISOString(), allowed = async () => true, oauthOf = null }) {
   return async (job) => {
-    // The shared Google account may read only sites a platform admin confirmed (D34): a domain added by an agency that
-    // does not own it must never be read with access its real owner granted.
-    if (!(await allowed(job.siteId))) return { evidence: ["Search Console not used: a platform admin has not confirmed this site (set_gsc_allowed)"] };
+    const a = await accessFor(job, { oauthOf, getToken, allowed });
+    if (a.stop) return a.stop;
+    if (a.oauth && !a.candidates.length) return { evidence: ["Google is connected but no Search Console property is chosen yet"] };
     const site = await siteOf(job.siteId);
     const memory = (await store.readMemory(job.siteId, "experiment")) || [];
     const due = trafficDue(memory.map((m) => m.value), now());
     if (!due.length) return { evidence: ["no accepted advice is ready to measure yet"] };
-    const token = await getToken();
+    const token = await a.token();
     const host = new URL(site.url).hostname.replace(/^www\./, "");
     const from = addDays(day(Math.min(...due.map((e) => Date.parse(e.openedAt)))), -SPAN - 1), to = addDays(day(Date.parse(now())), -2);
-    // The property the owner shared with us: the domain property first, then the address prefix.
-    const f = await findProperty(fetchImpl, token, site.url, { startDate: from, endDate: to, dimensions: ["date"], rowLimit: 500 });
-    if (!f.property) return { escalate: noAccessMessage({ host, visible: f.visible }), evidence: [], costUsd: 0 };
+    // The property the owner chose (Google connection), else every form the owner may have shared with the service account.
+    const f = await findProperty(fetchImpl, token, site.url, { startDate: from, endDate: to, dimensions: ["date"], rowLimit: 500 }, a.candidates || undefined);
+    if (!f.property) return { escalate: a.oauth ? oauthNoAccess(a.candidates[0]) : noAccessMessage({ host, visible: f.visible }), evidence: [], costUsd: 0 };
     const property = f.property, total = f.rows;
     const siteSeries = toSeries(total), today = day(Date.parse(now()));
     let measured = 0;
@@ -107,9 +107,9 @@ async function visibleProperties(fetchImpl, token) {
   } catch { return []; }
 }
 
-async function findProperty(fetchImpl, token, siteUrl, body) {
+async function findProperty(fetchImpl, token, siteUrl, body, candidates = propertyCandidates(siteUrl)) {
   const host = new URL(siteUrl).hostname.replace(/^www\./, "");
-  for (const p of propertyCandidates(siteUrl)) {
+  for (const p of candidates) {
     try { return { property: p, rows: await query(fetchImpl, token, p, body) }; }
     catch (e) { if (![403, 404].includes(e.status)) throw e; }
   }
@@ -120,6 +120,22 @@ async function findProperty(fetchImpl, token, siteUrl, body) {
 export const noAccessMessage = ({ host, visible = [] }) => `Search Console: the service account has no access to ${host}; the site owner must add it as a user (Restricted) on the ${host} property` +
   (visible.length ? `. It can see: ${visible.slice(0, 10).join(", ")}` : ". It can see no properties at all yet: check the email that was added");
 
+/**
+ * Which Google access a job uses (D56): the site's own Google connection when it has one (the customer granted it, so no
+ * admin confirmation is needed); otherwise the shared service account, only for sites a platform admin confirmed (D34: a
+ * domain added by an agency that does not own it must never be read with access its real owner granted).
+ * Returns { stop } (the job's result) or { token: () => Promise<token>, candidates, ga4, oauth }.
+ */
+export async function accessFor(job, { oauthOf = null, getToken = null, allowed = async () => true }) {
+  const o = oauthOf ? await oauthOf(job.siteId) : null;
+  if (o?.error) return { stop: { escalate: `The Google connection for this website stopped working (${o.error}): connect with Google again on the Connections page`, evidence: [], costUsd: 0 } };
+  if (o) return { oauth: true, token: async () => o.token, candidates: o.property ? [o.property] : [], ga4: o.ga4Property || null, email: o.email || null };
+  if (!getToken) return { stop: { evidence: ["Search Console not connected: press Connect with Google on the Connections page"] } };
+  if (!(await allowed(job.siteId))) return { stop: { evidence: ["Search Console not used: a platform admin has not confirmed this site (set_gsc_allowed)"] } };
+  return { oauth: false, token: getToken, candidates: null, ga4: null };
+}
+const oauthNoAccess = (property) => `Search Console: the Google account connected for this website cannot read ${property} any more; choose another property or connect with Google again on the Connections page`;
+
 export const SNAPSHOT_DAYS = 28, SNAPSHOT_PAGES = 250, SNAPSHOT_QUERIES = 100, SNAPSHOT_PAIRS = 250;
 const r4 = (x) => Number(Number(x || 0).toFixed(4)), r1 = (x) => Number(Number(x || 0).toFixed(1));
 const rowOf = (x) => ({ clicks: x.clicks || 0, impressions: x.impressions || 0, ctr: r4(x.ctr), position: r1(x.position) });
@@ -129,14 +145,22 @@ const rowOf = (x) => ({ clicks: x.clicks || 0, impressions: x.impressions || 0, 
  * site's memory as report "search_console": totals, the top pages, the top queries and which page each top query
  * lands on (page + query pairs, D52). Four small queries, read-only.
  */
-export function makeSearchSnapshotHandler({ store, siteOf, getToken, fetchImpl = (...a) => fetch(...a), now = () => new Date().toISOString(), allowed = async () => true }) {
+export function makeSearchSnapshotHandler({ store, siteOf, getToken, fetchImpl = (...a) => fetch(...a), now = () => new Date().toISOString(), allowed = async () => true, oauthOf = null, analyticsBase = "" }) {
   return async (job) => {
-    if (!(await allowed(job.siteId))) return { evidence: ["Search Console not used: a platform admin has not confirmed this site (set_gsc_allowed)"] };
+    const a = await accessFor(job, { oauthOf, getToken, allowed });
+    if (a.stop) return a.stop;
+    if (a.oauth && !a.candidates.length && !a.ga4) return { evidence: ["Google is connected but no Search Console or Analytics property is chosen yet"] };
     const site = await siteOf(job.siteId);
-    const token = await getToken();
+    const token = await a.token();
     const to = addDays(day(Date.parse(now())), -LAG), from = addDays(to, -(SNAPSHOT_DAYS - 1));
-    const found = await findProperty(fetchImpl, token, site.url, { startDate: from, endDate: to, rowLimit: 1 });
-    if (!found.property) return { escalate: noAccessMessage(found), evidence: [], costUsd: 0 };
+    // D56: GA4 through the site's Google connection, in the same job (one more request, no extra planning).
+    const ga = a.ga4 ? await analyticsSnapshot({ fetchImpl, token, property: a.ga4, from, to, now, base: analyticsBase }).then(async (v) => {
+      await store.writeMemory(job.siteId, [{ kind: "report", key: "analytics", value: v, basis: "verified", confidence: null, source: "google analytics" }]);
+      return `Analytics ${a.ga4}: ${v.totals.sessions} visits, ${v.pages.length} landing pages stored`;
+    }, (e) => `Analytics not read: ${String(e.message).slice(0, 160)}`) : null;
+    if (a.oauth && !a.candidates.length) return { evidence: [ga] };
+    const found = await findProperty(fetchImpl, token, site.url, { startDate: from, endDate: to, rowLimit: 1 }, a.candidates || undefined);
+    if (!found.property) return { escalate: a.oauth ? oauthNoAccess(a.candidates[0]) : noAccessMessage(found), evidence: ga ? [ga] : [], costUsd: 0 };
     const { property } = found, base = { startDate: from, endDate: to };
     const pages = await query(fetchImpl, token, property, { ...base, dimensions: ["page"], rowLimit: SNAPSHOT_PAGES });
     const queries = await query(fetchImpl, token, property, { ...base, dimensions: ["query"], rowLimit: SNAPSHOT_QUERIES });
@@ -147,7 +171,7 @@ export function makeSearchSnapshotHandler({ store, siteOf, getToken, fetchImpl =
       pairs: pairs.filter((x) => x.keys?.length === 2).map((x) => ({ url: x.keys[0], query: x.keys[1], ...rowOf(x) })),
       complete: { pages: pages.length < SNAPSHOT_PAGES, queries: queries.length < SNAPSHOT_QUERIES } };
     await store.writeMemory(job.siteId, [{ kind: "report", key: "search_console", value, basis: "verified", confidence: null, source: "search console" }]);
-    return { evidence: [`Search Console ${property}, ${from} to ${to}: ${totals.clicks} clicks, ${totals.impressions} impressions; ${value.pages.length} pages and ${value.queries.length} queries stored for the agents`] };
+    return { evidence: [`Search Console ${property}, ${from} to ${to}: ${totals.clicks} clicks, ${totals.impressions} impressions; ${value.pages.length} pages and ${value.queries.length} queries stored for the agents${a.oauth ? " (the site's own Google connection)" : ""}`, ...(ga ? [ga] : [])] };
   };
 }
 
@@ -170,4 +194,30 @@ export function searchForAgents(s, { maxPages = 120, maxQueries = 40, maxPairs =
   return { property: s.property, from: s.from, to: s.to, totals: s.totals, pages, queries: (s.queries || []).slice(0, maxQueries),
     pageQueries: s.pairs ? pageQueries : null,
     note: allPages ? "Every page with at least one impression in this period is listed; a page not listed had no impressions." : `Only the top ${pages.length} pages by impressions are listed; a page not listed may still have had impressions.` };
+}
+
+export const ANALYTICS_PAGES = 100;
+/**
+ * GA4 for the agents (D56): visits, engaged visits and users per landing page for the same 28 days as Search Console, one
+ * runReport call with the site's own Google connection. Read-only (analytics.readonly).
+ */
+export async function analyticsSnapshot({ fetchImpl, token, property, from, to, now = () => new Date().toISOString(), base = "" }) {
+  if (!/^properties\/\d+$/.test(property || "")) throw new Error("not a GA4 property id");
+  const r = await fetchImpl(`${base ? `${String(base).replace(/\/$/, "")}/v1beta` : "https://analyticsdata.googleapis.com/v1beta"}/${property}:runReport`, { method: "POST", headers: { Authorization: `Bearer ${token}`, "content-type": "application/json" },
+    body: JSON.stringify({ dateRanges: [{ startDate: from, endDate: to }], dimensions: [{ name: "landingPage" }], metrics: [{ name: "sessions" }, { name: "engagedSessions" }, { name: "totalUsers" }],
+      orderBys: [{ metric: { metricName: "sessions" }, desc: true }], limit: ANALYTICS_PAGES, metricAggregations: ["TOTAL"] }) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || j.error) throw new Error(j.error?.message || `Analytics HTTP ${r.status}`);
+  const nums = (m) => (m || []).map((x) => Number(x.value) || 0);
+  const [sessions = 0, engagedSessions = 0, users = 0] = nums(j.totals?.[0]?.metricValues);
+  const pages = (j.rows || []).map((x) => { const [s, e, u] = nums(x.metricValues); return { path: String(x.dimensionValues?.[0]?.value ?? "").slice(0, 500), sessions: s, engagedSessions: e, users: u }; });
+  return { property, from, to, generatedAt: now(), totals: { sessions, engagedSessions, users }, pages, complete: (j.rowCount ?? pages.length) <= ANALYTICS_PAGES };
+}
+
+/** What an agent sees of GA4: totals and the top landing pages, with what a missing page means. */
+export function analyticsForAgents(a, { maxPages = 40 } = {}) {
+  if (!a) return null;
+  const pages = (a.pages || []).slice(0, maxPages);
+  return { property: a.property, from: a.from, to: a.to, totals: a.totals, landingPages: pages,
+    note: `Visits (GA4 sessions) by landing page. Only the top ${pages.length} landing pages are listed; a page not listed may still have had visits. GA4 counts only visitors its tag recorded (consent banners and blockers reduce it).` };
 }

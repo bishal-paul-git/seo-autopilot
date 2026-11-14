@@ -3,7 +3,7 @@
 Kept short; read at the start of every session. Plan: [../product/SYSTEM-READINESS-PLAN.md](../product/SYSTEM-READINESS-PLAN.md) (phases 0 to 8). Agent detail: [../product/AGENT-INTELLIGENCE-PLAN.md](../product/AGENT-INTELLIGENCE-PLAN.md). History: [history/STATUS-to-2026-11-12.md](history/STATUS-to-2026-11-12.md) (full capability table and earlier checks), [history/STATUS-to-2026-11-03.md](history/STATUS-to-2026-11-03.md). Detail: [CHANGELOG.md](CHANGELOG.md), [DECISIONS.md](DECISIONS.md). Deployed state: [../deployment-status.md](../deployment-status.md).
 
 ## 1. Snapshot
-- Last updated: 2026-11-12 ~23:35 UTC. Branch `claude/hopeful-euler-662mu5`, PR [#58](https://github.com/bishal-paul-git/seo-autopilot/pull/58). Release 1 is on `main` (#51, then #56 and #57).
+- Last updated: 2026-11-14 UTC. Branch `claude/hopeful-euler-662mu5`, base `main` 0dc3ea1; D56 PR: see CHANGELOG 2026-11-14 (draft, not merged). Release 1 is on `main` (#51, then #56 and #57).
 - Environment: Linux cloud container, Node 22, Postgres 16 for local SQL checks.
 - Phase: **pilot running on erudience.com (read-only, advice only)**; readiness plan: Phase 1 (D45) and Phase 2 (agent pages, D46) deployed; Phase 3 step 1 (Search Console for the agents, D47) built, waits on the owner's Google key.
 
@@ -31,6 +31,7 @@ Cloudflare Worker `seo-god` (`cloud/worker/`) runs every 15 min: plans each due 
 ## 3. This session (2026-11-12, after the strategy approval)
 | Change | Kind | State |
 |---|---|---|
+| D56: Connect with Google (OAuth in the Worker, token in Vault, confirm by the same person, property pickers), GA4 read, weekly central speed checks with one platform PageSpeed key, three-step Set up card (dev guide under Advanced) | code (`src/god/google-oauth.mjs`, `speed.mjs`, `search-console.mjs`, `tick.mjs`, Worker, portal, migration 20261118000000) | **built and tested with stand-ins, not deployed**: migration not applied; no OAuth client or secrets yet (owner steps: [../google-oauth-setup.md](../google-oauth-setup.md)) |
 | Readiness plan and agent-intelligence plan | docs | pushed |
 | D45: playbooks and skills sent to each agent; every AI output reviewed; fact-checker second opinion for content and high-risk work | code (`src/god/knowledge.mjs`, `agent-runner.mjs`, `worker.mjs`, `cloud/worker/build.mjs`, `src/app.mjs`) | **deployed** 2026-11-12 ~21:30 UTC: PR #58 merged (167fa60), deploy-seo-god run 8 (run=true) succeeded, god_runs 90 no errors; **verified live** 22:15 UTC: a snippet-optimizer run read its 4 playbooks and 1 skill, passed the quality gate and the fact-checker, cost $0.1333 |
 | STATUS rewritten (old table moved to history) | docs | done |
@@ -48,6 +49,7 @@ Cloudflare Worker `seo-god` (`cloud/worker/`) runs every 15 min: plans each due 
 D45: no migration. D46: one read-only migration. No new dependency or secret.
 
 ## 4. Checks
+- 2026-11-14 (D56): `npm test` 633/633; `bash cloud/portal/supabase/test/run.sh` rls1-25 pass; `node scripts/cf-local-e2e.mjs` all pass (Google stand-in); `node scripts/god-pg-e2e.mjs` passes. No real Google call was made.
 - `npm test`: 599/599 (mocked network). D46: `test/portal-agent.test.mjs` (Chromium), `rls21.sql`.
 - Earlier D45 run: 597/597. New: knowledge references resolve for all 38 agents; runner sends playbooks and calls the fact-checker; worker reviews every AI output; a planted invented figure (340%) is sent back by the fact-checker.
 - `node scripts/cf-local-e2e.mjs`: all checks pass in workerd against all migrations (Anthropic and scan stand-ins, no spend).
@@ -55,6 +57,7 @@ D45: no migration. D46: one read-only migration. No new dependency or secret.
 - Not yet: a live run with playbooks and the second opinion (after deploy); exams (Phase 4).
 
 ## 5. Open items and owner actions
+0. **D56 (Connect with Google):** create the OAuth consent screen and Web client in `seo-autopilot-511920` with redirect URI `https://seo-god.contact-bishalpaul.workers.dev/oauth/google/callback`; set Worker secrets `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `PAGESPEED_API_KEY`; run migration 20261118000000; redeploy the Worker; build the portal with `PORTAL_WORKER_URL`. Testing mode: test users only, grants end after 7 days; publishing needs a privacy policy and Google's sensitive-scope verification (weeks). Steps: [../google-oauth-setup.md](../google-oauth-setup.md).
 1. Cloudflare dashboard → Workers & Pages → seo-god → Settings → Builds → Disconnect (red "Workers Builds" and Pages checks on every commit; not the code).
 2. Supabase → Authentication: leaked-password protection (Q9). Confirm platform admins (Q10).
 3. Search Console: new JSON key for the existing service account → Worker secret `GOOGLE_KEY_JSON` (Phase 3).
@@ -68,5 +71,6 @@ Risks: live providers tested with mocks only; the fact-checker is the same model
 Measured: $0.17 for the first 2 specialist runs (2026-11-12). Estimate after D45: about $0.10 to $0.15 per run, plus a reviewer call on content and high-risk work. Hosting within Cloudflare and Supabase free plans.
 
 ## 7. Next
+D56 next: owner setup above, then one real connect on erudience.com (acceptance: a search_snapshot job with evidence "(the site's own Google connection)", an `analytics` report, and a `speed` report within a week; Disconnect removes it from myaccount.google.com/permissions).
 Milestone: Phase 1 live on the pilot: one specialist run whose evidence lists its playbooks, with a review row, cost inside the budget. Then Phase 2 (agent pages in the portal), Phase 3 (Search Console once the key is set), Phase 4 (exams; owner scores ~20 outputs).
 Resume prompt: "seo-autopilot: read docs/implementation/STATUS.md and docs/product/SYSTEM-READINESS-PLAN.md; continue with the next phase."
