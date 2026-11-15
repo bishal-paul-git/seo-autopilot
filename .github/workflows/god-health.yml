@@ -1,11 +1,11 @@
-# Hourly health check of the hosted SEO God (D41): reads the Worker's run log and keeps ONE GitHub issue labelled
-# seo-god-health open while something is wrong (no run for 40 minutes, or errors in every recent run), closing it when the
+# Daily health check of the hosted SEO God (D41): reads the Worker's run log and keeps ONE GitHub issue labelled
+# seo-god-health open while something is wrong (no run for 150 minutes, or errors in every recent run), closing it when the
 # scheduler is healthy again. Read-only: it never pauses, unpauses or changes anything. Needs the repository secret
 # SUPABASE_SERVICE_ROLE_KEY (already set for deploy-seo-god).
 name: god-health
 on:
   schedule:
-    - cron: "23 * * * *"
+    - cron: "23 6 * * *"   # once a day, 06:23 UTC (owner, 2026-11-15; was hourly)
   workflow_dispatch:
 
 permissions:

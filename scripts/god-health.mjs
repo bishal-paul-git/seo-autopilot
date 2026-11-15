@@ -4,13 +4,13 @@
 // run ids, times, counts and the Worker's own error strings (already capped at 200 characters each).
 //   SUPABASE_URL=https://<ref>.supabase.co SUPABASE_SERVICE_ROLE_KEY=... node scripts/god-health.mjs [--json]
 
-/** Pure: health of the scheduler from its latest runs (newest first). The cron runs every 15 minutes. */
-export function assessHealth(runs, now = Date.now(), { staleMinutes = 40, window = 4 } = {}) {
+/** Pure: health of the scheduler from its latest runs (newest first). The cron runs once an hour. */
+export function assessHealth(runs, now = Date.now(), { staleMinutes = 150, window = 4 } = {}) {
   const problems = [];
   const latest = runs[0];
   if (!latest) return { ok: false, problems: ["no run recorded yet"], latest: null, paused: null };
   const age = Math.round((now - Date.parse(latest.started_at)) / 60000);
-  if (age > staleMinutes) problems.push(`no run for ${age} minutes (the cron runs every 15)`);
+  if (age > staleMinutes) problems.push(`no run for ${age} minutes (the cron runs every hour)`);
   const recent = runs.slice(0, window);
   const failing = recent.filter((r) => (r.errors || []).length);
   // One bad run can be a passing hiccup (a site that timed out); the same trouble in every recent run is not.

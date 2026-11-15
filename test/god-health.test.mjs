@@ -11,8 +11,8 @@ test("healthy: a recent run, errors only in some runs", () => {
 });
 
 test("stale: no run for longer than the threshold", () => {
-  const h = assessHealth([run(9, 75)], NOW);
-  assert.equal(h.ok, false); assert.match(h.problems[0], /no run for 75 minutes/);
+  const h = assessHealth([run(9, 200)], NOW);
+  assert.equal(h.ok, false); assert.match(h.problems[0], /no run for 200 minutes/);
 });
 
 test("the same errors in every recent run are a problem; a missing run log is a problem", () => {

@@ -12,9 +12,9 @@ workers_dev = true
 [build]
 command = "node build.mjs"
 
-# One Cron Trigger (Workers Free allows 5 per account). Every 15 minutes: 96 runs a day.
+# One Cron Trigger (Workers Free allows 5 per account). Once an hour: 24 runs a day (owner, 2026-11-15; was every 15 min).
 [triggers]
-crons = ["*/15 * * * *"]
+crons = ["0 * * * *"]
 
 # Each site's planning and each job run in their own invocation of this Worker (own 10 ms CPU, own 50 requests).
 [[services]]

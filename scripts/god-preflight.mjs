@@ -49,7 +49,7 @@ export async function preflight({ env = process.env, fetchImpl = (...a) => fetch
   const last = runs.ok && runs.body?.[0];
   const age = last ? Math.round((now - Date.parse(last.started_at)) / 60000) : null;
   add("scheduler-runs", last && age <= 30, last ? `last run ${age} min ago${last.paused ? " (paused)" : ""}${(last.errors || []).length ? `, errors: ${last.errors.join("; ")}` : ""}` : "no scheduler run recorded yet",
-    "Deploy the Worker (README step 5); its Cron Trigger runs every 15 minutes. No run in 30 minutes means the trigger is missing or failing (Workers dashboard → Logs).");
+    "Deploy the Worker (README step 5); its Cron Trigger runs once an hour. No run in 150 minutes means the trigger is missing or failing (Workers dashboard → Logs).");
 
   // 3. A platform admin exists (needed for the Operations health card and the pause button).
   const admins = await get("platform_admins?select=user_id&limit=1");
