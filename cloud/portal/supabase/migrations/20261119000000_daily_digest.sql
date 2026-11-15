@@ -264,7 +264,7 @@ begin
   return jsonb_build_object(
     'site', jsonb_build_object('id', s.id, 'name', s.name, 'url', s.url, 'status', s.status, 'repo', case when agency then s.repo end),
     'agency', agency,
-    'schedule', jsonb_build_object('everyMinutes', 15, 'lastRun', v_last_run, 'paused', public.god_paused() or s.status = 'paused',
+    'schedule', jsonb_build_object('everyMinutes', 60, 'lastRun', v_last_run, 'paused', public.god_paused() or s.status = 'paused',
       'lastPlanned', tk.ticked_at, 'nextPlan', tk.ticked_at + interval '6 hours',
       'strategy', (select m.value->>'status' from public.site_memory m where m.site_id = p_site and m.kind = 'strategy' and m.key = 'initial' and m.superseded_at is null limit 1),
       'budgetUsd', case when agency then coalesce((tk.outcome->>'budgetUsd')::numeric, s.daily_budget_usd) end,

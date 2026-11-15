@@ -750,7 +750,7 @@ function activityGates(a) {
   const g = a.gates || {}, sch = a.scheduler || {}, out = [];
   const age = sch.lastRunAt ? Math.round((Date.parse(a.now) - Date.parse(sch.lastRunAt)) / 60000) : null;
   if (sch.paused) out.push(["bad", "The scheduler is paused for the whole platform. No agent runs until a platform admin switches it back on."]);
-  else if (age == null || age > 40) out.push(["bad", age == null ? "The scheduler has not run yet." : `The scheduler has not run for ${age} minutes (it runs every 15).`]);
+  else if (age == null || age > 150) out.push(["bad", age == null ? "The scheduler has not run yet." : `The scheduler has not run for ${age} minutes (it runs every hour).`]);
   else out.push(["ok", `Scheduler running: last check ${agoAt(sch.lastRunAt, a.now)}, ${fmt(sch.runsLastHour)} in the last hour${sch.runsWithErrorsOfLast4 ? `, ${fmt(sch.runsWithErrorsOfLast4)} of the last 4 with errors` : ", no errors"}.`]);
   if (a.site?.status === "paused") out.push(["warn", "This website is paused: nothing is planned for it."]);
   if (!g.strategyApproved) out.push(["warn", g.waitingForYou ? "The strategy is waiting for your approval. Until you adopt it, the specialists only read the site." : "No strategy yet: it is drafted after the first scan."]);
@@ -1005,7 +1005,7 @@ function pipeStations(p) {
   const C = Object.fromEntries((p.connections || []).map((c) => [c.key, c])), n = p.counts || {}, sc = p.schedule || {};
   const live = (p.connections || []).filter((c) => c.state !== "off");
   const okSources = live.filter((c) => c.state === "connected").length;
-  const fresh = sc.lastRun && Date.now() - Date.parse(sc.lastRun) < 40 * 60000;
+  const fresh = sc.lastRun && Date.now() - Date.parse(sc.lastRun) < 150 * 60000;
   return [
     { key: "sources", name: "Data sources", ic: I.plug, tone: okSources === live.length ? "ok" : okSources ? "warn" : "bad", num: `${okSources}/${live.length}`, sub: "connected" },
     { key: "scan", name: "Website scan", ic: I.page, tone: CONN_TONE[C.scan?.state] || "", num: C.scan?.at ? ago(C.scan.at).replace(" ago", "") : "–", sub: C.scan?.at ? "since the last scan" : CONN_TEXT[C.scan?.state] || "" },
@@ -1021,7 +1021,7 @@ function pPipeline(s) {
   const p = s.pipe;
   if (!p) return '<div class="empty">Loading…</div>';
   const sc = p.schedule || {}, st = pipeStations(p);
-  const fresh = sc.lastRun && Date.now() - Date.parse(sc.lastRun) < 40 * 60000;
+  const fresh = sc.lastRun && Date.now() - Date.parse(sc.lastRun) < 150 * 60000;
   const head = `<div><h1>Live pipeline</h1><p class="lead">How work on ${esc(host(s.url))} flows: data comes in, the SEO director plans, specialists work, every result is checked, and ${p.agency ? "you decide" : "your SEO team decides"} what goes ahead. It refreshes by itself.</p></div>
     <div class="pipe-head"><span class="pill ${sc.paused ? "warn" : fresh ? "ok" : "bad"}"><i></i>${sc.paused ? "Paused" : fresh ? `Running every ${sc.everyMinutes} min` : "Scheduler silent"}</span>
       <span class="pill">Last run ${esc(ago(sc.lastRun))}</span>${sc.nextPlan && !sc.paused ? `<span class="pill">Next plan ${esc(until(sc.nextPlan))}</span>` : ""}
