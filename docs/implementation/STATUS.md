@@ -3,7 +3,7 @@
 Kept short; read at the start of every session. Plan: [../product/SYSTEM-READINESS-PLAN.md](../product/SYSTEM-READINESS-PLAN.md) (phases 0 to 8). Agent detail: [../product/AGENT-INTELLIGENCE-PLAN.md](../product/AGENT-INTELLIGENCE-PLAN.md). History: [history/STATUS-to-2026-11-12.md](history/STATUS-to-2026-11-12.md) (full capability table and earlier checks), [history/STATUS-to-2026-11-03.md](history/STATUS-to-2026-11-03.md). Detail: [CHANGELOG.md](CHANGELOG.md), [DECISIONS.md](DECISIONS.md). Deployed state: [../deployment-status.md](../deployment-status.md).
 
 ## 1. Snapshot
-- Last updated: 2026-11-14 ~23:40 UTC. Branch `claude/hopeful-euler-662mu5`, base `main` 56f2394; D57 (Phase 1 off GitHub Actions) built on this branch, draft PR, **not merged or deployed**. D56 merged as #75 (08a4154) and deployed 2026-11-14 22:32-22:35 UTC. Release 1 is on `main` (#51, then #56 and #57).
+- Last updated: 2026-11-15 ~16:30 UTC. Branch `claude/hopeful-euler-662mu5`, base `main` 6af0595 (#78); D58 (portfolio screen and per-change scorecard) built on this branch, draft PR, **not merged or deployed**. D57 merged as #77 (4c9980e); its deployment is not recorded here (owner steps in §5). D56 deployed 2026-11-14 22:32-22:35 UTC. Release 1 is on `main` (#51, then #56 and #57).
 - Environment: Linux cloud container, Node 22, Postgres 16 for local SQL checks.
 - Phase: **pilot running on erudience.com (read-only, advice only)**; readiness plan: Phase 1 (D45) and Phase 2 (agent pages, D46) deployed; Phase 3 step 1 (Search Console for the agents, D47) built, waits on the owner's Google key.
 
@@ -28,9 +28,10 @@ Rollback: `cloud/portal/supabase/rollback/release-1.sql`; previous scan is v2 (r
 ## 2. Architecture (short)
 Cloudflare Worker `seo-god` (`cloud/worker/`) runs every 15 min: plans each due site (`src/god/tick.mjs`), runs one job per invocation (`src/god/worker.mjs`), agent jobs through `src/god/agent-runner.mjs` with playbooks from `src/god/knowledge.mjs`, reviewed by `src/god/review.mjs` and (content/high risk) the fact-checker. Supabase holds jobs, reviews, memory, costs and the portal API (`cloud/portal/supabase/migrations/`). Portal: one file, `cloud/portal/app/index.html`. Full map: [../system-architecture.md](../system-architecture.md).
 
-## 3. This session (2026-11-12, after the strategy approval)
+## 3. Recent sessions (newest first)
 | Change | Kind | State |
 |---|---|---|
+| D58: portfolio landing page (one row per website, needs attention first: clicks 28 d and change, not indexed, alerts/stale, waiting, AI 7 d, results, live/paused) and per-change scorecard (win/loss/flat/too early/not enough data, 14 and 28 days, against the rest of the site; baseline and verdicts frozen on the entry) | code (`src/analysis/scorecard.mjs`, `src/god/scorecard.mjs`, `tick.mjs`, Worker, portal, migration 20261120000000) | **built and tested with stand-ins, not deployed**: owner steps in [../hosted-google-access.md](../hosted-google-access.md) §6 |
 | D57: index status (URL Inspection, 20 pages a day), search history, priorities from the CLI engine, all fed to the router and the agents; alerts queue the specialist the same day; daily agency digest and stale-data checks | code (`src/god/inspect.mjs`, `insights.mjs`, `src/analysis/alerts.mjs`, `search-history.mjs`, `tick.mjs`, `planner.mjs`, Worker, scan function, portal, migration 20261119000000) | **built and tested with stand-ins, not deployed**: owner steps in [../hosted-google-access.md](../hosted-google-access.md) §5 |
 | D56: read access through the shared service account (email + Copy, Check access, property pickers, one property per website, refusals for the admin), GA4 read, weekly central speed checks with one platform PageSpeed key, three-step Set up card (dev guide under Advanced). The first version (Google sign-in, OAuth) was declined by the owner and removed | code (`src/god/google-access.mjs`, `speed.mjs`, `search-console.mjs`, `tick.mjs`, Worker, portal, migration 20261118000000) | **deployed** 2026-11-14: migration applied by owner, Worker #15, portal published; real Check access not yet tried |
 | Readiness plan and agent-intelligence plan | docs | pushed |
@@ -50,6 +51,7 @@ Cloudflare Worker `seo-god` (`cloud/worker/`) runs every 15 min: plans each due 
 D45: no migration. D46: one read-only migration. No new dependency or secret.
 
 ## 4. Checks
+- 2026-11-15 (D58): `npm test` 660/660; `bash cloud/portal/supabase/test/run.sh` rls1-27 pass; `node scripts/cf-local-e2e.mjs` all pass (Google stand-in; new D58 checks: entries from real completed advice and a merged change, a 40-day-old change scored in workerd, portfolio isolation); `node scripts/god-pg-e2e.mjs` passes. CPU estimate (Node V8): scoring 8 changes ~2.4 ms first / <1.3 ms warm; new entries from 100 jobs ~2.4 / <1.5 ms. No real Google call was made.
 - 2026-11-14 (D57): `npm test` 647/647; `bash cloud/portal/supabase/test/run.sh` rls1-26 pass; `node scripts/cf-local-e2e.mjs` all pass (Google stand-in; new D57 checks); `node scripts/god-pg-e2e.mjs` passes. `node scripts/cf-measure-signals.mjs` (Node V8 estimate, largest site): planning 7-11 ms first call / ~2-2.6 ms warm; snapshot ~4 / 2 ms; ranking ~4 / 2-3 ms; inspection ~4-5 / 1.5-2.5 ms. No real Google call was made.
 - 2026-11-14 (D56): `npm test` 629/629; `bash cloud/portal/supabase/test/run.sh` rls1-25 pass; `node scripts/cf-local-e2e.mjs` all pass (Google stand-in); `node scripts/god-pg-e2e.mjs` passes. No real Google call was made.
 - `npm test`: 599/599 (mocked network). D46: `test/portal-agent.test.mjs` (Chromium), `rls21.sql`.
@@ -59,6 +61,7 @@ D45: no migration. D46: one read-only migration. No new dependency or secret.
 - Not yet: a live run with playbooks and the second opinion (after deploy); exams (Phase 4).
 
 ## 5. Open items and owner actions
+000. **D58:** after D57's steps, run migration 20261120000000 (after 20261119000000), redeploy the Worker, rebuild and publish the portal. Nothing else to set. Risk: the extra planning work adds up to ~2 ms on a cold isolate for a site with many fresh jobs (D57 already estimated 7-11 ms cold for a large site); thresholds are first guesses.
 00. **D57:** run migration 20261119000000 after 20261118000000; redeploy the `scan` function and the Worker; give the service account **Full** permission on properties whose index status is wanted (Restricted gives "needs Full permission"). Risk: planning a large site in a cold Worker isolate is estimated near the 10 ms Free limit (Workers Paid removes it). Alert thresholds are first guesses; tune on real alerts.
 0. **D56 (read access):** enable the Analytics Admin, Analytics Data, PageSpeed Insights and Chrome UX Report APIs on the service account's project; set the Worker secret `PAGESPEED_API_KEY` and the var `SUPABASE_PUBLISHABLE_KEY`; run migration 20261118000000; redeploy the Worker; build the portal with `PORTAL_WORKER_URL`. Steps: [../hosted-google-access.md](../hosted-google-access.md).
 1. Cloudflare dashboard → Workers & Pages → seo-god → Settings → Builds → Disconnect (red "Workers Builds" and Pages checks on every commit; not the code).
@@ -74,6 +77,7 @@ Risks: live providers tested with mocks only; the fact-checker is the same model
 Measured: $0.17 for the first 2 specialist runs (2026-11-12). Estimate after D45: about $0.10 to $0.15 per run, plus a reviewer call on content and high-risk work. Hosting within Cloudflare and Supabase free plans.
 
 ## 7. Next
+D58 next: owner steps above; acceptance on erudience.com: the portal opens on Portfolio with the pilot's row and reasons; an accepted advice job naming pages shows on "Results of changes" as "Too early", gets a baseline about 3 days later (a completed "Score changes against Search Console" job), and a 14-day verdict about 20 days after the change.
 D57 next: owner steps above, then on erudience.com within two days: an `index_inspect` job completed (or "needs Full permission" in the digest), a `priorities` report, the router naming the indexing monitor or performance fixer when the data says so, and a "Daily digest" notification listing the waiting approvals. Then Phase 2 (deep crawl and weekly research on Cloudflare Queues/Workflows, Workers Paid), Phase 3 (pull requests through the GitHub API).
 D56 next: owner setup above, then one real check on erudience.com (acceptance: Check access lists its property, a bind, a search_snapshot job with evidence "(property connected in the portal)", an `analytics` report if GA4 is shared, and a `speed` report within a week).
 Milestone: Phase 1 live on the pilot: one specialist run whose evidence lists its playbooks, with a review row, cost inside the budget. Then Phase 2 (agent pages in the portal), Phase 3 (Search Console once the key is set), Phase 4 (exams; owner scores ~20 outputs).

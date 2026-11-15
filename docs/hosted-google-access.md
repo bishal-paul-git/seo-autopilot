@@ -61,6 +61,21 @@ after the merge.
 5. Check: the next day, a site with a bound property has a completed "Check which pages Google has indexed" job and a
    "Rank the to-do list" job; after 07:00 UTC, Notifications shows a "Daily digest" item when something waits.
 
+## 6. Portfolio and results of changes (D58)
+1. **Migration** `cloud/portal/supabase/migrations/20261120000000_portfolio_scorecard.sql` (run in the SQL editor after
+   20261119000000). It allows site-memory kind `scorecard`, adds `public.portfolio(p_site uuid default null)` (agency
+   members) and a new `record_daily_digests` that also prunes superseded scorecard copies. Until it is applied the portal
+   shows the old website cards and the Worker cannot store scorecard entries (planning carries on without them and
+   retries each run), so apply it before redeploying the Worker. Rollback: drop `public.portfolio(uuid)`, re-run
+   `record_daily_digests` from 20261119000000, delete `site_memory` rows of kind `scorecard`, then restore the kind
+   check from 20261108020000.
+2. **Worker**: redeploy (deploy-seo-god). No new variable or secret. The `scorecard` job uses the same service account
+   and Restricted access is enough.
+3. **Portal**: rebuild and publish (`node cloud/portal/build.mjs`).
+4. Check: the portal opens on "Portfolio". A change accepted or merged on a site with a bound property shows on that
+   site's "Results of changes" as "Too early"; about 3 days later a "Score changes against Search Console" job has run
+   and the change has a baseline; the 14-day verdict follows about 20 days after the change.
+
 ## Quotas
 URL inspection: Google allows 2,000 inspections a day and 600 a minute per property; the job asks at most 20 a day.
 

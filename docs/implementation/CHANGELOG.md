@@ -2,6 +2,19 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-15 (D58 portfolio screen and per-change scorecard; code change, not deployed)
+- **Code:**
+  - `src/analysis/scorecard.mjs` (new, pure): windows (14 and 28 days before vs after, 3-day lag), `aggregate`, `judge` (win/loss/flat against the rest of the site; impressions when clicks are few; `not_enough_data` and `too_early`), `pagesOf`/`newEntries` (accepted advice and merged changes on the site's own host; an implementation supersedes its advice), `scoreEntry` (freezes the baseline and finished windows), `summarise`, `dueEntries`.
+  - `src/god/scorecard.mjs` (new): the free `scorecard` job (one Search Console query per due change, at most 8 per run; refused reads stop the batch and change nothing), `scorecardRows`, `scorecardDue`, `pageFilter`.
+  - `src/god/tick.mjs`: scorecard entries written after learning (a refused write never blocks planning: `scorecardError`), the `scorecard` job planned when due and when Google applies.
+  - Worker `app.mjs`: registers `scorecard` with the shared service account (`GOOGLE_API_BASE` for local tests only).
+  - Portal `cloud/portal/app/index.html`: the agency lands on "Portfolio" (table on wide screens, cards on phones; falls back to the old cards before the migration); new site page "Results of changes" (agency only).
+  - `scripts/cf-local-e2e.mjs`: loads the new migration; Google stand-in answers the scorecard query; D58 checks.
+- **Migration** `cloud/portal/supabase/migrations/20261120000000_portfolio_scorecard.sql`, **not applied**: site-memory kind `scorecard`; `public.portfolio(p_site uuid default null)` (security definer, `search_path = ''`, `private.is_member`, granted to authenticated); `record_daily_digests` also prunes superseded scorecard copies. Test: `rls27.sql` in `run.sh`.
+- **Tests:** `npm test` 660/660 (11 new: `test/scorecard.test.mjs` 8, `test/portal-portfolio.test.mjs` 3 in Chromium). `bash cloud/portal/supabase/test/run.sh` rls1-27 pass. `node scripts/cf-local-e2e.mjs` all pass, new D58 section. `node scripts/god-pg-e2e.mjs` passes. All Google calls are mocked or stand-ins.
+- **Docs:** D58 in DECISIONS; `docs/system-architecture.md` flow E; `docs/hosted-google-access.md` §6 (owner steps, rollback); STATUS.
+- **Not done:** the migration, Worker redeploy, portal publish, real Search Console calls.
+
 ## 2026-11-14 (D57 index status, history, priorities, alerts and daily digest in the hosted engine; code change, not deployed)
 - **Code:**
   - `src/god/inspect.mjs` (new): the daily `index_inspect` job (URL Inspection API, at most 20 pages a day, rotation, compact `inspect` report with previous state and `changedAt`, 403 recorded as "needs Full permission" for 7 days, 429 stops the batch), `inspectForAgents`.

@@ -140,6 +140,8 @@ svg text { fill: var(--muted); font: 10px var(--mono) }
 .tbl { overflow-x: auto } table { width: 100%; border-collapse: collapse; font-size: 13.5px }
 th { text-align: left; font: 500 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--line); white-space: nowrap }
 td { padding: 11px 16px; border-bottom: 1px solid var(--line-2) } tr:last-child td { border-bottom: 0 }
+.pf-cards { display: none } .pf-table td { vertical-align: top } .pf-table td.n { text-align: right; font-family: var(--mono); white-space: nowrap } .pf-table th.n { text-align: right }
+.pf-table tr.paused td { opacity: .6 } .pf-why { font-size: 12px; color: var(--muted); margin-top: 3px }
 .sites { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px }
 .site-card { text-decoration: none; display: flex; flex-direction: column; gap: 12px }
 .site-card:hover { border-color: var(--accent) }
@@ -163,6 +165,7 @@ td { padding: 11px 16px; border-bottom: 1px solid var(--line-2) } tr:last-child 
   .hdr .mobile-brand { display: grid }
   .page { padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: max(14px, env(safe-area-inset-right, 0px)); padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); gap: 14px }
   .g2 { grid-template-columns: 1fr }
+  .pf-table { display: none } .pf-cards { display: grid; gap: 10px }
   h1 { font-size: 21px }
   .kpi .v { font-size: 23px }
   .tabbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; background: color-mix(in srgb, var(--panel) 94%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--line); padding: 6px max(6px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(6px, env(safe-area-inset-left, 0px)) }
@@ -335,8 +338,8 @@ const I = {
   flow: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="6" height="6" rx="1.5"/><rect x="15" y="14" width="6" height="6" rx="1.5"/><path d="M9 7h4a2 2 0 0 1 2 2v5"/></svg>',
   out: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg>',
 };
-const PAGES = [["overview", "Overview", I.home], ["pipeline", "Live pipeline", I.flow], ["connections", "Connections", I.plug], ["traffic", "Traffic", I.trend], ["keywords", "Keywords", I.key], ["pages", "Pages", I.page], ["locations", "Locations", I.pin], ["plan", "Coming next", I.plan], ["report", "Weekly report", I.report], ["god", "SEO God", I.spark], ["brief", "Business brief", I.page], ["requests", "Requests", I.inbox], ["approvals", "Approvals", I.check], ["team", "SEO team", I.team], ["connect", "Connection", I.plug]];
-const AGENCY_ONLY = new Set(["god", "brief", "approvals", "team", "connect", "agent"]); // never shown to clients (D27: reporting only)
+const PAGES = [["overview", "Overview", I.home], ["pipeline", "Live pipeline", I.flow], ["connections", "Connections", I.plug], ["traffic", "Traffic", I.trend], ["keywords", "Keywords", I.key], ["pages", "Pages", I.page], ["locations", "Locations", I.pin], ["plan", "Coming next", I.plan], ["report", "Weekly report", I.report], ["god", "SEO God", I.spark], ["scorecard", "Results of changes", I.report], ["brief", "Business brief", I.page], ["requests", "Requests", I.inbox], ["approvals", "Approvals", I.check], ["team", "SEO team", I.team], ["connect", "Connection", I.plug]];
+const AGENCY_ONLY = new Set(["god", "brief", "approvals", "team", "connect", "agent", "scorecard"]); // never shown to clients (D27: reporting only)
 const MOBILE_TABS = ["overview", "traffic", "keywords", "pages"];
 const ACCOUNT_ONLY = new Set(["pipeline", "connections"]); // need a signed-in agency member or client user: not on anonymous share links
 let state = { kwTab: "ranking", kwQ: "", pgFilter: "all", newToken: null };
@@ -968,6 +971,66 @@ function pHome() {
     : `<div class="card"><h2 style="margin-top:0">Connect your first website</h2><p class="muted">Add a website, then paste two values into its GitHub repository. Its dashboard fills in after the first daily run.</p><a class="btn primary" href="#/add">${I.plus}Connect a website</a></div>`}`;
 }
 
+/* ---------- Portfolio (D58): every website on one page, the ones that need attention first; results of changes ---------- */
+let PORTFOLIO = null;
+async function loadPortfolio() { PORTFOLIO = await rpc("portfolio").then((v) => (Array.isArray(v?.sites) ? v : null), () => null); } // null before migration 20261120000000: the old cards
+const LABEL = { win: ["Win", "ok"], loss: ["Loss", "bad"], flat: ["No clear change", ""], too_early: ["Too early", "info"], not_enough_data: ["Not enough data", ""] };
+const signed = (x) => (x == null ? "–" : `${x > 0 ? "+" : x < 0 ? "−" : ""}${Math.abs(Math.round(x * 100))}%`);
+function pfChange(x) { return x == null ? '<span class="xs muted" title="Needs 8 weeks of daily Search Console totals">–</span>' : `<span style="color:${x <= -0.2 ? "var(--bad)" : x >= 0.1 ? "var(--accent)" : "inherit"}">${signed(x)}</span>`; }
+function pfAlerts(r) {
+  const bits = [];
+  if (r.escalated) bits.push(`<span class="pill bad">${fmt(r.escalated)} stopped</span>`);
+  if (r.planError) bits.push('<span class="pill bad">planning failed</span>');
+  if (r.alerts) bits.push(`<span class="pill warn">${fmt(r.alerts)} alert${r.alerts === 1 ? "" : "s"}</span>`);
+  for (const k of r.stale || []) bits.push(`<span class="pill warn">${k === "search_console" ? "Search Console stale" : k === "scan" ? "scan stale" : esc(k)}</span>`);
+  return bits.join(" ") || '<span class="xs muted">none</span>';
+}
+function pfResults(r) {
+  const c = r.scorecard || {};
+  if (!(c.win || c.loss || c.flat || c.tooEarly || c.notEnoughData)) return '<span class="xs muted">none yet</span>';
+  return `<a href="#/s/${esc(r.site)}/scorecard" style="text-decoration:none"><span class="pill ok">${fmt(c.win)} won</span> <span class="pill ${c.loss ? "bad" : ""}">${fmt(c.loss)} lost</span>${c.tooEarly ? ` <span class="xs muted">${fmt(c.tooEarly)} too early</span>` : ""}</a>`;
+}
+const pfIndex = (r) => (r.inspectBlocked && r.notIndexed == null ? '<span class="xs muted" title="Give the service account Full permission in Search Console">refused</span>' : r.notIndexed == null ? '<span class="xs muted">not checked</span>' : `<span title="of ${fmt(r.inspected)} pages inspected">${fmt(r.notIndexed)}</span>`);
+const pfWaiting = (r) => (r.waiting ? `<a href="#/s/${esc(r.site)}/approvals">${fmt(r.waiting)}</a>` : "0");
+function pPortfolio() {
+  const rows = PORTFOLIO.sites || [], live = rows.filter((r) => r.status !== "paused");
+  const need = live.filter((r) => r.attention > 0).length, sum = (k) => rows.reduce((a, r) => a + Number(r[k] || 0), 0);
+  const agencies = new Set(rows.map((r) => r.agency)).size > 1;
+  const name = (r) => `<a href="#/s/${esc(r.site)}/overview"><b>${esc(r.name)}</b></a><div class="xs muted">${esc(host(r.url))}${agencies ? ` · ${esc(r.agency)}` : ""}</div>`;
+  const why = (r) => (r.status === "paused" ? '<div class="pf-why">Paused: the SEO team does no work here.</div>' : r.reasons?.length ? `<div class="pf-why">${esc(r.reasons.join(" · "))}</div>` : '<div class="pf-why">Nothing needs you.</div>');
+  const status = (r) => `<span class="pill ${r.status === "paused" ? "" : "ok"}"><i></i>${r.status === "paused" ? "Paused" : "Live"}</span>`;
+  const head = `<div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap"><div style="flex:1;min-width:220px"><h1>Portfolio</h1><p class="lead">Every website on one page. The ones that need you are at the top: stopped work, alerts, stale data, falling clicks, changes that lost traffic, decisions waiting, pages not in Google.</p></div><a class="btn primary" href="#/add">${I.plus}Connect a website</a></div>`;
+  if (!rows.length) return pHome();
+  return head + `<div class="grid g4">${kpi("Need attention", fmt(need), null, `of ${fmt(live.length)} live website${live.length === 1 ? "" : "s"}`)}${kpi("Clicks, 28 days", fmt(sum("clicks28")), null, "From Google Search Console, all websites")}${kpi("Waiting for you", fmt(sum("waiting")), null, "Approvals across all websites")}${kpi("AI spend, 7 days", usd(sum("spend7Usd")), null, "From your own AI key")}</div>
+  <div class="card pad0 pf-table"><div class="tbl"><table><thead><tr><th>Website</th><th class="n">Clicks 28 d</th><th class="n">vs 28 d before</th><th class="n">Not indexed</th><th>Alerts and stale data</th><th class="n">Waiting</th><th class="n">AI 7 d</th><th>Results of changes</th><th>Status</th></tr></thead><tbody>
+  ${rows.map((r) => `<tr class="${r.status === "paused" ? "paused" : ""}"><td>${name(r)}${why(r)}</td><td class="n">${fmt(r.clicks28)}</td><td class="n">${pfChange(r.clicksChange)}</td><td class="n">${pfIndex(r)}</td><td>${pfAlerts(r)}</td><td class="n">${pfWaiting(r)}</td><td class="n">${usd(r.spend7Usd)}</td><td>${pfResults(r)}</td><td>${status(r)}</td></tr>`).join("")}</tbody></table></div></div>
+  <div class="pf-cards">${rows.map((r) => `<div class="card" style="display:grid;gap:10px"><div style="display:flex;gap:10px;align-items:flex-start"><div style="flex:1;min-width:0">${name(r)}${why(r)}</div>${status(r)}</div>
+    <div class="grid g3" style="grid-template-columns:repeat(3,1fr);gap:8px">${[["Clicks 28 d", fmt(r.clicks28)], ["vs before", pfChange(r.clicksChange)], ["Not indexed", pfIndex(r)], ["Waiting", pfWaiting(r)], ["AI 7 d", usd(r.spend7Usd)]].map(([t, v]) => `<div><div class="xs muted">${t}</div><div class="mono" style="font-weight:600">${v}</div></div>`).join("")}</div>
+    <div>${pfAlerts(r)}</div><div>${pfResults(r)}</div></div>`).join("")}</div>
+  <p class="xs muted" style="margin:0">Change compares the 28 days to the latest Search Console day with the 28 days before, from daily totals; it shows "–" until 8 weeks of daily data exist. Not indexed counts pages Google's URL inspection reports outside the index (redirects excluded). Results count changes and accepted advice measured 14 and 28 days after against the 14 and 28 days before.</p>`;
+}
+
+let SCORECARD = null;
+async function loadScorecard(s) { SCORECARD = await rpc("portfolio", { p_site: s.id }).catch((e) => ({ error: e.message })); }
+function scoreWindow(w, span) {
+  if (!w) return "";
+  const [t, c] = LABEL[w.label] || [w.label, ""];
+  const nums = w.before && w.after ? ` <span class="xs muted">clicks ${fmt(w.before.clicks)} → ${fmt(w.after.clicks)}, impressions ${fmt(w.before.impressions)} → ${fmt(w.after.impressions)}</span>` : "";
+  return `<div style="margin-top:6px"><span class="pill ${c}">${span} days: ${t}</span>${nums}<div class="s">${w.label === "too_early" ? `Ready about ${esc(w.readyOn || "")}${w.before ? `. Before: ${fmt(w.before.clicks)} clicks, ${fmt(w.before.impressions)} impressions.` : ". The baseline is taken once Google has the days before the change."}` : esc(w.reason || "")}</div></div>`;
+}
+function pScorecard(s) {
+  const head = `<div><h1>Results of changes</h1><p class="lead">Every change that was merged, and every piece of advice you accepted that named pages, measured in Google Search Console: the 14 and 28 days after it against the same number of days before, allowing for how the rest of the website moved.</p></div>`;
+  if (!SCORECARD || SCORECARD.error) return head + `<div class="callout">The scorecard is not switched on for this workspace yet. ${esc(SCORECARD?.error || "")}</div>`;
+  const list = SCORECARD.scorecard || [], row = (SCORECARD.sites || [])[0] || {}, c = row.scorecard || {};
+  const counted = list.filter((e) => !e.supersededBy);
+  return head + `<div class="grid g4">${kpi("Wins", fmt(c.win), null, "Beat the rest of the website by 15% or more")}${kpi("Losses", fmt(c.loss), null, "Fell behind the rest of the website by 15% or more")}${kpi("No clear change", fmt(c.flat), null, "Within 15%, or too small a difference")}${kpi("Too early or too little data", fmt((c.tooEarly || 0) + (c.notEnoughData || 0)), null, "Waiting for the after-window, or under 50 to 100 impressions")}</div>
+  <div class="card pad0"><div class="ch"><h2>Changes</h2><p>${fmt(counted.length)}</p></div><div class="list">${list.map((e) => { const [t, k] = LABEL[e.label || "too_early"] || [e.label, ""]; return `<div class="row" style="align-items:start"><div style="min-width:0">
+    <div class="t">${esc(e.title || "Change")}</div><div class="s">${esc(e.basis || "")} ${esc(e.changedAt || "")}${e.agent ? ` · ${esc(agentLabel(e.agent))}` : ""}${e.pr ? ` · <a href="${safeHref(e.pr)}" target="_blank" rel="noopener">pull request</a>` : ""} · ${(e.pages || []).map((u) => esc(host(u))).join(", ")}</div>
+    ${e.supersededBy ? '<div class="s">Implemented later: counted once, under the merged change.</div>' : `${scoreWindow(e.windows?.["14"], 14)}${scoreWindow(e.windows?.["28"], 28)}`}</div>
+    <span class="pill ${e.supersededBy ? "" : k}">${e.supersededBy ? "Replaced" : t}</span></div>`; }).join("") || '<div class="empty">Nothing measured yet. Changes and accepted advice that name pages appear here, and are scored once Google Search Console has the days after them. Search Console must be connected for this website.</div>'}</div></div>
+  <p class="xs muted" style="margin:0">Directional, not a controlled test: other changes, seasonality and Google updates can still explain a result. A page needs at least 50 impressions in a 14-day window (100 in 28 days) to be judged; with fewer than 20 clicks the verdict is on impressions.</p>`;
+}
+
 function pAdd() {
   return `<div><h1>Connect a website</h1><p class="lead">Paste the address. We read the live site from our servers and fill in its dashboard within minutes, then every day. Nothing to install.</p></div>
   <form class="card form" id="url-form"><label>Website address<input name="url" required inputmode="url" placeholder="https://www.example.com/"></label>
@@ -1236,9 +1299,9 @@ function shell(s, page) {
   $("#rail").innerHTML = `<a class="brand" href="${mode === "client" && s ? link(s, "overview") : "#/"}">${brandMark}<span><b>${mode === "client" && s ? esc(s.name) : "SEO Autopilot"}</b><span>${mode === "client" ? (s?.brand?.name ? `SEO dashboard by ${esc(s.brand.name)}` : "SEO dashboard") : "Workspace"}</span></span></a>
     ${s ? `<div><div class="lbl">Dashboard</div><nav>${pages.map(([k, t, ic]) => `<a href="${link(s, k)}" aria-current="${k === page ? "page" : "false"}">${ic}${t}</a>`).join("")}</nav></div>` : ""}
     ${mode === "client" && clientAccount ? `<div><div class="lbl">Account</div><nav>${CLIENT_SITES.length > 1 ? `<a href="#/">${I.grid}Your websites</a>` : ""}<a href="#/notes" aria-current="${page === "notes" ? "page" : "false"}">${I.inbox}Notifications${unreadBadge()}</a><a href="#/logout">${I.out}Sign out</a></nav></div>` : ""}
-    ${mode === "agency" && session ? `<div><div class="lbl">Websites</div><nav><a href="#/" aria-current="${!s && page !== "add" ? "page" : "false"}">${I.grid}All websites</a>${SITES.map((x) => `<a href="#/s/${x.key}/overview" aria-current="${s && x.key === s.key ? "page" : "false"}"><span class="dot ${x.status === "live" ? "live" : "setup"}"></span>${esc(x.name)}</a>`).join("")}<a href="#/add" aria-current="${page === "add" ? "page" : "false"}">${I.plus}Connect a website</a><a href="#/notes" aria-current="${page === "notes" ? "page" : "false"}">${I.inbox}Notifications${unreadBadge()}</a><a href="#/ops" aria-current="${page === "ops" ? "page" : "false"}">${I.report}Operations</a><a href="#/team" aria-current="${page === "teampage" ? "page" : "false"}">${I.people}Team and brand</a><a href="#/logout">${I.out}Sign out</a></nav></div>` : ""}
+    ${mode === "agency" && session ? `<div><div class="lbl">Websites</div><nav><a href="#/" aria-current="${!s && page !== "add" ? "page" : "false"}">${I.grid}Portfolio</a>${SITES.map((x) => `<a href="#/s/${x.key}/overview" aria-current="${s && x.key === s.key ? "page" : "false"}"><span class="dot ${x.status === "live" ? "live" : "setup"}"></span>${esc(x.name)}</a>`).join("")}<a href="#/add" aria-current="${page === "add" ? "page" : "false"}">${I.plus}Connect a website</a><a href="#/notes" aria-current="${page === "notes" ? "page" : "false"}">${I.inbox}Notifications${unreadBadge()}</a><a href="#/ops" aria-current="${page === "ops" ? "page" : "false"}">${I.report}Operations</a><a href="#/team" aria-current="${page === "teampage" ? "page" : "false"}">${I.people}Team and brand</a><a href="#/logout">${I.out}Sign out</a></nav></div>` : ""}
     <div class="foot">${s ? `Data from Google Search Console${s.ga4 && !s.ga4.error ? ", Google Analytics" : ""} and the site audit. Updated ${esc(s.lastAt ? s.lastAt.slice(0, 10) : last(s).day || "–")}.` : session ? esc(session.email || "") : ""}</div>`;
-  const title = s ? (PAGES.find(([k]) => k === page) || PAGES[0])[1] : { add: "Connect a website", login: "Sign in", teampage: "Team and brand", ops: "Operations", notes: "Notifications" }[page] || "Websites";
+  const title = s ? (PAGES.find(([k]) => k === page) || PAGES[0])[1] : { add: "Connect a website", login: "Sign in", teampage: "Team and brand", ops: "Operations", notes: "Notifications" }[page] || "Portfolio";
   $("#hdr").innerHTML = `<span class="mobile-brand">${brandMark}</span>
     <div class="site"><b>${s ? esc(s.name) : "SEO Autopilot"}</b><span>${esc(title)}${s && s.status === "live" && s.lastAt ? ` · updated ${esc(s.lastAt.slice(0, 10))}` : ""}</span></div><span class="sp"></span>
     ${s && mode === "agency" ? `<button class="btn" id="share">${I.share}<span>Client link</span></button>` : ""}
@@ -1439,7 +1502,7 @@ function workHtml(s) {
     <p class="xs muted" style="margin:12px 0 0">Every item comes from recorded work and the site audit. Search traffic is in the other pages of this dashboard.</p></div>`;
 }
 
-const PAGE_FN = { brief: pBrief, overview: pOverview, traffic: pTraffic, keywords: pKeywords, pages: pPages, locations: pLocations, plan: pPlan, report: pReport, team: pTeam, connect: pConnect, approvals: pApprovals, god: pGod, requests: (s) => (mode === "agency" ? pInbox(s) : pRequests(s)) };
+const PAGE_FN = { brief: pBrief, overview: pOverview, traffic: pTraffic, keywords: pKeywords, pages: pPages, locations: pLocations, plan: pPlan, report: pReport, team: pTeam, connect: pConnect, approvals: pApprovals, god: pGod, scorecard: pScorecard, requests: (s) => (mode === "agency" ? pInbox(s) : pRequests(s)) };
 async function render() {
   clearInterval(ACT_TIMER); clearInterval(PIPE_TIMER); CUR_SITE = null;
   const h = location.hash || "#/";
@@ -1494,12 +1557,13 @@ async function render() {
       if (CLIENT_SITES.length === 1) { location.hash = `#/k/${CLIENT_SITES[0].key}/overview`; return; }
       mode = "client"; clientAccount = true; shell(null); document.title = "Your websites"; $("#page").innerHTML = pClientHome(); return wire(null);
     }
-    if (!m) { shell(null); document.title = "Websites · SEO Autopilot"; $("#page").innerHTML = pHome(); return wire(null); }
+    if (!m) { await loadPortfolio(); shell(null); document.title = "Portfolio · SEO Autopilot"; $("#page").innerHTML = PORTFOLIO ? pPortfolio() : pHome(); return wire(null); }
     const s = SITES.find((x) => x.key === m[2]);
     if (!s) { location.hash = "#/"; return; }
     const page = m[3] || "overview";
     if (page === "overview" && s.status === "live") await loadGrowth(s);
     if (page === "god") await loadConsole(s);
+    if (page === "scorecard") await loadScorecard(s);
     if (page === "brief") { await loadBrief(s); if (state.justAdded === s.id) [s.google] = await Promise.all([rpc("site_google", { p_site: s.id }).catch(() => null), loadGoogleEmail()]); }
     if (page === "requests") await loadInbox(s);
     if (page === "report") await loadWork(s);

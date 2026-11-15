@@ -32,4 +32,5 @@ p -f shim.sql -f ../migrations/20261030000000_portal.sql -f rls.sql \
   -f ../migrations/20261116000000_budgets_alerts.sql -f rls23.sql \
   -f ../migrations/20261117000000_pipeline_connections.sql -f ../migrations/20261117010000_pipeline_agent_from_kind.sql -f rls24.sql \
   -f ../migrations/20261118000000_google_access.sql -f rls25.sql \
-  -f ../migrations/20261119000000_daily_digest.sql -f rls26.sql
+  -f ../migrations/20261119000000_daily_digest.sql -f rls26.sql \
+  -f ../migrations/20261120000000_portfolio_scorecard.sql -f rls27.sql

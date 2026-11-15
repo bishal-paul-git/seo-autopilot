@@ -18,6 +18,7 @@ import { makeGitHub } from "../../../src/god/github.mjs";
 import { googleAccessRoute, GSC_SCOPE, GA_SCOPE } from "../../../src/god/google-access.mjs";
 import { makeSpeedHandler } from "../../../src/god/speed.mjs";
 import { makeInspectHandler } from "../../../src/god/inspect.mjs";
+import { makeScorecardHandler } from "../../../src/god/scorecard.mjs";
 import { PROMPTS, DEPARTMENTS, KNOWLEDGE } from "./agents.generated.mjs";
 
 export const VERSION = "0.1.0";
@@ -97,6 +98,9 @@ export function context(env, fetchImpl) {
     // D57: Google's index status for a rotating batch of at most INSPECT_PER_DAY pages a day (URL Inspection API).
     handlers.index_inspect = makeInspectHandler({ ...gsc, perDay: s.inspectPerDay, api: env.GOOGLE_API_BASE ? `${env.GOOGLE_API_BASE}/v1/urlInspection/index:inspect` : undefined }); // GOOGLE_API_BASE: local tests only
     handlers.index_inspect.applies = handlers.search_snapshot.applies;
+    // D58: score completed changes and accepted advice against Search Console (one small query per change, when due).
+    handlers.scorecard = makeScorecardHandler({ ...gsc, api: env.GOOGLE_API_BASE ? `${env.GOOGLE_API_BASE}/webmasters/v3` : undefined }); // GOOGLE_API_BASE: local tests only
+    handlers.scorecard.applies = handlers.search_snapshot.applies;
   }
   // D56: weekly phone speed checks with ONE platform key, so customers never add one; never queued without it.
   if (env.PAGESPEED_API_KEY) handlers.speed_snapshot = makeSpeedHandler({ store, siteOf, apiKey: env.PAGESPEED_API_KEY, fetchImpl, maxPages: s.speedPages });

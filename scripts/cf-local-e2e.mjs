@@ -34,7 +34,7 @@ psql([readFileSync(join(m, "20261108100000_invite_only.sql"), "utf8"), readFileS
   readFileSync(join(m, "20261108120000_notifications_reports.sql"), "utf8"), readFileSync(join(m, "20261108130000_email.sql"), "utf8"),
   // Everything since Release 1 (D42 to D50), so the Worker runs against the production schema.
   ...["20261112000000_activity.sql", "20261113000000_business_brief.sql", "20261114000000_agent_pages.sql", "20261115000000_gsc_sites.sql", "20261116000000_budgets_alerts.sql",
-    "20261117000000_pipeline_connections.sql", "20261117010000_pipeline_agent_from_kind.sql", "20261118000000_google_access.sql", "20261119000000_daily_digest.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
+    "20261117000000_pipeline_connections.sql", "20261117010000_pipeline_agent_from_kind.sql", "20261118000000_google_access.sql", "20261119000000_daily_digest.sql", "20261120000000_portfolio_scorecard.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
 const asUser = (user, sql) => psql(`set role authenticated; set request.jwt.claim.sub = '${user}'; set request.jwt.claim.role = 'authenticated'; ${sql}`).split("\n").pop();
 const A_USER = "00000000-0000-0000-0000-00000000000a", B_USER = "00000000-0000-0000-0000-00000000000b";
 const A = JSON.parse(asUser(A_USER, `select public.create_site('Plumber', 'https://plumber.test/')->'site';`)).id;
@@ -44,7 +44,7 @@ const B = JSON.parse(asUser(B_USER, `select public.create_site('Bakery', 'https:
 const fnInfo = new Map(JSON.parse(psql(`select coalesce(jsonb_agg(jsonb_build_array(p.proname, p.proretset, t.typtype, t.typname)), '[]') from pg_proc p join pg_type t on t.oid = p.prorettype where p.pronamespace = 'public'::regnamespace;`)).map(([n, set, typ, name]) => [n, { set, typ, name }]));
 const calls = { rpc: 0, scan: 0, anthropic: 0, badKey: 0 };
 const gh = { issues: [], dispatches: [], pulls: {}, auth: [], fixed: false };
-const google = { tokens: 0, listed: 0, inspected: [] }; // D56 stand-in for Google's token and listing endpoints; D57 URL inspection
+const google = { tokens: 0, listed: 0, inspected: [], queries: [] }; // D56 stand-in for Google's token and listing endpoints; D57 URL inspection
 const PUB = "sb_publishable_e2e", SA = JSON.stringify({ client_email: "seo-reader@e2e.iam.gserviceaccount.com", private_key: generateKeyPairSync("rsa", { modulusLength: 2048 }).privateKey.export({ type: "pkcs8", format: "pem" }) });
 let lastBody = "";
 const rpc = (fn, args, user = null) => {
@@ -90,6 +90,13 @@ const server = createServer(async (req, res) => {
       if (b.siteUrl !== "sc-domain:plumber.test") return send(403, { error: { code: 403, message: "no permission" } });
       const home = new URL(b.inspectionUrl).pathname === "/";
       return send(200, { inspectionResult: { indexStatusResult: { verdict: home ? "PASS" : "NEUTRAL", coverageState: home ? "Submitted and indexed" : "Crawled - currently not indexed", indexingState: "INDEXING_ALLOWED", robotsTxtState: "ALLOWED", pageFetchState: "SUCCESSFUL" } } }); }
+    // D58: the scorecard's daily query for one change's pages: 10 clicks / 200 impressions a day before the change,
+    // 20 / 300 after (the change is 28 days after the start of the range it asks for).
+    if (p === "/webmasters/v3/sites/sc-domain%3Aplumber.test/searchAnalytics/query") { const b = JSON.parse(body); google.queries.push(b);
+      if (!b.dimensionFilterGroups) return send(404, { error: { message: "not found" } });
+      const rows = [], changed = new Date(Date.parse(`${b.startDate}T00:00:00Z`) + 28 * 864e5).toISOString().slice(0, 10);
+      for (let d = b.startDate; d <= b.endDate; d = new Date(Date.parse(`${d}T00:00:00Z`) + 864e5).toISOString().slice(0, 10)) rows.push(d < changed ? { keys: [d], clicks: 10, impressions: 200, position: 9 } : { keys: [d], clicks: 20, impressions: 300, position: 6 });
+      return send(200, { rows }); }
     return send(404, { error: { message: "not found" } });
   }
   if (u.pathname === "/functions/v1/scan") {
@@ -250,6 +257,22 @@ try {
   const digestNote = notes.items.find((n) => n.kind === "digest");
   check(dg.recorded >= 0 && (dg.recorded > 0 || psql(`select count(*) from public.agency_digests;`) !== "0") && digestNote && /waiting for a decision|AI spend yesterday/.test(digestNote.title) && !JSON.parse(asUser(B_USER, `select public.my_notifications();`)).items.some((n) => n.kind === "digest" && n.title === digestNote.title && n.siteName === digestNote.siteName),
     `daily digest for the agency: "${digestNote?.title}"`);
+  // D58: completed advice and the merged change are on the scorecard (the advice counted once, under the change); a change
+  // made 40 days ago is scored in workerd with one Search Console query for its page; the agency's portfolio shows it.
+  const cards = JSON.parse(psql(`select public.recall(${lit(A)}, 'scorecard')`, "service_role"));
+  const implCard = cards.find((c) => c.key === `job:${impl}`)?.value, adviceCard = cards.find((c) => c.key === `job:${reqJob}`)?.value;
+  check(implCard?.basis === "change merged" && implCard.pages.join() === "https://plumber.test/x" && adviceCard?.supersededBy === impl,
+    `scorecard entries for the merged change and its advice (counted once): ${cards.map((c) => c.key).join(", ")}`);
+  const changed = new Date(Date.now() - 40 * 864e5).toISOString().slice(0, 10);
+  psql(`select public.remember(${lit(A)}, ${lit([{ kind: "scorecard", key: "job:e2e-old", basis: "verified", source: "e2e", value: { job: "e2e-old", kind: "agent:seo-snippet-optimizer", basis: "advice accepted", title: "Shorter title on /x", pages: ["https://plumber.test/x"], changedAt: changed, status: "open", windows: {} } }])});`, "service_role");
+  for (let i = 0; i < 4 && psql(`select count(*) from public.jobs where site_id = ${lit(A)} and kind = 'scorecard' and status = 'completed';`) === "0"; i++) await due();
+  const scored = JSON.parse(psql(`select public.recall(${lit(A)}, 'scorecard')`, "service_role")).find((c) => c.key === "job:e2e-old")?.value;
+  const q = google.queries.find((b) => b.dimensionFilterGroups);
+  check(scored?.windows?.["14"]?.label === "win" && scored.windows["28"].label === "win" && scored.status === "closed" && scored.baseline?.["28"]?.clicks === 280 && q?.dimensionFilterGroups[0].filters[0].expression === "https://plumber.test/x",
+    `scorecard job in workerd: one query for the page, baseline frozen, 14 and 28 days scored (${scored?.windows?.["28"]?.reason || JSON.stringify(scored)?.slice(0, 200)})`);
+  const pf = JSON.parse(asUser(A_USER, `select public.portfolio();`)).sites.find((x) => x.site === A);
+  check(pf && pf.scorecard.win >= 1 && pf.notIndexed >= 1 && !JSON.parse(asUser(B_USER, `select public.portfolio();`)).sites.some((x) => x.site === A),
+    `portfolio for agency A: ${pf?.scorecard.win} win, ${pf?.notIndexed} not indexed, attention ${pf?.attention} (${(pf?.reasons || []).join("; ")}); agency B does not see it`);
   const usage = JSON.parse(psql(`select public.god_usage(1);`, "service_role"));
   console.log(`usage over this test: ${JSON.stringify(usage)}`);
   console.log("all Cloudflare execution checks passed in workerd against the database");

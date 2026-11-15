@@ -73,6 +73,17 @@ deployed and what is only built is in [deployment-status.md](deployment-status.m
    data (no snapshot in 48 h for a connected site, no scan in 72 h) and refused inspection also appear in the agency's
    alerts and, for platform admins, in platform health on Operations.
 
+**E. Portfolio and per-change scorecard (D58)**
+1. Planning adds a site-memory entry (kind `scorecard`) for each completed agent job that named pages on the site's own
+   host (dated when the agency accepted it) and each merged implementation (dated at the merge; its advice is then not
+   counted again). Source: `src/analysis/scorecard.mjs` (pure), `src/god/scorecard.mjs`.
+2. A free `scorecard` job, only for sites with Google access and only when something is due, reads one small Search
+   Console query per change (the pages' daily rows, 28 days before to 28 days after) and freezes on the entry the
+   before-baseline and each 14- and 28-day verdict: win, loss, flat, too early or not enough data, against the rest of
+   the site from `history`. Superseded copies are pruned after 14 days; the current entry holds everything.
+3. `public.portfolio()` (migration 20261120000000) gives the portal's landing page: one row per website of the caller's
+   agencies, needs attention first; `portfolio(site)` adds that site's scorecard ("Results of changes").
+
 ## Tenancy
 Every row belongs to an org through `sites.org_id`. Reads are row-level security (`private.is_member`); writes go through
 `SECURITY DEFINER` functions that check membership themselves. Clients see one site through a share link

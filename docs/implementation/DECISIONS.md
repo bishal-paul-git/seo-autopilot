@@ -119,6 +119,71 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
 
+## 2026-11-15 D58 Portfolio screen and a scorecard for every change
+The owner runs many websites and wants (1) one page with every website, the ones that need attention first, and (2) for
+every change or piece of accepted advice, whether it moved Search Console. Until now the agency had to open each site, and
+the only measure of advice was D33's 14-day traffic check on accepted advice (stored inside `experiment` items, not shown
+as a list) plus the audit-based learning loop.
+
+**Decision:**
+- **Portfolio** (`public.portfolio()`, migration 20261120000000, the portal's landing page "Portfolio"): one row per
+  website of the caller's agencies (`private.is_member`; nobody else gets rows; anon refused). Columns: clicks over the
+  latest 28 days (`search_console` totals) and the change against the 28 days before, computed like-for-like from the
+  `history` report's daily totals and shown only when both windows have at least 24 days (otherwise "–", about 8 weeks
+  after the first snapshot); pages not indexed in the `inspect` report (redirects and alternates excluded; "refused"
+  without Full permission); stale data (`private.site_freshness`, D57); today's alerts and planning errors (the site tick
+  outcome); stopped work; approvals waiting; AI spend over 7 days; live/paused; win/loss counts. Sorted by a plain weighted
+  score: stopped work and planning errors, alerts, stale data, clicks down 20% or more, changes that lost traffic,
+  approvals waiting (more after 3 days), pages not indexed. The reasons are listed in words under each name. Paused
+  websites go last. Phones get cards instead of the table.
+- **Scorecard entries** (site memory, new kind `scorecard`, key `job:<id>`): written by the planner for each completed
+  `agent:*` or `client_request` job whose recommendations name pages on the site's own host (at most 3, dated when the
+  agency accepted the result) and each completed implementation (dated when its pull request was merged). When an
+  implementation of earlier advice is merged, the advice entry is marked `supersededBy` and not counted, so one change is
+  never scored twice. Jobs older than 180 days are not backfilled.
+- **Scoring** (`src/analysis/scorecard.mjs`, pure): windows of 14 and 28 days before the change against the same length
+  after it, starting 3 days after the change (Google recrawls; same lag as D33). Clicks are the measure; with fewer than
+  20 clicks in both windows it is impressions, and the verdict says so. The rest of the site (site totals minus the
+  pages, from `history`) is the control: the page's after-value is compared with what it would have had moving like the
+  site. Win/loss at 15% or more either way and at least 5 clicks (or 50 impressions) of difference after allowing for the
+  site, otherwise flat. `not_enough_data` below 50 impressions in both 14-day windows (100 for 28 days); `too_early` until
+  the after-window is settled in Search Console (3 days' lag), with the date it will be ready. CTR and average position
+  before and after are shown with every verdict. The headline is the 28-day verdict, else the 14-day one.
+- **Where the data lives (the prune question):** each entry freezes its own before-baseline (pages and the rest of the site,
+  per window) the first time the days before the change are in Search Console, and each window's verdict once its
+  after-window is complete. A free `scorecard` job (`src/god/scorecard.mjs`) does this with ONE Search Console query per
+  due change (the pages' daily rows from 28 days before to 28 days after, `dimensions: ["date"]`, an `equals` filter, or
+  an anchored `includingRegex` for several pages), at most 8 changes per run, only when something is due and only for
+  sites with Google access. Superseded scorecard copies are pruned after 14 days with the derived reports
+  (`record_daily_digests`); the current entry holds everything.
+
+**Not chosen:** a per-page daily report written by the daily snapshot. It would add a query and rewrite a report of
+`pages x days` every day for every watched page (each day a new copy, pruned after 14 days), and its "before" days would
+still age out of its own window for slow changes. Freezing on the entry costs at most three small queries per change over
+its life and a few hundred bytes, and works the same for a change measured late. Computing verdicts in SQL was not chosen
+either: the scoring has tests in Node and the Worker already holds the Google token.
+
+**CPU (Workers Free, 10 ms):** scoring 8 changes with 62 days of data each: about 2.4 ms on the first call, under 1.3 ms
+warm (Node V8 estimate, `aggregate` compares date strings instead of doing date arithmetic). Finding new entries among 100
+completed jobs with 8 recommendations each: about 2.4 ms first call, under 1.5 ms warm; jobs already on the scorecard
+are skipped before any parsing. This adds to the planning cost measured in D57 (7 to 11 ms cold for a large site), so a
+cold isolate planning a large site with many fresh jobs is closer to the limit; Workers Paid removes the risk.
+
+**Tradeoffs:**
+- Directional, not a controlled test: the control is the rest of the same site, not matched pages, and other changes,
+  seasonality and Google updates can explain a result. The portal says so on the scorecard.
+- Advice is dated when it was accepted, not when (or whether) someone made the change. A merged change is dated exactly.
+- Small sites will see many "not enough data" verdicts. That is the honest answer.
+- Sites without hosted Google access (GitHub-run data only) get entries but no verdicts: the scorecard job needs the
+  service account. The list says Search Console must be connected.
+- Thresholds (15%, 5 clicks, 50/100 impressions, 20 clicks) are first guesses for small sites; tune on real results.
+- Nothing is verified against real Google yet: unit tests with mocked responses, the SQL suite and the workerd run use
+  stand-ins.
+
+**Evidence:** `test/scorecard.test.mjs`, `test/portal-portfolio.test.mjs` (Chromium), `cloud/portal/supabase/test/rls27.sql`,
+`scripts/cf-local-e2e.mjs` D58 section (entries from the real completed advice and merged change; a 40-day-old change
+scored in workerd with one query; the portfolio for agency A and not for agency B).
+
 ## 2026-11-14 D57 The hosted engine sees index status, history and priorities; reacts the same day; reminds people daily
 Phase 1 of moving SEO Autopilot off GitHub Actions. Production data (14 Nov) showed the hosted engine's memory for a live
 site holds only `audit`, `discovered`, `profile` and `search_console`. The planner's router (`routeAgents`) reads

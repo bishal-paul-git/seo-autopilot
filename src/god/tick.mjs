@@ -13,6 +13,7 @@ import { detectAlerts, unhandledAlerts } from "../analysis/alerts.mjs";
 import { isoWeek } from "../analysis/search-history.mjs";
 import { rulesOnPage, verifyChange, WAIT_FOR_PR_DAYS } from "./github.mjs";
 import { withAnswers } from "./onboarding.mjs";
+import { scorecardRows, scorecardDue } from "./scorecard.mjs";
 
 const OPEN = new Set(["proposed", "scoped", "queued", "running", "awaiting_review", "awaiting_approval", "authorized", "deploying", "verifying", "failed", "escalated"]);
 
@@ -207,6 +208,13 @@ export async function tick({ store, sites = null, handlers = {}, now = new Date(
       const learned = learn({ memory, jobs, now });
       if (learned.rows.length) { await store.writeMemory(site.id, learned.rows); memory = (await store.readMemory(site.id)) || []; }
       entry.learning = { experiments: learned.experiments.length, open: learned.experiments.filter((e) => e.status === "open").length, lessons: learned.lessons.length };
+      // D58: every completed change or accepted advice that named pages goes on the scorecard, dated when it happened.
+      const cards = scorecardRows(site, memory, jobs, now);
+      // Never blocks planning: before migration 20261120000000 the database refuses kind "scorecard"; reported, retried next run.
+      if (cards.length) {
+        try { await store.writeMemory(site.id, cards); const k = new Set(cards.map((c) => c.key)); memory = [...memory.filter((m) => m.kind !== "scorecard" || !k.has(m.key)), ...cards]; } // no re-read: one request less
+        catch (e) { entry.scorecardError = String(e.message || e).slice(0, 200); }
+      }
       entry.strategy = strategyStatus(jobs, memory);
       const budget = budgets[site.id] ?? dailyBudgetUsd;
       const spent = await store.spendSince(site.id, dayStart);
@@ -228,6 +236,8 @@ export async function tick({ store, sites = null, handlers = {}, now = new Date(
       const rankAt = has("priorities") ? prioritiesDue(memory) : null;
       if (rankAt) plan.jobs.push({ kind: "priorities", title: "Rank the to-do list from the latest data", department: "analytics", risk: "low", priority: 2, source: "seo_god", requiresApproval: false, idempotencyKey: `priorities:${rankAt}`, inputs: { site: site.id }, why: "new search, index, scan or speed data: the agents and the router read the ranked list" });
       if (has("search_console") && trafficDue(learned.experiments, now).length) plan.jobs.push({ kind: "search_console", title: "Measure accepted advice in Search Console", department: "analytics", risk: "low", priority: 3, source: "seo_god", requiresApproval: false, idempotencyKey: `search_console:${now.slice(0, 10)}`, inputs: { site: site.id }, why: "accepted advice has a complete 14-day after-window" });
+      // D58: measure changes on the scorecard (free; one small Search Console query per change, only with Google access).
+      if (has("scorecard") && scorecardDue(memory, now) && (await applies("scorecard", site.id))) plan.jobs.push({ kind: "scorecard", title: "Score changes against Search Console", department: "analytics", risk: "low", priority: 3, source: "seo_god", requiresApproval: false, idempotencyKey: `scorecard:${now.slice(0, 10)}`, inputs: { site: site.id }, why: "a change's before-baseline or after-window is now in Search Console" });
       const guided = applyLessons(plan.jobs, learned.lessons);
       entry.deferred.push(...guided.deferred); entry.adjusted = guided.adjusted;
       // An alert run of a specialist this week stands in for its weekly run, so a sudden problem never doubles the spend.
