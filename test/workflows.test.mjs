@@ -171,3 +171,10 @@ test("lineDiff reports added and removed lines", () => {
   const d = lineDiff("a\nb\nc", "a\nc\nd");
   assert.deepEqual(d, { removed: ["b"], added: ["d"] });
 });
+
+test("the autopilot picks nothing when the repository has no AI secret (no failing run twice a day)", () => {
+  const t = text("seo-autopilot.yml");
+  const pick = t.slice(t.indexOf("\n  pick:"), t.indexOf("\n  draft:"));
+  assert.match(pick, /HAS_AI: \$\{\{ secrets\.CLAUDE_CODE_OAUTH_TOKEN != '' \|\| secrets\.ANTHROPIC_API_KEY != '' \}\}/);
+  assert.ok(pick.indexOf('if [ "$HAS_AI" != "true" ]') < pick.indexOf("gh issue list"), "checked before any work");
+});

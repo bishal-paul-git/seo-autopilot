@@ -10,6 +10,14 @@ import { scheduleQueued } from "../adapters/index.mjs";
 export const description = "Give approved (queued) pages release dates, N per day; --dry shows the plan without editing";
 
 export async function run({ site, flags }) {
+  // Sitemap-only sites have no content files to date, so there is nothing to schedule. That is a normal state, not a
+  // failure: the daily seo-release run used to fail on every such site (seen 7/7 days on two sites, 2026-11-14).
+  const type = site.content?.type;
+  if (type !== "json" && type !== "markdown") {
+    console.log(`Nothing to schedule: content.type is "${type || "none"}" (scheduling edits JSON or Markdown content files only).`);
+    if (process.env.GITHUB_OUTPUT && !flags.dry) (await import("node:fs")).appendFileSync(process.env.GITHUB_OUTPUT, "scheduled=0\n");
+    return;
+  }
   const perDay = Number(flags["per-day"] ?? site.schedule?.perDay ?? 3);
   const touched = scheduleQueued(site, { perDay, start: flags.start, dry: Boolean(flags.dry) });
   for (const t of touched) console.log(`${t.date}  ${t.id}  (${t.file})`);
