@@ -45,7 +45,7 @@ Only signed-in agency members can decide; client links cannot. Approved changes 
    - Apply `supabase/migrations/*.sql` with `supabase db push`, the SQL editor or the MCP `apply_migration`.
    - Deploy `supabase/functions/ingest` with JWT verification off, because it checks the site token itself.
 2. In Supabase, open Authentication › URL Configuration. Set the Site URL to the portal's address so confirmation emails link back to it. Custom SMTP is needed before strangers can sign up: the built-in mailer only sends to the project's team.
-3. Build the page: `PORTAL_SUPABASE_URL=https://<ref>.supabase.co PORTAL_SUPABASE_KEY=<publishable key> node cloud/portal/build.mjs`, which writes `cloud/portal/dist/`. Host that folder on any static host (Hostinger, Vercel, Netlify, GitHub Pages). It sends `noindex` and a robots.txt that blocks crawling.
+3. Build the page: `PORTAL_SUPABASE_URL=https://<ref>.supabase.co PORTAL_SUPABASE_KEY=<publishable key> node cloud/portal/build.mjs`, which writes `cloud/portal/dist/`. Host that folder on any static host (Hostinger, Vercel, Netlify, GitHub Pages). Since D59 the page carries a public landing page for logged-out visitors on `#/` (indexable, with canonical and Open Graph tags for `PORTAL_PUBLIC_URL`, default `https://seo.erudience.com`), and the build writes `robots.txt` (allows the page, keeps `previous-*` copies out) and `sitemap.xml`. Upload all three files.
 4. For each website, choose "Connect a website" in the portal, then add two secrets to the website's repository:
    - `SEO_PORTAL_URL`: `https://<ref>.supabase.co/functions/v1/ingest`
    - `SEO_PORTAL_TOKEN`: shown once.

@@ -1,7 +1,8 @@
 // Builds the portal page: cloud/portal/app/index.html with the Supabase address, its publishable key and the agent
-// roster filled in, written to cloud/portal/dist/ with a robots.txt that keeps it out of search. Both values are public
-// (the publishable key only reaches what row level security allows). No dependencies.
-//   PORTAL_SUPABASE_URL=https://<ref>.supabase.co PORTAL_SUPABASE_KEY=<publishable key> [PORTAL_WORKER_URL=https://seo-god.<sub>.workers.dev] node cloud/portal/build.mjs [outDir]
+// roster filled in, written to cloud/portal/dist/ with robots.txt and sitemap.xml for the public landing page (D59).
+// Both values are public (the publishable key only reaches what row level security allows). No dependencies.
+//   PORTAL_SUPABASE_URL=https://<ref>.supabase.co PORTAL_SUPABASE_KEY=<publishable key> [PORTAL_WORKER_URL=https://seo-god.<sub>.workers.dev]
+//   [PORTAL_PUBLIC_URL=https://seo.erudience.com] node cloud/portal/build.mjs [outDir]
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -56,16 +57,31 @@ export function agentCatalog() {
   return { agents, files, exams };
 }
 
-export function build({ url = process.env.PORTAL_SUPABASE_URL || "", key = process.env.PORTAL_SUPABASE_KEY || "", workerUrl = process.env.PORTAL_WORKER_URL || "", out = join(here, "dist") } = {}) {
+/** robots.txt and sitemap.xml for the one public URL (D59). The app's pages are hash routes of that URL, so there is
+ * nothing else to list; old copies kept next to it on the host (previous-*.html) stay out of search. */
+export function crawlFiles(publicUrl, day = new Date().toISOString().slice(0, 10)) {
+  const base = publicUrl.replace(/\/$/, "");
+  return {
+    robots: `User-agent: *\nDisallow: /previous-\nSitemap: ${base}/sitemap.xml\n`,
+    sitemap: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>${base}/</loc><lastmod>${day}</lastmod></url>\n</urlset>\n`,
+  };
+}
+
+export function build({ url = process.env.PORTAL_SUPABASE_URL || "", key = process.env.PORTAL_SUPABASE_KEY || "", workerUrl = process.env.PORTAL_WORKER_URL || "", publicUrl = process.env.PORTAL_PUBLIC_URL || "https://seo.erudience.com", out = join(here, "dist") } = {}) {
   if (url && !/^(https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+|http:\/\/(127\.0\.0\.1|localhost)(:\d+)?)\/?$/.test(url)) throw new Error("PORTAL_SUPABASE_URL must be https://<project>.supabase.co");
   if (/service_role|^sb_secret_/.test(key)) throw new Error("Use the publishable (anon) key, never the service role or a secret key.");
   // D56: the Worker that serves the service account email and Check access (/google/*); empty hides them.
   if (workerUrl && !/^(https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+|http:\/\/(127\.0\.0\.1|localhost)(:\d+)?)\/?$/.test(workerUrl)) throw new Error("PORTAL_WORKER_URL must be https://<worker host>");
+  // D59: the address search engines and shared links use (canonical, Open Graph, sitemap).
+  if (!/^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+\/?$/.test(publicUrl)) throw new Error("PORTAL_PUBLIC_URL must be https://<host> with no path");
+  const pub = publicUrl.replace(/\/$/, "");
   const cfg = JSON.stringify({ supabaseUrl: url.replace(/\/$/, ""), anonKey: key, workerUrl: workerUrl.replace(/\/$/, "") }).replace(/</g, "\\u003c");
-  const html = readFileSync(join(here, "app/index.html"), "utf8").replace("__CONFIG__", cfg).replace("__ORG__", JSON.stringify(organisation())).replace("__BRIEF__", JSON.stringify(BRIEF).replace(/</g, "\\u003c")).replace("__AGENTS__", () => JSON.stringify(agentCatalog()).replace(/</g, "\\u003c")); // a function: "$&" in agent text stays literal
+  const html = readFileSync(join(here, "app/index.html"), "utf8").replaceAll("__PUBLIC_URL__", pub).replace("__CONFIG__", cfg).replace("__ORG__", JSON.stringify(organisation())).replace("__BRIEF__", JSON.stringify(BRIEF).replace(/</g, "\\u003c")).replace("__AGENTS__", () => JSON.stringify(agentCatalog()).replace(/</g, "\\u003c")); // a function: "$&" in agent text stays literal
   mkdirSync(out, { recursive: true });
   writeFileSync(join(out, "index.html"), html);
-  writeFileSync(join(out, "robots.txt"), "User-agent: *\nDisallow: /\n");
+  const crawl = crawlFiles(pub);
+  writeFileSync(join(out, "robots.txt"), crawl.robots);
+  writeFileSync(join(out, "sitemap.xml"), crawl.sitemap);
   return { out, bytes: Buffer.byteLength(html) };
 }
 

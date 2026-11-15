@@ -2,6 +2,16 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-15 (D59 invite-only landing page and invite requests; code change, not deployed)
+- **Code:**
+  - Portal `cloud/portal/app/index.html`: static landing page (`#landing`) for logged-out visitors on `#/`; head script sets `data-view` before paint; `render()` shows the landing when signed out (a stale render never wins); "Request an invite" form with client-side checks matching the SQL; sign-in page links to the request; Operations card "Invite requests" (platform admins: invite, decline, undo, copy email and sign-up link); notification kind `invite_request`. `meta robots noindex` removed; title, description, canonical, Open Graph added.
+  - `cloud/portal/build.mjs`: `PORTAL_PUBLIC_URL` (default `https://seo.erudience.com`), `crawlFiles()`; writes `robots.txt` (allow, `Disallow: /previous-`, sitemap line) and `sitemap.xml`.
+  - `scripts/cf-local-e2e.mjs`: loads the new migration; D59 check.
+- **Migration** `cloud/portal/supabase/migrations/20261121000000_invite_requests.sql`, **not applied**: `public.invite_requests`, `public.request_invite` (anon), `public.invite_requests_list`, `public.decide_invite_request` (platform admins), `private.gate_signup` accepts invited requests, `private.notifications_for` adds `invite_request`.
+- **Tests:** `npm test` 666/666 (6 new in `test/portal-landing.test.mjs`; `test/portal-app.test.mjs` now enters through the landing page and scopes the login selectors). `bash cloud/portal/supabase/test/run.sh` rls1-28 pass (new `rls28.sql`). `node scripts/cf-local-e2e.mjs` all pass (45 checks incl. the new D59 one).
+- **Docs:** D59 in DECISIONS; STATUS; `cloud/portal/README.md` deploy step.
+- **Not done:** migration, portal build and publish, SMTP. No deployment.
+
 ## 2026-11-15 (D58 portfolio screen and per-change scorecard; code change, not deployed)
 - **Code:**
   - `src/analysis/scorecard.mjs` (new, pure): windows (14 and 28 days before vs after, 3-day lag), `aggregate`, `judge` (win/loss/flat against the rest of the site; impressions when clicks are few; `not_enough_data` and `too_early`), `pagesOf`/`newEntries` (accepted advice and merged changes on the site's own host; an implementation supersedes its advice), `scoreEntry` (freezes the baseline and finished windows), `summarise`, `dueEntries`.

@@ -119,6 +119,59 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
 
+## 2026-11-15 D59 Invite-only landing page and invite requests
+The owner wants to start showing the hosted service to business owners and agencies with several websites. Until now a
+logged-out visitor to seo.erudience.com got a bare sign-in form (`noindex`, robots.txt blocking everything), and the only
+way in was an agency or client invite (D36, migration 20261108100000).
+
+**Decision:**
+- **Landing page in the same single file** (`cloud/portal/app/index.html`, `#landing`): static HTML in the initial
+  document, so it is crawlable and readable without JavaScript. A one-line script in `<head>` sets `data-view` before the
+  first paint (landing for a logged-out visitor on `#/` or a `#section` hash; the app otherwise), so a signed-in person
+  never sees it flash; `render()` keeps it in step and a stale landing render never overrides a newer route. Signed-in
+  agencies still land on Portfolio (D58); "Sign in" opens the existing email and password form (the portal does not use
+  magic links). Same tokens and components as the app; no images, no external scripts, no trackers (the Geist web
+  font from Google Fonts stays, as in the app). Title, meta description, canonical, Open Graph and `twitter:card`.
+  `meta robots noindex` is removed: the app's pages are hash routes of the same URL and are not separate documents.
+- **Content rule:** every sentence describes what the product does today (D17, D45, D50, D55 to D58) with the limits
+  stated (Search Console delay, Full permission for index checks, "not enough data" on small sites, no ranking
+  promises, pricing not published). No numbers, customers, quotes or awards. `test/portal-landing.test.mjs` fails on
+  percentages, testimonial or award wording.
+- **robots.txt and sitemap.xml** from `build.mjs` (`crawlFiles`) for `PORTAL_PUBLIC_URL` (default
+  `https://seo.erudience.com`, https and no path only): the one URL in the sitemap; `Disallow: /previous-` keeps the
+  kept-back copies out.
+- **Invite requests** (migration 20261121000000): table `public.invite_requests` (RLS on, no policies, no grants to the
+  API roles). `public.request_invite(name, email, company, sites, note, trap)` is anon-callable: trims and checks every
+  field (name 1-100, email shape and 254, company or website 1-200, websites from a fixed list, note 1,000), a honeypot
+  (`trap`, a hidden field: stored nothing, same answer), one row per email (a repeat counts `repeats`, never changes the
+  first request or reopens a decision), at most 20 new requests an hour across the service (advisory lock; error code
+  `PT429`, which PostgREST returns as HTTP 429). The answer is identical for new, repeated, existing-user and robot
+  submissions, so it never reveals whether an email is known.
+- **Platform admin view:** "Invite requests" on Operations (`invite_requests_list()`, `decide_invite_request(id,
+  invited|declined|new)`, `private.is_platform_admin`). **Invited** extends the existing sign-up gate:
+  `private.gate_signup` also accepts an email whose request is invited, and `private.on_new_user` then gives the new
+  account its own agency. The existing agency invite (`public.invites`) was not reused because it joins the inviter's
+  agency, which is wrong for a prospect. Nothing is emailed: the card shows the address and the sign-up link to copy.
+- **Notification (D38):** platform admins get kind `invite_request` for each new request (≤30 days, until decided),
+  through `private.notifications_for` (redefined with one added branch). It also reaches the daily summary email once
+  SMTP is set.
+
+**Not chosen:** a separate static landing site (two deployments, duplicated styles); emailing the invite from the
+`notify` function (needs SMTP, still not set, and a new email kind); per-IP limits (PostgREST passes headers, but the
+address behind Hostinger and Supabase proxies is not reliable enough to block on); a CAPTCHA (third-party script).
+
+**Tradeoffs and risks:**
+- The landing page describes D57 and D58 features (alerts, daily digest, scorecard, portfolio) that are built but **not
+  deployed**; speed checks need `PAGESPEED_API_KEY`. Publish the page after those steps, or edit the claims.
+- An invited prospect can only finish sign-up if Supabase Auth can send the confirmation email: custom SMTP is not set
+  (owner item 5), and the built-in mailer only sends to the project's team.
+- The global hourly limit can be used by one abuser to block other visitors for an hour; acceptable at invite-only scale.
+- "We use these details only to answer your request" and "if we can invite you, we will email you" are commitments the
+  owner should confirm.
+
+**Evidence:** `cloud/portal/supabase/test/rls28.sql`, `test/portal-landing.test.mjs` (6 tests, 1 build-only + 5 in
+Chromium), the D59 check in `scripts/cf-local-e2e.mjs`. Nothing is deployed or applied.
+
 ## 2026-11-15 D58 Portfolio screen and a scorecard for every change
 The owner runs many websites and wants (1) one page with every website, the ones that need attention first, and (2) for
 every change or piece of accepted advice, whether it moved Search Console. Until now the agency had to open each site, and

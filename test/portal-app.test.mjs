@@ -76,12 +76,14 @@ test("portal app: sign in, websites, connect a website, client link, client view
     page.on("pageerror", (e) => errors.push(e.message));
     page.on("dialog", (d) => d.dismiss());
     await page.goto(`${origin}/#/`);
+    await page.waitForSelector("#landing h1"); // D59: logged out, #/ is the landing page; Sign in leads to the form
+    await page.click("#lp-signin");
     await page.waitForURL(/#\/login$/);
-    await page.fill("input[name=email]", "alice@agency.test");
-    await page.fill("input[name=password]", "wrong-password");
+    await page.fill("#login-form input[name=email]", "alice@agency.test");
+    await page.fill("#login-form input[name=password]", "wrong-password");
     await page.click("#login-form button[type=submit]");
     await page.waitForSelector("text=Invalid login credentials");
-    await page.fill("input[name=password]", "correct-horse");
+    await page.fill("#login-form input[name=password]", "correct-horse");
     await page.click("#login-form button[type=submit]");
     await page.waitForSelector(".site-card >> text=Plumber");
     assert.equal(fake.calls.find((c) => c.path === "/rest/v1/rpc/my_sites").auth, "Bearer user-jwt");

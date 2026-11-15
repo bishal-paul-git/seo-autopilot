@@ -34,7 +34,7 @@ psql([readFileSync(join(m, "20261108100000_invite_only.sql"), "utf8"), readFileS
   readFileSync(join(m, "20261108120000_notifications_reports.sql"), "utf8"), readFileSync(join(m, "20261108130000_email.sql"), "utf8"),
   // Everything since Release 1 (D42 to D50), so the Worker runs against the production schema.
   ...["20261112000000_activity.sql", "20261113000000_business_brief.sql", "20261114000000_agent_pages.sql", "20261115000000_gsc_sites.sql", "20261116000000_budgets_alerts.sql",
-    "20261117000000_pipeline_connections.sql", "20261117010000_pipeline_agent_from_kind.sql", "20261118000000_google_access.sql", "20261119000000_daily_digest.sql", "20261120000000_portfolio_scorecard.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
+    "20261117000000_pipeline_connections.sql", "20261117010000_pipeline_agent_from_kind.sql", "20261118000000_google_access.sql", "20261119000000_daily_digest.sql", "20261120000000_portfolio_scorecard.sql", "20261121000000_invite_requests.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
 const asUser = (user, sql) => psql(`set role authenticated; set request.jwt.claim.sub = '${user}'; set request.jwt.claim.role = 'authenticated'; ${sql}`).split("\n").pop();
 const A_USER = "00000000-0000-0000-0000-00000000000a", B_USER = "00000000-0000-0000-0000-00000000000b";
 const A = JSON.parse(asUser(A_USER, `select public.create_site('Plumber', 'https://plumber.test/')->'site';`)).id;
@@ -273,6 +273,17 @@ try {
   const pf = JSON.parse(asUser(A_USER, `select public.portfolio();`)).sites.find((x) => x.site === A);
   check(pf && pf.scorecard.win >= 1 && pf.notIndexed >= 1 && !JSON.parse(asUser(B_USER, `select public.portfolio();`)).sites.some((x) => x.site === A),
     `portfolio for agency A: ${pf?.scorecard.win} win, ${pf?.notIndexed} not indexed, attention ${pf?.attention} (${(pf?.reasons || []).join("; ")}); agency B does not see it`);
+  // D59: a visitor asks for an invite with the publishable key (anon) and cannot read the list; a platform admin lists and
+  // invites; the invited email can then create an account (invite-only stays on) and gets its own agency.
+  const answer = JSON.parse(psql(`select public.request_invite('Dana', 'Dana@Shop.test', 'shop.test', '2-5', 'Three shops');`, "anon"));
+  const anonRead = (() => { try { psql(`select count(*) from public.invite_requests;`, "anon"); return true; } catch { return false; } })();
+  psql(`insert into public.platform_admins (user_id) values (${lit(B_USER)}) on conflict do nothing;`);
+  const reqs = JSON.parse(asUser(B_USER, `select public.invite_requests_list();`)), dana = reqs.find((r) => r.email === "dana@shop.test");
+  const memberRefused = (() => { try { asUser(A_USER, `select public.invite_requests_list();`); return false; } catch { return true; } })();
+  asUser(B_USER, `select public.decide_invite_request(${dana.id}, 'invited');`);
+  psql(`insert into auth.users (id, email) values ('00000000-0000-0000-0000-00000000e59a', 'dana@shop.test');`);
+  check(answer.ok && !anonRead && memberRefused && dana?.sites === "2-5" && psql(`select count(*) from public.org_members where user_id = '00000000-0000-0000-0000-00000000e59a' and role = 'owner';`) === "1",
+    "invite request: anon submits but cannot read, member refused, admin lists and invites, the invited email signs up into its own agency");
   const usage = JSON.parse(psql(`select public.god_usage(1);`, "service_role"));
   console.log(`usage over this test: ${JSON.stringify(usage)}`);
   console.log("all Cloudflare execution checks passed in workerd against the database");
