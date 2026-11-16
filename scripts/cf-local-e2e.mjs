@@ -34,7 +34,7 @@ psql([readFileSync(join(m, "20261108100000_invite_only.sql"), "utf8"), readFileS
   readFileSync(join(m, "20261108120000_notifications_reports.sql"), "utf8"), readFileSync(join(m, "20261108130000_email.sql"), "utf8"),
   // Everything since Release 1 (D42 to D50), so the Worker runs against the production schema.
   ...["20261112000000_activity.sql", "20261113000000_business_brief.sql", "20261114000000_agent_pages.sql", "20261115000000_gsc_sites.sql", "20261116000000_budgets_alerts.sql",
-    "20261117000000_pipeline_connections.sql", "20261117010000_pipeline_agent_from_kind.sql", "20261118000000_google_access.sql", "20261119000000_daily_digest.sql", "20261120000000_portfolio_scorecard.sql", "20261121000000_invite_requests.sql", "20261123000000_google_autolink.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
+    "20261117000000_pipeline_connections.sql", "20261117010000_pipeline_agent_from_kind.sql", "20261118000000_google_access.sql", "20261119000000_daily_digest.sql", "20261120000000_portfolio_scorecard.sql", "20261121000000_invite_requests.sql", "20261123000000_google_autolink.sql", "20261124000000_pilot_hardening.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
 const asUser = (user, sql) => psql(`set role authenticated; set request.jwt.claim.sub = '${user}'; set request.jwt.claim.role = 'authenticated'; ${sql}`).split("\n").pop();
 const A_USER = "00000000-0000-0000-0000-00000000000a", B_USER = "00000000-0000-0000-0000-00000000000b";
 const A = JSON.parse(asUser(A_USER, `select public.create_site('Plumber', 'https://plumber.test/')->'site';`)).id;
@@ -42,7 +42,7 @@ const B = JSON.parse(asUser(B_USER, `select public.create_site('Bakery', 'https:
 
 // --- stand-ins: Supabase RPC (real SQL), scan function, Anthropic ----------------------------------------------------
 const fnInfo = new Map(JSON.parse(psql(`select coalesce(jsonb_agg(jsonb_build_array(p.proname, p.proretset, t.typtype, t.typname)), '[]') from pg_proc p join pg_type t on t.oid = p.prorettype where p.pronamespace = 'public'::regnamespace;`)).map(([n, set, typ, name]) => [n, { set, typ, name }]));
-const calls = { rpc: 0, scan: 0, anthropic: 0, badKey: 0 };
+const calls = { rpc: 0, scan: 0, anthropic: 0, badKey: 0, notify: 0 };
 const gh = { issues: [], dispatches: [], pulls: {}, auth: [], fixed: false };
 const google = { tokens: 0, listed: 0, early: 0, granted: false, inspected: [], queries: [], reads: [] }; // D56 stand-in for Google's token and listing endpoints; D57 URL inspection
 // D61: until the owner "grants" access (google.granted), the service account sees nothing, so the daily automatic linking
@@ -110,6 +110,11 @@ const server = createServer(async (req, res) => {
       return send(200, { rows }); }
     return send(404, { error: { message: "not found" } });
   }
+  // D62: a local stand-in for the notify Edge Function, so the Worker never posts to the production URL in wrangler.toml.
+  if (u.pathname === "/functions/v1/notify") {
+    if (req.headers["x-scan-secret"] !== SCAN_SECRET) return send(403, { error: "forbidden" });
+    calls.notify++; return send(200, { ok: true, invited: 0, summaries: 0, errors: [] });
+  }
   if (u.pathname === "/functions/v1/scan") {
     if (req.headers["x-scan-secret"] !== SCAN_SECRET) return send(403, { error: "forbidden" });
     calls.scan++; const { site } = JSON.parse(body);
@@ -125,7 +130,7 @@ const base = `http://127.0.0.1:${server.address().port}`;
 
 // --- the Worker in workerd -------------------------------------------------------------------------------------------
 const devVars = join(w, ".dev.vars");
-writeFileSync(devVars, [`SEO_GOD_PAUSED=false`, `SUPABASE_URL=${base}`, `SUPABASE_SERVICE_ROLE_KEY=${KEY}`, `INTERNAL_TOKEN=${TOKEN}`, `SCAN_FUNCTION_URL=${base}/functions/v1/scan`, `ANTHROPIC_API_KEY=fake-user-key`, `ANTHROPIC_BASE_URL=${base}`, `SEO_GOD_DAILY_BUDGET_USD=1`, `SITE_MIN_AGE_HOURS=1`, `GITHUB_API_URL=${base}/gh`,
+writeFileSync(devVars, [`SEO_GOD_PAUSED=false`, `SUPABASE_URL=${base}`, `SUPABASE_SERVICE_ROLE_KEY=${KEY}`, `INTERNAL_TOKEN=${TOKEN}`, `SCAN_FUNCTION_URL=${base}/functions/v1/scan`, `NOTIFY_FUNCTION_URL=${base}/functions/v1/notify`, `ANTHROPIC_API_KEY=fake-user-key`, `ANTHROPIC_BASE_URL=${base}`, `SEO_GOD_DAILY_BUDGET_USD=1`, `SITE_MIN_AGE_HOURS=1`, `GITHUB_API_URL=${base}/gh`,
   `GOOGLE_KEY_JSON=${SA}`, `SUPABASE_PUBLISHABLE_KEY=${PUB}`, `PORTAL_URL=${base}/portal/`, `GOOGLE_API_BASE=${base}/google`].join("\n"));
 const PORT = 18787 + (process.pid % 1000);
 execFileSync("node", ["build.mjs"], { cwd: w, stdio: "ignore" });
@@ -133,7 +138,8 @@ const env = { ...process.env }; for (const k of ["HTTPS_PROXY", "HTTP_PROXY", "h
 const dev = spawn(join(w, "node_modules/.bin/wrangler"), ["dev", "--test-scheduled", "--port", String(PORT), "--ip", "127.0.0.1", "--log-level", "warn"], { cwd: w, env, stdio: ["ignore", "pipe", "pipe"] });
 let devLog = ""; dev.stdout.on("data", (d) => (devLog += d)); dev.stderr.on("data", (d) => (devLog += d));
 const W = `http://127.0.0.1:${PORT}`;
-const runs = () => Number(psql("select count(*) from public.god_runs;"));
+// D62: the run's row is written when it starts; it is finished when finished_at is set.
+const runs = () => Number(psql("select count(*) from public.god_runs where finished_at is not null;"));
 // The scheduled handler finishes in the background (waitUntil); wait for its run record.
 const cron = async () => {
   const n = runs(); const r = await fetch(`${W}/__scheduled?cron=${encodeURIComponent("*/15 * * * *")}`); await r.text();
@@ -256,7 +262,8 @@ try {
   // Pause without a deploy.
   psql(`select public.set_god_paused(true, 'e2e');`, "service_role");
   const before = calls.rpc; await cron(); run = lastRun();
-  check(run.paused === true && run.jobs_run === 0 && calls.rpc - before <= 4, "paused: the run records itself and the daily digest (D57), and does nothing else");
+  // D62: start and end of the run record, the digest, the notify secret from Vault and the pause check.
+  check(run.paused === true && run.jobs_run === 0 && calls.rpc - before <= 5, "paused: the run records itself, the daily digest (D57) and the email call, and does nothing else");
   psql(`select public.set_god_paused(false);`, "service_role");
 
   // D56: give read access, then Check access through the Worker in workerd, against the real database rules (Google stand-in).
@@ -348,6 +355,9 @@ try {
   }
   const usage = JSON.parse(psql(`select public.god_usage(1);`, "service_role"));
   console.log(`usage over this test: ${JSON.stringify(usage)}`);
+  // D62: every run used the local notify stand-in and recorded no error; every started run recorded its end.
+  check(calls.notify > 0 && usage.runsWithErrors === 0, `no run recorded an error (${calls.notify} notify calls to the local stand-in)`);
+  check(psql("select count(*) from public.god_runs where finished_at is null;") === "0", "every run's row was written at its start and completed at its end");
   console.log("all Cloudflare execution checks passed in workerd against the database");
 } catch (e) {
   console.error(devLog.slice(-3000)); throw e;

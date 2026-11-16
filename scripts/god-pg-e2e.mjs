@@ -8,7 +8,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { planSite } from "../src/god/planner.mjs";
 import { runOnce, enqueue } from "../src/god/worker.mjs";
-import { tick } from "../src/god/tick.mjs";
+import { tick, advance } from "../src/god/tick.mjs";
 import { makeHandlers } from "../src/god/handlers.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -78,5 +78,24 @@ try {
   check(store.readMemory(A, "strategy")[0].value.status === "approved", "site memory: A approved");
   check(t1.sites.find((x) => x.site === B).moved.some((mv) => mv.to === "queued") && psql(`select status from public.jobs where kind = 'strategy_proposal' and site_id = ${lit(B)}`) === "awaiting_approval", "site B: changes requested, redrafted, back with its own agency");
   check(t1.sites.find((x) => x.site === B).strategy === "proposed", "site B still has no adopted strategy");
+
+  // D62: gated work sent back with "request changes" returns to the agency, and the next approval runs it again.
+  const asA = (sql) => psql(`set role authenticated; set request.jwt.claim.sub = '00000000-0000-0000-0000-00000000000a'; set request.jwt.claim.role = 'authenticated'; ${sql}`).split("\n").pop();
+  const g = store.createJob({ siteId: A, kind: "agent:seo-link-builder", title: "Gated advice", risk: "high", priority: 1, idempotencyKey: "d62-gated" });
+  store.transition(g.id, "scoped", "seo-god"); store.transition(g.id, "awaiting_approval", "seo-god");
+  asA(`select public.approve_job(${lit(g.id)}, 'approve');`);
+  const status = () => psql(`select status from public.jobs where id = ${lit(g.id)}`);
+  let runs = 0; const gated = { "agent:*": async () => { runs++; return { evidence: ["read the site data"], costUsd: 0 }; } };
+  await advance(store, { id: A }, store.listJobs(A), store.readMemory(A));
+  const g1 = await runOnce({ store, handlers: gated });
+  check(g1?.job === g.id && status() === "awaiting_approval", "gated advice ran after approval and waits for the agency's decision on its result");
+  asA(`select public.approve_job(${lit(g.id)}, 'request_changes', 'look again');`);
+  await advance(store, { id: A }, store.listJobs(A), store.readMemory(A));
+  check(status() === "awaiting_approval" && psql(`select outputs->>'redo' from public.jobs where id = ${lit(g.id)}`) === "true", "changes requested: back with the agency as a redo, not stuck in scoped");
+  asA(`select public.approve_job(${lit(g.id)}, 'approve');`);
+  await advance(store, { id: A }, store.listJobs(A), store.readMemory(A));
+  check(status() === "queued", "approving the redo queues it again (the old result is not accepted)");
+  await runOnce({ store, handlers: gated });
+  check(runs === 2 && status() === "awaiting_approval", "the redo ran and its new result waits for the agency");
   console.log("all orchestration checks passed against the database");
 } finally { execFileSync("dropdb", ["--if-exists", DB]); }
