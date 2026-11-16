@@ -36,4 +36,5 @@ p -f shim.sql -f ../migrations/20261030000000_portal.sql -f rls.sql \
   -f ../migrations/20261120000000_portfolio_scorecard.sql -f rls27.sql \
   -f ../migrations/20261121000000_invite_requests.sql -f rls28.sql \
   -f ../migrations/20261123000000_google_autolink.sql -f rls29.sql \
-  -f ../migrations/20261124000000_pilot_hardening.sql -f rls30.sql
+  -f ../migrations/20261124000000_pilot_hardening.sql -f rls30.sql \
+  -f ../migrations/20261125000000_autolink_ga4.sql -f rls31.sql
