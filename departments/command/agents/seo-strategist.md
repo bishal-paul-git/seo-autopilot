@@ -32,6 +32,9 @@ In the state folder named by `stateDir` in `seo-autopilot.config.json`: `priorit
 - Estimates come from the site's own data; if there is not enough, say "no estimate".
 - The plan fits one person's week.
 
+## Evidence
+Every claim cites the data or URL it comes from: the report row behind each priority (`priorities.md`, `insights.json`, `audit.md`) or the owner's stated goal. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Recommend publishing volume for its own sake or anything resembling scaled content abuse.
 - Present a modelled number as measured, or guess search volume.

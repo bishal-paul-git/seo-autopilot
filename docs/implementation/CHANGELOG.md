@@ -2,6 +2,15 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-16 (D63 agent quality pass; code change, not deployed)
+- **Branch:** `claude/hopeful-euler-662mu5`; merged origin/main f76d17e (#84, D62) first (merge 4b6645b). Input: the 2026-11-16 agent audit (not committed).
+- **Content:** `## Evidence` section in all 38 `departments/*/agents/*.md`; hosted-output mapping in the Output of seo-technical-fixer, seo-migration-planner, seo-schema-engineer, seo-ecommerce, seo-local-content-writer, seo-local-gbp-optimizer (Method steps 4-6 and 9 trimmed too), seo-local-review-manager; `publishable: true` front matter on 12 agents.
+- **Code:** `src/core/agents.mjs` (`agentFacts().publishable`, `isPublishable`); `src/god/agent-runner.mjs` (`needsSecondOpinion(job, name, publishable)`, `publishableOf` replaces `departmentOf`, `SECOND_OPINION_DEPARTMENTS` removed); `cloud/worker/build.mjs` (`PUBLISHABLE`), `cloud/worker/src/app.mjs`; `cloud/portal/build.mjs` (`EXAM_FILES`, `agentCatalog({ examFiles })`); portal `app/index.html` (Dismiss button + confirmation, exam card without per-agent cost, landing text on the second opinion); comments in `src/god/worker.mjs`, `scripts/exams.mjs`.
+- **Data/docs:** 4 exam cases in `exams/cases.json` (written, not run); `docs/implementation/exams-latest.json` (exam run 3 as recorded); `docs/evals.md` (status line, how to commit a summary, case coverage); `.github/workflows/agent-exams.yml` (comment only).
+- **Tests:** new `test/portal-dismiss.test.mjs` (Chromium); additions in `test/agents.test.mjs` (Evidence for every agent, hosted Output for the seven, publishable list), `test/agent-runner.test.mjs` (second opinion by flag, Worker `publishableOf`), `test/exams.test.mjs` (fact-checker and alert agents have cases), `test/portal-agent.test.mjs` (exam file order, committed summary totals); `test/pilot-hardening.test.mjs` passes `publishableOf`.
+- **Checks:** `npm test` 709/709; `service postgresql restart && bash cloud/portal/supabase/test/run.sh` exit 0 (all suites through rls30; no migration changed); `node scripts/cf-local-e2e.mjs` exit 0, 56 checks, `runsWithErrors: 0`. `node cloud/worker/build.mjs`: 38 agents, 12 publishable; `node scripts/build-registry.mjs`: no change. Exams: not run (paid; not authorized). No production, Supabase, Cloudflare or Anthropic call.
+- **Not done:** `site/` not rebuilt (release step); no deployment.
+
 ## 2026-11-16 (D62 pilot hardening; code change, not deployed)
 - **Branch:** `claude/hopeful-euler-662mu5`, merged origin/main be015eb (#83, D61) first. Inputs: three read-only audit reports (operating cycle, agents, portal) from the same day; not committed.
 - **Code (engine, Worker, templates):**

@@ -38,7 +38,7 @@ export function organisation(dir = join(root, "departments")) {
  * { agents: { name: { department, description, text, playbooks, skills } }, files: { "knowledge/x.md": { title, words, sources, reviewed } } }.
  * Changes to an agent happen in the repository (reviewed, versioned, tested), never in the portal.
  */
-export function agentCatalog() {
+export function agentCatalog({ examFiles = EXAM_FILES } = {}) {
   const kb = readKnowledge(), files = {};
   // D49: one parser for review date and sources (src/analysis/knowledge-meta.mjs); stale after 90 days.
   const meta = (text) => { const m = playbookMeta(text), r = reviewState(m); return { title: (String(text).match(/^# (.+)$/m) || [])[1] || null, words: String(text).split(/\s+/).filter(Boolean).length,
@@ -51,11 +51,14 @@ export function agentCatalog() {
     agents[a.name] = { department: a.department, description: (raw.match(/^description:\s*(.+)$/m) || [])[1] || "",
       text: raw.replace(/^---\n[\s\S]*?\n---\n/, "").trim(), playbooks: kb.refs[a.name].playbooks.map((p) => `knowledge/${p}`), skills: kb.refs[a.name].skills.map((x) => `skills/${x}`) };
   }
-  // Latest exam scores (D48), when a run was published: { model, date, agents: { name: { cases, passed, rate } } }.
-  const latest = join(root, "exams/latest.json");
-  const exams = existsSync(latest) ? JSON.parse(readFileSync(latest, "utf8")) : null;
+  // Latest exam scores (D48): { model, date, agents: { name: { cases, passed, rate, costUsd } } }, from the first file
+  // that exists: a local run's exams/latest.json (not committed), then the committed summary (D63).
+  const latest = examFiles.find((f) => existsSync(f));
+  const exams = latest ? JSON.parse(readFileSync(latest, "utf8")) : null;
   return { agents, files, exams };
 }
+/** Where exam scores come from, in order. docs/implementation/exams-latest.json is committed after a real run (D63). */
+export const EXAM_FILES = [join(root, "exams/latest.json"), join(root, "docs/implementation/exams-latest.json")];
 
 /** robots.txt and sitemap.xml for the one public URL (D59). The app's pages are hash routes of that URL, so there is
  * nothing else to list; old copies kept next to it on the host (previous-*.html) stay out of search. */

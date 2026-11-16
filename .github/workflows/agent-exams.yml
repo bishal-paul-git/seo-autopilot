@@ -1,6 +1,8 @@
 # Agent exams (D48): runs exams/cases.json through the production agent path on YOUR Anthropic key and uploads the
 # results, the summary and a scoring sheet. Manual only, capped. Cases are made-up businesses, never client data.
 # Repository secret it needs (Settings -> Secrets and variables -> Actions): ANTHROPIC_API_KEY.
+# It commits nothing (contents: read). To show the scores in the portal, a person copies the artifact's latest.json to
+# docs/implementation/exams-latest.json in a pull request (docs/evals.md, D63).
 name: agent-exams
 on:
   workflow_dispatch:

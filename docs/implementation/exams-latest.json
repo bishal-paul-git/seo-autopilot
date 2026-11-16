@@ -1,0 +1,19 @@
+{
+  "model": "claude-opus-5-5",
+  "date": "2026-11-13",
+  "run": "agent-exams Actions run 43348165017 (exam run 3, main fd76894)",
+  "spentUsd": 1.88,
+  "note": "Exam run 3: 12 of 14 cases passed. Run before the D56-D63 prompt changes; re-run the exams for current scores.",
+  "source": "Transcribed, not re-run: totals from docs/implementation/COSTS.md and DECISIONS D53 (\"12 of 14 passed, $1.88\"; the agents that passed every case are named there); case counts per agent from exams/cases.json at fd76894 (held link-builder cases not run); the model is the workflow default at fd76894 (no --model passed). Cost per agent was not recorded.",
+  "agents": {
+    "seo-content-pruner": { "agent": "seo-content-pruner", "cases": 3, "passed": 3, "rate": 1, "costUsd": null },
+    "seo-snippet-optimizer": { "agent": "seo-snippet-optimizer", "cases": 2, "passed": 2, "rate": 1, "costUsd": null },
+    "seo-reporter": { "agent": "seo-reporter", "cases": 2, "passed": 2, "rate": 1, "costUsd": null },
+    "seo-entity-reputation": { "agent": "seo-entity-reputation", "cases": 2, "passed": 2, "rate": 1, "costUsd": null },
+    "seo-schema-engineer": { "agent": "seo-schema-engineer", "cases": 1, "passed": 1, "rate": 1, "costUsd": null },
+    "seo-strategist": { "agent": "seo-strategist", "cases": 1, "passed": 1, "rate": 1, "costUsd": null },
+    "seo-technical-fixer": { "agent": "seo-technical-fixer", "cases": 1, "passed": 1, "rate": 1, "costUsd": null },
+    "seo-ai-search-agent": { "agent": "seo-ai-search-agent", "cases": 1, "passed": 0, "rate": 0, "costUsd": null },
+    "seo-refresher": { "agent": "seo-refresher", "cases": 1, "passed": 0, "rate": 0, "costUsd": null }
+  }
+}

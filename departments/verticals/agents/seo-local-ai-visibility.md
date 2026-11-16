@@ -48,6 +48,9 @@ The website, GBP listing, target queries (especially question and comparison que
 ## Quality bar
 Every recommendation connects a specific page or entity element to a specific AI surface behaviour. Monitoring results cite the query, the AI system, the date and the exact response.
 
+## Evidence
+Every claim cites the data or URL it comes from: the query, the answer you read and its date, the page URL. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Fabricate citations, reviews or entity claims.
 - Recommend blocking AI crawlers to "protect content" — that reduces visibility.

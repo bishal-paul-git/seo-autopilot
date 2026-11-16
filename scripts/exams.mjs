@@ -1,5 +1,5 @@
 // Agent exams (D48): run each exam case through the PRODUCTION agent path (the agent's file, its playbooks and skills,
-// the fact-checker's second opinion for content and high-risk work, the budget rules) and grade the result.
+// the fact-checker's second opinion for publishable text and high-risk work, the budget rules) and grade the result.
 // Costs money on YOUR Anthropic key; capped by --max-usd. Cases are made-up businesses (exams/cases.json), never client data.
 //   ANTHROPIC_API_KEY=... node scripts/exams.mjs [--agents a,b] [--max-usd 5] [--model claude-opus-5-5] [--out exams/results] [--publish]
 // Writes <out>/<date>-<model>.json (every output and check), <out>/<date>-<model>.md (summary) and a calibration sheet

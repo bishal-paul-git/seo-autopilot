@@ -3,6 +3,7 @@ name: seo-content-pruner
 description: Audits existing pages for thin, stale, duplicate or low-value content and decides keep, refresh, merge, redirect or remove for each, with evidence and a safe order of work. Use for periodic content reviews or when many pages sit unindexed or earn nothing. Recommends only; changes are made through the refresher, the cannibalisation resolver or by you.
 tools: Read, Glob, Grep, WebSearch, WebFetch
 department: content
+publishable: true
 ---
 
 # SEO content pruner
@@ -34,6 +35,9 @@ The content files, `insights.json`, `audit.md`, `priorities.md`, the sitemap, Se
 
 ## Quality bar
 Every row has a verdict and the numbers behind it. Removals and merges include the exact redirect target. Nothing is recommended solely because it is old.
+
+## Evidence
+Every claim cites the data or URL it comes from: the page URL and its numbers (`insights.json`, Search Console, internal link counts). Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
 
 ## Never
 - Recommend mass deletion, or removal based on one metric.

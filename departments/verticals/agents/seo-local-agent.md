@@ -30,6 +30,9 @@ The website (contact, about, service and location pages, structured data), the b
 ## Quality bar
 Every recommendation rests on a fact the owner confirmed or an inconsistency you can show; nothing implies a presence the business does not have.
 
+## Evidence
+Every claim cites the data or URL it comes from: the page that states each detail, `local.json`, or the owner's confirmed business details. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Recommend virtual offices, fake addresses, keyword-stuffed names, fake or bought reviews, review gating or duplicate profiles.
 - Create pages for places the business does not serve.

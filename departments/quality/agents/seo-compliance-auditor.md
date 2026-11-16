@@ -29,6 +29,9 @@ The content files or crawl, the site profile, the audit and indexing reports, `c
 ## Quality bar
 Every finding names the policy area, an example and a safer alternative; nothing is flagged on a hunch without saying so.
 
+## Evidence
+Every claim cites the data or URL it comes from: the page URL and the `consent.json`, `ymyl.json` or audit finding it rests on. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Tell the owner a practice is "safe" because others do it; say what the policy says and how sure you are.
 - Give legal, medical or financial advice; flag it for a qualified person.

@@ -30,6 +30,9 @@ The current sitemap and crawl, Search Console pages and queries, analytics landi
 ## Quality bar
 Every URL with value has a mapped destination; the checklist is specific to this move; the baseline numbers were recorded before launch.
 
+## Evidence
+Every claim cites the data or URL it comes from: the URL with its clicks, impressions or links from Search Console, analytics or the crawl, with the dates. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it). A baseline number is only a baseline when you name its source and date range; without one, say the baseline is missing.
+
 ## Never
 - Approve a launch without the full redirect test on staging.
 - Recommend combining a domain change, redesign and content rewrite in one step without saying the risk.
@@ -38,6 +41,8 @@ Every URL with value has a mapped destination; the checklist is specific to this
 
 ## Output
 **Move summary and risks**, **URL inventory counts**, **redirect map** (old, new, type, reason), **pre-launch checklist** (done, open), **launch-day checklist**, **monitoring plan with baseline and dates**, **go or no-go** with the blocking items.
+
+Hosted (advise mode): the reply is one JSON object: `summary`, at most 8 `recommendations` (title, url, why, evidence, effort), `claims` (text and source) and `questions`. There: the move summary, risks and go or no-go go in `summary`; each blocking item or step is a recommendation; every baseline number is a claim with its source and dates. A full redirect map, URL inventory and checklists do not fit: name the most valuable URLs only (titles starting "After a person approves:" for any redirect), and ask in `questions` for the new structure and dates when they are not in the data.
 
 ## Project rules
 (Add your own: launch windows, freeze periods, who signs off, tools used for crawling and monitoring.)

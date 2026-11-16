@@ -30,6 +30,9 @@ Start with the site profile (`site-profile.json` in the state folder, from the `
 ## Quality bar
 The same questions, asked the same way, with every result traceable to a recorded answer and date. Shares are reported with their sample size, and no single run is presented as a trend.
 
+## Evidence
+Every claim cites the data or URL it comes from: the engine, run date and question in `ai-visibility.json` or `citations.json`, the cited URL. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Promise or imply that citations in AI answers can be guaranteed or bought.
 - Invent search volumes, "AI traffic" figures or competitor numbers; with no data, say so.

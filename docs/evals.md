@@ -1,6 +1,6 @@
 # Agent evaluations
 
-Status: the deterministic graders exist and are tested. The hosted agents now have **exams** (D48): see "Exams for the hosted agents" below. **No agent has been evaluated on a real model yet.** That needs recorded agent runs on the fixture inputs; model runs cost money and are opt-in. Roadmap: `docs/roadmap/04-agent-evals-and-safety.md`.
+Status: the deterministic graders exist and are tested. The hosted agents now have **exams** (D48): see "Exams for the hosted agents" below. Three real exam runs were made on 2026-11-13 (the last: 12 of 14 cases passed, $1.88, before the D56-D63 prompt changes); model runs cost money and are opt-in. Roadmap: `docs/roadmap/04-agent-evals-and-safety.md`.
 
 ## What the graders check
 `src/analysis/evals.mjs` contains pure functions with no network and no model:
@@ -41,3 +41,7 @@ Run them through the production path (playbooks, quality gate, fact-checker, bud
 ANTHROPIC_API_KEY=... node scripts/exams.mjs --max-usd 5 [--agents seo-content-pruner,seo-reporter] [--publish]
 ```
 Or run the `agent-exams` workflow in GitHub Actions (it needs the `ANTHROPIC_API_KEY` repository secret). Results: `exams/results/<date>-<model>.json` and `.md`, and a scoring sheet for a person. `--publish` writes `exams/latest.json`; the portal's agent pages show it after the next portal build.
+
+The workflow only uploads its results (it has read-only repository access and commits nothing). To keep the scores in the portal for every later build, a person commits the run's summary (D63): download the `agent-exams` artifact, copy its `latest.json` to `docs/implementation/exams-latest.json`, add `"run"` (the Actions run id) and `"spentUsd"` (the run's total), and open a pull request that also adds the run to `docs/implementation/COSTS.md`. The portal build reads `exams/latest.json` first (a local run), then `docs/implementation/exams-latest.json`, else shows "No exam run has been published yet". Never edit the numbers by hand beyond what the run recorded.
+
+Cases cover 14 agents (20 cases; the 2 link-builder cases are held): the D63 cases add the fact-checker (planted claims in a draft), and the three alert agents: the SERP analyst (no rank data), the indexing monitor (a page Google dropped) and the redirect guardian (no redirects to the home page). They are written and checked by `npm test` only; their first real run is still to do.

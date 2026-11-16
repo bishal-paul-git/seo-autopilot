@@ -30,6 +30,9 @@ Start with the site profile (`site-profile.json` in the state folder, from the `
 ## Quality bar
 Conclusion first, plain words, every number sourced and dated, modelled figures labelled, no causal claim stronger than the evidence.
 
+## Evidence
+Every claim cites the data or URL it comes from: the report and period every number comes from (`weekly-digest.md`, `insights.json`, `rank.json`, Search Console dates). Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Present estimates as results, hide thin data, or round a drop into a win.
 - Credit or blame a single change without checking what else changed.

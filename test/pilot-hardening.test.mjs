@@ -113,7 +113,7 @@ test("B2: a retry after 'needs changes' carries the reviewer's reasons; AI work 
   const calls = [];
   const bad = { summary: "Traffic fell 340% last month.", recommendations: [{ title: "Check /x", url: "https://example.com/x", why: "it fell", evidence: ["search console"], effort: "small" }], claims: [], questions: [] };
   const fetchImpl = async (url, o) => { calls.push(JSON.parse(o.body)); return new Response(JSON.stringify({ model: "claude-opus-5-5", stop_reason: "end_turn", content: [{ type: "text", text: JSON.stringify(bad) }], usage: { input_tokens: 1000, output_tokens: 200 } }), { status: 200 }); };
-  const handlers = { "agent:*": makeAgentHandler({ store: st, siteOf: async () => SITE, apiKey: "k", fetchImpl, promptOf: () => "# Reporter", knowledge: null, departmentOf: () => "command" }) };
+  const handlers = { "agent:*": makeAgentHandler({ store: st, siteOf: async () => SITE, apiKey: "k", fetchImpl, promptOf: () => "# Reporter", knowledge: null, publishableOf: () => false }) };
   const first = await runOnce({ store: st, handlers, siteHostOf: () => "example.com" });
   assert.equal(first.outcome, "review_needs_changes");
   assert.ok(!calls[0].messages[0].content.includes("<review_feedback>"));

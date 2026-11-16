@@ -5,7 +5,7 @@
 // stays dependency-free (rule 5). Cost is computed from the API's own usage report and capped by the job's budget before
 // the call is made. Site text is wrapped as data and never treated as instructions (rule 3).
 import { readFileSync } from "node:fs";
-import { listAgents } from "../core/agents.mjs";
+import { listAgents, isPublishable } from "../core/agents.mjs";
 import { NO_FAKE_RULES } from "../lib/llm.mjs";
 import { knowledgeBlock, readKnowledge, haveKnowledge } from "./knowledge.mjs";
 import { searchForAgents, analyticsForAgents } from "./search-console.mjs";
@@ -136,10 +136,13 @@ async function callModel({ apiKey, model, effort, fetchImpl, baseUrl, system, us
   return { r, costUsd, text: (r.content || []).filter((b) => b.type === "text").map((b) => b.text).join("") };
 }
 
-/** Which outputs get a second opinion from the fact-checker: content work and anything high risk (Phase 1, D45). */
-export const SECOND_OPINION_DEPARTMENTS = new Set(["content"]);
+/**
+ * Which outputs get a second opinion from the fact-checker: anything high risk (Phase 1, D45), and every agent marked
+ * `publishable: true` in its front matter because its output drafts text a person could publish (D63; it replaced the
+ * D45 rule "the content folder", which missed copy written by local, AI-search, schema and entity agents).
+ */
 export const REVIEWER_AGENT = "seo-fact-checker";
-export const needsSecondOpinion = (job, name, department) => name !== REVIEWER_AGENT && (job.risk === "high" || SECOND_OPINION_DEPARTMENTS.has(department));
+export const needsSecondOpinion = (job, name, publishable) => name !== REVIEWER_AGENT && (job.risk === "high" || publishable === true);
 
 const REVIEW_TAIL = `
 You are reviewing ANOTHER agent's advice for this site before the agency sees it. You cannot browse; check against the
@@ -167,14 +170,14 @@ export function parseVerdict(text) {
 /**
  * The "agent:*" handler. deps: { store, siteOf, apiKey, model, effort, fetchImpl, agents }. A job without budget, an
  * unknown price or a refusal escalates to a person instead of retrying; nothing is spent on a run that cannot fit.
- * knowledge: { playbooks, skills, refs } (readKnowledge(); the Worker passes its bundled copy). departmentOf(name)
- * decides whether the fact-checker gives a second opinion.
+ * knowledge: { playbooks, skills, refs } (readKnowledge(); the Worker passes its bundled copy). publishableOf(name)
+ * (true for agents marked publishable) decides, with the job's risk, whether the fact-checker gives a second opinion.
  */
 // promptOf(name) supplies agent instructions where there is no file system (the Cloudflare Worker bundles them).
-export function makeAgentHandler({ store, siteOf, apiKey = globalThis.process?.env?.ANTHROPIC_API_KEY, model = globalThis.process?.env?.SEO_GOD_MODEL || "claude-opus-5-5", effort = globalThis.process?.env?.SEO_GOD_EFFORT || "medium", fetchImpl = (...a) => fetch(...a), agents = null, promptOf = null, baseUrl = "https://api.anthropic.com", dailyRemaining = null, knowledge = undefined, departmentOf = null }) {
+export function makeAgentHandler({ store, siteOf, apiKey = globalThis.process?.env?.ANTHROPIC_API_KEY, model = globalThis.process?.env?.SEO_GOD_MODEL || "claude-opus-5-5", effort = globalThis.process?.env?.SEO_GOD_EFFORT || "medium", fetchImpl = (...a) => fetch(...a), agents = null, promptOf = null, baseUrl = "https://api.anthropic.com", dailyRemaining = null, knowledge = undefined, publishableOf = null }) {
   let kb = knowledge;
   const kbOf = () => (kb === undefined ? (kb = haveKnowledge() ? readKnowledge() : null) : kb);
-  const deptOf = departmentOf || ((n) => (agents || listAgents()).find((a) => a.name === n)?.department || null);
+  const pubOf = publishableOf || ((n) => { const a = (agents || listAgents()).find((x) => x.name === n); return a ? isPublishable(a.file) : false; });
   const promptFor = (n) => (promptOf ? promptOf(n) : agentPrompt(n, agents || listAgents()));
   return async (job, ctx = {}) => {
     const name = job.inputs?.agent || job.kind.slice("agent:".length);
@@ -205,7 +208,7 @@ export function makeAgentHandler({ store, siteOf, apiKey = globalThis.process?.e
       evidence, proposal: { agent: name, mode: "advise", summary: out.summary, recommendations: out.recommendations, knowledge: kn.used },
       claims: out.claims, questions: out.questions, actions: out.recommendations.map((x) => x.title), costUsd,
     };
-    if (!needsSecondOpinion(job, name, deptOf(name))) return result;
+    if (!needsSecondOpinion(job, name, pubOf(name))) return result;
     // Second opinion: the fact-checker reads the same site data and this advice. If it cannot run, a person checks.
     const rp = promptFor(REVIEWER_AGENT), rk = knowledgeBlock(REVIEWER_AGENT, kbOf());
     const advice = JSON.stringify({ agent: name, summary: out.summary, recommendations: out.recommendations, claims: out.claims }).replace(/<\/?advice_to_review>/gi, "");

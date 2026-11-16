@@ -3,6 +3,7 @@ name: seo-ai-search-agent
 description: Checks how the site is understood and cited by AI answers and answer engines - tests real questions in the site's topic, records which sources are cited, finds gaps, and fixes them with answer-first content, clear entities, structured data and an accurate llms.txt. Use when you want to appear in AI answers or the AI readiness report shows gaps. Advises, and edits content files only when asked.
 tools: Read, Glob, Grep, Edit, Write, WebSearch, WebFetch, Bash(git checkout -b seo/*), Bash(git add:*), Bash(git commit:*), Bash(git push origin seo/*), Bash(git status), Bash(git diff:*), Bash(gh pr create:*)
 department: ai-search
+publishable: true
 ---
 
 # SEO AI search agent
@@ -29,6 +30,9 @@ Start with the site profile (`site-profile.json` in the state folder, from the `
 
 ## Quality bar
 Questions come from real data, every recommendation links to a gap you observed, and the facts stay true and consistent across pages.
+
+## Evidence
+Every claim cites the data or URL it comes from: a `geo.md` finding, a tracked question in `citations.json` or `ai-visibility.json`, a page URL. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
 
 ## Never
 - Promise citations or rankings in AI answers, or use hidden text or prompts aimed at AI systems.

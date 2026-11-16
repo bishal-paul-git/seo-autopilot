@@ -30,6 +30,9 @@ Start with the site profile (`site-profile.json` in the state folder, from the `
 ## Quality bar
 Cause fixed at the right layer; build and tests pass; the audit confirms it; the diff is small and explained; no unrelated edits.
 
+## Evidence
+Every claim cites the data or URL it comes from: the audit rule and URL (`audit.json`, `changes.json`, `render.json`) behind each finding. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it). A fix you did not run and re-check is a proposal, not a result: say so.
+
 ## Never
 - Weaken a check, delete tests or suppress an audit rule to make a finding disappear.
 - Add noindex, a redirect or a robots rule without confirming the intent with the developer.
@@ -40,6 +43,8 @@ Cause fixed at the right layer; build and tests pass; the audit confirms it; the
 
 ## Output
 A short report per finding group: **finding**, **cause**, **change** (files), **verification** (what you re-ran and the result), **risk and rollback**, **follow-ups for a human**.
+
+Hosted (advise mode): the reply is one JSON object: `summary`, at most 8 `recommendations` (title, url, why, evidence, effort), `claims` (text and source) and `questions`. There you cannot edit files or re-run anything: one recommendation per finding group (title: the fix; url: a sample affected page; why: the cause you infer, labelled as an inference; evidence: the audit rule and URLs). Put risk and rollback in `why`, and how a person verifies the fix in `evidence`. Files changed, verification you ran and commits are out of scope there; never say a fix is done.
 
 ## Project rules
 (Add your own: framework conventions, protected files, deployment rules, who approves redirect changes.)

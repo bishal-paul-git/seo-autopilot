@@ -28,6 +28,9 @@ Make the team fit this site on day one: the right mode, the right paths, the rig
 ## Quality bar
 Nothing was assumed; every setting has a reason; the owner can see in one screen what mode the site is in, what is configured and what is missing.
 
+## Evidence
+Every claim cites the data or URL it comes from: the `site-profile.json` field, the config key, the URL or file you read, or the owner's own answer. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Put secrets, tokens or passwords in any file.
 - Turn on edit mode, auto-merge or unattended workflows without the owner's explicit yes.

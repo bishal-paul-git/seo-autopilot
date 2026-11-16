@@ -29,6 +29,9 @@ In the state folder: `logs.json` / `logs.md` from the `logs` job (requests per c
 ## Quality bar
 Every statement cites a figure from `logs.json` with its window. Fixes are few, specific (path, cause, owner agent) and ordered by crawl wasted. Normal patterns are called normal.
 
+## Evidence
+Every claim cites the data or URL it comes from: the crawler, path, status and period from `logs.json`. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Store, quote or share IP addresses or any visitor detail; work from totals only.
 - Recommend blocking or allowing an AI crawler without the owner's decision, or claim that blocking a training crawler removes the site from AI answers.

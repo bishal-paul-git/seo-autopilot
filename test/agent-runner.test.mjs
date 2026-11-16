@@ -113,6 +113,17 @@ test("handler: the agent gets its playbooks; content work gets the fact-checker'
   assert.match(bad.escalate, /unreadable; a person must check/); assert.ok(bad.proposal, "the advice is still kept for the person");
 });
 
+test("handler: the second opinion follows the agent's publishable flag, not its folder (D63, audit issue 5)", async () => {
+  const store = memoryStore();
+  const calls = async (agent, opts = {}) => { const c = []; await makeAgentHandler({ store, siteOf: async () => SITE, apiKey: "k", fetchImpl: seqFetch([reply(GOOD), VERDICT("pass")], c), ...opts })({ siteId: "A", kind: `agent:${agent}`, title: "T", risk: "low", inputs: { agent } }, { budgetUsd: 0.5 }); return c.length; };
+  // Low risk and outside the content folder, but they draft text a person could publish.
+  for (const a of ["seo-local-content-writer", "seo-ai-search-agent", "seo-schema-engineer", "seo-local-gbp-optimizer", "seo-entity-reputation"]) assert.equal(await calls(a), 2, `${a} gets the fact-checker`);
+  assert.equal(await calls("seo-snippet-optimizer"), 2, "content agents keep it");
+  for (const a of ["seo-indexing-monitor", "seo-reporter", "seo-fact-checker"]) assert.equal(await calls(a), 1, `${a}: no second opinion`);
+  // The Worker passes its bundled list instead of reading files.
+  assert.equal(await calls("seo-indexing-monitor", { promptOf: () => "# X", knowledge: null, publishableOf: (n) => n === "seo-indexing-monitor" }), 2);
+});
+
 test("handler: no key, too little budget, refusal and invalid replies escalate instead of retrying", async () => {
   const store = memoryStore(), calls = [];
   const job = { siteId: "A", kind: "agent:seo-reporter", title: "Report", inputs: { agent: "seo-reporter" } };

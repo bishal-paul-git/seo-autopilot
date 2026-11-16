@@ -119,6 +119,48 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
 
+## 2026-11-16 D63 Agent quality pass (built, not deployed)
+Follow-up to the 2026-11-16 agent audit (issues 5, 10, 13 and 15, "Weak agents" and "Facts"). Scope set by the owner:
+no new product features and no redesign.
+
+**Decision (what changed and why):**
+- **Evidence rule in every agent.** Each of the 38 agent files has a `## Evidence` section (before `## Never`): every
+  claim cites the data or URL it comes from (named in the agent's own terms), and verified facts, assumptions and
+  missing information stay apart. The seven agents that never mentioned evidence (technical fixer, migration planner,
+  schema engineer, ecommerce, local content writer, GBP optimizer, review manager) also get one agent-specific line.
+  `test/agents.test.mjs` enforces the section for every agent.
+- **Output that fits the hosted reply.** Those seven agents' Output sections now say how they map onto the hosted JSON
+  reply (`summary`, at most 8 `recommendations`, `claims`, `questions`; `src/god/agent-runner.mjs` SYSTEM_TAIL) and what
+  is out of scope there (pull request bodies, files changed, verification runs, full redirect maps, drafted post
+  calendars, template sets, comparison tables). The GBP optimizer was trimmed: no "4 drafted posts", "10 Q&A seeds" or
+  competitor table; competitor work only with local-pack data. The CLI (edit-mode) output stays as it was.
+- **Fact-checker by agent, not by folder (audit issue 5).** Front matter `publishable: true` marks agents whose output
+  drafts text a person could publish; `needsSecondOpinion` uses it with the job's risk. Marked: the six content agents
+  (unchanged coverage) plus local content writer, AI-search agent, schema engineer, GBP optimizer, entity reputation and
+  local review manager (12). The Worker bundle carries `PUBLISHABLE` (built by `cloud/worker/build.mjs`, gitignored,
+  rebuilt on deploy) and the Worker passes `publishableOf`.
+- **Exam cases (written, not run).** Four cases in `exams/cases.json` on the existing plumber fixture: fact-checker
+  (planted claims in a draft), SERP analyst (no rank data), indexing monitor (a page Google dropped, a stand-in URL
+  inspection row), redirect guardian (no redirects to the home page; approval prefix). `npm test` grades each case's good
+  and bad sample and checks the fact-checker and every alert agent has a case. No paid run.
+- **Dismiss in the portal.** "Needs a person" on the SEO God page has a Dismiss button (agency mode only; the page is
+  agency-only already) that asks for confirmation and calls the existing `dismiss_job` RPC (migration 20261124000000).
+- **Exam results in the portal (audit issue 10/13).** The portal build reads `exams/latest.json` (a local run) and then
+  the committed `docs/implementation/exams-latest.json`. That file holds exam run 3 only as recorded: 12 of 14, $1.88,
+  2026-11-13, Actions run 43348165017. Per-agent pass counts are derived from D53 (the agents that passed every case are
+  named; 2 failures leave the AI-search agent and the refresher, 1 case each) and the case file at fd76894; the model is
+  the workflow default at that commit. Per-agent cost was not recorded, so it is null and the portal says so. The
+  workflow still commits nothing; `docs/evals.md` says how a person commits the next summary.
+
+**Tradeoffs and risks:** marking six more agents publishable adds one fact-checker call to their runs (about one more
+model call per run, from the same job budget); a run that cannot afford it escalates to a person. The Evidence section
+adds about 400 characters to every agent prompt. The committed exam summary predates D56-D63 prompt changes and says so;
+it should be replaced after the next real run. The new cases were never run on a model, so their checks may need the same
+grader fixes the first cases needed (D51-D53). Deviation: the brief listed five agents for the fact-checker; the local
+review manager was added too because its Output drafts review request and response templates (publishable text).
+**Smaller alternative not taken:** adding "content" to more folders in `SECOND_OPINION_DEPARTMENTS`; a folder still
+mixes agents that publish text with agents that do not.
+
 ## 2026-11-16 D62 Pilot hardening (built, not deployed)
 Three read-only audits on 2026-11-16 (operating cycle, agents, portal; local stand-ins only) found defects that would
 make the pilot stall, overspend, mislabel work or mislead the agency. The owner asked for the smallest reliable fix of

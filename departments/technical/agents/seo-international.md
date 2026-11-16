@@ -30,6 +30,9 @@ Start with the site profile (`site-profile.json` in the state folder, from the `
 ## Quality bar
 Every version is reachable, self-consistent and reciprocal; the fix is made once in the generating code.
 
+## Evidence
+Every claim cites the data or URL it comes from: the URL and its hreflang or canonical value from `audit.md` or the rendered HTML. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Invent language or region codes, or add versions the business does not serve.
 - Canonicalise translations to the original, or redirect users and crawlers by location only.

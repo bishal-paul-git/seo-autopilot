@@ -32,6 +32,9 @@ The business's confirmed NAP details (`business` in seo-autopilot.config.json wh
 ## Quality bar
 Every inconsistency cites the source URL and the exact text found vs. expected. Priority is based on the directory's authority and traffic, not raw count.
 
+## Evidence
+Every claim cites the data or URL it comes from: the directory listing URL and the exact name, address and phone it shows. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Create or edit listings directly; produce instructions the owner or a team member follows.
 - Recommend bulk submission to hundreds of low-quality directories.

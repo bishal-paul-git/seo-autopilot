@@ -73,6 +73,44 @@ for (const f of agentFiles) {
   });
 }
 
+test("every agent has an Evidence rule: claims cite their data, and facts, assumptions and missing information stay apart (D63)", () => {
+  for (const f of agentFiles) {
+    const t = readFileSync(pathOf[f], "utf8").replace(/\r\n/g, "\n");
+    const ev = (t.match(/\n## Evidence\n([\s\S]*?)\n## /) || [])[1];
+    assert.ok(ev, `${f}: no ## Evidence section`);
+    assert.match(ev, /cites?\b/i, `${f}: Evidence must say claims cite their data`);
+    for (const w of [/verified facts/i, /assumptions/i, /missing information/i]) assert.match(ev, w, `${f}: Evidence must name ${w.source}`);
+    assert.ok(t.indexOf("## Evidence") < t.indexOf("## Never"), `${f}: Evidence comes before Never`);
+  }
+});
+
+test("the agents the audit found weakest map their Output onto the hosted JSON reply (D63, audit issue 15)", () => {
+  for (const name of ["seo-technical-fixer", "seo-migration-planner", "seo-schema-engineer", "seo-ecommerce", "seo-local-content-writer", "seo-local-gbp-optimizer", "seo-local-review-manager"]) {
+    const out = (readFileSync(pathOf[`${name}.md`], "utf8").replace(/\r\n/g, "\n").match(/\n## Output\n([\s\S]*?)(\n## |$)/) || [])[1] || "";
+    assert.match(out, /Hosted \(advise mode\)/, `${name}: Output says how it fits the hosted reply`);
+    for (const k of ["summary", "recommendations", "claims", "questions"]) assert.ok(out.includes(`\`${k}\``), `${name}: Output names \`${k}\``);
+    assert.match(out, /at most 8/, `${name}: Output respects the 8-recommendation limit`);
+    assert.match(out, /out of scope|do not fit|never say a fix is done/, `${name}: Output says what does not fit`);
+  }
+  // The hosted reply cannot hold these: the GBP optimizer no longer asks for them (audit issue 15).
+  const gbp = readFileSync(pathOf["seo-local-gbp-optimizer.md"], "utf8");
+  assert.doesNotMatch(gbp, /4 drafted posts|10 questions and answers|\*\*competitor comparison table\*\*/);
+});
+
+test("publishable agents (fact-checker second opinion) are marked in front matter; the list changes only on purpose (D63)", async () => {
+  const { agentFacts } = await import("../src/core/agents.mjs");
+  const facts = agentFacts();
+  const pub = Object.keys(facts).filter((n) => facts[n].publishable).sort();
+  assert.deepEqual(pub, ["seo-ai-search-agent", "seo-cannibalization-resolver", "seo-content-pruner", "seo-drafter", "seo-entity-reputation", "seo-internal-linker",
+    "seo-local-content-writer", "seo-local-gbp-optimizer", "seo-local-review-manager", "seo-refresher", "seo-schema-engineer", "seo-snippet-optimizer"]);
+  assert.equal(facts["seo-fact-checker"].publishable, false, "the reviewer never reviews itself");
+  for (const f of agentFiles) {
+    const fm = (readFileSync(pathOf[f], "utf8").replace(/\r\n/g, "\n").match(/^---\n([\s\S]*?)\n---/) || [])[1];
+    const v = (fm.match(/^publishable:\s*(.+)$/m) || [])[1];
+    assert.ok(v === undefined || v === "true", `${f}: publishable is "true" or absent`);
+  }
+});
+
 test("every agent starts from the site profile, so none assumes one stack", () => {
   for (const f of agentFiles) assert.ok(readFileSync(pathOf[f], "utf8").includes("site-profile.json"), f);
 });

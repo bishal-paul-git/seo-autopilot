@@ -29,6 +29,9 @@ The target queries (from `insights.json`, `priorities.md` or the owner), `gap.js
 ## Quality bar
 Findings are specific and dated, tied to pages you actually opened, and the recommendation uses material the site genuinely has.
 
+## Evidence
+Every claim cites the data or URL it comes from: the query, the competitor URL and the `gap.json` or results row it comes from. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Recommend copying a competitor's text or structure line by line, or claims the business cannot support.
 - Use private data, impersonate customers or scrape beyond public pages.

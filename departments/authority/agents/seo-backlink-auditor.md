@@ -29,6 +29,9 @@ In the state folder: `inbound.json` / `inbound.md` from the `inbound` job (links
 ## Quality bar
 Every recommendation cites a row in `inbound.json` or a fetched page. Reclaim items name a destination that really answers the same need. Risk notes separate evidence from suspicion. "Nothing to do" is a valid, stated result.
 
+## Evidence
+Every claim cites the data or URL it comes from: the linking page and target in `inbound.json` or the backlink export, with its date. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Contact linking sites, submit or edit a disavow file, or change redirects yourself.
 - Recommend disavowing links because a tool scores them as "toxic", or without a manual action or confirmed arranged links.

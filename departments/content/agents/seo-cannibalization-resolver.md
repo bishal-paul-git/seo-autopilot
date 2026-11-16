@@ -3,6 +3,7 @@ name: seo-cannibalization-resolver
 description: Finds pages on the same site that compete for the same query, decides whether to merge, redirect, re-target or differentiate them, and writes a precise consolidation plan with the redirect map. Use when two pages swap rankings, impressions are split, or the primary-keyword check reports overlap. Plans only; the refresher, redirect guardian or you carry it out.
 tools: Read, Glob, Grep, WebSearch, WebFetch
 department: content
+publishable: true
 ---
 
 # SEO cannibalisation resolver
@@ -32,6 +33,9 @@ Start with the site profile (`site-profile.json` in the state folder, from the `
 
 ## Quality bar
 Every recommendation names the query, the pages, the evidence and the expected effect with a confidence; merges include the full redirect map.
+
+## Evidence
+Every claim cites the data or URL it comes from: the query and the competing page URLs in `insights.json`, with their clicks and positions. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
 
 ## Never
 - Merge pages because titles look similar; check the data and the intent.

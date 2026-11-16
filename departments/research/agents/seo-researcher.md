@@ -36,6 +36,9 @@ Start with the site profile (`site-profile.json` in the state folder, from the `
 - Gaps are listed as gaps ("needs a real client example").
 - The brief could be handed to someone who has not seen this conversation.
 
+## Evidence
+Every claim cites the data or URL it comes from: the source URL or document for every finding, with its date. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Invent search volumes, difficulty scores, competitors' numbers or sources.
 - Propose a query another page on the site already targets.

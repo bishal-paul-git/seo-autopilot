@@ -41,7 +41,7 @@ export async function runOnce({ store, handlers, worker = "worker-1", timeoutMs 
     await store.transition(job.id, "awaiting_review", worker, "ready for review", { evidence: output.evidence || [], changes: (output.changes || []).length });
     let review = reviewOutput(job, { ...output, costUsd: spent }, { siteHost: await siteHostOf(job) });
     await store.recordReview(job.id, review);
-    // A second opinion from a reviewer agent (content and high-risk work) counts only when the gate passed.
+    // A second opinion from a reviewer agent (publishable text and high-risk work, D63) counts only when the gate passed.
     if (review.verdict === "pass" && output.secondReview) { review = { ...output.secondReview, producer: job.agent || job.kind }; await store.recordReview(job.id, review); }
     if (review.verdict !== "pass") {
       // Changes asked for are retried within the attempt cap (at most 2 attempts for AI work, D62: each one is paid);

@@ -10,13 +10,20 @@ export const DEPARTMENTS_DIR = (() => { try { return fileURLToPath(new URL("../.
 /** Departments in pipeline order: plan, find, fix, write, earn, answer engines, special sites, then the checks before approval. */
 export const DEPARTMENTS = ["command", "research", "technical", "content", "authority", "ai-search", "verticals", "quality"];
 
-/** { name: { department, edits } } for the work-order planner. An agent edits files if its tools allow Edit, Write or any shell. */
+/**
+ * { name: { department, edits, publishable } } for the work-order planner and the hosted runner. An agent edits files if
+ * its tools allow Edit, Write or any shell. publishable (front matter `publishable: true`, D63): its output drafts text a
+ * person could publish (copy, markup values, posts, templates), so the fact-checker gives it a second opinion.
+ */
 export function agentFacts(dir = DEPARTMENTS_DIR) {
   return Object.fromEntries(listAgents(dir).map(({ name, department, file }) => {
-    const tools = (readFileSync(file, "utf8").replace(/\r\n/g, "\n").match(/^tools:\s*(.+)$/m) || [])[1] || "";
-    return [name, { department, edits: /(^|,\s*)(Edit|Write|Bash)(\s*,|\s*$)/.test(tools) }];
+    const fm = frontMatter(file), tools = (fm.match(/^tools:\s*(.+)$/m) || [])[1] || "";
+    return [name, { department, edits: /(^|,\s*)(Edit|Write|Bash)(\s*,|\s*$)/.test(tools), publishable: isPublishable(file) }];
   }));
 }
+const frontMatter = (file) => (readFileSync(file, "utf8").replace(/\r\n/g, "\n").match(/^---\n([\s\S]*?)\n---/) || [])[1] || "";
+/** True when the agent file's front matter says `publishable: true` (D63). */
+export const isPublishable = (file) => /^publishable:\s*true\s*$/m.test(frontMatter(file));
 
 /** Shared skills (departments/skills/<name>/SKILL.md): reusable procedures several agents follow. { name, file, usedBy }. */
 export function listSkills(dir = DEPARTMENTS_DIR) {

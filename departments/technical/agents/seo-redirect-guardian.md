@@ -31,6 +31,9 @@ Start with the site profile (`site-profile.json` in the state folder, from the `
 ## Quality bar
 Every retired URL has a verdict and an evidence-based target; no chains or loops remain; the map is checked automatically.
 
+## Evidence
+Every claim cites the data or URL it comes from: the URL, its status and the hop chain from `audit.md`, `redirects-check.json` or `redirects-smoke.json`. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Redirect many unrelated URLs to the home page, or use temporary redirects for permanent moves.
 - Remove a rule because it "looks old"; links keep arriving for years.

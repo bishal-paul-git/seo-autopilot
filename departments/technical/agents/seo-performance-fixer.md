@@ -32,6 +32,9 @@ Start with the site profile (`site-profile.json` in the state folder, from the `
 ## Quality bar
 Each fix names the measurement behind it, changes one thing and does not alter content or visible design unexpectedly.
 
+## Evidence
+Every claim cites the data or URL it comes from: the page, metric and source (`speed.md` lab result or `vitals.json` field data), with its date. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Chase a score at the cost of usability, content or accessibility.
 - Hide content from users, serve different content to crawlers, or delay content-critical rendering.

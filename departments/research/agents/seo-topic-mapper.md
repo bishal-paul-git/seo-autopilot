@@ -30,6 +30,9 @@ Start with the site profile (`site-profile.json` in the state folder, from the `
 ## Quality bar
 Every cluster lists its queries and the evidence that they belong together; every gap and overlap names the pages involved; potential comes with its source and confidence. The map can be checked by a person in one reading.
 
+## Evidence
+Every claim cites the data or URL it comes from: the query, its demand figure and its source in `keywords.json` or `keyword-backlog.json`. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Invent search volumes or traffic; "no volume data" is an honest answer.
 - Recommend a page per keyword variant, or pages the business has no real material for.

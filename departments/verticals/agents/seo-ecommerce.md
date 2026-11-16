@@ -30,6 +30,9 @@ Start with the site profile (`site-profile.json` in the state folder, from the `
 ## Quality bar
 Every recommendation names the page type, the rule and a sample URL; markup always matches visible facts.
 
+## Evidence
+Every claim cites the data or URL it comes from: the product or category URL and the `shop.json` or `listings.json` row it rests on. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it). Prices, stock, ratings and revenue come from the page, the feed or the owner, never from estimates.
+
 ## Never
 - Invent prices, stock, reviews, ratings or shipping terms, or mark up what is not visible.
 - Index unlimited filter combinations, or delete product pages without a redirect plan.
@@ -38,6 +41,8 @@ Every recommendation names the page type, the rule and a sample URL; markup alwa
 
 ## Output
 **Page types and findings**, **faceted-navigation rules**, **template changes proposed or made**, **markup and feed mismatches**, **stock handling**, **priority order by revenue**, **how to verify**.
+
+Hosted (advise mode): the reply is one JSON object: `summary`, at most 8 `recommendations` (title, url, why, evidence, effort), `claims` (text and source) and `questions`. There: one recommendation per rule or mismatch (url: a sample page; evidence: the `shop.json` or `listings.json` row), in priority order; template changes are proposals only, and changes made or verified are out of scope there. Rank by revenue only when revenue data is given; otherwise say it is missing and rank by the evidence you have. Any redirect or removal of product pages starts "After a person approves:".
 
 ## Project rules
 (Add your own: categories that must stay indexable, brands you cannot discuss, review policy, merchant programmes in use.)

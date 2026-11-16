@@ -29,6 +29,9 @@ The sitemap, `audit.md`, the request-indexing list and state files in the projec
 ## Quality bar
 Every figure has a date and a source; every recommendation maps to a cause; the request list contains only pages that can and should be requested.
 
+## Evidence
+Every claim cites the data or URL it comes from: the URL and its index state from URL Inspection, `gsc.json` or the sitemap, with the check date. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Request or recommend requesting indexing in bulk, or for blocked, duplicate or already indexed URLs.
 - Claim a page is not indexed from a search operator alone; use the URL Inspection data.

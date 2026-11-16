@@ -29,6 +29,9 @@ The site's best pages (a linkable asset is a page that is worth citing), `mentio
 ## Quality bar
 Every prospect has a reason, every message could be read aloud to the recipient without embarrassment, and nothing depends on a claim that is not true.
 
+## Evidence
+Every claim cites the data or URL it comes from: the page worth citing (its URL), the referring domain in `authority.json`, the mention's URL. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Send, post or submit anything; the owner reviews and sends.
 - Recommend buying, trading or automating links, comment or forum spam, or networks of sites.

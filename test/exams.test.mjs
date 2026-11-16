@@ -27,6 +27,11 @@ test("cases: real agents, unique ids, memory expands, and each case passes its g
   assert.equal(injected.length, 1, "add replaces the fixture row with the same key");
 });
 
+test("the fact-checker and the alert agents have exam cases that are not held (D63, audit issue 13)", async () => {
+  const { ALERT_AGENTS } = await import("../src/analysis/alerts.mjs");
+  for (const a of new Set(["seo-fact-checker", ...Object.values(ALERT_AGENTS)])) assert.ok(cases.some((c) => c.agent === a && !c.hold), `${a} has an exam case`);
+});
+
 test("grader: escalation, recommendation limits and the text it reads", () => {
   const c = { id: "x", agent: "seo-reporter", expect: { escalates: true, maxRecommendations: 1 } };
   assert.ok(gradeExam(c, { escalate: "budget" }).pass);

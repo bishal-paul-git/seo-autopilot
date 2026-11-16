@@ -5,7 +5,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { createRequire } from "node:module";
-import { mkdtempSync, readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { build, agentCatalog } from "../cloud/portal/build.mjs";
@@ -30,6 +30,20 @@ test("catalog: every agent with its instructions and the files it reads, each fi
   assert.equal(p.playbooks[0], "knowledge/refreshing-and-pruning-content.md");
   for (const a of Object.values(c.agents)) for (const f of [...a.playbooks, ...a.skills]) assert.ok(c.files[f]?.words > 0, `${f} has metadata`);
   assert.equal(c.files["knowledge/keyword-research-and-clustering.md"].sources, 0, "its \"Sources, best first\" heading is about data, not citations: not counted");
+});
+
+test("catalog: exam scores come from a local run first, then the committed summary, else none (D63)", () => {
+  const dir = mkdtempSync(join(tmpdir(), "exams-")), local = join(dir, "latest.json"), committed = join(dir, "committed.json");
+  assert.equal(agentCatalog({ examFiles: [local, committed] }).exams, null, "no file: the portal says no run was published");
+  writeFileSync(committed, JSON.stringify({ model: "m", date: "2026-11-13", agents: { "seo-reporter": { cases: 2, passed: 2, rate: 1, costUsd: null } } }));
+  assert.equal(agentCatalog({ examFiles: [local, committed] }).exams.date, "2026-11-13");
+  writeFileSync(local, JSON.stringify({ model: "m", date: "2026-12-01", agents: {} }));
+  assert.equal(agentCatalog({ examFiles: [local, committed] }).exams.date, "2026-12-01", "a fresh local run wins");
+  // The committed summary holds only recorded numbers: 14 cases, 12 passed (exam run 3).
+  const c = JSON.parse(readFileSync(new URL("../docs/implementation/exams-latest.json", import.meta.url), "utf8"));
+  const sum = (k) => Object.values(c.agents).reduce((a, x) => a + x[k], 0);
+  assert.equal(sum("cases"), 14); assert.equal(sum("passed"), 12); assert.equal(c.spentUsd, 1.88);
+  for (const a of Object.values(c.agents)) assert.equal(a.costUsd, null, "per-agent cost was not recorded, so none is shown");
 });
 
 test("SEO team → agent page: instructions, playbooks, record on this site, verdicts; output stays text", { skip: !playwright && "Playwright not installed" }, async (t) => {
@@ -67,7 +81,8 @@ test("SEO team → agent page: instructions, playbooks, record on this site, ver
   const text = await page.textContent("#page");
   assert.match(text, /What it reads before every run[\s\S]*knowledge\/refreshing-and-pruning-content\.md[\s\S]*words/);
   assert.match(text, /No sources yet/); assert.match(text, /Review date not set/);
-  assert.match(text, /Exam score[\s\S]*Not examined yet/);
+  // D63: the committed summary of exam run 3 (no local exams/latest.json in a clean checkout).
+  assert.match(text, /Exam score[\s\S]*3\/3 passed[\s\S]*2026-11-13[\s\S]*Cost per agent not recorded \(the whole run cost \$1\.88\)/);
   assert.match(text, /Its instructions[\s\S]*Mission/);
   assert.match(text, /Spent on these runs\$0\.31/); assert.match(text, /Reviews passed1\/2/);
   await page.click("summary:has-text('Prune thin pages')");

@@ -29,6 +29,9 @@ Start with the site profile (`site-profile.json` in the state folder, from the `
 ## Quality bar
 Every position and feature traces to Search Console, a provider response or a recorded live result with its date. Opportunities name the page, the query, the evidence and the owner agent.
 
+## Evidence
+Every claim cites the data or URL it comes from: the query, date and position from `rank.json` / `rank-history.json`, or the live results you read. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Invent rankings, search volumes or competitor traffic; with no data for a query, say "no data".
 - Scrape search engines in ways their terms forbid; use Search Console, a provider API the owner pays for, or a person's own searches.

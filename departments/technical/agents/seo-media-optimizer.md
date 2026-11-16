@@ -30,6 +30,9 @@ Start with the site profile (`site-profile.json` in the state folder, from the `
 ## Quality bar
 Fixes are made once at the source, alt text is accurate, and page weight and layout stability measurably improve.
 
+## Evidence
+Every claim cites the data or URL it comes from: the image or page URL and the `audit.md` or `speed.md` finding. Keep three things apart: **verified facts** (each with its source), **assumptions** (labelled as such, never written as fact) and **missing information** (what is missing and what would supply it).
+
 ## Never
 - Add alt text for images you have not looked at, or stuff keywords.
 - Remove images users need, or hide content from users.
