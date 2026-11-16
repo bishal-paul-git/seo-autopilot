@@ -696,7 +696,7 @@ function pReport(s) {
 }
 
 // Engine work that is not a specialist agent: which part of the organisation owns it (src/god/departments.mjs).
-const KIND_OWNER = { strategy_proposal: "director", client_request: "director", scan: "technical", implement: "automation", search_console: "analytics" };
+const KIND_OWNER = { strategy_proposal: "director", strategy_redraft: "director", client_request: "director", scan: "technical", implement: "automation", search_console: "analytics" };
 const agentLabel = (x) => x.replace(/^seo-/, "").replace(/-/g, " ");
 async function loadWorkforce(s) { [s.workforce, s.agentStats] = await Promise.all([rpc("site_workforce", { p_site: s.id, p_days: 30 }).catch(() => null), rpc("site_agent_stats", { p_site: s.id }).catch(() => null)]); }
 function pTeam(s) {
@@ -868,15 +868,36 @@ function githubCard(s) {
       <div class="s">${d.page ? `${esc(d.page)} · ` : ""}${d.issue ? `<a href="${safeHref(d.issueUrl)}" target="_blank" rel="noopener">issue #${esc(String(d.issue))}</a>` : ""}${d.pr ? ` · <a href="${safeHref(d.prUrl)}" target="_blank" rel="noopener">pull request #${esc(String(d.pr))}</a>` : ""}</div>
       ${d.verification ? `<div class="xs" style="margin-top:4px">${esc(d.verification)}</div>` : ""}${d.error && d.status !== "completed" ? `<div class="xs muted" style="margin-top:4px">${esc(d.error)}</div>` : ""}</div>`).join("")}</div>` : ""}</div>`;
 }
+// The strategy draft (D60: objective, baseline, ranked steps with agent, risk and evidence, KPIs, later, what waits for
+// you). Older drafts (plain KPI strings, no baseline) still render. Every value is escaped: queries and URLs come from Google.
+const UL = (items, f) => `<ul style="margin:4px 0 8px 18px;padding:0">${items.map((x) => `<li>${f(x)}</li>`).join("")}</ul>`;
+const RISK_PILL = { low: "ok", medium: "info", high: "bad" };
+function strategyHtml(p) {
+  const b = p.baseline || null, sc = b?.searchConsole || null;
+  const objective = p.objective ? `<p style="margin:0 0 6px"><b>Objective:</b> ${esc(p.objective)}${p.objectiveBasis === "inferred" ? ` <span class="pill warn">inferred</span><br><span class="muted">${esc(p.objectiveWhy || "")}</span>` : ""}</p>`
+    : '<p class="muted">Objective not set yet: answer the goals question.</p>';
+  const base = !b ? "" : `<b>Baseline</b>${sc ? `<p style="margin:2px 0 4px">${fmt(sc.clicks)} clicks, ${fmt(sc.impressions)} impressions${sc.position != null ? `, average position ${fmt(sc.position, 1)}` : ""} · ${esc(sc.from)} to ${esc(sc.to)} (${fmt(sc.days)} days)${sc.nonBrandClicksInTopQueries != null ? ` · non-brand clicks in the top ${fmt(sc.topQueries)} queries: ${fmt(sc.nonBrandClicksInTopQueries)}` : ""}${sc.lastWeek ? ` · last 7 days ${fmt(sc.lastWeek.clicks)} clicks vs ${fmt(sc.lastWeek.previousWeekClicks)} the week before` : ""}</p>
+      ${(sc.topPages || []).length ? `<span class="muted">Top pages:</span>${UL(sc.topPages, (x) => `${esc(x.url.replace(/^https?:\/\/[^/]+/, "") || "/")} · ${fmt(x.clicks)} clicks, ${fmt(x.impressions)} impressions, position ${fmt(x.position, 1)}`)}` : ""}`
+    : `<p style="margin:2px 0 4px">${esc(b.note || "No Search Console data yet.")}</p>`}
+    <p class="muted" style="margin:0 0 8px">${[b.index?.checked ? `Index: ${fmt(b.index.notIndexed)} of ${fmt(b.index.checked)} inspected pages not indexed` : b.index?.unknown ? `Index: ${esc(b.index.unknown)}` : "",
+      b.audit ? `Audit ${esc(b.audit.at)}: ${fmt(b.audit.pages)} pages, ${fmt(b.audit.findings?.high)} high, ${fmt(b.audit.findings?.medium)} medium, ${fmt(b.audit.findings?.low)} low findings` : "",
+      b.speed ? `Speed: ${fmt(b.speed.poor)} of ${fmt(b.speed.checked)} pages poor on phones` : ""].filter(Boolean).join(" · ")}</p>`;
+  const steps = `<b>First steps</b>${p.baseline ? ' <span class="muted">ranked by expected impact from the data</span>' : ""}<ol style="margin:4px 0 8px 18px;padding:0">${p.firstSteps.map((x) => `<li style="margin-bottom:4px"><b>${esc(x.title)}</b>${x.agent ? ` <span class="pill">${esc(agentLabel(x.agent))}</span>` : ""}${x.risk ? ` <span class="pill ${RISK_PILL[x.risk] || ""}">${esc(x.risk)} risk</span>` : ""}
+      ${x.why ? `<br><span class="muted">${esc(x.why)}</span>` : ""}${x.impact ? `<br>Expected: ${esc(x.impact)}` : ""}${(x.evidence || []).length ? `<br><span class="muted">Evidence: ${x.evidence.map(esc).join("; ")}</span>` : ""}</li>`).join("") || "<li>None</li>"}</ol>`;
+  const kpiText = (k) => (typeof k === "string" ? esc(k) : esc(k.text || k.metric || ""));
+  const kpis = (p.kpis || []).length ? `<b>Measured by</b>${UL(p.kpis, kpiText)}` : "";
+  const later = (p.later || []).length ? `<details style="margin:0 0 8px"><summary style="cursor:pointer"><b>Later</b> <span class="muted">(${fmt(p.later.length)}: lower impact or hygiene)</span></summary>${UL(p.later, (x) => `${esc(x.title)}${x.agent ? ` <span class="muted">· ${esc(agentLabel(x.agent))}</span>` : ""}${x.why ? ` <span class="muted">· ${esc(x.why)}</span>` : ""}`)}</details>` : "";
+  const nwy = (p.notWithoutYou || []).length ? `<b>What will not be done without you</b>${UL(p.notWithoutYou, esc)}` : "";
+  const oq = p.openQuestions?.count ? `<p style="margin:0 0 6px"><b>Open questions</b> (${fmt(p.openQuestions.count)}, optional): ${(p.openQuestions.top || []).map((q) => esc(q.question)).join(" · ")}${p.openQuestions.count > (p.openQuestions.top || []).length ? " …" : ""}</p>` : "";
+  const risks = (p.risks || []).length ? `<b>Risks</b><ul style="margin:4px 0 0 18px;padding:0">${p.risks.map((k) => `<li>${esc(k)}</li>`).join("")}</ul>` : "";
+  return `<div class="xs strategy" style="margin-top:8px">${objective}${base}${steps}${kpis}${later}${nwy}${oq}${risks}</div>`;
+}
 function proposalHtml(o, opts = {}) {
   const p = o?.proposal; if (!p) return "";
   if (p.workOrder) return `<div class="xs" style="margin-top:8px"><p style="margin:0 0 6px"><b>Work order for GitHub</b> · ${esc(p.workOrder.kind || "")}${p.workOrder.url ? ` · <span class="muted">${esc(p.workOrder.url)}</span>` : ""}</p>
     <p style="margin:0 0 4px"><b>${esc(p.workOrder.title)}</b></p><pre class="wo">${esc(p.workOrder.body || "")}</pre>
     <p class="muted" style="margin:6px 0 0">Approving opens this issue in the site's repository and starts its seo-implement workflow. Nothing is merged without a person or your site's merge policy.</p></div>`;
-  if (Array.isArray(p.firstSteps)) return `<div class="xs" style="margin-top:8px">${p.objective ? `<p><b>Objective:</b> ${esc(p.objective)}</p>` : '<p class="muted">Objective not set yet: answer the goals question.</p>'}
-    <b>First steps</b><ol style="margin:4px 0 8px 18px;padding:0">${p.firstSteps.map((x) => `<li>${esc(x.title)}${x.why ? ` <span class="muted">· ${esc(x.why)}</span>` : ""}</li>`).join("") || "<li>None</li>"}</ol>
-    ${(p.kpis || []).length ? `<b>Measured by</b><ul style="margin:4px 0 8px 18px;padding:0">${p.kpis.map((k) => `<li>${esc(k)}</li>`).join("")}</ul>` : ""}
-    ${(p.risks || []).length ? `<b>Risks</b><ul style="margin:4px 0 0 18px;padding:0">${p.risks.map((k) => `<li>${esc(k)}</li>`).join("")}</ul>` : ""}</div>`;
+  if (Array.isArray(p.firstSteps)) return strategyHtml(p);
   if (Array.isArray(p.recommendations)) return `<div class="xs" style="margin-top:8px">${p.summary ? `<p>${esc(p.summary)}</p>` : ""}<ol style="margin:4px 0 0 18px;padding:0">${p.recommendations.map((r, i) => `<li><b>${esc(r.title)}</b>${r.url ? ` · <span class="muted">${esc(r.url)}</span>` : ""} <span class="pill">${esc(r.effort || "")}</span><br>${esc(r.why || "")}${(r.evidence || []).length ? `<br><span class="muted">Evidence: ${r.evidence.map(esc).join("; ")}</span>` : ""}${opts.implement ? `<br><button class="btn" style="margin-top:4px" data-impl="${esc(opts.implement)}" data-idx="${i}">Prepare a pull request</button>` : ""}</li>`).join("")}</ol>
     <p class="muted" style="margin:6px 0 0">${opts.implement ? "Advice; with GitHub connected, you can turn any item into a reviewed pull request." : "Advice only: nothing on the website is changed."}</p></div>`;
   return "";
@@ -887,7 +908,7 @@ async function loadActivity(s) { s.activity = await rpc("site_activity", { p_sit
 const ACT_VERB = { proposed: "created", scoped: "planned", queued: "queued", running: "started working", awaiting_review: "was sent for quality review",
   awaiting_approval: "is waiting for your approval", authorized: "was approved", deploying: "is opening the pull request", verifying: "is checking the change on the site",
   completed: "finished", failed: "failed", escalated: "needs a person", rejected: "was rejected", cancelled: "was cancelled" };
-const KIND_NAME = { scan: "Site scan", strategy_proposal: "Strategy draft", implement: "Website change", search_console: "Search Console check", client_request: "Client request" };
+const KIND_NAME = { scan: "Site scan", strategy_proposal: "Strategy draft", strategy_redraft: "Strategy re-draft", implement: "Website change", search_console: "Search Console check", client_request: "Client request" };
 const kindName = (k, agent) => (agent ? agentLabel(agent) : String(k).startsWith("agent:") ? agentLabel(String(k).slice(6)) : KIND_NAME[k] || String(k).replace(/_/g, " "));
 const actorName = (e) => (e.actorKind === "user" ? e.actor || "a person" : e.actor === "seo-god" ? "SEO God (director)" : /^quality-gate/.test(e.actor || "") ? "Quality reviewer"
   : /^cf-/.test(e.actor || "") ? "Cloud worker" : /^seo-/.test(e.actor || "") ? agentLabel(e.actor) : "System");

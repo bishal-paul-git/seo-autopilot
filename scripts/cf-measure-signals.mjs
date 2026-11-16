@@ -4,7 +4,8 @@
 //   - the Search Console snapshot's work after Google answers (parse 5 answers and the saved reports, merge the history);
 //   - the priorities job (parse the saved reports, the CLI's search analysis and priority engine);
 //   - one URL inspection batch (parse 20 answers, merge, bound, serialise);
-//   - one agent prompt's data block with every new report.
+//   - one agent prompt's data block with every new report;
+//   - D60: the strategy draft from every report (the strategy job and the strategy_redraft job, each its own invocation).
 // Workers Free allows 10 ms CPU per invocation. Node and Workers both run V8: an estimate, not a measurement in Workers.
 // "first" includes JIT warm-up (a fresh Worker isolate); "warm" is the median of 20 more runs.
 //   node scripts/cf-measure-signals.mjs            (PART=parse|alerts|reports|plan|inspect|prio measures one piece in a fresh process)
@@ -16,6 +17,8 @@ import { planSite } from "../src/god/planner.mjs";
 import { alertsFor } from "../src/god/tick.mjs";
 import { agentInput } from "../src/god/agent-runner.mjs";
 import { SNAPSHOT_PAGES, SNAPSHOT_QUERIES, SNAPSHOT_PAIRS } from "../src/god/search-console.mjs";
+import { buildDossier } from "../src/god/onboarding.mjs";
+import { draftReports, strategyRedraftDue } from "../src/god/handlers.mjs";
 
 const SITE = { id: "m", name: "Measure", url: "https://example.test/" }, NOW = "2026-11-30T12:00:00Z";
 const words = ["boiler", "repair", "leeds", "service", "combi", "install", "cost", "emergency", "plumber", "heating", "radiator", "leak", "best", "near", "me"];
@@ -57,14 +60,16 @@ if (process.env.PART) { const parts = {
   parse: () => JSON.parse(recallAnswer), alerts: () => alertsFor(SITE, memory, [], NOW), reports: () => plannerReports(memory),
   inspect: () => { const m = JSON.parse(recallAnswer); const r = { ...m.find((x) => x.key === "inspect").value.results }; for (const a of answers.inspect) { const j = JSON.parse(a); r[u(Math.floor(Math.random() * 400))] = j.inspectionResult.indexStatusResult; } JSON.stringify(boundResults(r, new Set())); },
   prio: () => prioritiesFrom({ siteUrl: SITE.url, searchConsole: sc, history, audit, inspect, speed, now: NOW }),
+  draft: () => { const m = JSON.parse(recallAnswer); const g = (k) => m.find((x) => x.key === k)?.value; strategyRedraftDue([{ kind: "strategy_proposal", status: "awaiting_approval" }], m); JSON.stringify(buildDossier({ site: SITE, discovered: {}, audit: g("audit"), reports: draftReports(m), now: NOW }).strategyDraft); },
   plan: () => planSite({ site: SITE, reports: plannerReports(memory), strategy: { status: "approved" }, alerts: [], now: NOW }) };
   console.log(process.env.PART, JSON.stringify(measure(parts[process.env.PART]))); process.exit(0); }
 const out = {
-  planningOneSite: measure(() => { const m = JSON.parse(recallAnswer); const alerts = alertsFor(SITE, m, [], NOW); planSite({ site: SITE, reports: plannerReports(m), strategy: { status: "approved" }, alerts, now: NOW }); }),
+  planningOneSite: measure(() => { const m = JSON.parse(recallAnswer); strategyRedraftDue([], m); const alerts = alertsFor(SITE, m, [], NOW); planSite({ site: SITE, reports: plannerReports(m), strategy: { status: "approved" }, alerts, now: NOW }); }),
   snapshotAfterGoogle: measure(() => { const { sc: s, daily } = snapshotFrom(); const m = JSON.parse(recallAnswer); const h = mergeHistory(m.find((x) => x.key === "history").value, { daily, snapshot: s, now: NOW }); JSON.stringify([s, h]); }),
   prioritiesJob: measure(() => { const m = JSON.parse(recallAnswer); const g = (k) => m.find((x) => x.key === k)?.value; JSON.stringify(prioritiesFrom({ siteUrl: SITE.url, searchConsole: g("search_console"), history: g("history"), audit: g("audit"), inspect: g("inspect"), speed: g("speed"), now: NOW })); }),
   inspectionBatch: measure(() => { const m = JSON.parse(recallAnswer); const r = { ...m.find((x) => x.key === "inspect").value.results }; for (const a of answers.inspect) { const j = JSON.parse(a); r[u(Math.floor(Math.random() * 400))] = j.inspectionResult.indexStatusResult; } JSON.stringify(boundResults(r, new Set())); }),
   alertsOnly: measure(() => detectAlerts({ siteUrl: SITE.url, history, inspect, audit, searchConsole: sc, now: NOW })),
+  strategyDraft: measure(() => { const m = JSON.parse(recallAnswer); const g = (k) => m.find((x) => x.key === k)?.value; strategyRedraftDue([{ kind: "strategy_proposal", status: "awaiting_approval" }], m); JSON.stringify(buildDossier({ site: SITE, discovered: {}, audit: g("audit"), reports: draftReports(m), now: NOW }).strategyDraft); }),
   agentDataBlock: measure(() => agentInput({ kind: "agent:seo-strategist", title: "t", inputs: {} }, memory, SITE)),
 };
 const sizes = { recallAnswerKb: Math.round(recallAnswer.length / 1024), historyKb: Math.round(JSON.stringify(history).length / 1024), inspectKb: Math.round(JSON.stringify(inspect).length / 1024), prioritiesKb: Math.round(JSON.stringify(priorities).length / 1024), searchConsoleKb: Math.round(JSON.stringify(sc).length / 1024),

@@ -8,7 +8,7 @@ import { rankFromHistory, earlierPages } from "../analysis/search-history.mjs";
 import { RULES } from "../audit/rules.mjs";
 
 export const PRIORITY_ITEMS = 25;
-const NOT_INDEXED = (v) => v?.coverage && v.coverage !== "Submitted and indexed" && !/redirect|alternate|duplicate/i.test(v.coverage);
+export const NOT_INDEXED = (v) => v?.coverage && v.coverage !== "Submitted and indexed" && !/redirect|alternate|duplicate/i.test(v.coverage);
 
 /**
  * The hosted speed report (src/god/speed.mjs) in the CLI's speed.json results shape (lab.score, field.lcp/inp/cls), plus
@@ -30,22 +30,28 @@ export function speedResults(s) {
 const pairRows = (sc) => (sc?.pairs || []).map((x) => ({ query: x.query, page: x.url, clicks: x.clicks || 0, impressions: x.impressions || 0, position: Number(x.position) || 0 }));
 const pageRows = (pages) => pages.map(([page, [clicks, impressions, position]]) => ({ query: "", page, clicks, impressions, position }));
 /**
+ * The parts of the CLI's search analysis (src/analysis/search.mjs analyze) that the priority engine ranks, from the
+ * hosted snapshot (null without page + query pairs). Topic clusters and content gaps are left out: they need page
+ * titles, which the hosted scan does not keep, and they are the costliest part for a Worker's few milliseconds of CPU.
+ * The strategy drafter (D60) reads the same lists, so its first steps agree with the priorities report.
+ */
+export function searchInsights(searchConsole, history = null) {
+  if (!searchConsole?.pairs?.length) return null;
+  const rows = pairRows(searchConsole), curve = buildCtrCurve(rows);
+  const insights = { strikingDistance: strikingDistance(rows, curve).slice(0, 40), ctrUnderperformers: ctrUnderperformers(rows, curve).slice(0, 25), cannibalization: cannibalization(rows).slice(0, 25), contentGaps: [] };
+  // Decay compares equal 28-day windows of page totals: today's snapshot against the weekly point about 28 days earlier.
+  const before = earlierPages(history, searchConsole.to);
+  insights.decay = before ? decay(pageRows((searchConsole.pages || []).map((p) => [p.url, [p.clicks, p.impressions, p.position]])), pageRows(Object.entries(before.pages || {}))).slice(0, 25) : [];
+  return insights;
+}
+
+/**
  * One ranked to-do list for a hosted site, from the CLI's priority engine. Inputs are the memory reports.
  * Returns { generatedAt, basis, items } (items trimmed to PRIORITY_ITEMS), or null when there is nothing to rank.
  */
 export function prioritiesFrom({ searchConsole = null, history = null, audit = null, inspect = null, speed = null, now = new Date().toISOString() } = {}) {
   if (!audit && !searchConsole) return null;
-  let insights = null;
-  if (searchConsole?.pairs?.length) {
-    // The parts of the CLI's search analysis (src/analysis/search.mjs analyze) that the priority engine ranks. Topic
-    // clusters and content gaps are left out: they need page titles, which the hosted scan does not keep, and they are
-    // the costliest part for a Worker's few milliseconds of CPU.
-    const rows = pairRows(searchConsole), curve = buildCtrCurve(rows);
-    insights = { strikingDistance: strikingDistance(rows, curve).slice(0, 40), ctrUnderperformers: ctrUnderperformers(rows, curve).slice(0, 25), cannibalization: cannibalization(rows).slice(0, 25), contentGaps: [] };
-    // Decay compares equal 28-day windows of page totals: today's snapshot against the weekly point about 28 days earlier.
-    const before = earlierPages(history, searchConsole.to);
-    insights.decay = before ? decay(pageRows((searchConsole.pages || []).map((p) => [p.url, [p.clicks, p.impressions, p.position]])), pageRows(Object.entries(before.pages || {}))).slice(0, 25) : [];
-  }
+  const insights = searchInsights(searchConsole, history);
   const indexing = Object.entries(inspect?.results || {}).filter(([, v]) => NOT_INDEXED(v)).map(([u, v]) => `${u} (${v.coverage})`);
   const items = buildPriorities({ audit, insights, rules: RULES, indexing, speed: speedResults(speed) });
   const basis = [audit && `audit of ${String(audit.generatedAt || "").slice(0, 10)}`, searchConsole && `Search Console ${searchConsole.from} to ${searchConsole.to}`,

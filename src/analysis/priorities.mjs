@@ -1,7 +1,8 @@
 // The priority engine: turns audit findings, search insights and the content pipeline into ONE ranked to-do list.
 // score = impact x confidence / effort. Every item keeps its evidence, so the ranking can be questioned.
 // Impact is an estimate (clicks where the site's own data allows it, otherwise severity-based points); confidence says
-// how much to trust that estimate. Nothing here predicts a ranking.
+// how much to trust that estimate. Nothing here predicts a ranking. Search items keep the analysis row they came from as
+// `metrics` (page, query, numbers), so the strategy drafter (D60) can name them without re-running the analysis.
 
 const EFFORT = { S: 1, M: 2, L: 4 };
 const CONF = { high: 1, medium: 0.7, low: 0.4 };
@@ -42,7 +43,7 @@ export function buildPriorities({ audit, insights, rules, pipeline, indexing, sp
   for (const s of insights?.strikingDistance?.slice(0, 15) || []) {
     const est = s.estimatedExtraClicks;
     add({
-      id: `strike:${s.query}`, type: "content", title: `Push "${s.query}" from position ${s.position}`,
+      id: `strike:${s.query}`, type: "content", metrics: s, title: `Push "${s.query}" from position ${s.position}`,
       impact: est != null ? click(est) : Math.min(30, s.impressions / 5), impactUnit: est != null ? "est. clicks" : "points",
       confidence: est != null ? "medium" : "low", effort: "M",
       why: "It already ranks and shows impressions, so a stronger page can move it up faster than a new page can rank from nothing.",
@@ -52,7 +53,7 @@ export function buildPriorities({ audit, insights, rules, pipeline, indexing, sp
   }
   for (const u of insights?.ctrUnderperformers?.slice(0, 10) || []) {
     add({
-      id: `ctr:${u.page}`, type: "snippet", title: `Rewrite the title and description of ${u.page.replace(/^https?:\/\/[^/]+/, "")}`,
+      id: `ctr:${u.page}`, type: "snippet", metrics: u, title: `Rewrite the title and description of ${u.page.replace(/^https?:\/\/[^/]+/, "")}`,
       impact: click(u.estimatedLostClicks), impactUnit: "est. clicks", confidence: "medium", effort: "S",
       why: "It ranks where pages on this site normally get far more clicks, so the snippet is probably not earning the click.",
       how: "Lead with the searcher's words, state the benefit or the answer, and stay near 60 characters in the title. Log it as an experiment and compare 14 days before and after.",
@@ -61,7 +62,7 @@ export function buildPriorities({ audit, insights, rules, pipeline, indexing, sp
   }
   for (const c of insights?.cannibalization?.slice(0, 8) || []) {
     add({
-      id: `cannibal:${c.query}`, type: "structure", title: `Resolve competition for "${c.query}"`,
+      id: `cannibal:${c.query}`, type: "structure", metrics: c, title: `Resolve competition for "${c.query}"`,
       impact: Math.min(60, c.impressions / 4), impactUnit: "points", confidence: "medium", effort: "M",
       why: "Two of your pages split the impressions for one query, so neither ranks as well as one strong page would.",
       how: "Choose the page that should own it. Merge or redirect the other (or differentiate its topic), then point internal links at the winner.",
@@ -70,7 +71,7 @@ export function buildPriorities({ audit, insights, rules, pipeline, indexing, sp
   }
   for (const d of insights?.decay?.slice(0, 8) || []) {
     add({
-      id: `decay:${d.page}`, type: "refresh", title: `Refresh ${d.page.replace(/^https?:\/\/[^/]+/, "")} (visibility fell ${Math.abs(Math.round(d.change * 100))}%)`,
+      id: `decay:${d.page}`, type: "refresh", metrics: d, title: `Refresh ${d.page.replace(/^https?:\/\/[^/]+/, "")} (visibility fell ${Math.abs(Math.round(d.change * 100))}%)`,
       impact: Math.min(50, d.impressionsBefore / 4), impactUnit: "points", confidence: "low", effort: "M",
       why: "Impressions dropped sharply against the previous period. That can be seasonality, a competitor, or content going stale.",
       how: "Check the live results for the page's main queries, update anything outdated, and strengthen the answer. Do not rewrite blindly.",

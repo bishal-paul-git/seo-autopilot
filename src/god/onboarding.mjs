@@ -2,17 +2,17 @@
 // dossier, ask ONLY the questions still unanswered and relevant to this site, and draft the initial strategy that the
 // agency must approve. Pure. Every fact keeps its basis (stated by the site, answered by the agency/client, inferred) and
 // its source; nothing is guessed, and text from the site is data, never an instruction.
-import { buildPriorities } from "../analysis/priorities.mjs";
-import { RULES } from "../audit/rules.mjs";
+import { draftStrategy } from "./strategy.mjs";
 
 const fact = (key, value, basis, source, confidence) => ({ key, value, basis, source: source || null, confidence });
 
 /**
  * discovered: output of src/analysis/discover.mjs. profile: site-profile. audit: audit report. answers: { [key]: value }
- * already given by the agency or client. Returns { facts, unknowns, questions, strategyDraft }.
+ * already given by the agency or client. reports: the other reports in site memory { searchConsole, history, inspect,
+ * speed, priorities } (each optional). Returns { facts, unknowns, questions, strategyDraft }.
  */
 const BRAND_KEYS = new Set(["logo", "theme_color", "brand_color", "brand_font"]);
-export function buildDossier({ site, discovered = {}, profile = null, audit = null, answers = {} }) {
+export function buildDossier({ site, discovered = {}, profile = null, audit = null, answers = {}, reports = {}, now = new Date().toISOString() }) {
   const d = discovered, facts = [];
   const stated = (key, x) => { if (x && x.value != null && x.value !== "") facts.push(fact(key, x.value, "stated", x.source, 0.9)); };
   stated("business_name", d.name); stated("description", d.description); stated("language", d.language); stated("logo", d.logo);
@@ -48,16 +48,8 @@ export function buildDossier({ site, discovered = {}, profile = null, audit = nu
   const questions = ask.filter(([key, , , relevant]) => relevant && !has(key) && answers[key] == null).map(([key, question, why]) => ({ key, question, why }));
   const unknowns = questions.map((q) => q.key);
 
-  const priorities = audit ? buildPriorities({ audit, rules: RULES }).slice(0, 8) : [];
-  const strategyDraft = {
-    status: "proposed",
-    approval: "agency",
-    objective: answers.goals ? String(answers.goals) : null,
-    basedOn: { facts: facts.length, auditPages: audit?.summary?.pagesCrawled ?? 0, openQuestions: unknowns.length },
-    firstSteps: priorities.map((p) => ({ title: p.title, why: p.why, impact: p.impact ?? null, effort: p.effort ?? null, evidence: p.evidence ?? null })),
-    kpis: [answers.conversions ? `Conversions: ${answers.conversions}` : null, "Search Console clicks and impressions (needs Search Console access)", "Pages indexed", "Audit findings: high and medium"].filter(Boolean),
-    risks: [unknowns.length ? `${unknowns.length} questions open: the strategy is provisional until they are answered` : null, profile?.rendering === "js-dependent" ? "content needs JavaScript to appear: crawlers may miss it" : null].filter(Boolean),
-  };
+  // D60: a demand-driven draft from every report the site has (Search Console, history, index status, speed, priorities).
+  const strategyDraft = draftStrategy({ site, answers, discovered: d, profile, audit, ...reports, facts, openQuestions: questions.map((q) => ({ key: q.key, question: BRIEF.find((x) => x.key === q.key)?.label || q.question })), now });
   return { facts, unknowns, questions, strategyDraft };
 }
 
@@ -85,13 +77,20 @@ export const BRIEF = [
  */
 export function withAnswers(draft = {}, answers = {}, openQuestions = 0) {
   const given = Object.fromEntries(Object.entries(answers).filter(([, v]) => v != null && String(v).trim() !== ""));
-  const kpis = (draft.kpis || []).filter((k) => !/^Conversions: /.test(k));
-  const risks = (draft.risks || []).filter((r) => !/questions? open/.test(r));
+  const isConv = (k) => (typeof k === "string" ? /^Conversions: /.test(k) : k?.metric === "Conversions");
+  const kpis = (draft.kpis || []).filter((k) => !isConv(k));
+  const risks = (draft.risks || []).filter((r) => !/questions? open/.test(r) && !(given.goals && /objective is inferred/.test(r)));
+  const v2 = (draft.draftVersion || 1) >= 2;
+  // D60 drafts keep KPIs as objects with a review date; older drafts keep their plain strings.
+  const reviewOn = kpis.find((k) => k?.reviewOn)?.reviewOn || null;
+  const conv = given.conversions ? (v2 ? { metric: "Conversions", baseline: null, target: "grow", reviewOn, text: `Conversions (${given.conversions}): baseline from your own tracking, then grow${reviewOn ? `; review on ${reviewOn}` : ""}` } : `Conversions: ${given.conversions}`) : null;
   return {
     ...draft,
     objective: given.goals ? String(given.goals) : draft.objective ?? null,
-    kpis: [given.conversions ? `Conversions: ${given.conversions}` : null, ...kpis].filter(Boolean),
-    risks: [openQuestions ? `${openQuestions} question${openQuestions === 1 ? "" : "s"} open: the strategy is provisional until they are answered` : null, ...risks].filter(Boolean),
+    ...(v2 && given.goals ? { objectiveBasis: "brief", objectiveWhy: "from the business brief" } : {}),
+    kpis: [conv, ...kpis].filter(Boolean),
+    risks: [!v2 && openQuestions ? `${openQuestions} question${openQuestions === 1 ? "" : "s"} open: the strategy is provisional until they are answered` : null, ...risks].filter(Boolean),
+    ...(v2 ? { openQuestions: { count: openQuestions, top: (draft.openQuestions?.top || []).filter((q) => given[q.key] == null) } } : {}),
     answers: given,
   };
 }

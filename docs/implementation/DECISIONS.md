@@ -119,6 +119,67 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
 
+## 2026-11-16 D60 Demand-driven strategy draft, re-drafted once while unapproved
+On the pilot (erudience.com) the hosted `strategy_proposal` produced audit hygiene as first steps ("Long sentences (7
+pages)", "Very little visible text (6 pages)", a www redirect), no objective, generic KPIs ("Search Console clicks (needs
+access)") and "8 questions open". A practitioner would reject it: a plan should start from real demand. Live sites
+drafted before this (owner: Excel, Manchester, AudioScriptor, still unapproved) carry that old format.
+
+**Decision:**
+- **New pure drafter** `src/god/strategy.mjs` (`draftStrategy`, `DRAFT_VERSION = 2`), called by `buildDossier`. Still
+  deterministic and free (no AI call). It reads every report the hosted engine keeps: audit, profile, discovered facts,
+  `search_console`, `history`, `inspect`, `speed`, `priorities`, and the business brief answers.
+- **Objective** in plain English: the brief's goal verbatim (`objectiveBasis: "brief"`), else inferred and labelled
+  (`"inferred"` with `objectiveWhy`): the priority services named in the brief, a local business ("More enquiries from
+  people searching locally in <area>"), a shop, or the section of the site with the most non-home impressions.
+- **Baseline** only from reports, with dates: clicks, impressions, CTR, position and the date range; brand vs non-brand
+  clicks within the stored top queries (brand = distinctive words of the business name and the domain); top 5 pages and
+  queries; last 7 days vs the 7 before; index status counts; audit counts by severity; speed. No Search Console: the
+  baseline says so in plain words and step 1 is "Give Search Console access".
+- **3 to 6 first steps, ranked by expected impact from data**, in this order: index problems (high-severity blocking
+  audit rules, then pages Google has not indexed, the home page and pages with impressions first), striking-distance
+  queries (non-brand, one step per page, query and page named), low CTR on a page with 100+ impressions, decay, then
+  cannibalisation, then high-severity technical findings. Medium findings and a conversion-tracking step only fill up to
+  3; low-severity hygiene, speed, Business Profile checks go to **"later"**. Every step names the specialist agent, a risk
+  (low/medium/high; `agentRisk` for audit fixers, cannibalisation is high because it merges or redirects), evidence (URLs,
+  queries, numbers, dates) and, for search steps, an estimate labelled as one.
+- **KPIs** are objects `{ metric, baseline, target: grow|reduce|hold, reviewOn, text }`, review date = draft date + 28
+  days (e.g. "Clicks to /services/x: from 5 in 28 days to grow; review on 2026-12-14"). No baseline is invented: without
+  Search Console the click KPI says "baseline once access is given".
+- **"What will not be done without you"**: every website change, site-wide changes and removals, outreach; sensitive
+  topics (health, medical, legal, data protection, tax, finance from the site's own text or business type; safety and
+  children are left to the page-level ymyl job because "emergency" would flag every plumber); Business Profile changes for
+  local businesses; the brief's own restrictions. **Open questions** are a count plus the top 3 short brief labels.
+- **CPU**: the drafter reads the search analysis from a priorities report ranked from the same or a newer snapshot
+  (`buildPriorities` items now keep their analysis row as `metrics`) and only runs `searchInsights` (now exported from
+  `insights.mjs`, shared with `prioritiesFrom`) itself when there is none. Sensitive-topic patterns compile once per
+  isolate (6 patterns, not 40). Estimate (`node scripts/cf-measure-signals.mjs`, Node V8, largest synthetic site, fresh
+  process, includes parsing the recall answer): draft 6.6 ms first / 2.4 ms warm (was 11.8 ms first before those two
+  changes); planning a site unchanged (~3.5 ms first). The Worker Free limit is 10 ms; not measured inside Workers.
+- **Re-drafting** without touching the job lifecycle: `strategyRedraftDue(jobs, memory)` returns the waiting job when the
+  site's strategy in memory is **not approved**, a `strategy_proposal` job waits in `awaiting_approval`, the audit is in
+  memory, and either the draft is older than `DRAFT_VERSION` (old drafts have no version: v1) or Search Console data
+  exists and the draft was made without it. The tick then queues one free, low-risk `strategy_redraft` job (idempotency
+  key `strategy_redraft:v2` or `strategy_redraft:v2:search-console`, so each happens once); with new search data it first
+  waits for the re-ranked priorities. The job checks again (the agency may have decided since), rebuilds the dossier from
+  memory (no crawl), runs the deterministic review gate, writes the strategy and questions to memory and replaces
+  `outputs.proposal` on the waiting job with `record_job_output`. The job stays in `awaiting_approval`; nothing is
+  approved; an approved strategy (memory status `approved`) is never re-drafted. Re-drafting is its own job, not part of
+  planning, because planning plus a cold draft would pass the 10 ms Free limit.
+- **Approval** (`withAnswers`) keeps the v2 shape: a goal answered later replaces an inferred objective (basis "brief"),
+  a conversion answer becomes a KPI object, open questions are recounted. Old drafts keep the old behaviour.
+- **Portal**: `strategyHtml` renders objective (with an "inferred" pill and why), baseline, ranked steps with agent,
+  risk, expected effect and evidence, KPIs, "Later" (collapsed), what waits for you, open questions and risks. Old drafts
+  (string KPIs, no baseline) still render. Every value is escaped (queries and URLs come from Google). New job kind label.
+- **No migration**: `jobs.kind` is free text and `record_job_output` already exists.
+
+**Tradeoffs and limits:** brand detection is a word match (a brand word inside a generic query counts as brand); non-brand
+clicks are counted within the stored top 100 queries only (said in the KPI text). Striking-distance estimates come from
+the site's own click curve and are labelled estimates. The objective inference is a heuristic and is labelled. The
+re-draft replaces the draft the agency may already have read; the activity feed shows a completed "Strategy re-draft"
+job. Tests: `test/strategy-draft.test.mjs` (11), portal render test in `test/portal-god.test.mjs`, D60 section in
+`scripts/cf-local-e2e.mjs` (old draft re-drafted once in workerd and still waiting; approved strategy untouched).
+
 ## 2026-11-15 D59 Invite-only landing page and invite requests
 The owner wants to start showing the hosted service to business owners and agencies with several websites. Until now a
 logged-out visitor to seo.erudience.com got a bare sign-in form (`noindex`, robots.txt blocking everything), and the only

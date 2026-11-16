@@ -33,7 +33,7 @@ const consoleData = () => ({
   experiments: [{ agent: "seo-snippet-optimizer", status: "open", openedAt: "2026-11-01T00:00:00Z", items: [{ url: "plumber.test/<b>x</b>", status: "resolved" }, { url: "plumber.test/y", status: "not_rechecked" }] }],
 });
 
-function fake({ consoleFails = false } = {}) {
+function fake({ consoleFails = false, strategy = null } = {}) {
   const calls = [], html = { body: "" };
   const server = createServer(async (req, res) => {
     let body = ""; for await (const c of req) body += c;
@@ -48,7 +48,7 @@ function fake({ consoleFails = false } = {}) {
       if (req.headers.authorization !== "Bearer user-jwt") return send(401, { message: "JWT required" });
       if (fn === "my_sites") return send(200, [{ site: SITE, data: null, decisions: [] }]);
       if (fn === "my_org") return send(200, { id: "org-a", name: "alice", role: "owner" });
-      if (fn === "god_console") return consoleFails ? send(404, { message: "Could not find the function public.god_console" }) : send(200, consoleData());
+      if (fn === "god_console") return consoleFails ? send(404, { message: "Could not find the function public.god_console" }) : send(200, strategy ? { ...consoleData(), strategy } : consoleData());
       if (["approve_job", "answer_question", "retry_job"].includes(fn)) return send(200, { ok: true });
     }
     send(404, { message: "not found" });
@@ -128,5 +128,25 @@ test("SEO God console: a clear message before the database update is applied", {
   await page.goto(`${base}/#/s/${SITE.id}/god`);
   await page.waitForSelector(".callout");
   assert.match(await page.textContent(".callout"), /not switched on for this workspace yet/);
+  assert.deepEqual(errors, []);
+});
+
+test("SEO God console: a D60 draft shows objective, baseline, steps with agent, risk and evidence, KPIs, later; escaped", { skip: !playwright && "Playwright not installed" }, async (t) => {
+  const { draftStrategy } = await import("../src/god/strategy.mjs");
+  const U = (p) => `https://plumber.test${p}`;
+  const pairs = [{ url: U("/boilers"), query: '<img src=x onerror="window.__pwned=2">boiler repair', clicks: 3, impressions: 900, position: 8.4 },
+    ...Array.from({ length: 8 }, (_, i) => ({ url: U(`/p${i}`), query: `q ${i}`, clicks: [40, 20, 12, 8, 6, 5, 4, 3][i], impressions: 400, position: i + 1 }))];
+  const sc = { from: "2026-10-17", to: "2026-11-13", days: 28, totals: { clicks: 101, impressions: 4100, ctr: 0.02, position: 5 }, pages: pairs.map((p) => ({ url: p.url, clicks: p.clicks, impressions: p.impressions, position: p.position })), queries: pairs.map((p) => ({ ...p })), pairs };
+  const strategy = draftStrategy({ site: { url: "https://plumber.test/", name: "Plumber" }, discovered: { businessTypes: ["Plumber"] }, searchConsole: sc,
+    audit: { generatedAt: "2026-11-16T00:00:00Z", summary: { pagesCrawled: 9 }, issues: [{ rule: "hard-to-read", severity: "low", url: U("/a") }] }, now: "2026-11-16T10:00:00Z" });
+  const { page, base, errors } = await open(t, { strategy });
+  await page.goto(`${base}/#/s/${SITE.id}/god`);
+  await page.waitForSelector(".strategy");
+  const text = await page.textContent(".strategy");
+  assert.match(text, /Objective:.*local/); assert.match(text, /inferred/);
+  assert.match(text, /101 clicks, 4,100 impressions/); assert.match(text, /2026-10-17 to 2026-11-13/);
+  assert.match(text, /researcher/); assert.match(text, /medium risk/); assert.match(text, /Evidence: .*900 impressions/);
+  assert.match(text, /review on 2026-12-14/); assert.match(text, /What will not be done without you/); assert.match(text, /Later/);
+  assert.equal(await page.evaluate(() => window.__pwned), undefined, "query text from Google is escaped");
   assert.deepEqual(errors, []);
 });

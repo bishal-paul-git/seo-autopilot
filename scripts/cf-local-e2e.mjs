@@ -158,6 +158,26 @@ try {
   check(JSON.parse(psql(`select public.recall(${lit(A)}, 'strategy')`, "service_role"))[0]?.value?.status === "approved" && psql(`select status from public.jobs where id = ${lit(spA)};`) === "completed", "one approval: site A's strategy adopted");
   check(/strategy_proposal:awaiting_approval/.test(jobs(B)), "site B still waits for its own agency");
 
+  // D60: an old-format draft still waiting (as on the live sites drafted before D60) is re-drafted once in workerd by its
+  // own job and keeps waiting; an approved strategy is never touched.
+  {
+    const OLD = { status: "proposed", approval: "agency", objective: null, firstSteps: [{ title: "Long sentences (7 pages)" }], kpis: ["Search Console clicks and impressions (needs Search Console access)"], risks: ["8 questions open"] };
+    const spB = psql(`select id from public.jobs where site_id = ${lit(B)} and kind = 'strategy_proposal';`);
+    const approvedA = JSON.parse(psql(`select public.recall(${lit(A)}, 'strategy')`, "service_role"))[0].value;
+    psql(`select public.remember(${lit(B)}, ${lit(JSON.stringify([{ kind: "strategy", key: "initial", value: OLD, basis: "inferred", source: "onboarding" }]))}::jsonb);`, "service_role");
+    psql(`update public.jobs set outputs = jsonb_set(outputs, '{proposal}', ${lit(JSON.stringify(OLD))}::jsonb) where id = ${lit(spB)};`);
+    psql(`delete from public.god_site_ticks;`);
+    await cron();
+    if (!/strategy_redraft:completed/.test(jobs(B))) { psql(`delete from public.god_site_ticks;`); await cron(); }
+    const nowB = JSON.parse(psql(`select public.recall(${lit(B)}, 'strategy')`, "service_role"))[0].value;
+    check(nowB.draftVersion === 2 && nowB.status === "proposed" && /strategy_redraft:completed/.test(jobs(B)) && psql(`select status from public.jobs where id = ${lit(spB)};`) === "awaiting_approval"
+      && psql(`select outputs->'proposal'->>'draftVersion' from public.jobs where id = ${lit(spB)};`) === "2", `site B's old draft re-drafted once in workerd and still waits for its agency (${nowB.firstSteps.length} first steps, step 1: ${nowB.firstSteps[0]?.title})`);
+    const nowA = JSON.parse(psql(`select public.recall(${lit(A)}, 'strategy')`, "service_role"))[0].value;
+    check(nowA.status === "approved" && JSON.stringify(nowA) === JSON.stringify(approvedA) && !/strategy_redraft/.test(jobs(A)), "site A's approved strategy is untouched");
+    psql(`delete from public.god_site_ticks;`); await cron();
+    check((jobs(B).match(/strategy_redraft/g) || []).length === 1, "and not re-drafted again");
+  }
+
   // Agent advice within budget, through the user's (stand-in) key.
   psql(`delete from public.god_site_ticks where site_id = ${lit(A)};`);
   await cron(); run = lastRun();

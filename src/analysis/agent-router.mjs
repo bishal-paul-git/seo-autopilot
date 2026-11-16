@@ -4,7 +4,7 @@
 
 import { detectVerticals, PACKS } from "./verticals.mjs";
 
-const RULE_GROUPS = {
+export const RULE_GROUPS = {
   "redirect-guardian": ["status-error", "status-redirect", "redirect-chain", "link-to-redirect", "broken-link"],
   "technical-fixer": ["robots-blocked", "noindex-in-sitemap", "canonical-missing", "canonical-other", "canonical-broken", "robots-blocks-all", "sitemap-not-in-robots", "viewport-missing", "lang-missing", "mixed-content", "h1-missing", "h1-multiple", "title-missing", "desc-missing"],
   "schema-engineer": ["schema-required-missing", "jsonld-invalid", "jsonld-article-incomplete", "og-missing"],

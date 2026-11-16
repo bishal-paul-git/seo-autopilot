@@ -2,6 +2,20 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-16 (D60 demand-driven strategy draft; code change, not deployed)
+- **Code:**
+  - `src/god/strategy.mjs` (new, pure): `draftStrategy` (objective, baseline, ranked first steps with agent/risk/evidence, later, KPIs with review date, what waits for a person, open questions), `brandTerms`, `sensitiveTopics`, `DRAFT_VERSION = 2`.
+  - `src/god/onboarding.mjs`: `buildDossier` takes `reports` and `now` and uses the drafter; `withAnswers` keeps v2 drafts' shape.
+  - `src/god/handlers.mjs`: `strategy_proposal` reads the memory reports; new `strategy_redraft` handler; `draftReports`, `strategyOutput`, `strategyRedraftDue`, `redraftStrategy`.
+  - `src/god/tick.mjs`: queues `strategy_redraft` once for an unapproved waiting draft that is older than v2 or predates Search Console data (after fresh priorities).
+  - `src/god/insights.mjs`: `searchInsights` extracted from `prioritiesFrom`; `NOT_INDEXED` exported. `src/analysis/priorities.mjs`: search items keep `metrics`. `src/analysis/agent-router.mjs`: `RULE_GROUPS` exported.
+  - Portal `cloud/portal/app/index.html`: `strategyHtml` (old drafts still render); "Strategy re-draft" label.
+  - `scripts/cf-measure-signals.mjs`: strategy draft measurement. `scripts/cf-local-e2e.mjs`: D60 check.
+- **Migration:** none.
+- **Tests:** `npm test` 678/678 (new `test/strategy-draft.test.mjs` 11, portal D60 render test; `test/onboarding.test.mjs` assertion moved to `openQuestions`). One earlier full run had 1 timing failure in `test/portal-god.test.mjs` (passed alone and on the rerun). `bash cloud/portal/supabase/test/run.sh` rls1-28 pass. `node scripts/cf-local-e2e.mjs` all pass incl. 3 D60 checks. `node scripts/god-pg-e2e.mjs` passes. CPU estimate in DECISIONS D60. All Search Console data is fixtures; no real Google call.
+- **Docs:** D60 in DECISIONS; STATUS.
+- **Not done:** Worker redeploy and portal publish (owner). On deploy, the waiting old drafts (Excel, Manchester, AudioScriptor per the owner) are re-drafted on the next plan; approved strategies are not touched.
+
 ## 2026-11-15 (D59 invite-only landing page and invite requests; code change, not deployed)
 - **Code:**
   - Portal `cloud/portal/app/index.html`: static landing page (`#landing`) for logged-out visitors on `#/`; head script sets `data-view` before paint; `render()` shows the landing when signed out (a stale render never wins); "Request an invite" form with client-side checks matching the SQL; sign-in page links to the request; Operations card "Invite requests" (platform admins: invite, decline, undo, copy email and sign-up link); notification kind `invite_request`. `meta robots noindex` removed; title, description, canonical, Open Graph added.

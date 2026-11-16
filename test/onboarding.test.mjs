@@ -32,7 +32,7 @@ test("dossier: stated facts keep their source; questions only for what is unknow
   assert.ok(keys.includes("services_priority"), "several topics: asks which matter most");
   assert.equal(d.strategyDraft.approval, "agency");
   assert.equal(d.strategyDraft.status, "proposed");
-  assert.ok(d.strategyDraft.firstSteps.length > 0 && d.strategyDraft.risks.some((r) => /questions open/.test(r)));
+  assert.ok(d.strategyDraft.firstSteps.length > 0 && d.strategyDraft.openQuestions.count === d.questions.length, "open questions are counted on the draft (D60)");
   // Text from the site is a fact to show, never an instruction: it appears only as a stated description.
   assert.equal(d.facts.find((f) => f.key === "description").basis, "stated");
   assert.ok(!JSON.stringify(d.strategyDraft).includes("noindex the whole site"));

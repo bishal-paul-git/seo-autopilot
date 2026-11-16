@@ -13,6 +13,7 @@ import { detectAlerts, unhandledAlerts } from "../analysis/alerts.mjs";
 import { isoWeek } from "../analysis/search-history.mjs";
 import { rulesOnPage, verifyChange, WAIT_FOR_PR_DAYS } from "./github.mjs";
 import { withAnswers } from "./onboarding.mjs";
+import { strategyRedraftDue } from "./handlers.mjs";
 import { scorecardRows, scorecardDue } from "./scorecard.mjs";
 
 const OPEN = new Set(["proposed", "scoped", "queued", "running", "awaiting_review", "awaiting_approval", "authorized", "deploying", "verifying", "failed", "escalated"]);
@@ -238,6 +239,13 @@ export async function tick({ store, sites = null, handlers = {}, now = new Date(
       if (has("search_console") && trafficDue(learned.experiments, now).length) plan.jobs.push({ kind: "search_console", title: "Measure accepted advice in Search Console", department: "analytics", risk: "low", priority: 3, source: "seo_god", requiresApproval: false, idempotencyKey: `search_console:${now.slice(0, 10)}`, inputs: { site: site.id }, why: "accepted advice has a complete 14-day after-window" });
       // D58: measure changes on the scorecard (free; one small Search Console query per change, only with Google access).
       if (has("scorecard") && scorecardDue(memory, now) && (await applies("scorecard", site.id))) plan.jobs.push({ kind: "scorecard", title: "Score changes against Search Console", department: "analytics", risk: "low", priority: 3, source: "seo_god", requiresApproval: false, idempotencyKey: `scorecard:${now.slice(0, 10)}`, inputs: { site: site.id }, why: "a change's before-baseline or after-window is now in Search Console" });
+      // D60: an unapproved draft from an older drafter, or made before Search Console data arrived, is re-drafted once
+      // by its own small job (a Worker invocation has only a few ms of CPU; planning already uses most of them). The
+      // draft keeps waiting for the agency; an approved strategy is never touched.
+      // With new search data, wait for the re-ranked priorities: the drafter reads their analysis instead of redoing it.
+      const redraft = has("strategy_redraft") && !(rankAt && memory.some((m) => m.kind === "report" && m.key === "search_console")) ? strategyRedraftDue(jobs, memory) : null;
+      if (redraft) plan.jobs.push({ kind: "strategy_redraft", title: "Re-draft the strategy waiting for approval", department: "research", risk: "low", priority: 2, source: "seo_god", requiresApproval: false,
+        idempotencyKey: `strategy_redraft:${redraft.key}`, inputs: { site: site.id, job: redraft.job.id }, why: redraft.reason });
       const guided = applyLessons(plan.jobs, learned.lessons);
       entry.deferred.push(...guided.deferred); entry.adjusted = guided.adjusted;
       // An alert run of a specialist this week stands in for its weekly run, so a sudden problem never doubles the spend.
