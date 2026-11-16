@@ -67,13 +67,16 @@ export function crawlFiles(publicUrl, day = new Date().toISOString().slice(0, 10
   };
 }
 
-export function build({ url = process.env.PORTAL_SUPABASE_URL || "", key = process.env.PORTAL_SUPABASE_KEY || "", workerUrl = process.env.PORTAL_WORKER_URL || "", publicUrl = process.env.PORTAL_PUBLIC_URL || "https://seo.erudience.com", out = join(here, "dist") } = {}) {
+export function build({ url = process.env.PORTAL_SUPABASE_URL || "", key = process.env.PORTAL_SUPABASE_KEY || "", workerUrl = process.env.PORTAL_WORKER_URL || "", publicUrl = process.env.PORTAL_PUBLIC_URL || "https://seo.erudience.com", out = join(here, "dist"), allowUnconfigured = process.env.PORTAL_ALLOW_UNCONFIGURED === "1" } = {}) {
   if (url && !/^(https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+|http:\/\/(127\.0\.0\.1|localhost)(:\d+)?)\/?$/.test(url)) throw new Error("PORTAL_SUPABASE_URL must be https://<project>.supabase.co");
   if (/service_role|^sb_secret_/.test(key)) throw new Error("Use the publishable (anon) key, never the service role or a secret key.");
   // D56: the Worker that serves the service account email and Check access (/google/*); empty hides them.
   if (workerUrl && !/^(https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+|http:\/\/(127\.0\.0\.1|localhost)(:\d+)?)\/?$/.test(workerUrl)) throw new Error("PORTAL_WORKER_URL must be https://<worker host>");
   // D59: the address search engines and shared links use (canonical, Open Graph, sitemap).
   if (!/^https:\/\/[a-z0-9-]+(\.[a-z0-9-]+)+\/?$/.test(publicUrl)) throw new Error("PORTAL_PUBLIC_URL must be https://<host> with no path");
+  // D62: a build without the Supabase address or key is a portal nobody can sign in to (it was published once by
+  // mistake). Refused unless explicitly allowed (tests and local previews: allowUnconfigured / PORTAL_ALLOW_UNCONFIGURED=1).
+  if ((!url || !key) && !allowUnconfigured) throw new Error("PORTAL_SUPABASE_URL and PORTAL_SUPABASE_KEY are required (set PORTAL_ALLOW_UNCONFIGURED=1 only for a local test build)");
   const pub = publicUrl.replace(/\/$/, "");
   const cfg = JSON.stringify({ supabaseUrl: url.replace(/\/$/, ""), anonKey: key, workerUrl: workerUrl.replace(/\/$/, "") }).replace(/</g, "\\u003c");
   const html = readFileSync(join(here, "app/index.html"), "utf8").replaceAll("__PUBLIC_URL__", pub).replace("__CONFIG__", cfg).replace("__ORG__", JSON.stringify(organisation())).replace("__BRIEF__", JSON.stringify(BRIEF).replace(/</g, "\\u003c")).replace("__AGENTS__", () => JSON.stringify(agentCatalog()).replace(/</g, "\\u003c")); // a function: "$&" in agent text stays literal

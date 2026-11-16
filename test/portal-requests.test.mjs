@@ -92,7 +92,7 @@ test("agency: reads requests in full, accepts with a budget, asks, declines, set
   await page.fill("#rnote-r1", "We will look at Leeds first"); await page.fill("#rbud-r1", "1.25");
   await page.click('[data-rdec="accepted"][data-req="r1"]'); await toast(page, "Approve it on the SEO God page");
   assert.deepEqual(calls.find((c) => c.fn === "review_submission").b, { p_submission: "r1", p_decision: "accepted", p_note: "We will look at Leeds first", p_job_kind: "client_request", p_risk: "medium", p_budget_usd: 1.25 });
-  await page.click('[data-rdec="needs_clarification"][data-req="r1"]'); await toast(page, "Question sent");
+  await page.click('[data-rdec="needs_clarification"][data-req="r1"]'); await toast(page, "need more detail");
   await page.click('[data-rdec="rejected"][data-req="r1"]'); await toast(page, "Declined");
   await page.fill("#cl-invite input[name=email]", "erin@client.test"); await page.click("#cl-invite button"); await toast(page, "Invite saved");
   assert.deepEqual(calls.find((c) => c.fn === "invite_client_user").b, { p_client: "cl-1", p_email: "erin@client.test" });

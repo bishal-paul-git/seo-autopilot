@@ -79,7 +79,8 @@ test("Connections: linked automatically, add our email, or pick a property with 
   await page.click('[data-gact="change"]'); await page.waitForSelector("#g-gsc");
   assert.ok(await page.locator('[data-gact="check"]').count() && await page.locator('[data-gact="save"]').count(), "Change opens Check access and the pickers");
 
-  await page.goto(`${base}/#/s/${SITES[1].id}/connections`); await page.waitForSelector("#g-email");
+  // Wait for this site's page: the previous page also had #g-email after "Change" (a race seen under load, D62 session).
+  await page.goto(`${base}/#/s/${SITES[1].id}/connections`); await page.waitForFunction(() => /bakery\.test/.test(document.querySelector("#setup")?.textContent || "") && document.querySelector("#g-email"));
   const add = await page.textContent("#setup");
   assert.match(add, /Add our email in Search Console\s*We cannot see bakery\.test in Search Console yet/);
   assert.match(add, /Users and permissions › Add user[\s\S]*Restricted/);

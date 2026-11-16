@@ -17,7 +17,7 @@ for (const from of [import.meta.url, join(process.cwd(), "package.json")]) { try
 const ROWS = [
   { site: "s1", name: "Plumber <b>Co</b>", url: "https://plumber.test/", agency: "Agency A", status: "live", clicks28: 280, clicksChange: -0.5, notIndexed: 2, inspected: 4, inspectBlocked: false, stale: ["scan"], alerts: 1, escalated: 1, planError: null,
     waiting: 3, spend7Usd: 1.25, scorecard: { win: 1, loss: 2, flat: 0, tooEarly: 1, notEnoughData: 0 }, attention: 120, reasons: ["1 stopped and needs a person", "clicks down 50%", "2 changes lost traffic"] },
-  { site: "s2", name: "Bakery", url: "https://bakery.test/", agency: "Agency A", status: "live", clicks28: 90, clicksChange: null, notIndexed: null, inspected: 0, inspectBlocked: true, stale: [], alerts: 0, escalated: 0,
+  { site: "s2", name: "Bakery", url: "https://bakery.test/", agency: "Agency A", status: "connecting", clicks28: 90, clicksChange: null, notIndexed: null, inspected: 0, inspectBlocked: true, stale: [], alerts: 0, escalated: 0,
     waiting: 0, spend7Usd: 0, scorecard: { win: 0, loss: 0, flat: 0, tooEarly: 0, notEnoughData: 0 }, attention: 0, reasons: [] },
   { site: "s3", name: "Old shop", url: "https://old.test/", agency: "Agency A", status: "paused", clicks28: null, clicksChange: null, notIndexed: null, inspected: 0, stale: [], alerts: 0, escalated: 0, waiting: 0, spend7Usd: 0, scorecard: {}, attention: 0, reasons: [] },
 ];
@@ -68,9 +68,10 @@ test("the agency lands on the portfolio: every website, needs attention first, t
   await page.waitForSelector("h1:has-text('Portfolio')");
   const table = await page.textContent(".pf-table");
   assert.match(table, /Plumber <b>Co<\/b>[\s\S]*Bakery[\s\S]*Old shop/, "in the order given: needs attention first, paused last");
-  for (const s of ["1 stopped and needs a person · clicks down 50% · 2 changes lost traffic", "280", "−50%", "scan stale", "1 alert", "$1.25", "1 won", "2 lost", "1 too early", "refused", "Nothing needs you.", "Paused", "none yet"]) assert.ok(table.includes(s), `shows: ${s}`);
+  for (const s of ["1 stopped and needs a person · clicks down 50% · 2 changes lost traffic", "280", "−50%", "scan stale", "1 alert", "$1.25", "1 won", "2 lost", "1 too early", "refused", "Nothing needs you.", "Paused", "none yet", "Connecting"]) assert.ok(table.includes(s), `shows: ${s}`);
   assert.equal(await page.locator("#page b", { hasText: /^Co$/ }).count(), 0, "names stay text");
-  assert.equal(await page.getAttribute(".pf-table a[href$='/approvals']", "href"), "#/s/s1/approvals", "waiting approvals link to the approvals page");
+  assert.equal(await page.getAttribute(".pf-table a[href$='/god']", "href"), "#/s/s1/god", "waiting approvals link to the SEO God page, where jobs are approved (D62)");
+  assert.equal(await page.locator(".pf-table a[href$='/approvals']").count(), 0);
   const kpis = await page.textContent(".grid.g4");
   assert.match(kpis, /Need attention\s*1/); assert.match(kpis, /370/); assert.match(kpis, /\$1\.25/);
   assert.ok((await page.textContent("#rail")).includes("Portfolio"));

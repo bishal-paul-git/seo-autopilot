@@ -82,7 +82,7 @@ test("agency: unread count, notifications with links, marked as seen; the work r
 
   await page.goto(`${base}/#/s/${SITE.id}/report`); await page.waitForSelector("h2:has-text('Work in November 2026')");
   const r = await page.textContent("#page");
-  for (const s of ["Advice accepted", "Changes made", "1 verified on the live site", "7 at the start of the month", "prepared by Agency A", "More boiler enquiries", "verified: 1 of 1 problems fixed"]) assert.ok(r.includes(s), `report shows: ${s}`);
+  for (const s of ["Advice accepted", "Website changes", "1 verified on the live site", "7 at the start of the month", "prepared by Agency A", "More boiler enquiries", "verified: 1 of 1 problems fixed"]) assert.ok(r.includes(s), `report shows: ${s}`);
   assert.equal(await page.locator("#page img").count(), 0, "stored text escaped");
   await page.click("#print-report");
   assert.equal(await page.evaluate(() => window.__printed), 1);
@@ -102,6 +102,6 @@ test("client account: its own notifications and the work report, no agency menu"
   await page.goto(`${base}/#/notes`); await page.waitForSelector("text=Your agency answered");
   assert.equal(await page.getAttribute("a.note >> nth=0", "href"), `#/k/${SITE.id}/requests`);
   await page.goto(`${base}/#/k/${SITE.id}/report`); await page.waitForSelector("h2:has-text('Work in November 2026')");
-  assert.ok((await page.textContent("#page")).includes("Changes made"));
+  assert.ok((await page.textContent("#page")).includes("Website changes"));
   assert.deepEqual(errors, []);
 });

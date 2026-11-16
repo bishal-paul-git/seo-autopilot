@@ -113,6 +113,7 @@ test("client: sees the connected properties and can check and pick for their own
   await one.page.goto(`${one.base}/#/k/${SITE.id}/connections`); await one.page.waitForSelector("#setup");
   assert.match(await one.page.textContent("#setup"), /Set up\s*2 of 3[\s\S]*plumber\.test \(whole domain\)[\s\S]*Plumber website/);
   assert.equal(await one.page.locator("details#adv").count(), 0, "no developer guide for clients");
+  assert.equal(await one.page.locator('[data-gact="remove"]').count(), 0, "D62: removing the Google access is the agency's decision");
   await one.page.click('[data-gact="check"]'); await one.page.waitForSelector("#g-gsc");
   assert.ok(one.calls.some((c) => c.fn === "worker:check"));
   assert.deepEqual(one.errors, []);

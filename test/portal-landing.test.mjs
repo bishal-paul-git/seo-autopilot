@@ -74,8 +74,17 @@ test("build: crawlable landing in the HTML, indexable, canonical and Open Graph,
   assert.equal(readFileSync(join(out, "robots.txt"), "utf8"), "User-agent: *\nDisallow: /previous-\nSitemap: https://seo.erudience.com/sitemap.xml\n");
   assert.match(readFileSync(join(out, "sitemap.xml"), "utf8"), /<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">\s*<url><loc>https:\/\/seo\.erudience\.com\/<\/loc><lastmod>\d{4}-\d{2}-\d{2}<\/lastmod><\/url>\s*<\/urlset>/);
   assert.match(crawlFiles("https://a.test/", "2026-01-02").sitemap, /<loc>https:\/\/a\.test\/<\/loc><lastmod>2026-01-02<\/lastmod>/);
-  assert.throws(() => build({ publicUrl: "http://insecure.test", out }), /PORTAL_PUBLIC_URL/);
-  assert.throws(() => build({ publicUrl: "https://a.test/path", out }), /PORTAL_PUBLIC_URL/);
+  assert.throws(() => build({ publicUrl: "http://insecure.test", out, allowUnconfigured: true }), /PORTAL_PUBLIC_URL/);
+  assert.throws(() => build({ publicUrl: "https://a.test/path", out, allowUnconfigured: true }), /PORTAL_PUBLIC_URL/);
+});
+
+test("build (D62): refuses empty Supabase settings unless a test build is asked for explicitly", () => {
+  const out = mkdtempSync(join(tmpdir(), "portal-unconfigured-"));
+  assert.throws(() => build({ url: "", key: "", out }), /PORTAL_SUPABASE_URL and PORTAL_SUPABASE_KEY are required/);
+  assert.throws(() => build({ url: "https://abc.supabase.co", key: "", out }), /required/);
+  assert.throws(() => build({ url: "", key: "sb_publishable_x", out }), /required/);
+  build({ url: "", key: "", out, allowUnconfigured: true });
+  assert.match(readFileSync(join(out, "index.html"), "utf8"), /"supabaseUrl":"","anonKey":""/, "the flag allows the unconfigured test build");
 });
 
 test("logged out: #/ is the landing page; Sign in reaches the form; the honest claims are all there", { skip: !playwright && "Playwright not installed" }, async (t) => {
