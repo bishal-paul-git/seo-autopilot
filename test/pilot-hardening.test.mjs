@@ -144,6 +144,8 @@ test("B3: the gate checks advice: on-site addresses, evidence, sourced numbers, 
   const del = v(out([rec({ title: "Noindex /x" })]));
   assert.equal(del.verdict, "needs_changes"); assert.match(del.reasons.join(), /After a person approves/);
   assert.equal(v(out([rec({ title: "After a person approves: redirect /old-2 to /x" })])).verdict, "pass", "prefixed; digits inside paths are not numbers");
+  assert.equal(v(out([rec({ why: "Search Console for 2026-10-18 to 2026-11-14 shows the page" })])).verdict, "pass", "a cited date window is not a claim");
+  assert.match(v(out([rec({ why: "from 2026-10-18 it had 340 clicks" })])).reasons.join(), /340/, "numbers next to a date are still checked");
 });
 
 test("B4: without home-page signals the router does not assume missing markup; signals are kept from the scan", () => {

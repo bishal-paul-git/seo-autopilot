@@ -34,8 +34,9 @@ export function reviewOutput(job, output = {}, { siteHost = null, maxChanges = {
 const DESTRUCTIVE = /\b(remov(e|es|ing)|delet(e|es|ing)|no-?index(es|ing)?|de-?index|redirect(s|ing)?|merg(e|es|ing)|disavow|unpublish)\b/i;
 const APPROVAL_PREFIX = /^After a person approves:/i;
 const sameHost = (a, b) => a.replace(/^www\./, "") === b.replace(/^www\./, "");
-// Numbers in prose, without the ones inside addresses and paths ("/page-2", "https://x/2026/").
-const numbersIn = (text) => String(text || "").replace(/https?:\/\/\S+/g, " ").replace(/(^|\s)\/\S*/g, " ").match(/(?<![\w/])\d[\d,]*(?:\.\d+)?/g) || [];
+// Numbers in prose, without the ones inside addresses and paths ("/page-2", "https://x/2026/") and calendar dates
+// ("2026-10-18", the data window an agent cites: production run 2026-11-16 was sent back twice for "18").
+const numbersIn = (text) => String(text || "").replace(/https?:\/\/\S+/g, " ").replace(/(^|\s)\/\S*/g, " ").replace(/\b\d{4}-\d{2}-\d{2}\b/g, " ").match(/(?<![\w/])\d[\d,]*(?:\.\d+)?/g) || [];
 const norm = (t) => String(t).toLowerCase().replace(/(\d),(\d)/g, "$1$2");
 
 /**
