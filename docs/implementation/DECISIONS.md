@@ -119,6 +119,52 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
 
+## 2026-11-16 D62 Pilot hardening (built, not deployed)
+Three read-only audits on 2026-11-16 (operating cycle, agents, portal; local stand-ins only) found defects that would
+make the pilot stall, overspend, mislabel work or mislead the agency. The owner asked for the smallest reliable fix of
+each listed item, each with a test that fails before and passes after; no redesign, and no change to automatic Google
+linking trust, the shared AI key model, cron, pause switches or budgets.
+
+**Decision (what changed and why):**
+- **Lifecycle.** Gated work in `scoped` (after "request changes", or a planning run that stopped between scoped and
+  awaiting_approval) goes back to `awaiting_approval`; when it had already run, it is marked `outputs.redo`, so the next
+  "approve" re-runs it instead of accepting the old result. The budget reservation counts only work that can still
+  spend (`canStillSpend`): escalated, failed and finished results waiting for a decision hold nothing. A review "fail"
+  ends `escalated` (visible as needing a person), not silently `failed`. New agency-only RPC `dismiss_job` closes
+  escalated or failed work as `cancelled` with an audit row (no portal button yet).
+- **Agents.** The planner passes the router's `prompt` as the instruction and its `targets`. A retry after
+  `needs_changes` carries the reviewer's reasons (`outputs.reviewFeedback`, sent as `<review_feedback>`), and AI work
+  runs at most 2 times on review retries. The quality gate checks advice: recommendation addresses on the site's host,
+  evidence on every recommendation, every number or factual claim (via `findClaims`) present in a claim with a source,
+  and the "After a person approves:" prefix on remove/noindex/redirect/merge/delete/disavow. These ask for changes; they
+  never hard-fail. The compact profile keeps the home-page signals, and the router skips the markup rule without them.
+  The Worker plans with the bundled agent registry (`EDITS` from tools), so risk and department are right.
+- **Safety.** Hosted pull requests are held when the work-order marker (`<!-- seo-god-job:`) is in the PR or issue
+  body, or the `seo/issue-<n>` branch's issue carries `seo-hosted`; seo-implement fails when copying `seo-hosted` fails.
+  The worker can never authorize an `implement` job (JS `canMove` and SQL `transition_job`), and `create_job` refuses
+  the kind for signed-in callers (`request_implementation` creates its draft itself). No write privilege for anon or
+  signed-in users on `god_control`, `god_runs`, `platform_admins`. Share links return the same client-safe snapshot as
+  `client_sites`.
+- **Portal.** Empty Supabase settings refuse to build unless explicitly allowed. Truthful states: 72-hour scan rule,
+  specialists off while paused, real site status, Waiting links to the SEO God page, errors instead of "nothing yet",
+  client accounts kept off agency routes, Google Remove for the agency only, one AI-key phrase, corrected texts.
+- **Run records.** The god_runs row is written at the start of a run (`start_god_run`, marked as not finished) and
+  completed at the end (`record_god_run` with the id); the local e2e uses a notify stand-in and asserts no run errors.
+
+**Deviation from the brief (C1):** the brief said a `seo/issue-*` branch alone counts as hosted. The site's own
+autopilot (D17) also drafts on `seo/issue-<n>` branches (`templates/workflows/seo-autopilot.yml`), so that rule would
+stop every autopilot merge on every site. The branch counts only together with a `seo-hosted` issue; the marker counts
+on its own. An unreadable issue holds the change (fail closed).
+
+**Tradeoffs and risks:** the stricter gate can send real advice back more often (one paid retry, then a person); the
+exams have not been re-run since D56/D57 and should be before judging it. The destructive-verb check matches anywhere in
+a title ("Remove the noindex tag" needs the prefix too): a false positive costs one retry, never a silent change. The
+2-attempt cap covers review retries; errors thrown by a handler still use the database cap (`max_attempts`, default 3).
+16 editing agents now plan as medium risk: their advice must pass review to leave it (it always gets one); approval
+gating is unchanged. A run in progress shows one "did not record its end" error on Operations until it finishes.
+**Smaller alternative not taken:** hiding "Request changes" for gated work instead of re-routing it; it would leave
+crashed planning runs stuck.
+
 ## 2026-11-16 D61 Automatic Google linking (built, not deployed)
 The owner, 2026-11-16: connecting Google must be automatic and impossible to miss. Observed in production: 3 live sites
 whose owner had already added our service account to Search Console had no binding, because a site got Google data

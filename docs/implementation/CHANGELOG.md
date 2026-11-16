@@ -2,6 +2,24 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-16 (D62 pilot hardening; code change, not deployed)
+- **Branch:** `claude/hopeful-euler-662mu5`, merged origin/main be015eb (#83, D61) first. Inputs: three read-only audit reports (operating cycle, agents, portal) from the same day; not committed.
+- **Code (engine, Worker, templates):**
+  - `src/god/tick.mjs`: gated `scoped` jobs return to `awaiting_approval` (redo marked `outputs.redo`; approving a redo re-queues it); `canStillSpend` for the budget reservation; `waitingOn` names redo and stopped work.
+  - `src/god/worker.mjs`: review `fail` ends `escalated`; `AI_MAX_ATTEMPTS = 2` for review retries; the retry stores `outputs.reviewFeedback`.
+  - `src/god/agent-runner.mjs`: `<review_feedback>` block on a retry (not passed to the fact-checker); `task.targets`.
+  - `src/god/planner.mjs`: `instruction: step.instruction || step.prompt`, `targets`. `src/analysis/agent-router.mjs`: markup rule only with `profile.signals`. `src/god/handlers.mjs`: compact profile keeps `signals` (structuredData, hreflang, noindexOnHome).
+  - `src/god/review.mjs`: `adviceProblems` (host, evidence, sourced numbers and claims via `findClaims`, approval prefix).
+  - `src/core/job-lifecycle.mjs`: the worker cannot authorize `implement`. `src/analysis/autonomy.mjs`, `src/jobs/autopilot.mjs` (`--branch`, `--body-file`, `--issue-labels`): hosted by marker or seo-hosted issue.
+  - `templates/workflows/seo-automerge.yml` (passes branch, PR and issue text, issue labels; unreadable issue holds), `templates/workflows/seo-implement.yml` (seo-hosted copy failure fails the step). Registry regenerated (no diff).
+  - `cloud/worker/build.mjs` (`EDITS`), `cloud/worker/src/app.mjs` (`workerAgents()` passed to `tick`; `start_god_run` at the start, `record_god_run` with the id at the end).
+- **Code (portal):** `cloud/portal/build.mjs` refuses empty Supabase settings (`allowUnconfigured` / `PORTAL_ALLOW_UNCONFIGURED=1`); `cloud/portal/app/index.html` (Waiting link, real status pill, 72 h scan pill, one AI-key phrase, error callouts, client route redirects, Google Remove for the agency, texts); `cloud/portal/README.md` build note.
+- **Migration** `cloud/portal/supabase/migrations/20261124000000_pilot_hardening.sql`, **not applied**: `dismiss_job`; `transition_job` (implement), `create_job` (implement refused for signed-in callers), `request_implementation` (creates its job itself); revoke insert/update/delete on `god_control`, `god_runs`, `platform_admins` from anon and authenticated; `shared_site` redaction; `site_pipeline` (72 h scan rule, specialists off while paused); `portfolio` (real status); `god_runs.finished_at` nullable, `start_god_run`, `record_god_run` completes by id. Needs 20261119000000 to 20261123000000 applied first.
+- **Tests:** new `test/pilot-hardening.test.mjs` (11), `test/portal-hardening.test.mjs` (4), `cloud/portal/supabase/test/rls30.sql` (wired into `run.sh`); updated `agent-runner`, `tick`, `exams` (stand-in reply sources its numbers), `cf-worker`, `portal-portfolio`, `portal-landing` (+1), `portal-google`, `portal-notes`, `portal-requests`; `portal-autolink` waiting race fixed. Each new test was run against the old code: all 11 engine tests, the 4 portal tests, the new landing test and the portfolio link assertion failed there; `rls30.sql` fails without the migration.
+- **Checks (this environment, stand-ins only):** `npm test` 702/702; `service postgresql restart && bash cloud/portal/supabase/test/run.sh` exit 0 (rls1-rls30); `node scripts/cf-local-e2e.mjs` exit 0, 56 checks, usage `runsWithErrors: 0` (was 20 before the notify stand-in); `node scripts/god-pg-e2e.mjs` exit 0, 17 checks (4 new: gated redo against the real database). No real Google, Anthropic, GitHub or production call.
+- **Docs:** D62 in DECISIONS; STATUS.
+- **Not done:** migration, Worker redeploy, portal publish, package release for the template and `autopilot` flag changes (owner). No deployment.
+
 ## 2026-11-16 (D61 automatic Google linking; code change, not deployed)
 - **Branch:** `claude/hopeful-euler-662mu5`, merged origin/main 442424a (#82, D60) first.
 - **Code:**
