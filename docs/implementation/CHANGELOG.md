@@ -2,6 +2,13 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-16 16:30 UTC (D64 GA4 retry; code change and production SQL)
+- **Owner request applied:** strategy drafts for AudioScriptor, Excel Error Finder and Manchester approved through `public.approve_job` (note names the owner's chat request). The 16:00 UTC run picked them up: strategies `approved`, 13 specialist and data jobs queued. Birmingham untouched.
+- **Bug:** `google_autolink_due` was false once Search Console was linked, so GA4 was never retried after the first attempt (made while the Analytics Admin API was off). All 4 live sites had Search Console only.
+- **Code (9dbd55c):** migration `20261125000000_autolink_ga4.sql`; `src/god/tick.mjs` reason text; test `cloud/portal/supabase/test/rls31.sql` in `run.sh`.
+- **Checks:** `bash cloud/portal/supabase/test/run.sh` exit 0 (rls1-rls31); `npm test` 709/709.
+- **Deployment:** function applied to production with execute_sql 16:10 UTC (same text as the migration). Worker not redeployed (reason string only). Run 16:00 UTC: finished 16:02, 4 jobs, no errors; no scoped or escalated jobs.
+
 ## 2026-11-16 (D63 agent quality pass; code change, not deployed)
 - **Branch:** `claude/hopeful-euler-662mu5`; merged origin/main f76d17e (#84, D62) first (merge 4b6645b). Input: the 2026-11-16 agent audit (not committed).
 - **Content:** `## Evidence` section in all 38 `departments/*/agents/*.md`; hosted-output mapping in the Output of seo-technical-fixer, seo-migration-planner, seo-schema-engineer, seo-ecommerce, seo-local-content-writer, seo-local-gbp-optimizer (Method steps 4-6 and 9 trimmed too), seo-local-review-manager; `publishable: true` front matter on 12 agents.

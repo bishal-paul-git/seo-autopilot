@@ -1043,3 +1043,8 @@ Keep the engine MIT; sell hosting, multi-client operations, approvals, scheduled
 - Agents are Markdown definitions; the `team` job routes deterministically from reports; a human approves what goes live.
 - Site profile decides edit vs advise mode; agents never edit when the source is not in the repository.
 - Users bring their own Google and AI accounts; no maintainer keys.
+
+## D64 (2026-11-16): automatic linking retries Analytics
+Context: D61 linked Google automatically only while a site had no Search Console binding. The first attempts ran before the Analytics Admin API was enabled, so every live site got Search Console without GA4 and was never tried again.
+Decision: `google_autolink_due` is true, once a day, while Search Console or GA4 is missing. Still false for paused sites, after a person removed the Search Console property, and once a person chose properties on Connections (`google.bind` in the audit log), so a person's choice, including "no Analytics", is kept.
+Tradeoff: a site with no GA4 property costs one free Admin API listing a day. Rejected: retrying only after an "API disabled" error (needs the error kept per site; more code for the same result).
