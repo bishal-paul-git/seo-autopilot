@@ -15,7 +15,7 @@ import { tick } from "../../../src/god/tick.mjs";
 import { makeSearchConsoleHandler, makeSearchSnapshotHandler, googleToken } from "../../../src/god/search-console.mjs";
 import { runOnce } from "../../../src/god/worker.mjs";
 import { makeGitHub } from "../../../src/god/github.mjs";
-import { googleAccessRoute, GSC_SCOPE, GA_SCOPE } from "../../../src/god/google-access.mjs";
+import { googleAccessRoute, makeAutolinkHandler, GSC_SCOPE, GA_SCOPE } from "../../../src/god/google-access.mjs";
 import { makeSpeedHandler } from "../../../src/god/speed.mjs";
 import { makeInspectHandler } from "../../../src/god/inspect.mjs";
 import { makeScorecardHandler } from "../../../src/god/scorecard.mjs";
@@ -92,7 +92,7 @@ export function context(env, fetchImpl) {
       allowed: (id) => rpc(env, fetchImpl, "gsc_allowed", { p_site: id }).then(Boolean, () => false),
       boundOf: (id) => rpc(env, fetchImpl, "google_target", { p_site: id }).catch(() => null) };
     handlers.search_console = makeSearchConsoleHandler(gsc);
-    handlers.search_snapshot = makeSearchSnapshotHandler(gsc); // D47: the 28-day snapshot the agents read (and GA4, D56)
+    handlers.search_snapshot = makeSearchSnapshotHandler({ ...gsc, ...(env.GOOGLE_API_BASE ? { api: `${env.GOOGLE_API_BASE}/webmasters/v3`, analyticsBase: env.GOOGLE_API_BASE } : {}) }); // D47: the 28-day snapshot the agents read (and GA4, D56); GOOGLE_API_BASE: local tests only
     // Planned only for a site that can be read: a bound property, or a platform admin's confirmation (D34).
     handlers.search_snapshot.applies = async (id) => (await rpc(env, fetchImpl, "google_bound", { p_site: id }).then(Boolean, () => false)) || (await gsc.allowed(id));
     // D57: Google's index status for a rotating batch of at most INSPECT_PER_DAY pages a day (URL Inspection API).
@@ -101,6 +101,9 @@ export function context(env, fetchImpl) {
     // D58: score completed changes and accepted advice against Search Console (one small query per change, when due).
     handlers.scorecard = makeScorecardHandler({ ...gsc, api: env.GOOGLE_API_BASE ? `${env.GOOGLE_API_BASE}/webmasters/v3` : undefined }); // GOOGLE_API_BASE: local tests only
     handlers.scorecard.applies = handlers.search_snapshot.applies;
+    // D61: link a live, unbound site automatically once a day, through the same database checks as Check access.
+    handlers.google_autolink = makeAutolinkHandler({ ...gsc, call: (fn, args) => rpc(env, fetchImpl, fn, args), base: googleBase(env) });
+    handlers.google_autolink.applies = (id) => rpc(env, fetchImpl, "google_autolink_due", { p_site: id }).then(Boolean, () => false); // false before migration 20261123000000
   }
   // D56: weekly phone speed checks with ONE platform key, so customers never add one; never queued without it.
   if (env.PAGESPEED_API_KEY) handlers.speed_snapshot = makeSpeedHandler({ store, siteOf, apiKey: env.PAGESPEED_API_KEY, fetchImpl, maxPages: s.speedPages });
@@ -129,6 +132,9 @@ export async function runJob(env, fetchImpl, workerId) {
   const r = await runOnce({ store, handlers, worker: workerId, timeoutMs: 170_000, siteHostOf: async (job) => { const site = await siteOf(job.siteId); try { return site ? new URL(site.url).hostname : null; } catch { return null; } } });
   return r || { idle: true };
 }
+
+/** Google's listing endpoints: production by default; GOOGLE_API_BASE points them at a stand-in (local tests only). */
+const googleBase = (env) => (env.GOOGLE_API_BASE ? { gsc: `${env.GOOGLE_API_BASE}/webmasters/v3`, ga4: `${env.GOOGLE_API_BASE}/v1beta`, token: `${env.GOOGLE_API_BASE}/token` } : {});
 
 async function rpc(env, fetchImpl, fn, args = {}) {
   const r = await fetchImpl(`${String(env.SUPABASE_URL).replace(/\/$/, "")}/rest/v1/rpc/${fn}`, { method: "POST", headers: { apikey: env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`, "content-type": "application/json" }, body: JSON.stringify(args) });
@@ -202,7 +208,7 @@ export const handler = {
     // D56: the service account's email and "Check access". Public routes; the check needs a signed-in portal user.
     if (url.pathname.startsWith("/google/")) {
       const f = countingFetch();
-      try { return await googleAccessRoute(req, { env, fetchImpl: f, call: (fn, args) => rpc(env, f, fn, args), base: env.GOOGLE_API_BASE ? { gsc: `${env.GOOGLE_API_BASE}/webmasters/v3`, ga4: `${env.GOOGLE_API_BASE}/v1beta`, token: `${env.GOOGLE_API_BASE}/token` } : {} }); } // GOOGLE_API_BASE: local tests only
+      try { return await googleAccessRoute(req, { env, fetchImpl: f, call: (fn, args) => rpc(env, f, fn, args), base: googleBase(env) }); }
       catch (e) { console.log(JSON.stringify({ msg: "google access", error: String(e.message || e).slice(0, 200) })); return json({ ok: false, error: "something went wrong: try again" }, 500); }
     }
     if (!url.pathname.startsWith("/internal/")) return json({ error: "not found" }, 404);

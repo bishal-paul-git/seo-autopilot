@@ -35,8 +35,9 @@ export function trafficDue(experiments, now) {
   return experiments.filter((e) => String(e.openedAt).slice(0, 10) <= ready && (e.items || []).some((it) => it.href && !it.traffic));
 }
 
-async function query(fetchImpl, token, property, body) {
-  const r = await fetchImpl(`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(property)}/searchAnalytics/query`, { method: "POST", headers: { Authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify(body) });
+const GSC_API = "https://www.googleapis.com/webmasters/v3";
+async function query(fetchImpl, token, property, body, api = GSC_API) {
+  const r = await fetchImpl(`${api || GSC_API}/sites/${encodeURIComponent(property)}/searchAnalytics/query`, { method: "POST", headers: { Authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify(body) });
   const j = await r.json().catch(() => ({}));
   if (!r.ok || j.error) { const e = new Error(j.error?.message || `Search Console HTTP ${r.status}`); e.status = r.status; throw e; }
   return j.rows || [];
@@ -108,10 +109,10 @@ async function visibleProperties(fetchImpl, token) {
   } catch { return []; }
 }
 
-async function findProperty(fetchImpl, token, siteUrl, body, candidates = propertyCandidates(siteUrl)) {
+async function findProperty(fetchImpl, token, siteUrl, body, candidates = propertyCandidates(siteUrl), api = GSC_API) {
   const host = new URL(siteUrl).hostname.replace(/^www\./, "");
   for (const p of candidates) {
-    try { return { property: p, rows: await query(fetchImpl, token, p, body) }; }
+    try { return { property: p, rows: await query(fetchImpl, token, p, body, api) }; }
     catch (e) { if (![403, 404].includes(e.status)) throw e; }
   }
   return { property: null, rows: null, host, visible: await visibleProperties(fetchImpl, token) };
@@ -146,7 +147,7 @@ const rowOf = (x) => ({ clicks: x.clicks || 0, impressions: x.impressions || 0, 
  * site's memory as report "search_console": totals, the top pages, the top queries and which page each top query
  * lands on (page + query pairs, D52). Four small queries, read-only.
  */
-export function makeSearchSnapshotHandler({ store, siteOf, getToken, fetchImpl = (...a) => fetch(...a), now = () => new Date().toISOString(), allowed = async () => true, boundOf = null, analyticsBase = "" }) {
+export function makeSearchSnapshotHandler({ store, siteOf, getToken, fetchImpl = (...a) => fetch(...a), now = () => new Date().toISOString(), allowed = async () => true, boundOf = null, analyticsBase = "", api = GSC_API }) { // api, analyticsBase: local tests only
   return async (job) => {
     const a = await searchAccess(job, { boundOf, getToken, allowed });
     if (a.stop) return a.stop;
@@ -160,14 +161,14 @@ export function makeSearchSnapshotHandler({ store, siteOf, getToken, fetchImpl =
       return `Analytics ${a.ga4}: ${v.totals.sessions} visits, ${v.pages.length} landing pages stored`;
     }, (e) => `Analytics not read: ${String(e.message).slice(0, 160)}`) : null;
     if (a.bound && !a.candidates.length) return { evidence: [ga] };
-    const found = await findProperty(fetchImpl, token, site.url, { startDate: from, endDate: to, rowLimit: 1 }, a.candidates || undefined);
+    const found = await findProperty(fetchImpl, token, site.url, { startDate: from, endDate: to, rowLimit: 1 }, a.candidates || undefined, api);
     if (!found.property) return { escalate: a.bound ? lostAccess(a.candidates[0]) : noAccessMessage(found), evidence: ga ? [ga] : [], costUsd: 0 };
     const { property } = found, base = { startDate: from, endDate: to };
-    const pages = await query(fetchImpl, token, property, { ...base, dimensions: ["page"], rowLimit: SNAPSHOT_PAGES });
-    const queries = await query(fetchImpl, token, property, { ...base, dimensions: ["query"], rowLimit: SNAPSHOT_QUERIES });
-    const pairs = await query(fetchImpl, token, property, { ...base, dimensions: ["page", "query"], rowLimit: SNAPSHOT_PAIRS });
+    const pages = await query(fetchImpl, token, property, { ...base, dimensions: ["page"], rowLimit: SNAPSHOT_PAGES }, api);
+    const queries = await query(fetchImpl, token, property, { ...base, dimensions: ["query"], rowLimit: SNAPSHOT_QUERIES }, api);
+    const pairs = await query(fetchImpl, token, property, { ...base, dimensions: ["page", "query"], rowLimit: SNAPSHOT_PAIRS }, api);
     // D57: the site's daily totals for the history (5 weeks, so a week-over-week change is visible the first day).
-    const daily = await query(fetchImpl, token, property, { startDate: addDays(to, -(HISTORY_FETCH_DAYS - 1)), endDate: to, dimensions: ["date"], rowLimit: HISTORY_FETCH_DAYS });
+    const daily = await query(fetchImpl, token, property, { startDate: addDays(to, -(HISTORY_FETCH_DAYS - 1)), endDate: to, dimensions: ["date"], rowLimit: HISTORY_FETCH_DAYS }, api);
     const totals = (found.rows || [])[0] ? rowOf(found.rows[0]) : { clicks: 0, impressions: 0, ctr: 0, position: 0 };
     const value = { property, from, to, days: SNAPSHOT_DAYS, generatedAt: now(), totals,
       pages: pages.map((x) => ({ url: x.keys[0], ...rowOf(x) })), queries: queries.map((x) => ({ query: x.keys[0], ...rowOf(x) })),

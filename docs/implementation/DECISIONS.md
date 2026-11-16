@@ -119,6 +119,79 @@ Recommendation: (c) now, then (b) at the next minor release.
 
 **Tradeoffs:** a derived inbox cannot be dismissed item by item. It empties as the work is handled, which keeps it honest.
 
+## 2026-11-16 D61 Automatic Google linking (built, not deployed)
+The owner, 2026-11-16: connecting Google must be automatic and impossible to miss. Observed in production: 3 live sites
+whose owner had already added our service account to Search Console had no binding, because a site got Google data
+only after a signed-in user pressed Check access and picked a property (D56). The engine never read them.
+
+**Decision:**
+- **A free, low-risk job `google_autolink`** (`src/god/google-access.mjs`, `makeAutolinkHandler`):
+  - Planned at most once a day per live (not paused) site with no Search Console binding. The planner makes one
+    database call (`google_autolink_due`: not paused, unbound, not tried today, not removed by a person) and no Google call.
+    Priority 3, so a new site's scan and strategy draft go first.
+  - The job lists what the service account can read for the host with the D56 code (`accessFor`), picks with the pure
+    `autoPick`, and calls the service-role RPC `google_autolink`.
+- **What is bound without a person** (`autoPick`): for Search Console, the first tier with candidates decides, and it
+  must have exactly one: (1) the domain property of the site's own host; (2) the URL-prefix property with the site's own
+  scheme and host (www counts) whose path the site address starts with; (3) a parent domain property. Several in that
+  tier, or only other forms (http for an https site, the other www form, a path prefix), bind nothing and give a reason.
+  For GA4: exactly one property with a web stream on the host, and the listing was complete (past the 30-property cap,
+  only a single find named like the site).
+  - Deviation from the brief's order ("domain, then https prefix"): for a subdomain site, its own https prefix comes
+    before a parent domain property, because the parent's data covers the whole domain.
+- **Same rules as Check access** (migration 20261123000000):
+  - `private.google_refusal` holds the checks; `bind_google` was rewritten on it (same messages and order), and
+    `google_autolink` uses it. The checks: the pick is in the stored list for this site and covers its host; one property
+    per website across every agency and one Search Console binding per host (D56 constraints, also on a race); the D34
+    rule for a host another agency registered (needs a platform admin's `set_gsc_allowed`).
+  - The database adds one guard of its own: an automatic URL-prefix pick must have the site's own scheme and host.
+  - It never replaces an existing binding, whoever made it.
+  - Refusals go to `google_binding_conflicts` and the audit log (`user_id` null), at most once a week per site,
+    property and reason, so daily retries do not flood the admin.
+- **Audit:** `google_bindings.bound_via` ('person' or 'auto'; `bound_by` stays null for auto) and an audit row
+  `google.autolink`.
+- **A person's choice wins:** removing Search Console (or saving "None" while properties were offered) sets
+  `gscRemovedAt`, and automatic linking stops for that site until a person picks a property again.
+- **After a link:** the job queues the day's `search_snapshot` (the planner's idempotency key, so never twice), so the
+  first read runs in the same scheduler run. Priorities, index status, the scorecard and the D60 re-draft follow at
+  the site's next planning, as for any site with data.
+- **Portal:**
+  - Connections shows one of: "Linked automatically" (or "Linked") with the properties and a Change button that opens
+    the D56 step; "Add our email in Search Console" with the email, Copy and the steps; or "Pick a property" with the
+    reason.
+  - The Portfolio shows the same state per website and a banner while any live website has no Search Console data,
+    with the email, Copy and the list.
+  - State from `private.google_link_state` (`site_google.link`, `portfolio_google`).
+- **CPU:** the Google calls are in the job, as the D56 Check access route already does them in a Worker request. Node V8
+  estimate with a 200-property account: about 3 ms warm for the listing and pick (mocked responses, token signing not
+  included). Not measured on Cloudflare.
+
+**Security:**
+- Automatic linking gives the same trust as pressing Check access, nothing more. The binding goes to whoever
+  registered the host first, and only for a property whose owner granted our service account.
+- The D56 residual risk is unchanged in kind, but it is now reached without a click:
+  - Someone registers a domain they do not own. If its real owner had already added the service account (for a site
+    in another agency, which the D34 rule catches, or before registering here) and had not bound it yet, the property can
+    be linked to the wrong site.
+  - Exclusivity and conflict recording are kept, so the real owner sees "already connected to another website" and the
+    platform admin sees the refusal and can release the binding (`release_google_binding`).
+- The service-role key stays in the Worker. `google_autolink` and `google_autolink_due` are granted to `service_role`
+  only, and the browser cannot call them (rls29).
+
+**Tradeoffs:**
+- One extra database call per site planning.
+- One Search Console listing, one GA4 account listing and up to 30 web-stream lookups per unbound site per day,
+  against the shared quotas.
+- The daily retry means a site's state can lag by up to a day after the owner adds the email. Check access still works
+  at once.
+
+**Evidence (stand-ins only, no real Google call):**
+- `test/google-autolink.test.mjs`: pick cases, job, planning.
+- `test/portal-autolink.test.mjs`: Chromium.
+- `cloud/portal/supabase/test/rls29.sql`.
+- `scripts/cf-local-e2e.mjs`, D61 section: nothing is bound while nothing is visible; linked automatically with GA4;
+  the first read runs in workerd; dependants next planning; ambiguous site gives "Pick a property"; once a day.
+
 ## 2026-11-16 D60 Demand-driven strategy draft, re-drafted once while unapproved
 On the pilot (erudience.com) the hosted `strategy_proposal` produced audit hygiene as first steps ("Long sentences (7
 pages)", "Very little visible text (6 pages)", a www redirect), no objective, generic KPIs ("Search Console clicks (needs

@@ -34,4 +34,5 @@ p -f shim.sql -f ../migrations/20261030000000_portal.sql -f rls.sql \
   -f ../migrations/20261118000000_google_access.sql -f rls25.sql \
   -f ../migrations/20261119000000_daily_digest.sql -f rls26.sql \
   -f ../migrations/20261120000000_portfolio_scorecard.sql -f rls27.sql \
-  -f ../migrations/20261121000000_invite_requests.sql -f rls28.sql
+  -f ../migrations/20261121000000_invite_requests.sql -f rls28.sql \
+  -f ../migrations/20261123000000_google_autolink.sql -f rls29.sql

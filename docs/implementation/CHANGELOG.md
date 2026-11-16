@@ -2,6 +2,20 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-16 (D61 automatic Google linking; code change, not deployed)
+- **Branch:** `claude/hopeful-euler-662mu5`, merged origin/main 442424a (#82, D60) first.
+- **Code:**
+  - `src/god/google-access.mjs`: `autoPick` (pure: domain, then own-origin prefix, then parent domain; one candidate per tier or nothing, with a reason; GA4 exactly one, complete listing or named like the site) and `makeAutolinkHandler` (D56 listing, service-role RPC `google_autolink`, queues the day's `search_snapshot` on a new link).
+  - `src/god/tick.mjs`: plans `google_autolink` (priority 3, key `google_autolink:<day>`) when the handler applies; no Google call in planning.
+  - `cloud/worker/src/app.mjs`: registers the handler and `applies` (RPC `google_autolink_due`) with `GOOGLE_KEY_JSON`; `googleBase(env)` shared with the access routes; the snapshot handler takes the local-test API base.
+  - `src/god/search-console.mjs`: `makeSearchSnapshotHandler` takes `api` (local tests only; production unchanged).
+  - Portal `cloud/portal/app/index.html`: Connections step states "Linked automatically" + Change / "Add our email in Search Console" / "Pick a property" + reason; Portfolio per-site state and banner (`portfolio_google`).
+  - `scripts/cf-local-e2e.mjs`: loads the migration; Google stand-in hides properties until "granted"; D61 section (6 checks).
+- **Migration** `cloud/portal/supabase/migrations/20261123000000_google_autolink.sql`, **not applied**: `google_bindings.bound_via`; `private.google_refusal` (shared checks); `bind_google` rewritten on it (same messages; removal turns auto-linking off); `public.google_autolink`, `public.google_autolink_due` (service role); `private.google_auto_conflict` (weekly de-duplication); `private.google_link_state`; `site_google` adds `link`; `public.portfolio_google` (agency members).
+- **Tests:** `npm test` 686/686 (new `test/google-autolink.test.mjs` 6, `test/portal-autolink.test.mjs` 2). `bash cloud/portal/supabase/test/run.sh` rls1-29 pass (new `rls29.sql`). `node scripts/cf-local-e2e.mjs` all pass incl. the D61 checks; its `runsWithErrors` comes from the notify stand-in's "email: forbidden" only (checked). No real Google call.
+- **Docs:** D61 in DECISIONS; STATUS; `docs/hosted-google-access.md` §7.
+- **Not done:** migration, Worker redeploy, portal publish (owner). No deployment.
+
 ## 2026-11-16 (D60 demand-driven strategy draft; code change, not deployed)
 - **Code:**
   - `src/god/strategy.mjs` (new, pure): `draftStrategy` (objective, baseline, ranked first steps with agent/risk/evidence, later, KPIs with review date, what waits for a person, open questions), `brandTerms`, `sensitiveTopics`, `DRAFT_VERSION = 2`.

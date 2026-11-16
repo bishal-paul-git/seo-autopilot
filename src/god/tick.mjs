@@ -227,6 +227,11 @@ export async function tick({ store, sites = null, handlers = {}, now = new Date(
       const plan = planSite({ site, reports: reportsFrom(memory), strategy: { status: entry.strategy }, agents, alerts, now });
       const keep = [], existing = new Set(jobs.map((j) => j.idempotencyKey).filter(Boolean));
       // Measure accepted advice in Search Console once its after-window is complete (only with a Google key).
+      // D61: a live site without a Search Console binding is linked automatically, at most once a day (free). The Google
+      // calls happen in the job, never here; applies() is one database call (live, unbound, not tried today, not removed).
+      // Priority 3: after a new site's scan and strategy draft; the read it queues on success has priority 1.
+      const linkKey = `google_autolink:${now.slice(0, 10)}`;
+      if (has("google_autolink") && !jobs.some((j) => j.idempotencyKey === linkKey) && (await applies("google_autolink", site.id))) plan.jobs.push({ kind: "google_autolink", title: "Link Search Console and Analytics automatically", department: "analytics", risk: "low", priority: 3, source: "seo_god", requiresApproval: false, idempotencyKey: linkKey, inputs: { site: site.id }, why: "no Search Console property is linked to this website yet" });
       // A fresh 28-day Search Console snapshot for the agents to read, once a day, before the specialists (D47).
       if (has("search_snapshot") && snapshotDue(memory, now) && (await applies("search_snapshot", site.id))) plan.jobs.push({ kind: "search_snapshot", title: "Read the last 28 days from Search Console", department: "analytics", risk: "low", priority: 1, source: "seo_god", requiresApproval: false, idempotencyKey: `search_snapshot:${now.slice(0, 10)}`, inputs: { site: site.id }, why: "the agents read clicks and impressions per page and query" });
       // D56: a weekly phone speed check (home and top pages) with the platform's PageSpeed key; only when the Worker has it.

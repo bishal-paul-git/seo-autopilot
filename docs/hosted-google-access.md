@@ -76,6 +76,31 @@ after the merge.
    site's "Results of changes" as "Too early"; about 3 days later a "Score changes against Search Console" job has run
    and the change has a baseline; the 14-day verdict follows about 20 days after the change.
 
+## 7. Automatic linking (D61)
+A website no longer waits for someone to press Check access. Once a day, every live (not paused) website without a
+Search Console binding gets a free `google_autolink` job: the Worker lists what the service account can read for that
+host (the D56 listing) and binds a property only when exactly one is the obvious choice (the site's domain property, else
+the URL-prefix property with the site's own scheme and host, else a parent domain property; GA4 only when exactly one
+property has a web stream on the host). The database applies the same checks as Check access (one property per website,
+one Search Console binding per host, the D34 rule) and records `bound_via = 'auto'`. When it links Search Console, the
+first 28-day read runs in the same scheduler run; the jobs that depend on it follow at the site's next planning.
+Otherwise the portal shows "Add our email in Search Console" or "Pick a property" with the reason, and the Portfolio
+shows a banner while any live website has no Google data. A person who removes the property turns it off for that site.
+1. **Migration** `cloud/portal/supabase/migrations/20261123000000_google_autolink.sql` (run in the SQL editor after
+   20261121000000). It adds `google_bindings.bound_via`, rewrites `bind_google` on the shared checks (same messages),
+   and adds `google_autolink`, `google_autolink_due` (service role only), `portfolio_google` and the `link` field of
+   `site_google`. Apply it before redeploying the Worker: before it, the Worker's `google_autolink_due` call fails and
+   nothing is planned. Rollback: re-run `bind_google` and `site_google` from 20261118000000, drop the new functions
+   (`google_autolink`, `google_autolink_due`, `portfolio_google`, `private.google_refusal`, `private.google_auto_conflict`,
+   `private.google_link_state`) and the column; automatic bindings stay as ordinary bindings unless released.
+2. **Worker**: redeploy (deploy-seo-god). No new variable or secret (it needs `GOOGLE_KEY_JSON`, already set).
+3. **Portal**: rebuild and publish (`node cloud/portal/build.mjs` with `PORTAL_WORKER_URL`).
+4. Check: within a planning cycle (up to 6 hours per site) each live site without a binding has a completed "Link
+   Search Console and Analytics automatically" job. Where the owner had already added the service account, Connections
+   shows "Linked automatically" and a "Read the last 28 days from Search Console" job follows. Where it shows "Pick a
+   property", read the reason and pick on Connections; "already connected to another website" or "also registered by
+   another agency" also appear for the platform admin under Operations › Google access refused.
+
 ## Quotas
 URL inspection: Google allows 2,000 inspections a day and 600 a minute per property; the job asks at most 20 a day.
 

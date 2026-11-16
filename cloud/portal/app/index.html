@@ -1161,8 +1161,30 @@ function pHome() {
 }
 
 /* ---------- Portfolio (D58): every website on one page, the ones that need attention first; results of changes ---------- */
-let PORTFOLIO = null;
-async function loadPortfolio() { PORTFOLIO = await rpc("portfolio").then((v) => (Array.isArray(v?.sites) ? v : null), () => null); } // null before migration 20261120000000: the old cards
+let PORTFOLIO = null, PF_GOOGLE = null;
+async function loadPortfolio() {
+  [PORTFOLIO, PF_GOOGLE] = await Promise.all([rpc("portfolio").then((v) => (Array.isArray(v?.sites) ? v : null), () => null), // null before migration 20261120000000: the old cards
+    rpc("portfolio_google").then((v) => (Array.isArray(v) ? v : null), () => null), loadGoogleEmail()]); // D61; null before migration 20261123000000
+}
+// D61: each website's Google link (linked automatically, add our email, pick a property) and a banner while any live
+// website has no Google data, so connecting cannot be missed.
+const pfLink = (r) => (PF_GOOGLE || []).find((x) => x.site === r.site)?.link || null;
+function pfGoogle(r) {
+  const L = pfLink(r); if (!L) return "";
+  const to = `href="#/s/${esc(r.site)}/connections"`;
+  if (L.state === "linked") return `<div class="xs pf-g"><span class="pill ok">${L.via === "auto" ? "Linked automatically" : "Google linked"}</span> <span class="muted">${esc(gscLabel(L.gscProperty || ""))}</span></div>`;
+  if (L.state === "pick") return `<div class="xs pf-g"><a class="pill warn" ${to}>Pick a property</a> <span class="muted">${esc(L.reason || "")}</span></div>`;
+  return `<div class="xs pf-g"><a class="pill warn" ${to}>Add our email in Search Console</a></div>`;
+}
+function pfGoogleBanner(rows) {
+  const off = (PF_GOOGLE || []).filter((x) => x.status !== "paused" && !x.link?.hasData);
+  if (!off.length) return "";
+  const first = rows.find((r) => off.some((x) => x.site === r.site));
+  const say = (L) => (L?.state === "linked" ? "linked; waiting for the first read" : L?.state === "pick" ? `pick a property${L.reason ? `: ${esc(L.reason)}` : ""}` : "add our email in Search Console");
+  return `<div class="callout" id="pf-google" style="margin-bottom:12px"><b>${fmt(off.length)} live website${off.length === 1 ? " has" : "s have"} no Google data yet.</b> The SEO team cannot see clicks, searches or indexing for ${off.length === 1 ? "it" : "them"}.
+    ${GOOGLE_EMAIL ? `<div class="gemail">In Search Console › the property › <b>Settings › Users and permissions › Add user</b>, add <code>${esc(GOOGLE_EMAIL)}</code>${first ? `<button class="btn" type="button" data-gact="copy" data-site="${esc(first.site)}">Copy</button>` : ""} (permission Restricted, or Full for index checks). We link it automatically within a day.</div>` : ""}
+    <ul class="xs" style="margin:6px 0 0;padding-left:18px">${off.map((x) => `<li><a href="#/s/${esc(x.site)}/connections"><b>${esc(x.name)}</b></a> ${esc(host(x.url))}: ${say(x.link)}</li>`).join("")}</ul></div>`;
+}
 const LABEL = { win: ["Win", "ok"], loss: ["Loss", "bad"], flat: ["No clear change", ""], too_early: ["Too early", "info"], not_enough_data: ["Not enough data", ""] };
 const signed = (x) => (x == null ? "–" : `${x > 0 ? "+" : x < 0 ? "−" : ""}${Math.abs(Math.round(x * 100))}%`);
 function pfChange(x) { return x == null ? '<span class="xs muted" title="Needs 8 weeks of daily Search Console totals">–</span>' : `<span style="color:${x <= -0.2 ? "var(--bad)" : x >= 0.1 ? "var(--accent)" : "inherit"}">${signed(x)}</span>`; }
@@ -1185,12 +1207,12 @@ function pPortfolio() {
   const rows = PORTFOLIO.sites || [], live = rows.filter((r) => r.status !== "paused");
   const need = live.filter((r) => r.attention > 0).length, sum = (k) => rows.reduce((a, r) => a + Number(r[k] || 0), 0);
   const agencies = new Set(rows.map((r) => r.agency)).size > 1;
-  const name = (r) => `<a href="#/s/${esc(r.site)}/overview"><b>${esc(r.name)}</b></a><div class="xs muted">${esc(host(r.url))}${agencies ? ` · ${esc(r.agency)}` : ""}</div>`;
+  const name = (r) => `<a href="#/s/${esc(r.site)}/overview"><b>${esc(r.name)}</b></a><div class="xs muted">${esc(host(r.url))}${agencies ? ` · ${esc(r.agency)}` : ""}</div>${pfGoogle(r)}`;
   const why = (r) => (r.status === "paused" ? '<div class="pf-why">Paused: the SEO team does no work here.</div>' : r.reasons?.length ? `<div class="pf-why">${esc(r.reasons.join(" · "))}</div>` : '<div class="pf-why">Nothing needs you.</div>');
   const status = (r) => `<span class="pill ${r.status === "paused" ? "" : "ok"}"><i></i>${r.status === "paused" ? "Paused" : "Live"}</span>`;
   const head = `<div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap"><div style="flex:1;min-width:220px"><h1>Portfolio</h1><p class="lead">Every website on one page. The ones that need you are at the top: stopped work, alerts, stale data, falling clicks, changes that lost traffic, decisions waiting, pages not in Google.</p></div><a class="btn primary" href="#/add">${I.plus}Connect a website</a></div>`;
   if (!rows.length) return pHome();
-  return head + `<div class="grid g4">${kpi("Need attention", fmt(need), null, `of ${fmt(live.length)} live website${live.length === 1 ? "" : "s"}`)}${kpi("Clicks, 28 days", fmt(sum("clicks28")), null, "From Google Search Console, all websites")}${kpi("Waiting for you", fmt(sum("waiting")), null, "Approvals across all websites")}${kpi("AI spend, 7 days", usd(sum("spend7Usd")), null, "From your own AI key")}</div>
+  return head + pfGoogleBanner(rows) + `<div class="grid g4">${kpi("Need attention", fmt(need), null, `of ${fmt(live.length)} live website${live.length === 1 ? "" : "s"}`)}${kpi("Clicks, 28 days", fmt(sum("clicks28")), null, "From Google Search Console, all websites")}${kpi("Waiting for you", fmt(sum("waiting")), null, "Approvals across all websites")}${kpi("AI spend, 7 days", usd(sum("spend7Usd")), null, "From your own AI key")}</div>
   <div class="card pad0 pf-table"><div class="tbl"><table><thead><tr><th>Website</th><th class="n">Clicks 28 d</th><th class="n">vs 28 d before</th><th class="n">Not indexed</th><th>Alerts and stale data</th><th class="n">Waiting</th><th class="n">AI 7 d</th><th>Results of changes</th><th>Status</th></tr></thead><tbody>
   ${rows.map((r) => `<tr class="${r.status === "paused" ? "paused" : ""}"><td>${name(r)}${why(r)}</td><td class="n">${fmt(r.clicks28)}</td><td class="n">${pfChange(r.clicksChange)}</td><td class="n">${pfIndex(r)}</td><td>${pfAlerts(r)}</td><td class="n">${pfWaiting(r)}</td><td class="n">${usd(r.spend7Usd)}</td><td>${pfResults(r)}</td><td>${status(r)}</td></tr>`).join("")}</tbody></table></div></div>
   <div class="pf-cards">${rows.map((r) => `<div class="card" style="display:grid;gap:10px"><div style="display:flex;gap:10px;align-items:flex-start"><div style="flex:1;min-width:0">${name(r)}${why(r)}</div>${status(r)}</div>
@@ -1409,6 +1431,14 @@ function googleStep(s, g) {
   if (!CFG.workerUrl) return '<div class="xs muted">Read access is not set up on this portal yet.</div>';
   const btn = (act, text, cls = "") => `<button class="btn ${cls}" type="button" data-gact="${act}" data-site="${esc(s.id)}">${text}</button>`;
   const h = esc(host(s.url)), ch = g.choices || {}, sites = ch.sites || [], ga4 = ch.ga4 || [];
+  // D61: the link state (absent before migration 20261123000000). Linked: the property and a Change button, which opens
+  // the full step below. Otherwise the step says what to do: add our email, or pick a property and why.
+  const L = g.link;
+  if (L?.state === "linked" && !s.googleOpen) return `<div class="xs glink" style="margin:4px 0 8px"><span class="pill ok">${L.via === "auto" ? "Linked automatically" : "Linked"}</span> Search Console: <b>${esc(gscLabel(L.gscProperty))}</b> · Analytics: <b>${L.ga4Property ? esc(L.ga4Name || L.ga4Property) : "none"}</b>${L.ga4Reason ? `<div class="muted">${esc(L.ga4Reason)}</div>` : ""}${g.lastError ? ` <span class="muted">${esc(g.lastError)}</span>` : ""}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">${btn("change", "Change")}</div>`;
+  const state = !L || L.state === "linked" ? "" : L.state === "pick"
+    ? `<div class="gstate" style="margin:4px 0 6px"><span class="pill warn">Pick a property</span> <span class="xs">${esc(L.reason || "Choose which property belongs to this website.")}</span></div>`
+    : `<div class="gstate" style="margin:4px 0 6px"><span class="pill warn">Add our email in Search Console</span>${L.reason ? ` <span class="xs muted">${esc(L.reason)}</span>` : ""}<div class="xs muted">Once it is added, we link it automatically within a day, or press Check access now.</div></div>`;
   const bound = g.gscProperty || g.ga4Property
     ? `<div class="xs" style="margin:4px 0 8px"><span class="pill ok">Connected</span> Search Console: <b>${g.gscProperty ? esc(gscLabel(g.gscProperty)) : "none"}</b> · Analytics: <b>${g.ga4Property ? esc(g.ga4Name || g.ga4Property) : "none"}</b>${g.lastError ? ` <span class="xs muted">${esc(g.lastError)}</span>` : ""}</div>` : "";
   const email = GOOGLE_EMAIL ? `<div class="gemail"><code id="g-email">${esc(GOOGLE_EMAIL)}</code>${btn("copy", "Copy")}</div>` : '<div class="xs muted">Loading the address to add…</div>';
@@ -1426,7 +1456,7 @@ function googleStep(s, g) {
       <label class="xs">Google Analytics 4 property<select id="g-ga4">${opt("", "None", gaSel)}${ga4.map((x) => opt(x.id, `${x.name}${x.account ? ` (${x.account})` : ""}`, gaSel, x.taken)).join("")}</select></label></div>
     ${!sites.length ? `<div class="xs muted" style="margin:6px 0">We cannot see ${h} in Search Console yet. Add the address as in step 1 (it can take a minute), then press Check access again.</div>` : ""}
     <div class="xs muted">Checked ${esc(ago(ch.checkedAt))}.</div>` : "";
-  return `${bound}<div class="xs" style="margin:4px 0 6px">Add this address as a user of ${h} in Google. It can only read; nothing is changed, and no key or file is needed.</div>${email}${how}${pick}
+  return `${state}${bound}<div class="xs" style="margin:4px 0 6px">Add this address as a user of ${h} in Google. It can only read; nothing is changed, and no key or file is needed.</div>${email}${how}${pick}
     ${(s.googleErrors || []).map((e) => `<div class="xs muted">${esc(e)}</div>`).join("")}
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">${btn("check", "Check access", ch.checkedAt ? "" : "primary")}${ch.checkedAt ? btn("save", "Save", "primary") : ""}${g.gscProperty || g.ga4Property ? btn("remove", "Remove") : ""}</div>`;
 }
@@ -1439,6 +1469,7 @@ document.addEventListener("click", async (e) => {
   const s = [...SITES, ...CLIENT_SITES].find((x) => x.id === b.dataset.site); if (!s) return;
   const act = b.dataset.gact;
   if (act === "copy") { try { await navigator.clipboard.writeText(GOOGLE_EMAIL || ""); toast("Copied."); } catch { toast("Select the address and copy it."); } return; }
+  if (act === "change") { s.googleOpen = true; if (/\/connections$/.test(location.hash)) $("#page").innerHTML = pConnections(s); else render(); return; }
   b.disabled = true;
   try {
     if (act === "check") {
@@ -1453,6 +1484,7 @@ document.addEventListener("click", async (e) => {
       const r = await rpc("bind_google", { p_site: s.id, p_gsc: act === "remove" ? null : $("#g-gsc")?.value || null, p_ga4: act === "remove" ? null : $("#g-ga4")?.value || null });
       if (!r.ok) throw new Error(r.error);
       toast(act === "remove" ? "Removed." : "Saved. The first read runs at the next planning.");
+      s.googleOpen = false;
     }
     await refreshGoogle(s);
   } catch (err) { toast(err.message); b.disabled = false; }

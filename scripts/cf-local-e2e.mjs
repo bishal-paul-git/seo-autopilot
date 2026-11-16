@@ -34,7 +34,7 @@ psql([readFileSync(join(m, "20261108100000_invite_only.sql"), "utf8"), readFileS
   readFileSync(join(m, "20261108120000_notifications_reports.sql"), "utf8"), readFileSync(join(m, "20261108130000_email.sql"), "utf8"),
   // Everything since Release 1 (D42 to D50), so the Worker runs against the production schema.
   ...["20261112000000_activity.sql", "20261113000000_business_brief.sql", "20261114000000_agent_pages.sql", "20261115000000_gsc_sites.sql", "20261116000000_budgets_alerts.sql",
-    "20261117000000_pipeline_connections.sql", "20261117010000_pipeline_agent_from_kind.sql", "20261118000000_google_access.sql", "20261119000000_daily_digest.sql", "20261120000000_portfolio_scorecard.sql", "20261121000000_invite_requests.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
+    "20261117000000_pipeline_connections.sql", "20261117010000_pipeline_agent_from_kind.sql", "20261118000000_google_access.sql", "20261119000000_daily_digest.sql", "20261120000000_portfolio_scorecard.sql", "20261121000000_invite_requests.sql", "20261123000000_google_autolink.sql"].map((f) => readFileSync(join(m, f), "utf8"))].join("\n"));
 const asUser = (user, sql) => psql(`set role authenticated; set request.jwt.claim.sub = '${user}'; set request.jwt.claim.role = 'authenticated'; ${sql}`).split("\n").pop();
 const A_USER = "00000000-0000-0000-0000-00000000000a", B_USER = "00000000-0000-0000-0000-00000000000b";
 const A = JSON.parse(asUser(A_USER, `select public.create_site('Plumber', 'https://plumber.test/')->'site';`)).id;
@@ -44,7 +44,9 @@ const B = JSON.parse(asUser(B_USER, `select public.create_site('Bakery', 'https:
 const fnInfo = new Map(JSON.parse(psql(`select coalesce(jsonb_agg(jsonb_build_array(p.proname, p.proretset, t.typtype, t.typname)), '[]') from pg_proc p join pg_type t on t.oid = p.prorettype where p.pronamespace = 'public'::regnamespace;`)).map(([n, set, typ, name]) => [n, { set, typ, name }]));
 const calls = { rpc: 0, scan: 0, anthropic: 0, badKey: 0 };
 const gh = { issues: [], dispatches: [], pulls: {}, auth: [], fixed: false };
-const google = { tokens: 0, listed: 0, inspected: [], queries: [] }; // D56 stand-in for Google's token and listing endpoints; D57 URL inspection
+const google = { tokens: 0, listed: 0, early: 0, granted: false, inspected: [], queries: [], reads: [] }; // D56 stand-in for Google's token and listing endpoints; D57 URL inspection
+// D61: until the owner "grants" access (google.granted), the service account sees nothing, so the daily automatic linking
+// of the early sections finds no property and binds nothing.
 const PUB = "sb_publishable_e2e", SA = JSON.stringify({ client_email: "seo-reader@e2e.iam.gserviceaccount.com", private_key: generateKeyPairSync("rsa", { modulusLength: 2048 }).privateKey.export({ type: "pkcs8", format: "pem" }) });
 let lastBody = "";
 const rpc = (fn, args, user = null) => {
@@ -80,9 +82,18 @@ const server = createServer(async (req, res) => {
     const p = u.pathname.slice(7);
     if (p === "/token") { google.tokens++; return send(200, { access_token: "e2e-sa-access" }); }
     if (req.headers.authorization !== "Bearer e2e-sa-access") return send(401, { error: { message: "no token" } });
-    google.listed++;
-    if (p === "/webmasters/v3/sites") return send(200, { siteEntry: [{ siteUrl: "sc-domain:plumber.test", permissionLevel: "siteRestrictedUser" }, { siteUrl: "https://bakery.test/", permissionLevel: "siteOwner" }] });
-    if (p === "/v1beta/accountSummaries") return send(200, { accountSummaries: [{ displayName: "Plumber", propertySummaries: [{ property: "properties/111", displayName: "Plumber web" }] }, { displayName: "Bakery", propertySummaries: [{ property: "properties/222", displayName: "Bakery web" }] }] });
+    if (!google.granted && (p === "/webmasters/v3/sites" || p === "/v1beta/accountSummaries")) { google.early++; return send(200, {}); }
+    if (p === "/webmasters/v3/sites" || p === "/v1beta/accountSummaries") google.listed++;
+    if (p === "/webmasters/v3/sites") return send(200, { siteEntry: [{ siteUrl: "sc-domain:plumber.test", permissionLevel: "siteRestrictedUser" }, { siteUrl: "https://bakery.test/", permissionLevel: "siteOwner" },
+      { siteUrl: "sc-domain:roofer.test", permissionLevel: "siteRestrictedUser" }, { siteUrl: "https://www.roofer.test/", permissionLevel: "siteOwner" }, { siteUrl: "https://slate.test/", permissionLevel: "siteOwner" }, { siteUrl: "https://slate.test/blog/", permissionLevel: "siteOwner" }] });
+    if (p === "/v1beta/accountSummaries") return send(200, { accountSummaries: [{ displayName: "Plumber", propertySummaries: [{ property: "properties/111", displayName: "Plumber web" }] }, { displayName: "Bakery", propertySummaries: [{ property: "properties/222", displayName: "Bakery web" }] },
+      { displayName: "Roofer", propertySummaries: [{ property: "properties/333", displayName: "Roofer web" }] }] });
+    if (p === "/v1beta/properties/333/dataStreams") return send(200, { dataStreams: [{ webStreamData: { defaultUri: "https://www.roofer.test/" } }] });
+    // D61: the first read after automatic linking (Search Console and GA4 for roofer.test).
+    if (p.startsWith("/webmasters/v3/sites/sc-domain%3Aroofer.test/searchAnalytics/query")) { const b = JSON.parse(body); google.reads.push(b);
+      const dims = b.dimensions || [], row = (keys) => ({ keys, clicks: 5, impressions: 100, ctr: 0.05, position: 8 });
+      return send(200, { rows: !dims.length ? [{ clicks: 50, impressions: 1000, ctr: 0.05, position: 8 }] : dims[0] === "date" ? [row([b.endDate])] : [row(dims.map((d) => (d === "page" ? "https://www.roofer.test/" : "roof repair")))] }); }
+    if (p === "/v1beta/properties/333:runReport") return send(200, { rowCount: 1, totals: [{ metricValues: [{ value: "40" }, { value: "30" }, { value: "35" }] }], rows: [{ dimensionValues: [{ value: "/" }], metricValues: [{ value: "40" }, { value: "30" }, { value: "35" }] }] });
     if (p === "/v1beta/properties/111/dataStreams") return send(200, { dataStreams: [{ webStreamData: { defaultUri: "https://plumber.test" } }] });
     if (p === "/v1beta/properties/222/dataStreams") return send(200, { dataStreams: [{ webStreamData: { defaultUri: "https://bakery.test" } }] });
     // D57: URL Inspection for the bound property only; the home page is indexed, other pages are not.
@@ -144,7 +155,8 @@ try {
   const applied = (site) => psql(`select outcome->>'budgetUsd' from public.god_site_ticks where site_id = ${lit(site)};`);
   check(Number(applied(A)) === 1.5 && applied(B) !== "1.5", `the scheduler applies each site's own daily budget (A ${applied(A)}, B default ${applied(B)})`);
   check(run.sites_planned === 2 && run.invocations >= 3, `Cron planned both sites in separate invocations (${run.invocations} invocations, ${run.subrequests} subrequests)`);
-  check(jobs(A) === "scan:completed,strategy_proposal:awaiting_approval" && jobs(B) === "scan:completed,strategy_proposal:awaiting_approval", "each site: scan ran through the scan function, strategy drafted at once and waits for its agency (D35)");
+  const noLink = (site) => jobs(site).split(",").filter((x) => !x.startsWith("google_autolink:")).join(","); // D61: the daily link attempt runs after these
+  check(noLink(A) === "scan:completed,strategy_proposal:awaiting_approval" && noLink(B) === "scan:completed,strategy_proposal:awaiting_approval", "each site: scan ran through the scan function, strategy drafted at once and waits for its agency (D35)");
   check(calls.scan === 2 && calls.badKey === 0, "one scan per site (the draft reused it); every database call carried the service key");
   check(JSON.parse(psql(`select public.recall(${lit(A)}, 'report')`, "service_role")).some((r) => r.key === "audit"), "scan results kept in site A's memory");
 
@@ -248,6 +260,9 @@ try {
   psql(`select public.set_god_paused(false);`, "service_role");
 
   // D56: give read access, then Check access through the Worker in workerd, against the real database rules (Google stand-in).
+  check(google.early > 0 && google.listed === 0 && psql(`select count(*) from public.google_bindings;`) === "0" && JSON.parse(psql(`select public.recall(${lit(A)}, 'report')`, "service_role")).every((r) => r.key !== "search_console"),
+    `D61: the daily automatic linking ran for the live sites (${google.early} listings) and bound nothing while the service account could see nothing`);
+  google.granted = true; // the owners add the service account in Google
   const acct = await (await fetch(`${W}/google/account`)).json();
   check(acct.ok && acct.email === "seo-reader@e2e.iam.gserviceaccount.com" && !JSON.stringify(acct).includes("PRIVATE"), "the portal can show the service account's email, and nothing else of the key");
   const checkAs = (user, site) => fetch(`${W}/google/check`, { method: "POST", headers: { "content-type": "application/json", origin: base, ...(user ? { authorization: `Bearer user:${user}` } : {}) }, body: JSON.stringify({ site }) });
@@ -304,6 +319,33 @@ try {
   psql(`insert into auth.users (id, email) values ('00000000-0000-0000-0000-00000000e59a', 'dana@shop.test');`);
   check(answer.ok && !anonRead && memberRefused && dana?.sites === "2-5" && psql(`select count(*) from public.org_members where user_id = '00000000-0000-0000-0000-00000000e59a' and role = 'owner';`) === "1",
     "invite request: anon submits but cannot read, member refused, admin lists and invites, the invited email signs up into its own agency");
+  // D61: automatic linking in workerd. A new website whose owner already added the service account is linked with no
+  // click (its domain property and the only GA4 property on its host), and its first Search Console read runs without
+  // waiting for the next planning; a website with several candidate properties is not linked and says why; once a day.
+  {
+    const R = JSON.parse(asUser(A_USER, `select public.create_site('Roofer', 'https://www.roofer.test/')->'site';`)).id;
+    const SL = JSON.parse(asUser(A_USER, `select public.create_site('Slate', 'https://slate.test/blog/')->'site';`)).id;
+    const both = `(${lit(R)}, ${lit(SL)})`, kinds = (site, kind) => psql(`select count(*) from public.jobs where site_id = ${lit(site)} and kind = '${kind}';`);
+    for (let i = 0; i < 4 && psql(`select count(*) from public.jobs where site_id in ${both} and kind = 'google_autolink' and status = 'completed';`) !== "2"; i++) { psql(`delete from public.god_site_ticks where site_id in ${both};`); await cron(); }
+    for (let i = 0; i < 3 && psql(`select status from public.jobs where site_id = ${lit(R)} and kind = 'search_snapshot';`) !== "completed"; i++) await cron(); // jobs only, no planning: the tick is fresh
+    const b = JSON.parse(psql(`select coalesce(jsonb_agg(to_jsonb(g) order by kind), '[]') from public.google_bindings g where site_id = ${lit(R)};`));
+    check(b.length === 2 && b.every((x) => x.bound_via === "auto" && x.bound_by === null) && b[0].property === "properties/333" && b[1].property === "sc-domain:roofer.test",
+      "Roofer linked automatically: its domain property and the only GA4 property with a web stream on its host, recorded as 'auto'");
+    const snapNote = psql(`select e.note from public.job_events e join public.jobs j on j.id = e.job_id where j.site_id = ${lit(R)} and j.kind = 'search_snapshot' order by e.at, e.id limit 1 offset 1;`);
+    const sc = JSON.parse(psql(`select value from public.site_memory where site_id = ${lit(R)} and kind = 'report' and key = 'search_console' and superseded_at is null;`) || "null");
+    check(psql(`select status from public.jobs where site_id = ${lit(R)} and kind = 'search_snapshot';`) === "completed" && /Search Console linked/.test(snapNote) && sc?.property === "sc-domain:roofer.test" && google.reads.length >= 4,
+      `the first read was queued by the link itself (not a later planning) and ran in workerd: ${sc?.totals?.clicks} clicks stored for the agents`);
+    psql(`delete from public.god_site_ticks where site_id = ${lit(R)};`); await cron();
+    check(Number(kinds(R, "priorities")) >= 1, "with Search Console data, the next planning queues the jobs that depend on it (priorities)");
+    const g = JSON.parse(asUser(A_USER, `select public.site_google(${lit(SL)});`));
+    check(g.link.state === "pick" && /Several Search Console properties could belong to slate\.test/.test(g.link.reason) && g.gscProperty === null && psql(`select count(*) from public.google_bindings where site_id = ${lit(SL)};`) === "0",
+      `Slate has two candidate properties: not linked, the portal says "Pick a property": ${g.link.reason}`);
+    const pfA = JSON.parse(asUser(A_USER, `select public.portfolio_google();`)), pfB = JSON.parse(asUser(B_USER, `select public.portfolio_google();`));
+    check(pfA.find((x) => x.site === R)?.link.via === "auto" && pfA.find((x) => x.site === SL)?.link.state === "pick" && !pfB.some((x) => x.site === R || x.site === SL),
+      "the agency's portfolio shows linked automatically and pick a property; the other agency sees neither");
+    psql(`delete from public.god_site_ticks where site_id in ${both};`); await cron();
+    check(kinds(SL, "google_autolink") === "1" && kinds(R, "google_autolink") === "1", "linking is tried at most once a day");
+  }
   const usage = JSON.parse(psql(`select public.god_usage(1);`, "service_role"));
   console.log(`usage over this test: ${JSON.stringify(usage)}`);
   console.log("all Cloudflare execution checks passed in workerd against the database");
