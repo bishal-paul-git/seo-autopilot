@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { MemoryStore, SupabaseStore } from "../src/god/stores.mjs";
 import { makeHandlers, reportMemory } from "../src/god/handlers.mjs";
-import { tick, strategyStatus, estimateCost } from "../src/god/tick.mjs";
+import { tick, strategyStatus, estimateCost, waitingOn } from "../src/god/tick.mjs";
 import { runOnce } from "../src/god/worker.mjs";
 
 const NOW = "2026-11-08T10:00:00Z";
@@ -77,7 +77,9 @@ test("worker: a run that spends more than its budget fails review and is not ret
   const r = await runOnce({ store, handlers: { "agent:*": async () => ({ evidence: ["x"], costUsd: 0.3 }) } });
   assert.equal(r.outcome, "review_fail");
   assert.match(r.reasons.join(), /over budget/);
-  assert.equal(store.get(j.id).status, "failed");
+  // D62: a failed review ends with a person (escalated, listed as waiting), not silently in "failed".
+  assert.equal(store.get(j.id).status, "escalated");
+  assert.deepEqual(waitingOn(store.listJobs("A")).map((w) => w.job), [j.id]);
   assert.equal(store.spendSince("A", "2026-11-08T00:00:00Z"), 0.3, "the spend is still recorded");
 });
 

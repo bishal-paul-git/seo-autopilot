@@ -82,7 +82,8 @@ export function agentInput(job, memory, site) {
   const audit = pick("report", "audit");
   const data = {
     site: { url: site.url, name: site.name || null },
-    task: { agent: job.inputs?.agent || job.kind.slice(6), why: job.title, instruction: job.inputs?.instruction || null, evidence: job.inputs?.evidence || [], clientRequest: job.inputs?.request || null, ...(job.inputs?.alerts ? { alerts: job.inputs.alerts } : {}) },
+    task: { agent: job.inputs?.agent || job.kind.slice(6), why: job.title, instruction: job.inputs?.instruction || null, evidence: job.inputs?.evidence || [], clientRequest: job.inputs?.request || null, ...(job.inputs?.alerts ? { alerts: job.inputs.alerts } : {}),
+      ...(job.inputs?.targets?.length ? { targets: job.inputs.targets.slice(0, 10) } : {}) },
     strategy: pick("strategy", "initial"), profile: pick("report", "profile"),
     audit: audit ? { generatedAt: audit.generatedAt, summary: audit.summary, issues: (audit.issues || []).slice(0, 80) } : null,
     facts: facts.slice(0, 60),
@@ -95,7 +96,10 @@ export function agentInput(job, memory, site) {
     // What earlier advice on this site led to (from later scans and the agency's decisions).
     lessons: memory.filter((m) => m.kind === "lesson").map((m) => m.value?.text).filter(Boolean).slice(0, 10),
   };
-  return `<site_data>\n${JSON.stringify(data).replace(/<\/?site_data>/gi, "")}\n</site_data>\nDo the task above for this site and reply with the JSON object.`;
+  // D62: a retry after the review asked for changes carries the reviewer's reasons (our own gate's text, not site data).
+  const feedback = (job.outputs?.reviewFeedback || []).map((r) => String(r).replace(/<\/?(site_data|review_feedback)>/gi, "").slice(0, 300)).slice(0, 20);
+  const fix = feedback.length ? `\n<review_feedback>\nYour previous answer for this task was sent back by the review. Fix these problems in this answer:\n${feedback.map((r) => `- ${r}`).join("\n")}\n</review_feedback>` : "";
+  return `<site_data>\n${JSON.stringify(data).replace(/<\/?site_data>/gi, "")}\n</site_data>${fix}\nDo the task above for this site and reply with the JSON object.`;
 }
 
 /** Parse the model's reply into the worker's output shape; anything malformed is reported, not trusted. */
@@ -205,7 +209,7 @@ export function makeAgentHandler({ store, siteOf, apiKey = globalThis.process?.e
     // Second opinion: the fact-checker reads the same site data and this advice. If it cannot run, a person checks.
     const rp = promptFor(REVIEWER_AGENT), rk = knowledgeBlock(REVIEWER_AGENT, kbOf());
     const advice = JSON.stringify({ agent: name, summary: out.summary, recommendations: out.recommendations, claims: out.claims }).replace(/<\/?advice_to_review>/gi, "");
-    const second = rp ? await callModel({ ...call, system: `${rp}\n${rk.text}\n${REVIEW_TAIL}`, user: `${user.replace(/\nDo the task above[\s\S]*$/, "")}\n<advice_to_review>\n${advice}\n</advice_to_review>\nReview the advice and reply with the JSON object.`, budget: budget - costUsd, minTokens: 1500 }) : null;
+    const second = rp ? await callModel({ ...call, system: `${rp}\n${rk.text}\n${REVIEW_TAIL}`, user: `${user.replace(/\n(<review_feedback>|Do the task above)[\s\S]*$/, "")}\n<advice_to_review>\n${advice}\n</advice_to_review>\nReview the advice and reply with the JSON object.`, budget: budget - costUsd, minTokens: 1500 }) : null;
     if (!second || second.short) return { ...result, escalate: `the fact-checker could not review this advice (${!second ? "reviewer missing" : `needs about $${second.needs.toFixed(2)} more budget`}); a person must check it` };
     costUsd += second.costUsd;
     const v = second.r.stop_reason === "refusal" ? null : parseVerdict(second.text);

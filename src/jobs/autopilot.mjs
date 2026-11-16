@@ -40,7 +40,10 @@ Checks before anything publishes: build, facts guard, the AI reviewer, and the t
     return;
   }
   const addedText = typeof flags["added-file"] === "string" && existsSync(flags["added-file"]) ? readFileSync(flags["added-file"], "utf8") : "";
-  const change = classifyChange({ files: list(flags.files), addedFiles: list(flags["added-files"]), labels: list(flags.labels), contentGlobs: contentGlobs(site.content), addedText, review: site.review || {} });
+  // D62: the branch, the pull request's and its issue's text (--body-file) and the issue's labels, so a hosted pull request is held even without its label.
+  const body = typeof flags["body-file"] === "string" && existsSync(flags["body-file"]) ? readFileSync(flags["body-file"], "utf8") : "";
+  const change = classifyChange({ files: list(flags.files), addedFiles: list(flags["added-files"]), labels: list(flags.labels), contentGlobs: contentGlobs(site.content), addedText, review: site.review || {},
+    branch: typeof flags.branch === "string" ? flags.branch : "", body, issueLabels: list(flags["issue-labels"]) });
   const d = decide(change, policy, { today: Number(flags.today ?? 0), newPagesThisWeek: Number(flags["new-this-week"] ?? 0) });
   console.log(`${d.merge ? "MERGE" : "HOLD"}: ${d.cls} at "${d.level}" (levels: ${LEVELS.join(" < ")}). ${d.reasons.join("; ")}.`);
   if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `watch=${d.merge && d.watch ? "true" : "false"}\nclass=${d.cls}\n`);

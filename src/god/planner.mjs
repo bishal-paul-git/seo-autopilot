@@ -66,7 +66,9 @@ export function planSite({ site, reports = {}, strategy = { status: "none" }, ag
     add({
       kind: `agent:${step.agent}`, title: String(step.why || step.agent).slice(0, 200), department: departmentOf({ agent: step.agent, agentDir: a.department }),
       risk, priority: /critical|index|crawl|broken|noindex|robots/i.test(String(step.why)) ? 2 : 3,
-      inputs: { agent: step.agent, instruction: step.instruction || null, evidence: (step.evidence || []).slice(0, 10) }, why: step.why || "",
+      // The router names its instruction `prompt` (D62: the planner used to read only `instruction`, so specialists ran
+      // without it) and the pages it is about as `targets`.
+      inputs: { agent: step.agent, instruction: step.instruction || step.prompt || null, evidence: (step.evidence || []).slice(0, 10), ...(step.targets?.length ? { targets: step.targets.slice(0, 10) } : {}) }, why: step.why || "",
     });
   }
   return { strategyApproved: true, jobs: dedupe(jobs) };

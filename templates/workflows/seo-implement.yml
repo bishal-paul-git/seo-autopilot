@@ -128,5 +128,9 @@ jobs:
           pr=$(gh pr list --head "seo/issue-$N" --state open --json number --jq '.[0].number // empty')
           [ -n "$pr" ] || exit 0
           for l in $(gh issue view "$N" --json labels --jq '.labels[].name'); do
-            case "$l" in seo-topic|seo-refresh|seo-snippet|seo-links|seo-fix|seo-template|seo-hosted) gh pr edit "$pr" --add-label "$l" || true;; esac
+            case "$l" in
+              # D62: a hosted pull request must carry seo-hosted (the merge guard reads it): a failed copy fails the step.
+              seo-hosted) gh pr edit "$pr" --add-label "$l";;
+              seo-topic|seo-refresh|seo-snippet|seo-links|seo-fix|seo-template) gh pr edit "$pr" --add-label "$l" || true;;
+            esac
           done

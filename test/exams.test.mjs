@@ -49,7 +49,10 @@ test("runner: production path with playbooks and the fact-checker, graded, cappe
     const body = JSON.parse(o.body); calls.push(body);
     if (/ANOTHER agent's advice/.test(body.system)) return new Response(JSON.stringify(reply({ verdict: "pass", problems: [], summary: "ok" })), { status: 200 });
     const c = cases.find((x) => body.system.includes(`# SEO ${x.agent === "seo-content-pruner" ? "content pruner" : "\u0000"}`)) ? cases[0] : null;
-    return new Response(JSON.stringify(reply({ ...(c ? c.samples.good.proposal : { summary: "No data yet. Supply this: connect Search Console.", recommendations: [] }), claims: [], questions: [] })), { status: 200 });
+    // D62: the production gate checks the advice itself, so the stand-in reply sources its numbers and prefixes the merge.
+    const good = c ? { ...c.samples.good.proposal, recommendations: c.samples.good.proposal.recommendations.map((x) => (/^Merge/.test(x.title) ? { ...x, title: `After a person approves: ${x.title}` } : x)) } : null;
+    const claims = c ? [{ text: "the 2019 guide: 0 clicks, 12 referring domains; /boiler-repairs: 1 click", source: "site data: searchConsole and backlinks" }] : [];
+    return new Response(JSON.stringify(reply({ ...(good || { summary: "No data yet. Supply this: connect Search Console.", recommendations: [] }), claims, questions: [] })), { status: 200 });
   };
   await assert.rejects(runExams({ cases, fixtures, apiKey: "" }), /ANTHROPIC_API_KEY/);
   const run = await runExams({ cases, fixtures, apiKey: "k", fetchImpl, agents: ["seo-content-pruner"], maxUsd: 0.55, perCaseUsd: 0.5 });

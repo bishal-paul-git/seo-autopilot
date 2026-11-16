@@ -77,12 +77,21 @@ jobs:
           files=$(gh pr diff "$pr" --name-only | paste -sd, -)
           added=$(gh api "repos/$GH_REPO/pulls/$pr/files" --paginate --jq '.[] | select(.status=="added") | .filename' | paste -sd, -)
           labels=$(gh pr view "$pr" --json labels --jq '[.labels[].name] | join(",")')
+          # D62: the pull request's and its issue's text and the issue's labels, so a hosted pull request is held even
+          # when its seo-hosted label is missing. An unreadable issue holds the change (fail closed).
+          gh pr view "$pr" --json body --jq '.body' > "$RUNNER_TEMP/body.txt"
+          issue_labels=""
+          case "$BRANCH" in seo/issue-*)
+            n="${BRANCH#seo/issue-}"
+            if ! gh issue view "$n" --json body --jq '.body' >> "$RUNNER_TEMP/body.txt"; then echo "Could not read issue #$n; leaving it for a person."; exit 0; fi
+            issue_labels=$(gh issue view "$n" --json labels --jq '[.labels[].name] | join(",")');;
+          esac
           gh pr diff "$pr" | grep '^+' | grep -v '^+++' > "$RUNNER_TEMP/added.txt" || true
           since_day=$(date -u +%Y-%m-%d); since_week=$(date -u -d '7 days ago' +%Y-%m-%d)
           merged() { gh pr list --state merged --search "merged:>=$1" --limit 200 --json headRefName,labels --jq "[.[] | select(.headRefName | startswith(\"seo/\")) $2] | length"; }
           today=$(merged "$since_day" "")
           week=$(merged "$since_week" '| select([.labels[].name] | index("seo-topic"))')
-          if ! GITHUB_OUTPUT="$RUNNER_TEMP/decision" npx --yes "$SEO" run autopilot --decide --files "$files" --added-files "$added" --labels "$labels" --added-file "$RUNNER_TEMP/added.txt" --today "$today" --new-this-week "$week"; then
+          if ! GITHUB_OUTPUT="$RUNNER_TEMP/decision" npx --yes "$SEO" run autopilot --decide --files "$files" --added-files "$added" --labels "$labels" --branch "$BRANCH" --body-file "$RUNNER_TEMP/body.txt" --issue-labels "$issue_labels" --added-file "$RUNNER_TEMP/added.txt" --today "$today" --new-this-week "$week"; then
             gh pr comment "$pr" --body "Autopilot held this change for a person to merge (see the seo-automerge run for the reason)." || true
             exit 0
           fi

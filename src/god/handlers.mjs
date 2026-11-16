@@ -145,6 +145,9 @@ export function reportMemory(r, before = null) {
   if (signals) audit.signals = signals;
   if (before?.generatedAt && before.generatedAt !== audit.generatedAt) audit.previous = { generatedAt: before.generatedAt, issues: (before.issues || []).filter((i) => WATCHED.has(i.rule)).slice(0, 100), ...(before.signals ? { signals: before.signals } : {}) };
   const profile = { mode: p.mode || null, platform: p.platform?.name ? { name: p.platform.name } : null, rendering: p.rendering || null, inRepository: !!p.inRepository };
+  // D62: the home-page signals the router reads (markup types, language versions, noindex), when the scan reports them.
+  const sg = p.signals;
+  if (sg && typeof sg === "object") profile.signals = { structuredData: (Array.isArray(sg.structuredData) ? sg.structuredData : []).map(String).slice(0, 20), hreflang: !!sg.hreflang, noindexOnHome: !!sg.noindexOnHome };
   return [
     { kind: "report", key: "audit", value: audit, basis: "verified", confidence: null, source: "scan" },
     { kind: "report", key: "profile", value: profile, basis: "inferred", confidence: null, source: "scan" },

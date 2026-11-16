@@ -19,7 +19,8 @@ import { googleAccessRoute, makeAutolinkHandler, GSC_SCOPE, GA_SCOPE } from "../
 import { makeSpeedHandler } from "../../../src/god/speed.mjs";
 import { makeInspectHandler } from "../../../src/god/inspect.mjs";
 import { makeScorecardHandler } from "../../../src/god/scorecard.mjs";
-import { PROMPTS, DEPARTMENTS, KNOWLEDGE } from "./agents.generated.mjs";
+import * as bundled from "./agents.generated.mjs";
+const { PROMPTS, DEPARTMENTS, KNOWLEDGE } = bundled;
 
 export const VERSION = "0.1.0";
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", "cache-control": "no-store" } });
@@ -111,13 +112,19 @@ export function context(env, fetchImpl) {
   return { s, store, siteOf, handlers, budgetOf };
 }
 
+/**
+ * The agent registry for planning (D62): name, department folder and whether it edits files, from the bundle, so risk
+ * and department are right in the Worker (planSite falls back to "low" and "automation" without it).
+ */
+export const workerAgents = (departments = DEPARTMENTS, edits = bundled.EDITS || []) => Object.entries(departments || {}).map(([name, department]) => ({ name, department, mayEdit: edits.includes(name) }));
+
 /** Plan ONE site (its own invocation). The site comes from the scheduler, never from a public request. */
 export async function tickSite(env, site, fetchImpl) {
   const { s, store, handlers, budgetOf } = context(env, fetchImpl);
   // D37: the site's own repository, when an agency owner connected it; the token stays in this invocation.
   const github = async (x) => { const t = await store.githubTarget(x.id); return t?.repo && t?.token ? makeGitHub({ repo: t.repo, token: t.token, fetchImpl, api: env.GITHUB_API_URL || undefined }) : null; }; // GITHUB_API_URL: local tests only
   const budgetUsd = await budgetOf(site.id);
-  const r = await tick({ store, sites: [site], handlers, maxJobs: 0, dailyBudgetUsd: s.dailyBudgetUsd, budgets: { [site.id]: budgetUsd }, agentRunUsd: s.agentRunUsd, github });
+  const r = await tick({ store, sites: [site], handlers, maxJobs: 0, dailyBudgetUsd: s.dailyBudgetUsd, budgets: { [site.id]: budgetUsd }, agentRunUsd: s.agentRunUsd, github, agents: workerAgents() });
   const e = r.sites[0] || {};
   const outcome = { strategy: e.strategy ?? null, queued: (e.queued || []).length, deferred: (e.deferred || []).length, waiting: (e.waiting || []).length, error: e.error || null,
     budgetUsd, spentTodayUsd: e.spentTodayUsd ?? null, deferredForBudget: (e.deferred || []).filter((d) => /over today's budget/.test(d.reason || "")).length,
@@ -149,9 +156,12 @@ async function rpc(env, fetchImpl, fn, args = {}) {
  */
 export async function schedule(env, { dispatch, fetchImpl = countingFetch(), now = () => new Date().toISOString(), runner = "cloudflare-cron" } = {}) {
   const s = settings(env), run = { runner, startedAt: now(), sitesPlanned: 0, jobsRun: 0, jobsRecovered: 0, invocations: 1, subrequests: 0, errors: [], paused: false, jobs: [] };
+  // D62: the run's row is written when it starts and completed at the end, so a run stopped by a platform limit still
+  // leaves a row (marked as not finished). Before migration 20261124000000 the start call fails and the end inserts.
+  const id = await rpc(env, fetchImpl, "start_god_run", { p_run: { runner, startedAt: run.startedAt } }).catch(() => null);
   const finish = async () => {
     run.subrequests += fetchImpl.count || 0;
-    try { await rpc(env, fetchImpl, "record_god_run", { p_run: run }); } catch (e) { run.errors.push(`record: ${e.message}`); }
+    try { await rpc(env, fetchImpl, "record_god_run", { p_run: id ? { ...run, id } : run }); } catch (e) { run.errors.push(`record: ${e.message}`); }
     return run;
   };
   // D57: once a day per agency, a digest of what waits for a person, failures, data freshness and spend (computed in the

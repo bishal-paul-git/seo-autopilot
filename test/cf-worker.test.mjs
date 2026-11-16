@@ -102,13 +102,13 @@ test("email (D40): each run calls the notify function once with the shared secre
   assert.equal(r.paused, true);
   assert.deepEqual(r.email, { invited: 2, summaries: 1 });
   assert.equal(seen.headers["x-scan-secret"], ENV.SCAN_SECRET);
-  assert.deepEqual(db.calls.map((c) => c.fn), ["record_daily_digests", "notify", "record_god_run"], "nothing else runs while paused (the D57 digest comes first, so the email carries it)");
+  assert.deepEqual(db.calls.map((c) => c.fn), ["start_god_run", "record_daily_digests", "notify", "record_god_run"], "nothing else runs while paused (the D57 digest comes first, so the email carries it)");
   const bad = fakeDb({ record_god_run: 1, notify: { ok: false, error: "forbidden" } });
   const r2 = await app.schedule({ ...ENV, SEO_GOD_PAUSED: "true", NOTIFY_FUNCTION_URL: NOTIFY }, { dispatch: async () => ({ ok: true }), fetchImpl: bad.f });
   assert.ok(r2.errors.some((e) => /email: forbidden/.test(e)));
   const none = fakeDb({ record_god_run: 1 });
   await app.schedule({ ...ENV, SEO_GOD_PAUSED: "true" }, { dispatch: async () => ({ ok: true }), fetchImpl: none.f });
-  assert.deepEqual(none.calls.map((c) => c.fn), ["record_daily_digests", "record_god_run"], "no notify URL: no email call");
+  assert.deepEqual(none.calls.map((c) => c.fn), ["start_god_run", "record_daily_digests", "record_god_run"], "no notify URL: no email call");
 });
 
 test("daily digest (D57): recorded once per run call, before the email; a missing function (migration not applied) is not an error", async () => {
@@ -129,7 +129,7 @@ test("scheduler: the Worker switch and the database switch both pause; nothing e
   let dispatched = 0;
   const r = await app.schedule({ ...ENV, SEO_GOD_PAUSED: "true" }, { dispatch: async () => { dispatched++; return { ok: true }; }, fetchImpl: db.f });
   assert.equal(r.paused, true); assert.equal(dispatched, 0);
-  assert.deepEqual(db.calls.map((c) => c.fn), ["record_daily_digests", "record_god_run"], "only the daily digest (people still need reminding while paused)");
+  assert.deepEqual(db.calls.map((c) => c.fn), ["start_god_run", "record_daily_digests", "record_god_run"], "only the daily digest (people still need reminding while paused)");
   const db2 = fakeDb({ god_paused: true, record_god_run: 1 });
   const r2 = await app.schedule(ENV, { dispatch: async () => { dispatched++; return { ok: true }; }, fetchImpl: db2.f });
   assert.equal(r2.paused, true); assert.equal(dispatched, 0);

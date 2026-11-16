@@ -52,7 +52,7 @@ const globRe = (g) => new RegExp("^" + g.replace(/[.+^${}()|[\]\\]/g, "\\$&").re
  * files: changed paths; addedFiles: the new ones. labels: issue or pull-request labels. contentGlobs: where pages live.
  * addedText: the lines it adds.
  */
-export function classifyChange({ files = [], addedFiles = [], labels = [], contentGlobs = [], addedText = "", review = {} } = {}) {
+export function classifyChange({ files = [], addedFiles = [], labels = [], contentGlobs = [], addedText = "", review = {}, branch = "", body = "", issueLabels = [] } = {}) {
   const reasons = [];
   let cls = labels.map((l) => LABEL_CLASS[l]).find(Boolean) || null;
   if (cls) reasons.push(`label: ${cls}`);
@@ -67,8 +67,13 @@ export function classifyChange({ files = [], addedFiles = [], labels = [], conte
   const hits = addedText ? topicList(review).filter(({ res }) => res.some(([, r]) => r.test(addedText))).map((t) => t.topic) : [];
   if (hits.length && !HUMAN_ONLY.has(cls)) { reasons.push(`sensitive topics in the added text: ${hits.join(", ")}`); cls = "sensitive"; }
   // D55: pull requests the hosted SEO team opened (label seo-hosted) stop at "prepare" whatever the site's policy says.
-  const hosted = labels.includes("seo-hosted");
-  if (hosted) reasons.push("opened by the hosted SEO team");
+  // D62: the label alone fails open (a failed label copy, a removed label), so the work-order marker the hosted team puts
+  // in its issue (body: the pull request's and its issue's), or a seo/issue-<n> branch whose issue is labelled
+  // seo-hosted, also count. A seo/issue-<n> branch alone does not: the site's own autopilot drafts on those too (D17).
+  const marker = /<!--\s*seo-god-job:/i.test(String(body || ""));
+  const hostedIssue = /^seo\/issue-\d+$/.test(String(branch || "")) && issueLabels.includes("seo-hosted");
+  const hosted = labels.includes("seo-hosted") || marker || hostedIssue;
+  if (hosted) reasons.push(`opened by the hosted SEO team${labels.includes("seo-hosted") ? "" : marker ? " (work-order marker)" : " (its issue is labelled seo-hosted)"}`);
   return { cls, reasons, sensitiveTopics: hits, hosted };
 }
 

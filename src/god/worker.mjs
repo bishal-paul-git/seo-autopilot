@@ -3,6 +3,9 @@
 // escalate. The worker never approves anything: gated work waits in awaiting_approval for the agency.
 import { reviewOutput } from "./review.mjs";
 
+/** AI work (agents, client requests) runs at most this many times: a retry after "needs changes" is paid again (D62). */
+export const AI_MAX_ATTEMPTS = 2;
+
 /**
  * store: MemoryStore or SupabaseStore. handlers: { [kind or "agent:*"]: async (job, ctx) => output }. output: { evidence,
  * changes, claims, actions, costUsd, deploy?: async () => ({ ref, rollback }) , verify?: async () => boolean }.
@@ -19,7 +22,8 @@ export async function runOnce({ store, handlers, worker = "worker-1", timeoutMs 
     const output = await Promise.race([handler(job, { worker, budgetUsd: Math.max(0, budget - prior) }), new Promise((_, rej) => setTimeout(() => rej(new Error(`timed out after ${timeoutMs} ms`)), timeoutMs).unref?.())]);
     // Keep what was produced (the agency approves exactly this) and what it cost, before anything else can fail.
     const costUsd = Math.max(0, Number(output.costUsd) || 0);
-    await store.recordOutput?.(job.id, { outputs: { proposal: output.proposal ?? null, changes: output.changes || [], claims: output.claims || [], questions: output.questions || [], evidence: output.evidence || [] }, costUsd, note: job.kind });
+    const recorded = { proposal: output.proposal ?? null, changes: output.changes || [], claims: output.claims || [], questions: output.questions || [], evidence: output.evidence || [] };
+    await store.recordOutput?.(job.id, { outputs: recorded, costUsd, note: job.kind });
     const spent = prior + costUsd, overBudget = spent > budget + 1e-9;
     // A handler that cannot or must not continue (no key, budget too small, model refusal) hands the job to a person
     // at once: retrying would repeat the same outcome and may spend again.
@@ -40,10 +44,13 @@ export async function runOnce({ store, handlers, worker = "worker-1", timeoutMs 
     // A second opinion from a reviewer agent (content and high-risk work) counts only when the gate passed.
     if (review.verdict === "pass" && output.secondReview) { review = { ...output.secondReview, producer: job.agent || job.kind }; await store.recordReview(job.id, review); }
     if (review.verdict !== "pass") {
-      // Changes asked for are retried within the attempt cap; after it, or on a hard failure, the job stops.
-      const retry = review.verdict === "needs_changes" && (job.attempts ?? 0) < (job.maxAttempts ?? 3);
+      // Changes asked for are retried within the attempt cap (at most 2 attempts for AI work, D62: each one is paid);
+      // the retry gets the reviewer's reasons. After the cap, or on a hard failure, the job stops and goes to a person.
+      const cap = Math.min(job.maxAttempts ?? 3, fromAI ? AI_MAX_ATTEMPTS : Infinity);
+      const retry = review.verdict === "needs_changes" && (job.attempts ?? 0) < cap;
+      if (retry) await store.recordOutput?.(job.id, { outputs: { ...recorded, reviewFeedback: review.reasons.slice(0, 20) } });
       await store.transition(job.id, retry ? "queued" : "failed", review.reviewer, review.reasons.join("; "));
-      if (!retry && review.verdict === "needs_changes") await store.transition(job.id, "escalated", "system", "review still asks for changes after the last attempt");
+      if (!retry) await store.transition(job.id, "escalated", "system", review.verdict === "needs_changes" ? "review still asks for changes after the last attempt" : "the review failed this work: a person decides");
       log(`review ${review.verdict} ${job.kind}`); return { job: job.id, outcome: `review_${review.verdict}`, reasons: review.reasons };
     }
     if (job.requiresApproval || output.adopt) { await store.transition(job.id, "awaiting_approval", review.reviewer, output.adopt ? "reviewed; waiting for the agency to adopt it" : "reviewed; waiting for the agency"); return { job: job.id, outcome: "awaiting_approval" }; }

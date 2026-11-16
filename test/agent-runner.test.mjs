@@ -165,13 +165,14 @@ test("worker: review-driven retries stop at the attempt cap and the budget cover
   const j = queue(store, "agent:seo-snippet-optimizer", "medium", 1);
   const outcomes = [];
   for (let i = 0; i < 5; i++) { const r = await runOnce({ store, handlers: unsourced }); if (!r) break; outcomes.push(r.outcome); }
-  assert.deepEqual(outcomes, ["review_needs_changes", "review_needs_changes", "review_needs_changes"]);
+  // D62: AI work runs at most twice (each attempt is paid), then a person decides.
+  assert.deepEqual(outcomes, ["review_needs_changes", "review_needs_changes"]);
   assert.equal(store.get(j.id).status, "escalated");
-  assert.equal(n, 3);
+  assert.equal(n, 2);
   const k = queue(store, "agent:seo-snippet-optimizer", "medium", 0.25);
   const seen = [];
   const pricey = { "agent:*": async (_job, ctx) => { seen.push(ctx.budgetUsd); return { evidence: ["x"], claims: [{ text: "Traffic up 40%" }], costUsd: 0.1 }; } };
   for (let i = 0; i < 5; i++) { const r = await runOnce({ store, handlers: pricey }); if (!r) break; }
-  assert.deepEqual(seen.map((x) => Math.round(x * 100) / 100), [0.25, 0.15, 0.05], "each retry gets only what is left");
-  assert.equal(store.get(k.id).status, "failed", "the third attempt crossed the job's budget and failed review");
+  assert.deepEqual(seen.map((x) => Math.round(x * 100) / 100), [0.25, 0.15], "each retry gets only what is left");
+  assert.equal(store.get(k.id).status, "escalated", "the second attempt is the last for AI work");
 });

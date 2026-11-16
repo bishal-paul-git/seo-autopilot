@@ -65,8 +65,15 @@ export async function advance(store, site, jobs, memory, actor = "seo-god", { gi
     await store.transition(j.id, "queued", actor, "the agency asked for changes: redo it");
     moved.push({ job: j.id, kind: j.kind, to: "queued" });
   }
+  // D62: gated work in scoped (changes requested, or a planning run that stopped between scoped and awaiting_approval)
+  // goes back to the agency, marked as a redo, so the next "approve" runs it again instead of accepting the old result.
+  for (const j of jobs.filter((x) => x.status === "scoped" && x.requiresApproval)) {
+    if (j.attempts) await store.recordOutput(j.id, { outputs: { ...(j.outputs || {}), redo: true } });
+    await store.transition(j.id, "awaiting_approval", actor, j.attempts ? "changes requested: approve to run it again" : "needs agency approval");
+    moved.push({ job: j.id, kind: j.kind, to: "awaiting_approval" });
+  }
   for (const j of jobs.filter((x) => x.status === "authorized")) {
-    if (!j.attempts) { await store.transition(j.id, "queued", actor, "approved by the agency: run it"); moved.push({ job: j.id, kind: j.kind, to: "queued" }); continue; }
+    if (!j.attempts || j.outputs?.redo) { await store.transition(j.id, "queued", actor, "approved by the agency: run it"); moved.push({ job: j.id, kind: j.kind, to: "queued" }); continue; }
     if (j.kind === "implement") continue; // handled by executeChanges
     if (j.kind === "strategy_proposal") {
       const base = memory.find((m) => m.kind === "strategy" && m.key === "initial")?.value || j.outputs?.proposal || {};
@@ -177,7 +184,14 @@ export async function executeChanges(store, site, jobs, memory, actor, github, n
 
 /** Jobs that wait on a person, with the decision each one needs. */
 export const waitingOn = (jobs) => jobs.filter((j) => ["awaiting_approval", "escalated"].includes(j.status))
-  .map((j) => ({ job: j.id, kind: j.kind, reason: j.status === "escalated" ? "failed repeatedly: needs a person" : j.attempts ? "waiting for the agency to approve the result" : "waiting for the agency to approve starting it" }));
+  .map((j) => ({ job: j.id, kind: j.kind, reason: j.status === "escalated" ? "stopped: needs a person" : j.outputs?.redo ? "changes requested: approve to run it again" : j.attempts ? "waiting for the agency to approve the result" : "waiting for the agency to approve starting it" }));
+
+/**
+ * Whether a job may still spend money (D62): not started yet, running or under review, or approved/waiting to start
+ * (no attempt yet, or a requested redo). Escalated, failed and finished results waiting for a decision spend nothing more.
+ */
+export const canStillSpend = (j) => ["proposed", "scoped", "queued", "running", "awaiting_review"].includes(j.status)
+  || (["awaiting_approval", "authorized"].includes(j.status) && (!j.attempts || Boolean(j.outputs?.redo)));
 
 /**
  * store: MemoryStore or SupabaseStore (with listJobs, readMemory, writeMemory, spendSince). sites: [{ id, url, name }]
@@ -220,7 +234,8 @@ export async function tick({ store, sites = null, handlers = {}, now = new Date(
       const budget = budgets[site.id] ?? dailyBudgetUsd;
       const spent = await store.spendSince(site.id, dayStart);
       // Money already promised to open work counts against today's budget, so a tick cannot queue more than the day allows.
-      let reserved = spent + jobs.filter((j) => OPEN.has(j.status) && j.status !== "failed").reduce((a, j) => a + Math.max(0, (Number(j.budgetUsd) || 0) - (Number(j.costUsd) || 0)), 0);
+      // Only work that can still spend counts (D62): escalated, failed and finished-but-waiting results hold nothing.
+      let reserved = spent + jobs.filter(canStillSpend).reduce((a, j) => a + Math.max(0, (Number(j.budgetUsd) || 0) - (Number(j.costUsd) || 0)), 0);
       entry.spentTodayUsd = round(spent); entry.budgetUsd = budget;
       const alerts = entry.strategy === "approved" ? alertsFor(site, memory, jobs, now) : [];
       entry.alerts = alerts.map((a) => ({ id: a.id, kind: a.kind, agent: a.agent, title: a.title }));
