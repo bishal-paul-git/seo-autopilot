@@ -2,6 +2,13 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-20 (D65 planning resilience and budgets; code change)
+- **Production evidence:** AudioScriptor planning failed at every run from 2026-11-19 17:01 UTC with `transition_job: job needs agency approval first` (two hand-made gated jobs, $0 budget, no approval row). Repaired 2026-11-20 03:10 UTC at the owner's request (budget $0.50 each, back to awaiting_approval, approved through `approve_job` with a note naming the owner's chat request). Three "fact-checker could not review" / "budget too small" escalations 2026-11-16 to 18 read from `job_events`.
+- **Code:** `src/god/tick.mjs` (`advance` per-job isolation; `estimateCost(kind, { checked })`, `CHECKED_RUN_FACTOR`, `isChecked`, `jobBudget`; reservation and `runOnce` use `jobBudget`); `src/god/worker.mjs` (`runOnce({ budgetOf })`); `src/god/agent-runner.mjs` (`callNeedUsd`, review reserve before the agent's call, combined escalation message); `cloud/worker/src/app.mjs` (`workerAgents()` carries `publishable`; `runJob` passes `budgetOf`).
+- **Tests:** new `test/god-budget-resilience.test.mjs` (6 tests).
+- **Checks:** `npm test` 716/716 (a first run had 1 failure in `test/portal-requests.test.mjs`, a Chromium timeout that also failed on main without these changes and passed on the rerun); `bash cloud/portal/supabase/test/run.sh` exit 0 (rls1-rls31); `node scripts/cf-local-e2e.mjs` exit 0, 56 checks, `runsWithErrors: 0`. No migration. No paid model call.
+- **Deployment:** not deployed in this entry.
+
 ## 2026-11-16 16:30 UTC (D64 GA4 retry; code change and production SQL)
 - **Owner request applied:** strategy drafts for AudioScriptor, Excel Error Finder and Manchester approved through `public.approve_job` (note names the owner's chat request). The 16:00 UTC run picked them up: strategies `approved`, 13 specialist and data jobs queued. Birmingham untouched.
 - **Bug:** `google_autolink_due` was false once Search Console was linked, so GA4 was never retried after the first attempt (made while the Analytics Admin API was off). All 4 live sites had Search Console only.

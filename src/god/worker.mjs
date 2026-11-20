@@ -11,14 +11,15 @@ export const AI_MAX_ATTEMPTS = 2;
  * changes, claims, actions, costUsd, deploy?: async () => ({ ref, rollback }) , verify?: async () => boolean }.
  * Returns a summary of what happened to the claimed job, or null when nothing was ready.
  */
-export async function runOnce({ store, handlers, worker = "worker-1", timeoutMs = 120_000, siteHostOf = () => null, log = () => {} }) {
+// budgetOf(job): the budget the job runs with (tick.mjs jobBudget: a job made with none gets its kind's standard estimate).
+export async function runOnce({ store, handlers, worker = "worker-1", timeoutMs = 120_000, siteHostOf = () => null, log = () => {}, budgetOf = (j) => Number(j.budgetUsd) || 0 }) {
   const job = await store.claimJob(worker);
   if (!job) return null;
   const handler = handlers[job.kind] || handlers[job.kind.split(":")[0] + ":*"];
   try {
     if (!handler) throw new Error(`no handler for ${job.kind}`);
     // Budget is per job, across all its attempts: a retry only gets what earlier attempts left.
-    const prior = Number(job.costUsd) || 0, budget = Number(job.budgetUsd) || 0;
+    const prior = Number(job.costUsd) || 0, budget = Number(budgetOf(job)) || 0;
     const output = await Promise.race([handler(job, { worker, budgetUsd: Math.max(0, budget - prior) }), new Promise((_, rej) => setTimeout(() => rej(new Error(`timed out after ${timeoutMs} ms`)), timeoutMs).unref?.())]);
     // Keep what was produced (the agency approves exactly this) and what it cost, before anything else can fail.
     const costUsd = Math.max(0, Number(output.costUsd) || 0);

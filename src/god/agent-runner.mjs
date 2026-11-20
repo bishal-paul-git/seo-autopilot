@@ -119,10 +119,15 @@ export function parseReply(text) {
 }
 
 /** One Messages API call within `budget` dollars. Returns { escalate } when it cannot fit, else { r, text, costUsd }. */
+// Worst case must fit the budget: input counted at 1 token per 3 characters, priced at the worst fallback model.
+const worstPrice = (model) => { const price = PRICES[model]; return NO_SERVER_FALLBACK.has(model) ? price : { in: Math.max(price.in, FALLBACK_WORST.in), out: Math.max(price.out, FALLBACK_WORST.out) }; };
+/** The least a call with `chars` characters of input and at least `minTokens` of reply can cost, worst case. */
+export const callNeedUsd = (model, chars, minTokens) => { const w = worstPrice(model); return (chars / 3) * w.in / 1e6 + minTokens * w.out / 1e6; };
+// What the fact-checker's call is planned for: the advice it reads (about 2,000 tokens of JSON) and a short verdict.
+const ADVICE_CHARS = 8000, REVIEW_MIN_TOKENS = 1500;
+
 async function callModel({ apiKey, model, effort, fetchImpl, baseUrl, system, user, budget, minTokens = 2000 }) {
-  const price = PRICES[model];
-  // Worst case must fit the budget: input counted at 1 token per 3 characters, priced at the worst fallback model.
-  const worst = NO_SERVER_FALLBACK.has(model) ? price : { in: Math.max(price.in, FALLBACK_WORST.in), out: Math.max(price.out, FALLBACK_WORST.out) };
+  const worst = worstPrice(model);
   const inUsd = ((system.length + user.length) / 3) * worst.in / 1e6;
   const maxTokens = Math.min(16000, Math.floor(((budget - inUsd) * 1e6) / worst.out));
   if (maxTokens < minTokens) return { short: true, needs: inUsd + minTokens * worst.out / 1e6 };
@@ -194,8 +199,17 @@ export function makeAgentHandler({ store, siteOf, apiKey = globalThis.process?.e
     const left = dailyRemaining ? Math.max(0, Number(await dailyRemaining(job)) || 0) : Infinity;
     const jobBudget = Number(ctx.budgetUsd ?? job.budgetUsd) || 0, budget = Math.min(jobBudget, left);
     const call = { apiKey, model, effort, fetchImpl, baseUrl };
-    const first = await callModel({ ...call, system, user, budget });
-    if (first.short) return { escalate: left < jobBudget ? `the site's daily budget is used up ($${left.toFixed(2)} left today)` : `budget $${budget.toFixed(2)} is too small for this run (needs about $${first.needs.toFixed(2)})`, evidence: [], costUsd: 0 };
+    // Advice the fact-checker must review keeps the review's share of the budget aside, so the agent's own reply cannot
+    // use it up (production 2026-11-17/18: two reports paid for and then left unreviewed for lack of budget).
+    const checked = needsSecondOpinion(job, name, pubOf(name));
+    const rp = checked ? promptFor(REVIEWER_AGENT) : null, rk = rp ? knowledgeBlock(REVIEWER_AGENT, kbOf()) : null;
+    const reviewSystem = rp ? `${rp}\n${rk.text}\n${REVIEW_TAIL}` : "";
+    const reserve = rp ? callNeedUsd(model, reviewSystem.length + user.length + ADVICE_CHARS, REVIEW_MIN_TOKENS) : 0;
+    const first = await callModel({ ...call, system, user, budget: budget - reserve });
+    if (first.short) {
+      const needs = first.needs + reserve, what = reserve ? "this run and its fact-check" : "this run";
+      return { escalate: left < jobBudget && left < needs ? `the site's daily budget is used up ($${left.toFixed(2)} left today)` : `budget $${budget.toFixed(2)} is too small for ${what} (needs about $${needs.toFixed(2)})`, evidence: [], costUsd: 0 };
+    }
     const { r } = first; let costUsd = first.costUsd;
     if (r.stop_reason === "refusal") return { escalate: `the model declined (${r.stop_details?.category || "no category"})`, evidence: [], costUsd };
     const out = parseReply(first.text);
@@ -208,11 +222,10 @@ export function makeAgentHandler({ store, siteOf, apiKey = globalThis.process?.e
       evidence, proposal: { agent: name, mode: "advise", summary: out.summary, recommendations: out.recommendations, knowledge: kn.used },
       claims: out.claims, questions: out.questions, actions: out.recommendations.map((x) => x.title), costUsd,
     };
-    if (!needsSecondOpinion(job, name, pubOf(name))) return result;
+    if (!checked) return result;
     // Second opinion: the fact-checker reads the same site data and this advice. If it cannot run, a person checks.
-    const rp = promptFor(REVIEWER_AGENT), rk = knowledgeBlock(REVIEWER_AGENT, kbOf());
     const advice = JSON.stringify({ agent: name, summary: out.summary, recommendations: out.recommendations, claims: out.claims }).replace(/<\/?advice_to_review>/gi, "");
-    const second = rp ? await callModel({ ...call, system: `${rp}\n${rk.text}\n${REVIEW_TAIL}`, user: `${user.replace(/\n(<review_feedback>|Do the task above)[\s\S]*$/, "")}\n<advice_to_review>\n${advice}\n</advice_to_review>\nReview the advice and reply with the JSON object.`, budget: budget - costUsd, minTokens: 1500 }) : null;
+    const second = rp ? await callModel({ ...call, system: reviewSystem, user: `${user.replace(/\n(<review_feedback>|Do the task above)[\s\S]*$/, "")}\n<advice_to_review>\n${advice}\n</advice_to_review>\nReview the advice and reply with the JSON object.`, budget: budget - costUsd, minTokens: 1500 }) : null;
     if (!second || second.short) return { ...result, escalate: `the fact-checker could not review this advice (${!second ? "reviewer missing" : `needs about $${second.needs.toFixed(2)} more budget`}); a person must check it` };
     costUsd += second.costUsd;
     const v = second.r.stop_reason === "refusal" ? null : parseVerdict(second.text);

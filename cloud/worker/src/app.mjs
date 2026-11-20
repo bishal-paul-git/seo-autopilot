@@ -11,7 +11,7 @@
 import { SupabaseStore } from "../../../src/god/stores.mjs";
 import { makeHandlers } from "../../../src/god/handlers.mjs";
 import { makeAgentHandler, makeClientRequestHandler } from "../../../src/god/agent-runner.mjs";
-import { tick } from "../../../src/god/tick.mjs";
+import { tick, jobBudget } from "../../../src/god/tick.mjs";
 import { makeSearchConsoleHandler, makeSearchSnapshotHandler, googleToken } from "../../../src/god/search-console.mjs";
 import { runOnce } from "../../../src/god/worker.mjs";
 import { makeGitHub } from "../../../src/god/github.mjs";
@@ -116,7 +116,7 @@ export function context(env, fetchImpl) {
  * The agent registry for planning (D62): name, department folder and whether it edits files, from the bundle, so risk
  * and department are right in the Worker (planSite falls back to "low" and "automation" without it).
  */
-export const workerAgents = (departments = DEPARTMENTS, edits = bundled.EDITS || []) => Object.entries(departments || {}).map(([name, department]) => ({ name, department, mayEdit: edits.includes(name) }));
+export const workerAgents = (departments = DEPARTMENTS, edits = bundled.EDITS || [], publishable = bundled.PUBLISHABLE || []) => Object.entries(departments || {}).map(([name, department]) => ({ name, department, mayEdit: edits.includes(name), publishable: publishable.includes(name) }));
 
 /** Plan ONE site (its own invocation). The site comes from the scheduler, never from a public request. */
 export async function tickSite(env, site, fetchImpl) {
@@ -135,8 +135,9 @@ export async function tickSite(env, site, fetchImpl) {
 
 /** Run ONE queued job, if any (its own invocation). Approval gates are enforced by the database on every move. */
 export async function runJob(env, fetchImpl, workerId) {
-  const { store, siteOf, handlers } = context(env, fetchImpl);
-  const r = await runOnce({ store, handlers, worker: workerId, timeoutMs: 170_000, siteHostOf: async (job) => { const site = await siteOf(job.siteId); try { return site ? new URL(site.url).hostname : null; } catch { return null; } } });
+  const { s, store, siteOf, handlers } = context(env, fetchImpl);
+  const agents = workerAgents();
+  const r = await runOnce({ store, handlers, worker: workerId, timeoutMs: 170_000, budgetOf: (job) => jobBudget(job, { agentRunUsd: s.agentRunUsd, agents }), siteHostOf: async (job) => { const site = await siteOf(job.siteId); try { return site ? new URL(site.url).hostname : null; } catch { return null; } } });
   return r || { idle: true };
 }
 

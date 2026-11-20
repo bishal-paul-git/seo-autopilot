@@ -1048,3 +1048,22 @@ Keep the engine MIT; sell hosting, multi-client operations, approvals, scheduled
 Context: D61 linked Google automatically only while a site had no Search Console binding. The first attempts ran before the Analytics Admin API was enabled, so every live site got Search Console without GA4 and was never tried again.
 Decision: `google_autolink_due` is true, once a day, while Search Console or GA4 is missing. Still false for paused sites, after a person removed the Search Console property, and once a person chose properties on Connections (`google.bind` in the audit log), so a person's choice, including "no Analytics", is kept.
 Tradeoff: a site with no GA4 property costs one free Admin API listing a day. Rejected: retrying only after an "API disabled" error (needs the error kept per site; more code for the same result).
+
+## D65 (2026-11-20): one bad job never stops a site; jobs without a budget run; reviewed advice keeps the review's budget
+Context (production): on 2026-11-19 two gated AudioScriptor jobs were set to `authorized` with no approval row and a $0
+budget, outside the planner (all three such jobs share one creation instant and have no idempotency key). The database
+refused to move them, `advance` threw, and planning stopped for the whole site at every run until they were repaired by
+hand. Separately, between 2026-11-16 and 2026-11-18 two reviewed reports used so much of their $0.50 that the
+fact-checker could not run ("needs about $0.13/$0.17 more"): the advice was paid for and then sent to a person unchecked.
+Decision:
+- `advance` moves each job on its own: a job the database refuses is reported as waiting with the reason, the others move
+  on and planning continues. A failure while following website changes is reported the same way.
+- A job with no budget (0) runs with its kind's standard estimate (`jobBudget`, from `SEO_GOD_AGENT_RUN_USD`); a budget
+  someone set is kept. The site's daily cap still limits it, and the tick's reservation counts it the same way.
+- An agent job whose advice the fact-checker reviews (publishable or high risk, D63) is planned at 1.5 times the agent
+  run budget, and the runner keeps the review's worst-case cost (reviewer prompt, site data, about 8,000 characters of
+  advice and a 1,500-token verdict) aside before the agent's own call. If both cannot fit, it escalates before spending.
+Tradeoff: reviewed runs cost up to half again as much per day and the agent's reply has a lower token ceiling; in return
+no paid advice goes unchecked for lack of money. Rejected: a database trigger setting a default budget (duplicates the
+Worker setting in SQL); refusing $0 jobs (agency staff may leave the budget empty, and the job would never run).
+Not fixed here: who made the 2026-11-19 jobs is unknown; the database still accepts such rows from the service role.

@@ -19,7 +19,20 @@ import { scorecardRows, scorecardDue } from "./scorecard.mjs";
 const OPEN = new Set(["proposed", "scoped", "queued", "running", "awaiting_review", "awaiting_approval", "authorized", "deploying", "verifying", "failed", "escalated"]);
 
 /** Estimated cost of one job, in US dollars. Read-only discovery costs nothing; agent runs use the configured estimate. */
-export const estimateCost = (kind, { agentRunUsd = 0.5 } = {}) => (kind.startsWith("agent:") ? agentRunUsd : 0);
+// An agent run whose advice the fact-checker reviews (publishable text or high risk, D63) pays for two model calls:
+// it gets half as much again, so the review is not left without budget (production: 3 reviews skipped, 2026-11-16/18).
+export const CHECKED_RUN_FACTOR = 1.5;
+export const estimateCost = (kind, { agentRunUsd = 0.5, checked = false } = {}) => (kind.startsWith("agent:") ? agentRunUsd * (checked ? CHECKED_RUN_FACTOR : 1) : 0);
+/** True when this agent job's advice gets the fact-checker's second opinion (the runner decides the same way). */
+export const isChecked = (job, agents = []) => {
+  const name = job.inputs?.agent || (job.kind.startsWith("agent:") ? job.kind.slice(6) : null);
+  return Boolean(name && name !== "seo-fact-checker" && (job.risk === "high" || agents.find((a) => a.name === name)?.publishable));
+};
+/**
+ * The budget a job runs with. A job made without one (budget 0: by hand, or by staff who left it empty) gets the
+ * standard estimate for its kind instead of failing for "budget too small"; the site's daily cap still applies.
+ */
+export const jobBudget = (job, { agentRunUsd = 0.5, agents = [] } = {}) => Number(job.budgetUsd) || estimateCost(job.kind, { agentRunUsd, checked: isChecked(job, agents) });
 
 /** Where the site's strategy stands, from its memory and its strategy jobs. */
 export function strategyStatus(jobs, memory) {
@@ -48,33 +61,36 @@ export function alertsFor(site, memory, jobs, now) {
  */
 export async function advance(store, site, jobs, memory, actor = "seo-god", { github = null, now = new Date().toISOString() } = {}) {
   const moved = [], waiting = [];
+  // One job the database refuses to move (made by hand with no approval row, a changed rule) must not stop the rest of
+  // the site's planning: it is reported as waiting with the reason, and the others move on (production 2026-11-19).
+  const each = async (j, fn) => { try { await fn(); } catch (e) { waiting.push({ job: j.id, kind: j.kind, reason: `could not move this job: ${String(e.message || e).slice(0, 200)}` }); } };
   // D37: approved work orders reach GitHub here, and the pull requests they lead to are followed and verified.
-  const ex = await executeChanges(store, site, jobs, memory, actor, github, now);
-  moved.push(...ex.moved); waiting.push(...ex.waiting);
+  try { const ex = await executeChanges(store, site, jobs, memory, actor, github, now); moved.push(...ex.moved); waiting.push(...ex.waiting); }
+  catch (e) { waiting.push({ job: null, kind: "implement", reason: `website changes not followed this run: ${String(e.message || e).slice(0, 200)}` }); }
   // Work created outside the planner (an accepted client request, a job an agency member added) enters the lifecycle
   // here: gated work goes to the agency for approval, never straight to the queue.
-  for (const j of jobs.filter((x) => x.status === "proposed")) {
+  for (const j of jobs.filter((x) => x.status === "proposed")) await each(j, async () => {
     await store.transition(j.id, "scoped", actor, j.source === "client_submission" ? "client request accepted by the agency" : "scoped");
     const to = j.requiresApproval ? "awaiting_approval" : "queued";
     await store.transition(j.id, to, actor, j.requiresApproval ? "needs agency approval" : "queued");
     moved.push({ job: j.id, kind: j.kind, to });
-  }
+  });
   // The agency asked for changes (approve_job "request_changes" moves the job to scoped): redo it. Gated work is not
   // re-queued here: it waits for a new approval to start.
-  for (const j of jobs.filter((x) => x.status === "scoped" && !x.requiresApproval)) {
+  for (const j of jobs.filter((x) => x.status === "scoped" && !x.requiresApproval)) await each(j, async () => {
     await store.transition(j.id, "queued", actor, "the agency asked for changes: redo it");
     moved.push({ job: j.id, kind: j.kind, to: "queued" });
-  }
+  });
   // D62: gated work in scoped (changes requested, or a planning run that stopped between scoped and awaiting_approval)
   // goes back to the agency, marked as a redo, so the next "approve" runs it again instead of accepting the old result.
-  for (const j of jobs.filter((x) => x.status === "scoped" && x.requiresApproval)) {
+  for (const j of jobs.filter((x) => x.status === "scoped" && x.requiresApproval)) await each(j, async () => {
     if (j.attempts) await store.recordOutput(j.id, { outputs: { ...(j.outputs || {}), redo: true } });
     await store.transition(j.id, "awaiting_approval", actor, j.attempts ? "changes requested: approve to run it again" : "needs agency approval");
     moved.push({ job: j.id, kind: j.kind, to: "awaiting_approval" });
-  }
-  for (const j of jobs.filter((x) => x.status === "authorized")) {
-    if (!j.attempts || j.outputs?.redo) { await store.transition(j.id, "queued", actor, "approved by the agency: run it"); moved.push({ job: j.id, kind: j.kind, to: "queued" }); continue; }
-    if (j.kind === "implement") continue; // handled by executeChanges
+  });
+  for (const j of jobs.filter((x) => x.status === "authorized")) await each(j, async () => {
+    if (!j.attempts || j.outputs?.redo) { await store.transition(j.id, "queued", actor, "approved by the agency: run it"); moved.push({ job: j.id, kind: j.kind, to: "queued" }); return; }
+    if (j.kind === "implement") return; // handled by executeChanges
     if (j.kind === "strategy_proposal") {
       const base = memory.find((m) => m.kind === "strategy" && m.key === "initial")?.value || j.outputs?.proposal || {};
       const answers = Object.fromEntries(memory.filter((m) => m.kind === "answer").map((m) => [m.key, m.value?.value]));
@@ -82,15 +98,15 @@ export async function advance(store, site, jobs, memory, actor = "seo-god", { gi
       const draft = withAnswers(base, answers, open);
       await store.writeMemory(site.id, [{ kind: "strategy", key: "initial", value: { ...draft, status: "approved", approvedJob: j.id }, basis: "verified", confidence: null, source: "agency approval" }]);
       await store.transition(j.id, "completed", actor, "strategy accepted by the agency");
-      moved.push({ job: j.id, kind: j.kind, to: "completed" }); continue;
+      moved.push({ job: j.id, kind: j.kind, to: "completed" }); return;
     }
     // Advice only (no changes to a website): approving the result is the end of it.
     if (!(j.outputs?.changes || []).length) {
       await store.transition(j.id, "completed", actor, "result accepted by the agency");
-      moved.push({ job: j.id, kind: j.kind, to: "completed" }); continue;
+      moved.push({ job: j.id, kind: j.kind, to: "completed" }); return;
     }
     waiting.push({ job: j.id, kind: j.kind, reason: "approved; its apply step needs an authorized integration (R1-E1)" });
-  }
+  });
   return { moved, waiting };
 }
 
@@ -235,7 +251,7 @@ export async function tick({ store, sites = null, handlers = {}, now = new Date(
       const spent = await store.spendSince(site.id, dayStart);
       // Money already promised to open work counts against today's budget, so a tick cannot queue more than the day allows.
       // Only work that can still spend counts (D62): escalated, failed and finished-but-waiting results hold nothing.
-      let reserved = spent + jobs.filter(canStillSpend).reduce((a, j) => a + Math.max(0, (Number(j.budgetUsd) || 0) - (Number(j.costUsd) || 0)), 0);
+      let reserved = spent + jobs.filter(canStillSpend).reduce((a, j) => a + Math.max(0, jobBudget(j, { agentRunUsd, agents }) - (Number(j.costUsd) || 0)), 0);
       entry.spentTodayUsd = round(spent); entry.budgetUsd = budget;
       const alerts = entry.strategy === "approved" ? alertsFor(site, memory, jobs, now) : [];
       entry.alerts = alerts.map((a) => ({ id: a.id, kind: a.kind, agent: a.agent, title: a.title }));
@@ -275,7 +291,7 @@ export async function tick({ store, sites = null, handlers = {}, now = new Date(
         if (!has(spec.kind)) { entry.deferred.push({ kind: spec.kind, reason: "no runner for this kind yet" }); continue; }
         if (existing.has(spec.idempotencyKey)) continue; // already planned this period; its budget is already reserved
         if (spec.kind.startsWith("agent:") && !spec.inputs?.alerts && alertRun.has(spec.kind)) { entry.deferred.push({ kind: spec.kind, reason: "an alert run of this specialist already covers this week" }); continue; }
-        const est = estimateCost(spec.kind, { agentRunUsd });
+        const est = estimateCost(spec.kind, { agentRunUsd, checked: isChecked(spec, agents) });
         if (est > 0 && reserved + est > budget + 1e-9) { entry.deferred.push({ kind: spec.kind, reason: `over today's budget ($${round(reserved)} used or reserved of $${budget})` }); continue; }
         reserved += est; keep.push({ ...spec, budgetUsd: est });
       }
@@ -288,7 +304,7 @@ export async function tick({ store, sites = null, handlers = {}, now = new Date(
     report.sites.push(entry);
   }
   for (let i = 0; i < maxJobs; i++) {
-    const r = await runOnce({ store, handlers, worker, timeoutMs, siteHostOf: (job) => hostOf.get(job.siteId) || null, log });
+    const r = await runOnce({ store, handlers, worker, timeoutMs, siteHostOf: (job) => hostOf.get(job.siteId) || null, log, budgetOf: (job) => jobBudget(job, { agentRunUsd, agents }) });
     if (!r) break;
     report.runs.push(r);
   }
