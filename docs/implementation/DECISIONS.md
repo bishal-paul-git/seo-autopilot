@@ -1125,3 +1125,20 @@ Tradeoff: a breaking change for upstream users of the research jobs (one config 
 heuristic and falls back to the primary language, so a bilingual site should set `language` where it matters. Rejected:
 keeping a GB/en default (the bug), a prompt-free default market in init (any default is a guess that costs money), failing
 the whole config load when the market is missing (breaks audit-only users who need no market).
+
+## D69 (2026-11-26): posts kept in a CMS are mirrored as Markdown files; merge publishes through the CMS API
+Context: a site whose posts live in a CMS database (EmDash 0.1.0 here) has no files for the `markdown` adapter, the
+pull-request review, the content-loss guard or `git revert`. Writing to the CMS directly from an agent would skip all of
+them (rule 1, D17).
+Decision: `seo-autopilot cms` keeps one Markdown file per post (flat JSON front matter, `baseRev`) in a git repository.
+A pull request changes the file; merge publishes it (draft revision, publish, then the five SEO fields, then a read-back
+that must match the file); revert publishes the previous file. Own Portable Text converter with a per-block round-trip
+check and a JSON fence for anything it cannot represent, so export never loses content. Writes to a live post need proof
+that the collection keeps revisions (schema, or `--revisions-proven` after `cms preview-check`), because without them a
+draft save overwrites the live post. Drift is found by comparing the live post with the previous file, not by the
+revision token (our own draft save changes it). Slugs are always explicit; new ones match a Latin pattern by default.
+The revisions "restore" endpoint is never used (0.1.0 writes the live row and skips the cache purge).
+Tradeoff: a second copy of the content that can go stale (export reports drift; the write refuses it); some blocks stay
+as JSON lines; read-only fields (publish date, byline, images, terms) still change in the CMS admin. Rejected: editing
+through the CMS admin with no mirror (no review or guard), EmDash's own Markdown converter (lossy), and `_rev` as the
+conflict token.

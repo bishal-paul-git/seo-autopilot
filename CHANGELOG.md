@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **New:** `seo-autopilot cms export|validate|draft|publish|preview-check|schema` keeps posts that live in an EmDash CMS as Markdown files in git (decision D69, `docs/cms-mirror.md`). A pull request changes a file; merging publishes it through the CMS API; reverting publishes the old file. Writes to a live post refuse to run until the collection is proven to keep drafts apart from the live post. Dependency-free client and Portable Text converter (`src/cms/`); export only writes files that convert back unchanged.
+
 Every provider call now uses the site's own market (location and language). **Breaking for projects that use the research jobs:** add a `market` to each site.
 
 - **Changed:** the live search, keyword, autocomplete, Keyword Planner, YouTube, Wikipedia and entity calls take location and language from the site's new `market` setting, for example `"market": { "location_code": 2682, "language_code": "ar", "languages": ["ar", "en"] }`. Before, `language_code: "en"` was hard-coded in the DataForSEO requests (and `hl=en` in SerpAPI and autocomplete, `en-<country>` in Bing, language id 1000 in Keyword Planner), and a missing or unrecognised country silently meant the United Kingdom. A Saudi Arabian site in Arabic got UK English data, and paid for it.

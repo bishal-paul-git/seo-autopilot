@@ -2,6 +2,13 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-26 (D69 CMS mirror for EmDash; code change, nothing deployed)
+- **Code:** new `src/cms/emdash.mjs` (client), `src/cms/portable-text.mjs` (converter with per-block round-trip check), `src/cms/mirror.mjs` (file format, validation, write plan), `src/cms/commands.mjs`; `bin/seo-autopilot.mjs` gains `cms`.
+- **Tests:** `test/cms-portable-text.test.mjs` (9), `test/cms-mirror.test.mjs` (12) against an in-memory stand-in (`test/fixtures/fake-emdash.mjs`). `npm test` 537 tests, 535 pass, 0 fail, 2 skipped (before: 516, 514 pass, 2 skipped).
+- **Local end to end:** a local EmDash 0.1.0 (`astro dev`, local database only): export (9 posts, 0 skipped, 1 JSON block), validate, draft refused without proof (exit 3), preview-check ok (revisions true, preview 200, public 404, not in sitemap or RSS, 3 pages unchanged), draft (live page unchanged, preview shows the change), publish (verified), re-run (no-op), git revert and publish (content, SEO and re-export identical to the original). Found: the EmDash 0.1.0 loader does not hydrate SEO, so `getSeoMeta` templates show the excerpt (documented in `docs/cms-mirror.md`).
+- **Documentation:** `docs/cms-mirror.md`, D69, root `CHANGELOG.md`.
+- **Deployment:** none. No live CMS was written to from this repository.
+
 ## 2026-11-26 (Unicode / Arabic tokens and slugs; code change)
 - **Code:** new `src/lib/text.mjs` (`normalizeArabic`, `tokens`, `slugify`); `src/adapters/index.mjs` (`tokens` re-exported from it, `makeCovered` normalises page text), `src/audit/links.mjs` (phrase matching no longer ASCII-only), `src/jobs/optimize.mjs` (slug via `slugify`, percent-encoded non-ASCII URL paths decoded first). `docs/cloudflare/runtime-matrix.json` regenerated (one more module in the import graph).
 - **Tests:** `test/text.test.mjs` (English tokens and Latin slugs identical to the old code; Arabic variants; coverage; slugs). Unit tests only; no external service involved.
