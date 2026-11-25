@@ -2,6 +2,11 @@
 
 Dated session entries; history is preserved. Product release notes are in the root `CHANGELOG.md`.
 
+## 2026-11-25 (D68 trial started; configuration and documentation only)
+- **Deployment action:** production `sites.daily_budget_usd` set: Excel Error Finder 0.50, AudioScriptor 0.50, Erudience 0, Manchester 0 (Birmingham paused, unchanged). Daily spend check-in scheduled.
+- **Checks:** god_runs hourly 14:00 to 21:00 UTC on 2026-11-25, 0 errors. seo-autopilot Actions: ci, god-health, deploy-seo-god green. excel-error-finder Actions: seo-daily green; Daily Content Publish failed 2026-11-25 18:18 in 4 s, log not available (earlier runs green).
+- **Site repo:** title tests on three Excel Error Finder pages prepared on branch `seo/snippets-2026-11-25`; push not done (blocked by this session's permission check).
+
 ## 2026-11-24 (D66 deployed; D67 pilot reports; code change)
 - **Deployment:** #89 (D66) squash-merged as 739f7c3; migration `20261126000000_job_guards.sql` applied to production (both triggers present); Worker deployed by deploy-seo-god run 24 (success, 19:49 UTC). Run at 20:00 UTC: no errors; no job refused by the new guard; no direct inserts recorded.
 - **Code (D67):** migration `cloud/portal/supabase/migrations/20261127000000_pilot_reports.sql` (`site_work_report` gains `search`; `agency_usage`; `agency_quality`; `private.history_sum`); portal `cloud/portal/app/index.html` (search results in the monthly report, AI report quality card and usage CSV on Operations).

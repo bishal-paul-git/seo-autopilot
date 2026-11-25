@@ -1105,3 +1105,15 @@ worth paying for. Month-to-date against the same days of the month before is fai
 swing; the report states the days and the source. Rejected: Stripe now (price undecided, no proof yet); publishing the
 legal drafts with invented company details.
 
+## D68 (2026-11-25): one-week trial on 2 websites with a $5 AI cap
+Context: the owner approved a focused trial: 1 to 2 websites for a week, $5 of AI first, report when close or done.
+Seven-day spend before the trial was $11.65 across four live sites (about $0.35 per specialist run; the indexing
+monitor alone was $3.20 for 8 runs).
+Decision: Excel Error Finder and AudioScriptor get $0.50 a day each; Erudience and Manchester get $0 (free checks only:
+crawl, Search Console, index status); Birmingham stays paused. A daily check-in stops both at $4.25 spent so the
+total stays under $5. Alongside, title and description tests on three Excel Error Finder pages at positions 5 to 9
+with click rates of 0.1 to 1%, before figures logged in that repository (`docs/seo/SNIPPET-TESTS.md`).
+Tradeoff: $0.50 a day allows about one specialist run a day per site, so the trial shows cost and reliability more
+than results; click-rate effects need 28 days, so the real read is 2026-12-23. Rejected: running all four sites
+(would exceed $5 in 3 days).
+
