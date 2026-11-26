@@ -7,6 +7,8 @@
 # OFF until you create the repository VARIABLE  SEO_AUTOPILOT = true. It also needs SEO_REVIEW = true (the reviewer) and the
 # same Claude secret as seo-implement. Kill switch: the variable SEO_AUTOPILOT_PAUSED = true.
 # The jobs call the existing seo-implement, seo-check, seo-review and seo-automerge workflows, so their safety rules apply.
+# Called runs record their checks on this run's commit, so seo-check and seo-review also post commit statuses on the drafted
+# commit; seo-automerge reads those, so the merge still needs both to have passed on that exact commit.
 name: seo-autopilot
 on:
   schedule: [{ cron: "23 7,15 * * *" }]   # 07:23 and 15:23 UTC
@@ -60,9 +62,11 @@ jobs:
       pull-requests: write
       issues: write
       id-token: write
+      actions: write   # requested by seo-implement's checks job (which this loop turns off: it runs check and review below)
     uses: ./.github/workflows/seo-implement.yml
     with:
       issue: ${{ fromJSON(needs.pick.outputs.issue) }}
+      start_checks: false
     secrets: inherit
 
   locate:
@@ -98,6 +102,7 @@ jobs:
     if: needs.locate.outputs.pr != ''
     permissions:
       contents: read
+      statuses: write   # its status job marks the drafted commit; the build itself stays read-only
     uses: ./.github/workflows/seo-check.yml
     with:
       ref: ${{ needs.locate.outputs.branch }}
@@ -110,6 +115,7 @@ jobs:
       pull-requests: write
       issues: write
       id-token: write
+      statuses: write
     uses: ./.github/workflows/seo-review.yml
     with:
       pr: ${{ fromJSON(needs.locate.outputs.pr) }}
@@ -120,7 +126,8 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      checks: read
+      actions: read
+      statuses: read
     uses: ./.github/workflows/seo-automerge.yml
     with:
       branch: ${{ needs.locate.outputs.branch }}

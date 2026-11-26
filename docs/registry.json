@@ -1059,6 +1059,7 @@
      "workflow": "seo-check.yml",
      "cron": [],
      "events": [
+      "workflow_dispatch",
       "workflow_call",
       "pull_request"
      ],
@@ -3289,6 +3290,7 @@
     {
      "workflow": "seo-review.yml",
      "events": [
+      "workflow_dispatch",
       "workflow_call",
       "pull_request"
      ],
@@ -3503,6 +3505,7 @@
    "file": "seo-check.yml",
    "cron": [],
    "events": [
+    "workflow_dispatch",
     "workflow_call",
     "pull_request"
    ],
@@ -3639,6 +3642,7 @@
    "file": "seo-review.yml",
    "cron": [],
    "events": [
+    "workflow_dispatch",
     "workflow_call",
     "pull_request"
    ],

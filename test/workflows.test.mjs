@@ -40,7 +40,7 @@ for (const f of files) {
     const runBlocks = [...t.matchAll(/^\s+run:\s*(\|[^\n]*\n((?:\s{10,}.*\n?)*)|[^\n]*)/gm)].map((m) => m[0]);
     for (const b of runBlocks) assert.ok(!/\$\{\{\s*github\.event\.(issue|pull_request|comment|review|head_commit)\.(title|body|message|label)/.test(b) && !/\$\{\{\s*github\.head_ref/.test(b), `untrusted value in run: ${b.slice(0, 80)}`);
     // Third-party actions must be pinned to a full commit SHA; first-party actions may use a version tag.
-    for (const m of t.matchAll(/uses:\s*([^\s#]+)/g)) {
+    for (const m of t.matchAll(/^\s*(?:-\s+)?uses:\s*([^\s#]+)/gm)) {
       const ref = m[1];
       if (/^(actions|github)\//.test(ref)) continue;
       if (/^\.\/\.github\/workflows\/seo-[a-z-]+\.yml$/.test(ref)) continue; // our own workflows, in the same repository
@@ -57,13 +57,14 @@ test("seo-check has no secrets and read-only permissions", () => {
 
 test("auto-merge and review are opt-in by repository variable and restricted to seo/ branches in the same repository", () => {
   const am = text("seo-automerge.yml"), rv = text("seo-review.yml");
-  assert.match(am, /checks: read/, "needs checks: read to look up the seo-check result");
+  assert.match(am, /statuses: read/, "reads the seo-check and seo-review statuses");
+  assert.match(am, /actions: read/, "reads failed seo-check and seo-review runs");
   assert.match(am, /vars\.SEO_AUTOMERGE == 'true'/);
   assert.match(am, /startsWith\(github\.event\.workflow_run\.head_branch, 'seo\/'\)/);
   assert.match(am, /head_repository\.full_name == github\.repository/);
   assert.match(am, /vars\.SEO_AUTOPILOT_PAUSED != 'true'/, "the kill switch stops auto-merge");
   assert.match(am, /run autopilot --decide/, "the policy decides, in tested code");
-  assert.match(am, /check review\)" != "success"/, "the reviewer must have passed on this exact commit, not an earlier one");
+  assert.match(am, /r=\$\(passed seo-review seo-review\)\n\s+if \[ "\$r" != "success" \]/, "the reviewer must have passed on this exact commit, not an earlier one");
   assert.match(am, /--match-head-commit "\$SHA"/, "the merge is pinned to the checked commit");
   assert.match(text("seo-release.yml"), /vars\.SEO_AUTOPILOT_PAUSED != 'true'/, "the kill switch stops publishing");
   assert.match(rv, /vars\.SEO_REVIEW == 'true'/);
@@ -177,4 +178,116 @@ test("the autopilot picks nothing when the repository has no AI secret (no faili
   const pick = t.slice(t.indexOf("\n  pick:"), t.indexOf("\n  draft:"));
   assert.match(pick, /HAS_AI: \$\{\{ secrets\.CLAUDE_CODE_OAUTH_TOKEN != '' \|\| secrets\.ANTHROPIC_API_KEY != '' \}\}/);
   assert.ok(pick.indexOf('if [ "$HAS_AI" != "true" ]') < pick.indexOf("gh issue list"), "checked before any work");
+});
+
+test("drafted pull requests start seo-check and seo-review by dispatch, from a job without the agent's token", () => {
+  const t = text("seo-implement.yml");
+  const checks = t.slice(t.indexOf("\n  checks:"));
+  assert.match(checks, /needs: implement/);
+  assert.match(checks, /if: always\(\) && needs\.implement\.result == 'success' &&/, "only after a successful draft");
+  assert.match(checks, /actions: write/);
+  assert.match(checks, /gh workflow run seo-check\.yml --ref "seo\/issue-\$N" -f ref="seo\/issue-\$N" -f base="\$base"/);
+  assert.match(checks, /gh workflow run seo-review\.yml --ref "seo\/issue-\$N" -f pr="\$pr"/);
+  assert.match(checks, /format\('\{0\}', inputs\.start_checks\) != 'false'/, "the autopilot runs check and review itself; null (no input) must still run");
+  const code = t.replace(/#.*$/gm, ""), implement = code.slice(code.indexOf("\n  implement:"), code.indexOf("\n  checks:"));
+  assert.ok(!/actions: write/.test(code.slice(0, code.indexOf("\njobs:"))) && !/actions: write/.test(implement), "the drafting agent's token cannot start workflows");
+  for (const f of ["seo-check.yml", "seo-review.yml"]) assert.match(text(f), /workflow_dispatch:/, `${f} can be dispatched`);
+  const ap = text("seo-autopilot.yml");
+  assert.match(ap.slice(ap.indexOf("\n  draft:"), ap.indexOf("\n  locate:")), /start_checks: false/);
+});
+
+test("dispatched and called runs post commit statuses on the checked commit; the build job never holds a write token", () => {
+  const c = text("seo-check.yml");
+  const build = c.slice(c.indexOf("\n  build:"), c.indexOf("\n  status:"));
+  assert.ok(!/statuses/.test(build) && !/:\s*write\b/.test(build.slice(build.indexOf("permissions:"), build.indexOf("outputs:"))), "the build job holds read permissions only, never a write one");
+  assert.match(build, /outputs:\n\s+sha: \$\{\{ steps\.head\.outputs\.sha \}\}/);
+  assert.match(build, /id: head\n[\s\S]*?PR_HEAD: \$\{\{ github\.event\.pull_request\.head\.sha \|\| '' \}\}\n\s+run: echo "sha=\$\{PR_HEAD:-\$\(git rev-parse HEAD\)\}" >> "\$GITHUB_OUTPUT"/);
+  assert.ok(build.indexOf("id: head") < build.indexOf("npm ci"), "recorded before any project code runs");
+  const st = c.slice(c.indexOf("\n  status:"));
+  assert.match(st, /needs: build/);
+  assert.match(st, /statuses: write/);
+  assert.match(st, /context=seo-check/);
+  assert.match(st, /SHA: \$\{\{ needs\.build\.outputs\.sha \}\}/, "the status goes on exactly the commit the build checked");
+  assert.match(st, /statuses\/\$SHA" -f state="\$state" -f context=seo-check/);
+  assert.ok(!/commits\/\$REF|GITHUB_SHA|GITHUB_REF/.test(st), "never the branch head read later, nor the caller's commit");
+  assert.match(st, /github\.event\.pull_request\.head\.repo\.full_name == github\.repository/, "pull_request runs too, but not a fork's");
+  for (const f of ["seo-review.yml", "seo-implement.yml"]) assert.match(text(f), /allowed_bots: "github-actions\[bot\]"/, `${f}: dispatched runs are started by github-actions[bot]`);
+  assert.ok(!/actions\/checkout/.test(st), "the status job never checks out pull request code");
+  const r = text("seo-review.yml");
+  assert.match(r, /statuses: write/);
+  assert.match(r, /context=seo-review -f description="Reviewer agent running"/);
+  assert.ok(r.indexOf("Reviewer agent running") < r.indexOf("anthropics/claude-code-action"), "pending is posted before the agent runs");
+  assert.match(r.slice(r.indexOf("Post the review result")), /if: always\(\)/);
+  const am = text("seo-automerge.yml");
+  assert.match(am, /statuses: read/);
+  const gate = am.slice(am.indexOf("passed() {"), am.indexOf("files=$(gh pr diff"));
+  assert.match(gate, /commits\/\$SHA\/statuses/, "statuses on the exact commit, with their creator");
+  assert.match(gate, /grep -m1 '\^github-actions\\\[bot\\\] '/, "only a status posted by this repository's workflows counts");
+  assert.match(gate, /grep -Eq ' \(failure\|error\)\$'/, "any failing status blocks, whoever posted it");
+  assert.match(gate, /actions\/runs\?head_sha=\$SHA/, "a failed run on the commit blocks");
+  assert.ok(!/check-runs|"build"/.test(am.replace(/#.*$/gm, "")), "a check run named build proves nothing");
+  assert.match(gate, /r=\$\(passed seo-check seo-check\)/);
+});
+
+// Minimal reader for the permission blocks of these templates (2-space indentation, enforced above).
+function permissionsOf(t) {
+  const block = (lines, i, ind) => {
+    const out = {};
+    if (/permissions:\s*\{\s*\}\s*$/.test(lines[i])) return out;
+    for (let j = i + 1; j < lines.length; j++) {
+      const l = lines[j].replace(/\s+#.*$/, "");
+      if (!l.trim()) continue;
+      const m = l.match(new RegExp(`^ {${ind}}([a-z-]+):\\s*(read|write|none)\\s*$`));
+      if (!m) break;
+      out[m[1]] = m[2];
+    }
+    return out;
+  };
+  const lines = t.split("\n"), top = lines.findIndex((l) => /^permissions:/.test(l));
+  const jobs = {};
+  let job = null;
+  for (let i = lines.indexOf("jobs:") + 1; i < lines.length; i++) {
+    const j = lines[i].match(/^ {2}([A-Za-z0-9_-]+):\s*$/);
+    if (j) { job = jobs[j[1]] = { permissions: null, uses: null }; continue; }
+    if (!job) continue;
+    if (/^ {4}permissions:/.test(lines[i])) job.permissions = block(lines, i, 6);
+    const u = lines[i].match(/^ {4}uses:\s*\.\/\.github\/workflows\/(\S+)/);
+    if (u) job.uses = u[1];
+  }
+  return { top: top < 0 ? {} : block(lines, top, 2), jobs };
+}
+const LEVEL = { none: 0, read: 1, write: 2 };
+
+test("every job that calls a workflow grants at least the permissions the called workflow's jobs ask for", () => {
+  let calls = 0;
+  for (const f of files) {
+    const caller = permissionsOf(text(f));
+    for (const [name, job] of Object.entries(caller.jobs)) {
+      if (!job.uses) continue;
+      calls++;
+      const granted = job.permissions ?? caller.top;
+      const called = permissionsOf(text(job.uses));
+      // GitHub refuses the whole caller run when a called job asks for more than the caller job has.
+      for (const asked of [called.top, ...Object.values(called.jobs).map((j) => j.permissions ?? {})]) {
+        for (const [scope, level] of Object.entries(asked)) {
+          assert.ok(LEVEL[granted[scope] ?? "none"] >= LEVEL[level], `${f} job "${name}" calls ${job.uses}, which asks for ${scope}: ${level}; the caller grants ${granted[scope] ?? "none"}`);
+        }
+      }
+    }
+  }
+  assert.ok(calls >= 5, `found ${calls} calls`);
+  const watch = permissionsOf(text("seo-watch.yml")).jobs.check;
+  assert.equal(watch.uses, "seo-check.yml");
+  assert.equal(watch.permissions.statuses, "write", "seo-check's status job asks for statuses: write");
+});
+
+test("the reviewer starts with the base branch's Claude settings, never the pull request's", () => {
+  const t = text("seo-review.yml");
+  const step = t.slice(t.indexOf("- name: Use the base branch's Claude settings"), t.indexOf("- uses: anthropics/claude-code-action@"));
+  assert.ok(step.length > 0 && t.indexOf("- name: Use the base branch's Claude settings") < t.indexOf("anthropics/claude-code-action@"));
+  assert.ok(!/^\s+if:/m.test(step), "on every event: a dispatched run checks out the drafted branch");
+  for (const p of [".claude", ".mcp.json", ".claude.json", "CLAUDE.md", "CLAUDE.local.md", ".gitmodules", ".ripgreprc", ".husky"]) assert.ok(step.includes(` ${p}`), p);
+  assert.match(step, /rm -rf -- "\$p"/);
+  assert.match(step, /git checkout origin\/seo-review-base -- "\$p"/);
+  assert.match(step, /--json baseRefName/);
 });

@@ -135,11 +135,11 @@ Every agent: verification is definition tests only; no agent's output has been g
 | `seo-automerge.yml` | workflow_call, workflow_run | - | SEO_AUTOMERGE | autopilot | - | 0 |
 | `seo-autopilot.yml` | schedule, workflow_dispatch | 23 7,15 * * * | SEO_AUTOPILOT | autopilot | - | 0 |
 | `seo-backlinks.yml` | schedule, workflow_dispatch | 30 9 * * 4 | - | mark, backlinks | - | 0 |
-| `seo-check.yml` | workflow_call, pull_request | - | - | facts | - | 0 |
+| `seo-check.yml` | workflow_dispatch, workflow_call, pull_request | - | - | facts | - | 0 |
 | `seo-daily.yml` | schedule, workflow_dispatch | 17 5 * * * | - | daily, rank, propose, news, mentions, audit, analyze, priorities, linkgraph, indexnow, dashboard, portal | - | 8 |
 | `seo-implement.yml` | workflow_dispatch, workflow_call, issues | - | - | - | seo-drafter, seo-refresher, seo-snippet-optimizer, seo-internal-linker | 0 |
 | `seo-monthly.yml` | schedule, workflow_dispatch | 11 6 1 * * | SEO_AI_VISIBILITY | audit, priorities, forecast, ai-visibility, entity, monthly | - | 5 |
 | `seo-release.yml` | schedule, workflow_dispatch | 40 5 * * * | - | schedule, release | - | 0 |
-| `seo-review.yml` | workflow_call, pull_request | - | SEO_REVIEW | - | seo-editor | 0 |
+| `seo-review.yml` | workflow_dispatch, workflow_call, pull_request | - | SEO_REVIEW | - | seo-editor | 0 |
 | `seo-watch.yml` | schedule, workflow_dispatch | 47 8 * * * | SEO_AUTOPILOT | watch | - | 0 |
 | `seo-weekly.yml` | schedule, workflow_dispatch | 10 6 * * 1 | SEO_RENDER, SEO_RANK_LIVE | research, profile, geo, speed, refresh, priorities, redirects, conversions, facts, render, links, inbound, quality, consent, ymyl, pace, citations, keywords, rank, gap, authority, gsc, schema, local, shop, listings, changes, vitals, team, experiments, digest, backlinks-queue, indexing-queue | - | 33 |

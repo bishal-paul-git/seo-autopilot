@@ -22,6 +22,11 @@ on:
       issue:
         type: number
         required: true
+      # The autopilot runs seo-check and seo-review itself, in order, before its merge step.
+      start_checks:
+        type: boolean
+        required: false
+        default: true
   # Started by the daily portal step for an issue someone approved in the client portal (a label added by the workflow
   # token starts nothing by itself). Only agency members signed in to the portal can approve.
   workflow_dispatch:
@@ -73,6 +78,9 @@ jobs:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Runs started by this repository's own workflows (seo-implement's dispatch, the portal step) have the actor
+          # github-actions[bot]; the action refuses bots unless listed. Only workflows in this repository act as it.
+          allowed_bots: "github-actions[bot]"
           claude_args: >-
             --max-turns 30
             --allowedTools "Read,Glob,Grep,{{EDIT_TOOLS}},Bash(git checkout -b seo/*),Bash(git add:*),Bash(git commit:*),Bash(git push origin seo/*),Bash(git status),Bash(git diff:*),Bash(gh pr create:*),Bash(gh issue comment:*),Bash(gh issue view:*)"
@@ -134,3 +142,32 @@ jobs:
               seo-topic|seo-refresh|seo-snippet|seo-links|seo-fix|seo-template) gh pr edit "$pr" --add-label "$l" || true;;
             esac
           done
+
+  # A pull request opened with the workflow token starts no pull_request workflows (GitHub now creates them as "action
+  # required" runs that wait for a person to approve). A workflow_dispatch run is the documented exception, so seo-check and
+  # seo-review are started here on the drafted branch. Each posts its result as a commit status ("seo-check", "seo-review")
+  # on the pull request's head commit, where a person, branch protection and seo-automerge see it.
+  # A separate job, so the drafting agent's token never holds actions: write.
+  # Only after a successful draft (a failed or cancelled drafter may have left a half-pushed branch).
+  # format(): with no input (label or dispatch start) the value is null, and null == false in GitHub expressions.
+  checks:
+    needs: implement
+    if: always() && needs.implement.result == 'success' && format('{0}', inputs.start_checks) != 'false'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      pull-requests: read
+    steps:
+      - name: Start the build check and the reviewer on the pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          N: ${{ inputs.issue || github.event.issue.number }}
+        run: |
+          set -eu
+          info=$(gh pr list --head "seo/issue-$N" --state open --json number,baseRefName --jq '.[0] // empty | "\(.number) \(.baseRefName)"')
+          if [ -z "$info" ]; then echo "No open pull request for seo/issue-$N; nothing to check."; exit 0; fi
+          pr=${info% *}; base=${info#* }
+          gh workflow run seo-check.yml --ref "seo/issue-$N" -f ref="seo/issue-$N" -f base="$base" || echo "::warning::Could not start seo-check (is .github/workflows/seo-check.yml present?)."
+          gh workflow run seo-review.yml --ref "seo/issue-$N" -f pr="$pr" || echo "::warning::Could not start seo-review (is .github/workflows/seo-review.yml present?)."
+          echo "Started seo-check and seo-review on seo/issue-$N for pull request #$pr."

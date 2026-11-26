@@ -18,12 +18,22 @@ on:
       pr:
         type: number
         required: true
+  # Started by seo-implement on the drafted branch right after it opens the pull request (a pull request opened with the
+  # workflow token starts no pull_request run; a dispatch does). A dispatched run's check is not listed on the pull request,
+  # so the result is also posted as the commit status "seo-review" on the pull request's head commit.
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Pull request number to review"
+        type: number
+        required: true
 
 permissions:
   contents: read
   pull-requests: write
   issues: write
   id-token: write
+  statuses: write   # the "seo-review" status on the reviewed commit
 
 jobs:
   review:
@@ -40,11 +50,41 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh pr edit ${{ inputs.pr || github.event.pull_request.number }} --remove-label seo-review-passed || true
+      # The commit being reviewed, fixed now: the status goes on this commit even if the branch moves during the review.
+      - name: Mark the review as started on the pull request's commit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ inputs.pr || github.event.pull_request.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          sha=$(gh pr view "$PR" --json headRefOid --jq .headRefOid)
+          echo "REVIEW_SHA=$sha" >> "$GITHUB_ENV"
+          gh api "repos/$GH_REPO/statuses/$sha" -f state=pending -f context=seo-review -f description="Reviewer agent running" -f target_url="$RUN_URL" > /dev/null || echo "::warning::Could not post the seo-review status."
+      # Claude Code reads .claude/ (settings, hooks), CLAUDE.md and .mcp.json from the checkout when it starts, while it holds
+      # the Claude token. On a pull_request run the action restores them from the base branch itself; on a dispatched run
+      # it does not, and the checkout is the drafted branch. So they always come from the base branch here (same list as
+      # the action's own restore), and a path the base branch does not have is removed.
+      - name: Use the base branch's Claude settings, not the pull request's
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ inputs.pr || github.event.pull_request.number }}
+        run: |
+          set -eu
+          base=$(gh pr view "$PR" --json baseRefName --jq .baseRefName)
+          git fetch --no-tags origin "refs/heads/$base:refs/remotes/origin/seo-review-base"
+          for p in .claude .mcp.json .claude.json .gitmodules .ripgreprc CLAUDE.md CLAUDE.local.md .husky; do
+            rm -rf -- "$p"
+            if git cat-file -e "origin/seo-review-base:$p" 2>/dev/null; then git checkout origin/seo-review-base -- "$p"; fi
+          done
       - uses: anthropics/claude-code-action@1d6de8cb0c237e7c15e9e1bdf973826ebae490cc # v1.0.248
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Runs started by this repository's own workflows (seo-implement's dispatch, the portal step) have the actor
+          # github-actions[bot]; the action refuses bots unless listed. Only workflows in this repository act as it.
+          allowed_bots: "github-actions[bot]"
           claude_args: >-
             --max-turns 15
             --allowedTools "Read,Glob,Grep,Bash(git diff:*),Bash(git log:*),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*),Bash(gh pr edit:*),Bash(gh label create:*)"
@@ -69,3 +109,17 @@ jobs:
             and `gh pr edit ${{ inputs.pr || github.event.pull_request.number }} --add-label seo-review-passed`, and post a short
             `gh pr comment` listing what you checked and any non-blocking suggestions. If there IS a blocking problem, do
             NOT add the label; post a `gh pr comment` listing each blocking problem with the file and the exact text.
+      - name: Post the review result as the commit status
+        if: always() && env.REVIEW_SHA != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ inputs.pr || github.event.pull_request.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          JOB: ${{ job.status }}
+        run: |
+          if [ "$JOB" = "success" ] && gh pr view "$PR" --json labels --jq '.labels[].name' | grep -qx seo-review-passed; then
+            state=success; desc="No blocking problem found"
+          elif [ "$JOB" = "success" ]; then state=failure; desc="Blocking problems: see the review comment"
+          else state=failure; desc="The reviewer did not finish ($JOB)"; fi
+          gh api "repos/$GH_REPO/statuses/$REVIEW_SHA" -f state="$state" -f context=seo-review -f description="$desc" -f target_url="$RUN_URL" > /dev/null

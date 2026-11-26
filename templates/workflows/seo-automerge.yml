@@ -7,9 +7,12 @@
 #
 # It merges only when ALL of these hold, checked on the exact commit being merged:
 #  - the branch is seo/* in THIS repository (not a fork), and autopilot is not paused;
-#  - the seo-check build passed on this commit;
-#  - the reviewer agent's check passed on this commit AND it labelled the pull request seo-review-passed (the reviewer
-#    clears that label whenever a new commit arrives). Set SEO_REQUIRE_REVIEW = false only if you run no reviewer;
+#  - the seo-check build passed on this commit: its "seo-check" commit status, posted by this repository's workflows
+#    (github-actions[bot]), says success, and no seo-check run or "seo-check" status on this commit failed. A check run
+#    named "build" proves nothing (any workflow can have a job called build), and a status from anyone else is ignored;
+#  - the reviewer passed on this commit in the same way ("seo-review" status) AND it labelled the pull request
+#    seo-review-passed (the reviewer clears that label whenever a new commit arrives). Set SEO_REQUIRE_REVIEW = false only
+#    if you run no reviewer;
 #  - `seo-autopilot run autopilot --decide` allows this kind of change: sensitive topics, robots and sitemap changes,
 #    migrations and deletions always wait for a person, and new pages stay within the weekly limit;
 #  - the merge itself is pinned to that commit, so a later push cannot slip in unseen.
@@ -30,7 +33,8 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  checks: read      # to confirm seo-check and the reviewer passed on the exact commit
+  statuses: read    # the "seo-check" and "seo-review" statuses on the exact commit
+  actions: read     # to see a failed seo-check or seo-review run on that commit
 
 concurrency:
   group: seo-automerge
@@ -67,11 +71,22 @@ jobs:
           if [ -z "$SHA" ]; then echo "No open pull request for $BRANCH; nothing to merge."; exit 0; fi
           pr=$(gh pr list --head "$BRANCH" --state open --json number,headRefOid --jq ".[] | select(.headRefOid==\"$SHA\") | .number" | head -1)
           if [ -z "$pr" ]; then echo "No open pull request at the checked commit; nothing to merge."; exit 0; fi
-          # "build" / "review" when run on their own; "<caller job> / build" when called by the seo-autopilot workflow.
-          check() { gh api "repos/$GH_REPO/commits/$SHA/check-runs" --jq "[.check_runs[] | select(.name==\"$1\" or (.name | endswith(\" / $1\"))) | .conclusion] | first"; }
-          if [ "$(check build)" != "success" ]; then echo "seo-check has not passed on this commit; not merging."; exit 0; fi
+          # passed CONTEXT WORKFLOW: success only when the newest CONTEXT status on $SHA posted by github-actions[bot] is
+          # success, no CONTEXT status (from anyone) on $SHA failed, and no WORKFLOW run on $SHA failed. Dispatched,
+          # called and pull_request runs all post that status on the commit they checked (seo-check, seo-review).
+          passed() {
+            st=$(gh api "repos/$GH_REPO/commits/$SHA/statuses?per_page=100" --paginate --jq ".[] | select(.context==\"$1\") | \"\(.creator.login) \(.state)\"")
+            if printf '%s\n' "$st" | grep -Eq ' (failure|error)$'; then echo failed; return; fi
+            bot=$(printf '%s\n' "$st" | grep -m1 '^github-actions\[bot\] ' | cut -d' ' -f2)
+            runs=$(gh api "repos/$GH_REPO/actions/runs?head_sha=$SHA&per_page=100" --jq "[.workflow_runs[] | select(.name==\"$2\") | select(.conclusion==\"failure\" or .conclusion==\"timed_out\" or .conclusion==\"startup_failure\")] | length")
+            if [ "$runs" != "0" ]; then echo failed; return; fi
+            echo "${bot:-none}"
+          }
+          r=$(passed seo-check seo-check)
+          if [ "$r" != "success" ]; then echo "seo-check has not passed on this commit ($r); not merging."; exit 0; fi
           if [ "${REQUIRE_REVIEW:-}" != "false" ]; then
-            if [ "$(check review)" != "success" ]; then echo "The reviewer has not finished on this commit; not merging yet."; exit 0; fi
+            r=$(passed seo-review seo-review)
+            if [ "$r" != "success" ]; then echo "The reviewer has not passed on this commit ($r); not merging."; exit 0; fi
             if ! gh pr view "$pr" --json labels --jq '.labels[].name' | grep -qx 'seo-review-passed'; then echo "The reviewer did not pass this commit; leaving it for a person."; exit 0; fi
           fi
           files=$(gh pr diff "$pr" --name-only | paste -sd, -)

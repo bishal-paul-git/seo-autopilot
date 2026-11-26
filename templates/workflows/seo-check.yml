@@ -16,6 +16,19 @@ on:
       base:
         type: string
         required: true
+  # Started by seo-implement on the drafted branch right after it opens the pull request: a pull request opened with the
+  # workflow token starts no pull_request run, but a dispatch does. A dispatched (or called) run's check is not listed on
+  # the pull request, so the "status" job below also posts the result as the commit status "seo-check".
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "The seo/ branch to check"
+        type: string
+        required: true
+      base:
+        description: "The branch the pull request merges into"
+        type: string
+        required: true
 
 permissions:
   contents: read
@@ -28,11 +41,23 @@ jobs:
     if: startsWith(github.head_ref, 'seo/') || startsWith(inputs.ref, 'seo/')
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Read-only: the build runs project code, so it never holds a token that can write.
+    permissions:
+      contents: read
+    outputs:
+      sha: ${{ steps.head.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ inputs.ref || '' }}
+      # The commit this run builds, recorded before any project code runs; the status job reports on exactly this commit.
+      # A pull_request run builds a temporary merge commit, so its result belongs to the pull request's head commit.
+      - name: Record the commit being checked
+        id: head
+        env:
+          PR_HEAD: ${{ github.event.pull_request.head.sha || '' }}
+        run: echo "sha=${PR_HEAD:-$(git rev-parse HEAD)}" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - name: Install
@@ -50,3 +75,28 @@ jobs:
         run: |
           files=$(git diff --name-only "origin/$BASE...HEAD" -- '*.json' '*.md' '*.mdx' | { grep -v '^seo-autopilot' || true; } | paste -sd, -)
           if [ -n "$files" ]; then npx --yes "$SEO" run facts --files "$files"; else echo "No content files changed."; fi
+
+  # Posts the build result as the commit status "seo-check" on the commit the build job checked, where the pull request,
+  # branch protection and seo-automerge see it (a dispatched or called run's own check is not listed on the pull request,
+  # and seo-automerge accepts only this status). Runs for seo/ branches of this repository only: a fork's pull_request run
+  # has a read-only token. A separate job: the build above, which runs project code, never holds a token that can write.
+  status:
+    needs: build
+    if: >-
+      always() && needs.build.result != 'skipped' && (startsWith(inputs.ref, 'seo/') || (
+      startsWith(github.head_ref, 'seo/') && github.event.pull_request.head.repo.full_name == github.repository))
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+    steps:
+      - name: Post the build result as the commit status
+        env:
+          GH_TOKEN: ${{ github.token }}   # this job's own token: statuses only, no repository secrets
+          GH_REPO: ${{ github.repository }}
+          SHA: ${{ needs.build.outputs.sha }}
+          RESULT: ${{ needs.build.result }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ -z "$SHA" ]; then echo "::error::The build stopped before it recorded its commit; no status posted (seo-automerge will not merge)."; exit 1; fi
+          if [ "$RESULT" = "success" ]; then state=success; else state=failure; fi
+          gh api "repos/$GH_REPO/statuses/$SHA" -f state="$state" -f context=seo-check -f description="Build and facts guard: $RESULT" -f target_url="$RUN_URL" > /dev/null

@@ -100,6 +100,7 @@ jobs:
     if: needs.revert.outputs.pr != ''
     permissions:
       contents: read
+      statuses: write   # requested by seo-check's status job (marks the revert commit); its build stays read-only
     uses: ./.github/workflows/seo-check.yml
     with:
       ref: ${{ needs.revert.outputs.branch }}
