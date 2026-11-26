@@ -83,6 +83,23 @@ export function validate(raw) {
         for (const k of ["enabled", "paused"]) if (a[k] != null && typeof a[k] !== "boolean") errors.push(`${w}.autopilot.${k} must be true or false`);
       }
     }
+    if (s.contentGuard != null) {
+      const g = s.contentGuard, m = g?.maxWordDropPercent;
+      if (typeof g !== "object" || Array.isArray(g)) errors.push(`${w}.contentGuard must be an object`);
+      else if (m != null && (typeof m !== "number" || !(m >= 0 && m <= 100))) errors.push(`${w}.contentGuard.maxWordDropPercent must be a number from 0 to 100`);
+    }
+    if (s.watch != null) {
+      const v = s.watch;
+      if (typeof v !== "object" || Array.isArray(v)) errors.push(`${w}.watch must be an object`);
+      else {
+        if (v.content != null && typeof v.content !== "boolean") errors.push(`${w}.watch.content must be true or false`);
+        for (const [k, lo, hi] of [["days", 1, 180], ["lag", 0, 14], ["minSpan", 7, 180]]) if (v[k] != null && (!Number.isInteger(v[k]) || v[k] < lo || v[k] > hi)) errors.push(`${w}.watch.${k} must be a whole number from ${lo} to ${hi}`);
+      }
+    }
+    if (s.content?.unpublish != null) {
+      const u = s.content.unpublish;
+      if (typeof u !== "object" || Array.isArray(u) || (u.field != null && (typeof u.field !== "string" || !/^[A-Za-z_][\w-]*$/.test(u.field))) || (u.value != null && !["boolean", "string", "number"].includes(typeof u.value))) errors.push(`${w}.content.unpublish must be { "field": "draft", "value": true } (a field name and a true/false, text or number value)`);
+    }
     if (s.logs != null && (typeof s.logs !== "object" || Array.isArray(s.logs) || (s.logs.dir != null && typeof s.logs.dir !== "string"))) errors.push(`${w}.logs must be an object; logs.dir must be a folder path`);
     if (s.inbound != null && (typeof s.inbound !== "object" || Array.isArray(s.inbound) || (s.inbound.dir != null && typeof s.inbound.dir !== "string"))) errors.push(`${w}.inbound must be an object; inbound.dir must be a folder path`);
     if (s.research != null) {

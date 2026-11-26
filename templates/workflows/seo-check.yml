@@ -35,6 +35,53 @@ jobs:
           ref: ${{ inputs.ref || '' }}
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
+      # Content-loss guard: fails when a changed page lost more than 15% of its words (contentGuard.maxWordDropPercent), or
+      # any heading, internal link, image, structured data or page setting (draft, noindex, canonical, permalink...), or
+      # when a page was removed. Hidden or commented-out text does not count as kept. It runs before the install and build,
+      # from a folder OUTSIDE the checkout: nothing from the pull request (.npmrc, package.json, node_modules, scripts) is
+      # read or run, and every setting it uses comes from the BASE branch's seo-autopilot.config.json, so a pull request
+      # cannot loosen its own check. Human-only override: a person other than the pull request's author adds the label
+      # allow-content-shrink after the latest push and re-runs this check (read from the pull request's events; a bot never
+      # counts, and the autopilot and agents never add it; a push after the label needs the label added again).
+      # A seo/revert-<n> branch may restore older content only when seo-watch opened it (author and seo-revert label both
+      # the workflow's bot) AND it is exactly the undo of #n's merge, or exactly the unpublish of the pages #n added.
+      # When seo-watch calls this check there is no pull_request event, so the pull request is looked up by its branch.
+      - name: Content-loss guard on the changed pages
+        env:
+          BASE: ${{ inputs.base || github.base_ref }}
+          BRANCH: ${{ inputs.ref || github.head_ref }}
+          PR: ${{ github.event.pull_request.number }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -eu
+          guard="$RUNNER_TEMP/content-guard"; mkdir -p "$guard"
+          if ! git -C "$GITHUB_WORKSPACE" show "origin/$BASE:seo-autopilot.config.json" > "$guard/seo-autopilot.config.json" 2>/dev/null; then
+            echo "::warning::The base branch $BASE has no seo-autopilot.config.json yet, so there is nothing to compare; content-loss guard skipped."
+            exit 0
+          fi
+          labels=""; events="$guard/label-events.jsonl"; revert_of="$guard/revert-of.json"; : > "$events"; : > "$revert_of"
+          if [ -z "${PR:-}" ] && [ -n "${BRANCH:-}" ]; then
+            found=$(gh api "repos/$GH_REPO/pulls?state=open&head=${GH_REPO%%/*}:$BRANCH" --jq '.[0] // empty | "\(.number) \(.user.login)"' 2>/dev/null || true)
+            if [ -n "$found" ]; then PR="${found%% *}"; AUTHOR="${found#* }"; fi
+          fi
+          if [ -n "${PR:-}" ]; then
+            labels=$(gh api "repos/$GH_REPO/issues/$PR/labels" --jq '[.[].name] | join(",")' 2>/dev/null || true)
+            case ",$labels," in *,allow-content-shrink,*|*,seo-revert,*)
+              gh api "repos/$GH_REPO/issues/$PR/events" --paginate --jq '.[] | select(.event == "labeled") | {event, label: .label.name, actor: .actor.login, type: .actor.type, created_at}' > "$events" 2>/dev/null || : > "$events";;
+            esac
+          fi
+          # The pull request a seo/revert-<n> branch undoes: its merge commit, branch and commit subjects.
+          n="${BRANCH#seo/revert-}"
+          case "$BRANCH:$n" in seo/revert-*:*[!0-9]*|seo/revert-*:) ;; seo/revert-*)
+            if gh api "repos/$GH_REPO/pulls/$n" --jq '{number, merged, mergeCommit: .merge_commit_sha, headRefName: .head.ref}' > "$guard/pr.json" 2>/dev/null \
+              && gh api "repos/$GH_REPO/pulls/$n/commits" --paginate --jq '.[].commit.message | split("\n")[0]' > "$guard/commits.txt" 2>/dev/null; then
+              jq --rawfile c "$guard/commits.txt" '. + {commits: ($c | split("\n") | map(select(length > 0)))}' "$guard/pr.json" > "$revert_of" || : > "$revert_of"
+            fi;;
+          esac
+          cd "$guard"
+          npx --yes "$SEO" run content-guard --repo "$GITHUB_WORKSPACE" --base "origin/$BASE" --branch="$BRANCH" --labels="$labels" --events "$events" --author="${AUTHOR:-}" --revert-of="$revert_of"
       - name: Install
         run: |
           if [ -f package-lock.json ]; then

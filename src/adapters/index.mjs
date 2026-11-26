@@ -229,3 +229,73 @@ export function applyDates(site, moves, { dry = false } = {}) {
   }
   return { applied, skipped };
 }
+
+/**
+ * Take pages off the site without deleting anything (seo-watch, when a new page harms the pages around it). Sets the
+ * site's draft field (content.unpublish, default { "field": "draft", "value": true }) and hold: true (so the scheduler
+ * never dates it again) on each target [{ file, id }]. The file stays, the slug and URL stay, the text stays: undoing it is
+ * one line. The site's build must leave drafts out (docs/content-automation.md). JSON files are rewritten only when that
+ * keeps their formatting (as applyDates); anything that cannot be changed safely is reported in `skipped`.
+ */
+/** The site's unpublish field and value (content.unpublish; default draft: true). */
+export function unpublishSetting(site) {
+  const u = site?.content?.unpublish || {};
+  return { field: typeof u.field === "string" && /^[A-Za-z_][\w-]*$/.test(u.field) ? u.field : "draft", value: u.value === undefined ? true : u.value };
+}
+
+/**
+ * Pure: the text of one content file with the given pages unpublished (field + hold: true). rel decides the format.
+ * Returns { out, applied: [id], skipped: [{ id, reason }] }; out === the input when nothing changed. Used by the
+ * adapter below and by the content-loss guard to confirm that a seo-watch unpublish changed nothing else.
+ */
+export function unpublishText(rel, raw, ids = [], { field = "draft", value = true } = {}) {
+  const applied = [], skipped = [];
+  const eol = String(raw).includes("\r\n") ? "\r\n" : "\n";
+  const norm = String(raw).replace(/\r\n/g, "\n");
+  if (String(rel).endsWith(".json")) {
+    let data; try { data = JSON.parse(norm); } catch { data = null; }
+    const same = Array.isArray(data) && [JSON.stringify(data, null, 2) + "\n", JSON.stringify(data, null, 2)].includes(norm);
+    if (!same) { for (const id of ids) skipped.push({ id, reason: `JSON formatting would change; set "${field}": ${JSON.stringify(value)} by hand` }); return { out: raw, applied, skipped }; }
+    let changed = false;
+    for (const id of ids) {
+      const it = data.find((x) => x && String(x.slug ?? x.id ?? x.h1 ?? x.title ?? x.name) === String(id));
+      if (!it) { skipped.push({ id, reason: "page not found in file" }); continue; }
+      if (it[field] === value && it.hold === true) continue;
+      it[field] = value; it.hold = true; changed = true; applied.push(id);
+    }
+    return { out: changed ? (JSON.stringify(data, null, 2) + (norm.endsWith("\n") ? "\n" : "")).replace(/\n/g, eol) : raw, applied, skipped };
+  }
+  // Markdown/MDX: one page per file; set the field and hold in the front matter (adding a front matter block if none).
+  const id = ids[0];
+  const line = `${field}: ${typeof value === "string" ? JSON.stringify(value) : String(value)}`;
+  const set = (fm, re, l) => (re.test(fm) ? fm.replace(re, l) : `${fm}\n${l}`);
+  let out;
+  const m = norm.match(/^---\n([\s\S]*?)\n---[ \t]*(\n|$)/);
+  if (m) {
+    let fm = set(m[1], new RegExp(`^${field}:.*$`, "m"), line);
+    fm = set(fm, /^hold:.*$/m, "hold: true");
+    out = `---\n${fm}\n---${m[2]}` + norm.slice(m[0].length);
+  } else if (/^\+\+\+\n/.test(norm)) { skipped.push({ id, reason: `TOML front matter: set ${field} by hand` }); return { out: raw, applied, skipped }; }
+  else out = `---\n${line}\nhold: true\n---\n` + norm;
+  if (out === norm) return { out: raw, applied, skipped };
+  applied.push(id);
+  return { out: out.replace(/\n/g, eol), applied, skipped };
+}
+
+export function unpublishPages(site, targets = [], { dry = false } = {}) {
+  const { field, value } = unpublishSetting(site);
+  const applied = [], skipped = [];
+  const byFile = new Map();
+  for (const t of targets) { if (!t.file) { skipped.push({ ...t, reason: "no source file" }); continue; } (byFile.get(t.file) || byFile.set(t.file, []).get(t.file)).push(t); }
+  for (const [rel, list] of byFile) {
+    const abs = site.paths.root + "/" + rel;
+    let raw;
+    try { raw = readFileSync(abs, "utf8"); } catch { for (const t of list) skipped.push({ ...t, reason: "file not readable" }); continue; }
+    const ids = rel.endsWith(".json") ? list.map((t) => t.id) : [list[0].id];
+    const r = unpublishText(rel, raw, ids, { field, value });
+    for (const k of r.skipped) skipped.push({ ...list.find((t) => String(t.id) === String(k.id)), file: rel, reason: k.reason });
+    for (const id of r.applied) applied.push({ file: rel, id, field, value });
+    if (r.out !== raw && !dry) writeFileSync(abs, r.out);
+  }
+  return { applied, skipped, field, value };
+}

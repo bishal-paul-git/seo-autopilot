@@ -30,7 +30,7 @@ By default a headless Chromium runs on the GitHub runner. To use a cloud browser
 
 ## Turning on real submissions
 
-Scheduled runs stay dry until you set the repository variable `BACKLINKS_LIVE` to `true`. For a one-off real run use **Actions > seo-backlinks > Run workflow > live**. Screenshots of every filled form are attached to each run for 14 days so you can check what it did.
+Scheduled runs stay dry until you set the repository variable `BACKLINKS_LIVE` to `true`. The kill switch `SEO_AUTOPILOT_PAUSED = true` stops the job completely, live or dry. For a one-off real run use **Actions > seo-backlinks > Run workflow > live**. Screenshots of every filled form are attached to each run for 14 days so you can check what it did.
 
 ## Honest expectations
 

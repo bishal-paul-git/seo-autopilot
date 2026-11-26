@@ -1,11 +1,20 @@
-# seo-autopilot: watch and undo (decision D17). Every day it checks the changes the autopilot published at the "undo" level
-# (pull requests labelled seo-watch) and reverts one that made things worse: a changed page now answers an error, the change
-# added a noindex, or the page lost clearly more clicks than the rest of the site over the 14 days after the change.
-# A revert is opened as a pull request, built by seo-check with no secrets, then merged; the original pull request gets a
-# comment saying why. Changes that passed their watch lose the seo-watch label.
+# seo-autopilot: watch and undo. Every day it checks two kinds of published change and opens a pull request that reverts
+# one that made things worse:
+#  1. changes the autopilot published at the "undo" level (pull requests labelled seo-watch, decision D17). Runs when
+#     SEO_AUTOPILOT = true. Reverted when a changed page now answers an error, the change added a noindex, or the page lost
+#     clearly more clicks than the rest of the site over the 14 days after the change. The revert is built by seo-check
+#     with no secrets and then merged by this workflow; the original pull request gets a comment saying why.
+#  2. every refresh and new page merged from a seo/* branch, by a person or by the autopilot, for "watch.days" days
+#     (default 28; the list is kept in the saved state on the seo-data branch). A refresh is reverted (the previous
+#     content restored) on the same signals; a new page is unpublished through the content adapter (its draft field set,
+#     never deleted, same URL) when the pages on its topic lose clearly more clicks than the rest of the site and it does
+#     not win them back. These revert pull requests are labelled seo-revert and always wait for a person to merge.
+#     Two days after an unpublish is merged the page is fetched again: if it still answers 200 without a noindex, the
+#     site's build ignores the unpublish field (content.unpublish), the entry is marked revert-failed and an issue is
+#     opened. A page must fail on two check days in a row before a revert is proposed (one failed fetch is not enough).
+#     Turn this part off with "watch": { "content": false } in seo-autopilot.config.json.
 #
-# Runs when SEO_AUTOPILOT = true. With the kill switch SEO_AUTOPILOT_PAUSED = true it still checks and opens the revert
-# pull request, but leaves the merge to a person.
+# Kill switch: with the variable SEO_AUTOPILOT_PAUSED = true nothing here runs: no check, no revert pull request, no merge.
 name: seo-watch
 on:
   schedule: [{ cron: "47 8 * * *" }]   # 08:47 UTC daily, after seo-daily has refreshed the click data
@@ -15,7 +24,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: seo-watch
+  group: seo-data      # it saves the watch list to the seo-data branch, like the daily and weekly jobs
   cancel-in-progress: false
 
 env:
@@ -23,34 +32,50 @@ env:
 
 jobs:
   judge:
-    if: vars.SEO_AUTOPILOT == 'true'
+    if: vars.SEO_AUTOPILOT_PAUSED != 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
-      contents: read
-      pull-requests: write
+      contents: write        # save the watch list to the seo-data branch
+      pull-requests: write   # stop watching (label) undo-level changes that passed
     outputs:
       revert: ${{ steps.watch.outputs.revert }}
+      reason: ${{ steps.watch.outputs.reason }}
+      failed: ${{ steps.watch.outputs.failed }}
     steps:
       - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }   # the merge commits, to see which pages each change added or edited
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
-      - name: Restore saved data (click history from seo-daily)
+      - name: Restore saved data (click history from seo-daily, the watch list)
         run: npx --yes "$SEO" state restore
       - name: Check the watched changes
         id: watch
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AUTOPILOT: ${{ vars.SEO_AUTOPILOT }}
+          SEO_AUTOPILOT_PAUSED: ${{ vars.SEO_AUTOPILOT_PAUSED }}
         run: |
           set -eu
-          since=$(date -u -d '30 days ago' +%Y-%m-%d)
-          gh pr list --state merged --label seo-watch --search "merged:>=$since" --limit 50 --json number,mergedAt,mergeCommit,files > "$RUNNER_TEMP/raw.json"
           echo "[]" > "$RUNNER_TEMP/prs.json"
-          for n in $(jq -r '.[].number' "$RUNNER_TEMP/raw.json"); do
-            if gh pr diff "$n" | grep '^+' | grep -v '^+++' | grep -qi 'noindex'; then added=true; else added=false; fi
-            jq --argjson n "$n" --argjson a "$added" '[.[] | select(.number == $n) | . + {addedNoindex: $a}]' "$RUNNER_TEMP/raw.json" > "$RUNNER_TEMP/one.json"
-            jq -s 'add' "$RUNNER_TEMP/prs.json" "$RUNNER_TEMP/one.json" > "$RUNNER_TEMP/next.json" && mv "$RUNNER_TEMP/next.json" "$RUNNER_TEMP/prs.json"
-          done
-          npx --yes "$SEO" run watch --prs "$RUNNER_TEMP/prs.json"
+          if [ "$AUTOPILOT" = "true" ]; then
+            since=$(date -u -d '30 days ago' +%Y-%m-%d)
+            gh pr list --state merged --label seo-watch --search "merged:>=$since" --limit 50 --json number,mergedAt,mergeCommit,files > "$RUNNER_TEMP/raw.json"
+            for n in $(jq -r '.[].number' "$RUNNER_TEMP/raw.json"); do
+              if gh pr diff "$n" | grep '^+' | grep -v '^+++' | grep -qi 'noindex'; then added=true; else added=false; fi
+              jq --argjson n "$n" --argjson a "$added" '[.[] | select(.number == $n) | . + {addedNoindex: $a}]' "$RUNNER_TEMP/raw.json" > "$RUNNER_TEMP/one.json"
+              jq -s 'add' "$RUNNER_TEMP/prs.json" "$RUNNER_TEMP/one.json" > "$RUNNER_TEMP/next.json" && mv "$RUNNER_TEMP/next.json" "$RUNNER_TEMP/prs.json"
+            done
+          fi
+          # Refreshes and new pages: merged seo/* pull requests of the last 60 days (the job keeps only those still in their window).
+          since=$(date -u -d '60 days ago' +%Y-%m-%d)
+          gh pr list --state merged --search "merged:>=$since" --limit 100 --json number,mergedAt,mergeCommit,files,headRefName,labels,commits \
+            --jq '[.[] | select(.headRefName | startswith("seo/"))]' > "$RUNNER_TEMP/content.json"
+          # Reverts already opened (any state), so each is opened once, and merged unpublishes are checked afterwards.
+          gh pr list --state all --limit 200 --json headRefName,state,mergedAt --jq '[.[] | select(.headRefName | startswith("seo/revert-"))]' > "$RUNNER_TEMP/reverts.json"
+          npx --yes "$SEO" run watch --prs "$RUNNER_TEMP/prs.json" --content "$RUNNER_TEMP/content.json" --reverts "$RUNNER_TEMP/reverts.json"
+      - name: Save the watch list
+        run: npx --yes "$SEO" state save
       - name: Stop watching changes that passed
         if: steps.watch.outputs.done != ''
         env:
@@ -58,10 +83,28 @@ jobs:
           DONE: ${{ steps.watch.outputs.done }}
         run: for n in $DONE; do gh pr edit "$n" --remove-label seo-watch || true; done
 
+  # An unpublish that was merged but did not take the page off the site (the build ignores the unpublish field).
+  unpublish-failed:
+    needs: judge
+    if: needs.judge.outputs.failed != '' && vars.SEO_AUTOPILOT_PAUSED != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Open an issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          FAILED: ${{ needs.judge.outputs.failed }}
+        run: |
+          printf 'The seo-watch job merged an unpublish, but the page is still live (answers 200 without a noindex): %s\n\nYour site'"'"'s build ignores the unpublish field. Take the page off by hand (or keep it), and set "content": { "unpublish": { "field": "...", "value": ... } } in seo-autopilot.config.json to the field your site uses to leave a page out (see docs/content-automation.md).\n' "$FAILED" > "$RUNNER_TEMP/body.md"
+          gh issue create --title "Autopilot unpublish did not take the page off the site" --body-file "$RUNNER_TEMP/body.md"
+
   revert:
     needs: judge
-    if: needs.judge.outputs.revert != ''
+    if: needs.judge.outputs.revert != '' && vars.SEO_AUTOPILOT_PAUSED != 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: write
       pull-requests: write
@@ -71,29 +114,59 @@ jobs:
       base: ${{ steps.revert.outputs.base }}
       pr: ${{ steps.revert.outputs.pr }}
       original: ${{ steps.revert.outputs.original }}
+      automerge: ${{ steps.revert.outputs.automerge }}
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
-      - name: Open a pull request that reverts the change
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Open a pull request that reverts the change (or unpublishes the new page)
         id: revert
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REVERT: ${{ needs.judge.outputs.revert }}
+          REASON: ${{ needs.judge.outputs.reason }}
+          SEO_AUTOPILOT_PAUSED: ${{ vars.SEO_AUTOPILOT_PAUSED }}
         run: |
           set -eu
-          read -r n sha <<< "$REVERT"
+          read -r n sha kind <<< "$REVERT"
+          kind="${kind:-undo}"
+          case "$n" in ''|*[!0-9]*) echo "Bad pull request number"; exit 1;; esac
           base=$(git rev-parse --abbrev-ref HEAD); branch="seo/revert-$n"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then echo "$branch already exists; nothing to do."; exit 0; fi
           git config user.name "seo-autopilot"; git config user.email "seo-autopilot@users.noreply.github.com"
           git checkout -b "$branch"
-          if ! git revert --no-edit "$sha"; then
-            git revert --abort || true
-            gh issue create --title "Autopilot could not revert PR #$n" --body "The watch found a regression after PR #$n (see the seo-watch run and the watch.md report), but the revert does not apply cleanly because later changes touched the same lines. A person needs to undo it." || true
-            exit 0
+          if [ "$kind" = "new-page" ]; then
+            npx --yes "$SEO" state restore
+            if ! npx --yes "$SEO" run watch --unpublish "$n" > "$RUNNER_TEMP/unpublish.txt"; then
+              cat "$RUNNER_TEMP/unpublish.txt"
+              gh issue create --title "Autopilot could not unpublish the new page from PR #$n" --body "The watch found that the new page from PR #$n is taking clicks from existing pages on its topic: $REASON. It could not set the page's unpublish field safely (details in the seo-watch run). A person needs to unpublish it, or decide to keep it." || true
+              exit 0
+            fi
+            cat "$RUNNER_TEMP/unpublish.txt"
+            git add -u   # only the content files the adapter edited (never the restored reports)
+            git commit -q -m "Unpublish the new page from #$n (seo-watch)" -m "$REASON"
+            title="Unpublish the new page from #$n"
+            what="This sets the page's unpublish field (content.unpublish, default draft: true) and hold: true through the content adapter. The file, its text and its URL stay; your build must leave such pages out (see docs/content-automation.md). Two days after this is merged the watch checks that the page is gone and opens an issue if it is not. To keep the page instead, close this pull request."
+          else
+            # A merge commit is reverted against its first parent, a rebase merge as its whole range, a squash as one commit.
+            gh pr view "$n" --json commits --jq '[.commits[].messageHeadline]' > "$RUNNER_TEMP/commits.json" || echo "[]" > "$RUNNER_TEMP/commits.json"
+            if ! npx --yes "$SEO" run watch --git-revert "$n" --sha "$sha" --commits "$RUNNER_TEMP/commits.json"; then
+              gh issue create --title "Autopilot could not revert PR #$n" --body "The watch found a regression after PR #$n ($REASON), but the revert does not apply cleanly because later changes touched the same lines. A person needs to undo it." || true
+              exit 0
+            fi
+            title="Revert change #$n"
+            what="This restores the previous version of the changed pages."
           fi
           git push -u origin "$branch"
-          gh label create seo-revert --color B60205 --description "Reverts an autopilot change that made things worse" 2>/dev/null || true
-          pr=$(gh pr create --base "$base" --head "$branch" --label seo-revert --title "Revert autopilot change #$n" --body "The seo-watch job found that PR #$n made things worse (details in the seo-watch run and watch.md). This restores the previous version." | grep -o '[0-9]*$')
-          { echo "branch=$branch"; echo "base=$base"; echo "pr=$pr"; echo "original=$n"; } >> "$GITHUB_OUTPUT"
+          gh label create seo-revert --color B60205 --description "Reverts an SEO change that made things worse" 2>/dev/null || true
+          printf 'The seo-watch job found that #%s made things worse: %s\n\n%s\n\nDetails: the seo-watch run and watch.md in the saved reports.\n' "$n" "$REASON" "$what" > "$RUNNER_TEMP/body.md"
+          if [ "$kind" != "undo" ]; then printf '\nA person merges this pull request: reverts of refreshes and new pages never merge by themselves.\n' >> "$RUNNER_TEMP/body.md"; fi
+          pr=$(gh pr create --base "$base" --head "$branch" --label seo-revert --title "$title" --body-file "$RUNNER_TEMP/body.md" | grep -o '[0-9]*$')
+          # The alert: a comment on the original pull request (everyone subscribed to it is notified).
+          gh pr comment "$n" --body "The seo-watch job opened #$pr to undo this change: $REASON" || true
+          if [ "$kind" = "undo" ]; then automerge=true; else automerge=false; fi
+          { echo "branch=$branch"; echo "base=$base"; echo "pr=$pr"; echo "original=$n"; echo "automerge=$automerge"; } >> "$GITHUB_OUTPUT"
 
   check:
     needs: revert
@@ -105,9 +178,11 @@ jobs:
       ref: ${{ needs.revert.outputs.branch }}
       base: ${{ needs.revert.outputs.base }}
 
+  # Only undo-level reverts (the autopilot undoing its own change) merge by themselves, as before. Reverts of refreshes and
+  # new pages wait for a person.
   merge:
     needs: [revert, check]
-    if: needs.revert.outputs.pr != '' && vars.SEO_AUTOPILOT_PAUSED != 'true'
+    if: needs.revert.outputs.pr != '' && needs.revert.outputs.automerge == 'true' && vars.SEO_AUTOPILOT == 'true' && vars.SEO_AUTOPILOT_PAUSED != 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write

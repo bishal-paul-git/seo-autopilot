@@ -8,6 +8,9 @@
 # Without it a headless Chromium on the GitHub runner is used. Do not turn on a vendor's CAPTCHA-solving option.
 #
 # Manual run inputs: live (really submit), only (one target id), mark ("<id> done|skipped|submitted [listing-url]").
+#
+# Kill switch: with the variable SEO_AUTOPILOT_PAUSED = true no listing form is opened, filled or submitted (not even a
+# dry run, whatever BACKLINKS_LIVE or the live input say). Recording a hand-done listing (mark) still works.
 name: seo-backlinks
 on:
   schedule: [{ cron: "30 9 * * 4" }]   # 09:30 UTC Thursdays (weekly: this browser job is the biggest user of Actions minutes)
@@ -40,14 +43,18 @@ jobs:
           MARK: ${{ inputs.mark }}
         run: npx --yes "$SEO" run mark $MARK
       - name: Install a local browser (no cloud browser configured)
-        if: ${{ inputs.mark == '' && env.HAS_CLOUD_BROWSER != 'true' }}
+        if: ${{ inputs.mark == '' && vars.SEO_AUTOPILOT_PAUSED != 'true' && env.HAS_CLOUD_BROWSER != 'true' }}
         run: npm i --no-save playwright && npx playwright install --with-deps chromium
       - name: Install the Playwright client (cloud browser configured)
-        if: ${{ inputs.mark == '' && env.HAS_CLOUD_BROWSER == 'true' }}
+        if: ${{ inputs.mark == '' && vars.SEO_AUTOPILOT_PAUSED != 'true' && env.HAS_CLOUD_BROWSER == 'true' }}
         run: npm i --no-save playwright
+      - name: Paused (kill switch)
+        if: ${{ inputs.mark == '' && vars.SEO_AUTOPILOT_PAUSED == 'true' }}
+        run: echo "SEO_AUTOPILOT_PAUSED is true: no listing is opened, filled or submitted."
       - name: Submit listings
-        if: ${{ inputs.mark == '' }}
+        if: ${{ inputs.mark == '' && vars.SEO_AUTOPILOT_PAUSED != 'true' }}
         env:
+          SEO_AUTOPILOT_PAUSED: ${{ vars.SEO_AUTOPILOT_PAUSED }}
           BACKLINK_LIVE: ${{ (inputs.live == true || vars.BACKLINKS_LIVE == 'true') && '1' || '0' }}
           BROWSER_WS_ENDPOINT: ${{ secrets.BROWSER_WS_ENDPOINT }}
           SEO_INGEST_URL: ${{ secrets.SEO_INGEST_URL }}
@@ -56,7 +63,7 @@ jobs:
         run: |
           if [ -n "$ONLY" ]; then npx --yes "$SEO" run backlinks --only "$ONLY"; else npx --yes "$SEO" run backlinks; fi
       - name: Keep screenshots for review
-        if: ${{ always() && inputs.mark == '' }}
+        if: ${{ always() && inputs.mark == '' && vars.SEO_AUTOPILOT_PAUSED != 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: backlink-screenshots

@@ -1,7 +1,7 @@
 {
  "generatedFrom": "code (scripts/build-registry.mjs)",
  "counts": {
-  "jobs": 58,
+  "jobs": 59,
   "agents": 38,
   "skills": 7,
   "mcpTools": 6,
@@ -1088,6 +1088,38 @@
    "verification": "unit/fixture tests only (external calls mocked)"
   },
   {
+   "name": "content-guard",
+   "purpose": "Content-loss guard: fail a pull request whose changed pages lose words (>15%), headings, internal links, images, structured data or page settings",
+   "source": "src/jobs/content-guard.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "scheduled (on by default)",
+   "triggers": [
+    {
+     "workflow": "seo-check.yml",
+     "cron": [],
+     "events": [
+      "workflow_call",
+      "pull_request"
+     ],
+     "gatedBy": []
+    }
+   ],
+   "credentials": [
+    "GITHUB_BASE_REF",
+    "GITHUB_HEAD_REF",
+    "GITHUB_STEP_SUMMARY"
+   ],
+   "hosts": [],
+   "writes": [
+    "content-guard.json",
+    "content-guard.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": false,
+   "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
    "name": "conversions",
    "purpose": "GA4 conversions: events received, which are key events, expected conversions missing or unmarked",
    "source": "src/jobs/conversions.mjs",
@@ -1292,10 +1324,10 @@
   },
   {
    "name": "watch",
-   "purpose": "Watch autopilot changes after they publish and say which to revert (errors, an added noindex, clicks falling against the rest of the site)",
+   "purpose": "Watch published changes (autopilot undo level, and every refresh and new page) and say which to revert (errors, an added noindex, clicks falling against the rest of the site)",
    "source": "src/jobs/watch.mjs",
    "owner": "maintainers (product core)",
-   "mode": "scheduled (off until an opt-in variable is set)",
+   "mode": "scheduled (on by default)",
    "triggers": [
     {
      "workflow": "seo-watch.yml",
@@ -1306,9 +1338,7 @@
       "schedule",
       "workflow_dispatch"
      ],
-     "gatedBy": [
-      "SEO_AUTOPILOT"
-     ]
+     "gatedBy": []
     }
    ],
    "credentials": [],
@@ -1318,7 +1348,7 @@
     "watch.md"
    ],
    "permissions": "read-only",
-   "usesLLM": false,
+   "usesLLM": true,
    "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
    "verification": "unit/fixture tests only (external calls mocked)"
   },
@@ -3486,7 +3516,9 @@
     "schedule",
     "workflow_dispatch"
    ],
-   "gatedBy": [],
+   "gatedBy": [
+    "SEO_AUTOPILOT_PAUSED"
+   ],
    "jobGates": {
     "mark": [],
     "backlinks": []
@@ -3508,10 +3540,12 @@
    ],
    "gatedBy": [],
    "jobGates": {
+    "content-guard": [],
     "facts": []
    },
    "agentGate": [],
    "jobs": [
+    "content-guard",
     "facts"
    ],
    "agents": [],
@@ -3666,13 +3700,9 @@
     "SEO_AUTOPILOT"
    ],
    "jobGates": {
-    "watch": [
-     "SEO_AUTOPILOT"
-    ]
+    "watch": []
    },
-   "agentGate": [
-    "SEO_AUTOPILOT"
-   ],
+   "agentGate": [],
    "jobs": [
     "watch"
    ],

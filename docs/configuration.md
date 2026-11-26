@@ -77,6 +77,22 @@ An entry can state its own address with `"path": "/partners/agencies"`; that win
 
 Page fields it understands: `slug`/`id`, a title (`h1`, `title`, `name`, `term` or `metaTitle`), `primaryKeyword`/`keyword`, `faqs` (`q` or `question`), and the drip fields `publishAt` (YYYY-MM-DD), `queued` (approved, not dated) and `hold` (never schedule). Scheduling and release need `json` or `markdown`.
 
+### Unpublishing (`content.unpublish`)
+
+When `seo-watch` finds that a new page is taking clicks from the pages around it, it takes the page off the site without deleting it: it sets `"draft": true` (and `"hold": true`) on the page. Set `"unpublish": { "field": "published", "value": false }` inside `content` if your site uses another field. Your build must leave such pages out (see [content-automation.md](content-automation.md#making-your-site-respect-publishat)); not every stack does by default. Two days after the unpublish is merged the watch checks that the page is gone (an error status or a noindex); if it still answers 200, the entry is marked `revert-failed` and an issue is opened. The content-loss guard reads this setting from the base branch, to recognise the watch's own unpublish pull requests.
+
+## Content-loss guard (`contentGuard`) and watch (`watch`)
+
+| Key | Default | Meaning |
+|---|---|---|
+| `contentGuard.maxWordDropPercent` | `15` | most words a changed page may lose in a `seo/*` pull request before `seo-check` fails. Removing any heading, internal link, image or structured data always fails. Read from the base branch's config, so a pull request cannot change its own limit |
+| `watch.content` | `true` | watch every refresh and new page merged from a `seo/*` branch and open a revert pull request when it does harm (`false` turns it off) |
+| `watch.days` | `28` | days each change is watched after the lag |
+| `watch.lag` | `3` | days skipped after the merge while search engines pick the change up |
+| `watch.minSpan` | `14` | days of Search Console data needed after the lag before clicks are compared |
+
+See [content-automation.md](content-automation.md#watch-and-revert-after-merging-seo-watch) for the rules.
+
 ## Data files you edit (in `dataDir`)
 
 - `feeds.json`: `[{ "id", "name", "url", "category": "regulator|platform|industry", "region" }]`

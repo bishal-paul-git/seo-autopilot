@@ -24,7 +24,7 @@ test("runtime matrix is generated from the code and up to date", async () => {
   const a = audit();
   assert.equal(readFileSync(new URL("../docs/cloudflare/runtime-matrix.json", import.meta.url), "utf8"), JSON.stringify(a, null, 1) + "\n", "run node scripts/cf-runtime-audit.mjs");
   assert.equal(readFileSync(new URL("../docs/cloudflare/runtime-matrix.md", import.meta.url), "utf8"), markdown(a));
-  assert.equal(a.summary.total, 58);
+  assert.equal(a.summary.total, 59);
   for (const j of a.jobs) if (j.needs.spawns) assert.notEqual(j.path, "worker-candidate", `${j.job} spawns processes: never a Worker job`);
 });
 

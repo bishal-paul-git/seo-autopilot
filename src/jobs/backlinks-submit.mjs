@@ -1,6 +1,7 @@
 // Backlink submitter: fills free listing forms with the facts in <data>/backlinks/profile.json, a few per day, and logs
 // every outcome. Dry run by default: it fills the form and takes a screenshot but submits nothing. Real submission needs
-// BACKLINK_LIVE=1 (or --live).
+// BACKLINK_LIVE=1 (or --live). The kill switch (SEO_AUTOPILOT_PAUSED=true or "autopilot": { "paused": true }) stops it
+// before any browser starts, live or dry.
 //
 // Browser: set BROWSER_WS_ENDPOINT to a cloud browser (a wss:// CDP endpoint, for example Browserless, Browserbase or
 // Steel) and the page runs there; without it a local headless Chromium is used (npm i playwright). Do NOT enable a vendor's
@@ -17,6 +18,10 @@ import { DEFAULT_CONFIG, pickBatch, applyOutcome, fieldValue, isBotCheckText, BO
 export const description = "Fill and (when live) submit up to 5 free listing forms a day, with one retry; logs everything";
 
 export async function run({ site, flags }) {
+  if (process.env.SEO_AUTOPILOT_PAUSED === "true" || site.autopilot?.paused === true) {
+    console.log("backlinks: the autopilot is paused (kill switch SEO_AUTOPILOT_PAUSED): no listing is opened, filled or submitted.");
+    return;
+  }
   const live = process.env.BACKLINK_LIVE === "1" || flags.live === true;
   const bdir = site.paths.backlinks;
   const config = { ...DEFAULT_CONFIG, ...readJson(`${bdir}/config.json`, {}) };

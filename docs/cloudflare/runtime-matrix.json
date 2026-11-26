@@ -196,6 +196,24 @@
    "modules": 3
   },
   {
+   "job": "content-guard",
+   "path": "github-actions",
+   "where": "Node host only: spawns processes (git, Go, Python or browsers); runs in the site repository's existing GitHub Actions workflows",
+   "reason": "child_process is a non-functional stub in Workers",
+   "needs": {
+    "node": [
+     "child_process",
+     "fs",
+     "path"
+    ],
+    "spawns": true,
+    "files": "read-write",
+    "network": true,
+    "llm": false
+   },
+   "modules": 6
+  },
+  {
    "job": "conversions",
    "path": "github-actions",
    "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
@@ -969,19 +987,22 @@
   {
    "job": "watch",
    "path": "github-actions",
-   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
-   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "where": "Node host only: spawns processes (git, Go, Python or browsers); runs in the site repository's existing GitHub Actions workflows",
+   "reason": "child_process is a non-functional stub in Workers",
    "needs": {
     "node": [
+     "child_process",
      "fs",
-     "path"
+     "path",
+     "readline/promises",
+     "url"
     ],
-    "spawns": false,
+    "spawns": true,
     "files": "read-write",
     "network": true,
     "llm": false
    },
-   "modules": 6
+   "modules": 13
   },
   {
    "job": "work",
@@ -1019,10 +1040,10 @@
   }
  ],
  "summary": {
-  "total": 58,
+  "total": 59,
   "hostedEquivalent": 6,
-  "githubActions": 52,
+  "githubActions": 53,
   "workerCandidate": 0,
-  "spawnProcesses": 6
+  "spawnProcesses": 8
  }
 }

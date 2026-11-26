@@ -118,3 +118,95 @@ test("the request-indexing list shows the full URL to paste and never a Search C
   assert.ok(md.includes("https://search.google.com/search-console?resource_id="), "links to the property");
   assert.ok(!md.includes("search-console/inspect"), "no page deep link (it answers 404)");
 });
+
+// Content-loss guard and the content watch, end to end: a real git history in the temp project, the fake website, and the
+// job outputs the seo-check and seo-watch workflows act on.
+test("seo-check guard blocks a shrinking refresh; seo-watch reverts a harmful refresh, then unpublishes a harmful new page", async (t) => {
+  const p = await project(t);
+  const { spawnSync } = await import("node:child_process");
+  const git = (...a) => { const r = spawnSync("git", a, { cwd: p.dir, encoding: "utf8" }); if (r.status !== 0) throw new Error(`git ${a.join(" ")}: ${r.stderr}`); return r.stdout.trim(); };
+  const cfgFile = join(p.dir, "seo-autopilot.config.json");
+  const cfg = JSON.parse(readFileSync(cfgFile, "utf8"));
+  cfg.sites[0].content = { type: "markdown", dir: "content/blog", urlPattern: "/blog/{slug}" };
+  writeFileSync(cfgFile, JSON.stringify(cfg, null, 2));
+  const blog = join(p.dir, "content", "blog"); mkdirSync(blog, { recursive: true });
+  const post = (slug, title, keyword, n, extra = "") => `---\ntitle: ${title}\nslug: ${slug}\nkeyword: ${keyword}\n---\n\n# ${title}\n\n## Why it matters\n\n${words(n)}\n\nSee [the guide](/guide).${extra}\n`;
+  writeFileSync(join(blog, "fit.md"), post("fit", "How to choose a running shoe", "running shoe fit", 900));
+  writeFileSync(join(blog, "trail.md"), post("trail", "Best trail running shoes", "trail running shoes", 600));
+  git("init", "-q", "-b", "main"); git("config", "user.email", "t@example.test"); git("config", "user.name", "t"); git("config", "commit.gpgsign", "false");
+  git("add", "-A"); git("commit", "-qm", "site");
+
+  // 1. seo-check: an seo/* branch that cuts the post to a third fails the guard (exit 1).
+  git("checkout", "-qb", "seo/issue-4");
+  writeFileSync(join(blog, "fit.md"), post("fit", "How to choose a running shoe", "running shoe fit", 250));
+  git("commit", "-qam", "refresh fit");
+  process.exitCode = 0;
+  await runJob("content-guard", { cwd: p.dir, flags: { base: "main", branch: "seo/issue-4" } });
+  assert.equal(process.exitCode, 1, "the shrinking refresh is blocked");
+  process.exitCode = 0;
+  const guard = JSON.parse(readFileSync(join(p.state(), "content-guard.json"), "utf8"));
+  assert.equal(guard.pages[0].status, "fail"); assert.match(guard.pages[0].reasons[0], /words fell/);
+
+  // 2. Two changes merged 25 days ago: a refresh (#5) and a new page (#6) on the same topic as an existing one.
+  git("checkout", "-q", "main");
+  writeFileSync(join(blog, "fit.md"), post("fit", "How to choose a running shoe", "running shoe fit", 950, "\n\n## Sizing\n\nMore."));
+  git("commit", "-qam", "Refresh fit (#5)"); const sha5 = git("rev-parse", "HEAD");
+  writeFileSync(join(blog, "trail-beginners.md"), post("trail-beginners", "Trail running shoes for beginners", "trail running shoes", 700));
+  git("add", "-A"); git("commit", "-qm", "New page (#6)"); const sha6 = git("rev-parse", "HEAD");
+  const add = (d, n) => new Date(Date.parse(d + "T00:00:00Z") + n * 864e5).toISOString().slice(0, 10);
+  const today = new Date().toISOString().slice(0, 10), merged = add(today, -25);
+  const series = {};
+  const fill = (url, from, to, clicks) => { series[url] ||= {}; for (let d = from; d <= to; d = add(d, 1)) series[url][d] = [clicks, 300, 6]; };
+  const u = (slug) => `${SITE}blog/${slug}`;
+  for (const c of ["c1", "c2", "c3"]) fill(`${SITE}${c}`, add(merged, -30), add(today, -2), 10);
+  fill(u("fit"), add(merged, -30), add(merged, -1), 12); fill(u("fit"), merged, add(today, -2), 4);     // refresh: 12 -> 4 a day
+  fill(u("trail"), add(merged, -30), add(merged, -1), 12); fill(u("trail"), merged, add(today, -2), 3); // the older page loses clicks
+  fill(u("trail-beginners"), merged, add(today, -2), 1);                                                // and the new page barely gets any
+  mkdirSync(p.state(), { recursive: true });
+  writeFileSync(join(p.state(), "page-daily.json"), JSON.stringify(series));
+  const prs = [
+    { number: 5, mergedAt: merged + "T10:00:00Z", mergeCommit: { oid: sha5 }, files: [{ path: "content/blog/fit.md" }], headRefName: "seo/issue-5", labels: [{ name: "seo-refresh" }] },
+    { number: 6, mergedAt: merged + "T11:00:00Z", mergeCommit: { oid: sha6 }, files: [{ path: "content/blog/trail-beginners.md" }], headRefName: "seo/issue-6", labels: [{ name: "seo-topic" }] },
+    { number: 7, mergedAt: merged + "T12:00:00Z", mergeCommit: { oid: sha6 }, files: [{ path: "content/blog/trail.md" }], headRefName: "fix/typo", labels: [] },
+  ];
+  const tmp = mkdtempSync(join(tmpdir(), "seo-e2e-watch-"));
+  writeFileSync(join(tmp, "content.json"), JSON.stringify(prs)); writeFileSync(join(tmp, "prs.json"), "[]"); writeFileSync(join(tmp, "reverts.json"), "[]");
+  const base = globalThis.fetch;
+  globalThis.fetch = async (input, init) => (String(input?.url || input).startsWith(`${SITE}blog/`) ? new Response("<html><head><title>x</title></head><body>ok</body></html>", { headers: { "content-type": "text/html" } }) : base(input, init));
+  const outputs = async (flags) => {
+    const out = join(tmp, "out"); writeFileSync(out, ""); process.env.GITHUB_OUTPUT = out;
+    try { await runJob("watch", { cwd: p.dir, flags }); } finally { delete process.env.GITHUB_OUTPUT; }
+    return Object.fromEntries(readFileSync(out, "utf8").trim().split("\n").map((l) => [l.slice(0, l.indexOf("=")), l.slice(l.indexOf("=") + 1)]));
+  };
+  const first = await outputs({ prs: join(tmp, "prs.json"), content: join(tmp, "content.json"), reverts: join(tmp, "reverts.json") });
+  assert.equal(first.revert, `5 ${sha5} refresh`, "the refresh is reverted first (the revert job runs watch --git-revert on its merge commit)");
+  assert.match(first.reason, /clicks fell/);
+  const list = JSON.parse(readFileSync(join(p.state(), "watch-content.json"), "utf8")).entries;
+  assert.deepEqual(list.map((e) => [e.pr, e.kind, e.status]), [[5, "refresh", "revert"], [6, "new-page", "revert"]], "a person's own branch (#7) is not watched");
+  assert.deepEqual(list[1].related, [u("trail")]);
+
+  // 3. Next day: the revert for #5 exists, so #6 comes next; the workflow unpublishes it through the adapter.
+  writeFileSync(join(tmp, "reverts.json"), JSON.stringify(["seo/revert-5"]));
+  const second = await outputs({ prs: join(tmp, "prs.json"), content: join(tmp, "content.json"), reverts: join(tmp, "reverts.json") });
+  assert.equal(second.revert, `6 ${sha6} new-page`);
+  assert.match(second.reason, /taking their place/);
+  git("checkout", "-qb", "seo/revert-6");
+  const un = await outputs({ unpublish: "6" });
+  assert.equal(un.unpublished, "1");
+  const after = readFileSync(join(blog, "trail-beginners.md"), "utf8");
+  assert.match(after, /^---\ntitle: Trail running shoes for beginners\nslug: trail-beginners\nkeyword: trail running shoes\ndraft: true\nhold: true\n---/, "draft and hold set; file, slug and text kept");
+  git("commit", "-qam", "Unpublish the new page from #6 (seo-watch)");
+  globalThis.fetch = base;
+  // 4. The unpublish pull request passes the content-loss guard only as what seo-watch made: opened and labelled by the
+  //    bot, and exactly the adapter's unpublish of the page #6 added. On its own, draft: true is a page-setting change.
+  process.exitCode = 0;
+  await runJob("content-guard", { cwd: p.dir, flags: { base: "main", branch: "seo/revert-6" } });
+  assert.equal(process.exitCode, 1, "without the bot's provenance the unpublish is checked like any change");
+  const bot = "github-actions[bot]";
+  writeFileSync(join(tmp, "events.jsonl"), JSON.stringify({ event: "labeled", label: "seo-revert", actor: bot, type: "Bot", created_at: new Date().toISOString() }) + "\n");
+  writeFileSync(join(tmp, "revert-of.json"), JSON.stringify({ number: 6, merged: true, mergeCommit: sha6, headRefName: "seo/issue-6", commits: ["New page (#6)"] }));
+  process.exitCode = 0;
+  await runJob("content-guard", { cwd: p.dir, flags: { base: "main", branch: "seo/revert-6", author: bot, labels: "seo-revert", events: join(tmp, "events.jsonl"), "revert-of": join(tmp, "revert-of.json") } });
+  assert.equal(process.exitCode, 0);
+  process.exitCode = 0;
+});

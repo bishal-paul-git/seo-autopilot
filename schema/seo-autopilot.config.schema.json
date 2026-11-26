@@ -149,8 +149,36 @@
                     }
                   }
                 }
+              },
+              "unpublish": {
+                "type": "object",
+                "description": "How seo-watch takes a harmful new page off the site without deleting it: the front-matter or JSON field it sets (default { \"field\": \"draft\", \"value\": true }; Jekyll: { \"field\": \"published\", \"value\": false }). Your build must leave such pages out.",
+                "properties": {
+                  "field": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_-]*$" },
+                  "value": { "type": ["boolean", "string", "number"] }
+                },
+                "additionalProperties": false
               }
             }
+          },
+          "contentGuard": {
+            "type": "object",
+            "description": "Content-loss guard in seo-check (read from the base branch's config, so a pull request cannot loosen its own check).",
+            "properties": {
+              "maxWordDropPercent": { "type": "number", "minimum": 0, "maximum": 100, "description": "Most words a changed page may lose, in percent (default 15). Removing any heading, internal link, image or structured data always fails." }
+            },
+            "additionalProperties": false
+          },
+          "watch": {
+            "type": "object",
+            "description": "seo-watch for refreshes and new pages merged from seo/* branches.",
+            "properties": {
+              "content": { "type": "boolean", "description": "Watch refreshes and new pages (default true). The undo-level watch of the autopilot is separate." },
+              "days": { "type": "integer", "minimum": 1, "maximum": 180, "description": "Days each change is watched after the lag (default 28)." },
+              "lag": { "type": "integer", "minimum": 0, "maximum": 14, "description": "Days skipped after the merge while search engines pick the change up (default 3)." },
+              "minSpan": { "type": "integer", "minimum": 7, "maximum": 180, "description": "Days of data needed after the lag before clicks are compared (default 14)." }
+            },
+            "additionalProperties": false
           },
           "limits": {
             "type": "object",
