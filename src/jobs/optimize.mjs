@@ -14,6 +14,7 @@ import { robotsDisallows } from "../audit/rules.mjs";
 import { PLATFORMS } from "../analysis/gap.mjs";
 import { optimise, optimiseMarkdown } from "../analysis/optimize.mjs";
 import { marketOf } from "./keywords.mjs";
+import { slugify } from "../lib/text.mjs";
 
 export const description = "Content optimiser: score a page or draft against top-ranking pages (terms, sections, questions, length, readability)";
 
@@ -49,7 +50,8 @@ export async function politeFetch(url, f) {
   } catch (e) { return { error: e.name === "TimeoutError" ? "timed out" : "unreachable" }; }
 }
 
-const slug = (s) => String(s).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "page";
+// Native-script slugs (Arabic stays Arabic); Latin input gives what it always gave. A URL path with percent-encoded non-ASCII is decoded first.
+const slug = (s) => { let t = String(s); if (/%[89a-f][0-9a-f]/i.test(t)) { try { t = decodeURIComponent(t); } catch { /* keep as is */ } } return slugify(t); };
 
 export async function run({ site, flags = {} }, deps = {}) {
   const env = deps.env || process.env, f = deps.fetch || globalThis.fetch;
