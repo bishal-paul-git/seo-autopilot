@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { termModel, termUsage, subtopics, basics, optimise } from "../src/analysis/optimize.mjs";
 import { fromHtml, fromMarkdown } from "../src/jobs/optimize.mjs";
+import { CONFIG } from "./market-fixtures.mjs";
 
 const filler = (n, seed) => Array.from({ length: n }, (_, i) => `Sentence ${seed}${i} keeps the page readable with plain short words.`).join(" ");
 const comp = (domain, extra = "", heads = []) => ({ url: `https://${domain}/hosting`, domain, title: "Web hosting for small business", headings: heads.map((t) => ({ level: 2, text: t })),
@@ -68,7 +69,7 @@ test("optimize job: reads a draft, finds top pages with the SERP provider, skips
     const c = comps.find((x) => url.includes(x.domain));
     return c ? ok(html(c)) : { ok: false, status: 404 };
   };
-  const site = { id: "s", name: "S", url: "https://s.test/", paths: { state, root, data: root } };
+  const site = { id: "s", name: "S", url: "https://s.test/", market: CONFIG.UK, paths: { state, root, data: root } };
   const { run } = await import("../src/jobs/optimize.mjs");
   const log = console.log; console.log = () => {};
   try { await run({ site, flags: { query: "web hosting for small business", file: "draft.md" } }, { env: { SERPAPI_KEY: "k" }, fetch: f, delayMs: 0 }); } finally { console.log = log; }

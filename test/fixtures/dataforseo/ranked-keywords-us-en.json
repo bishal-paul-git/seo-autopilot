@@ -1,0 +1,2250 @@
+{
+  "version": "0.1.20261117",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "cost": 0.0132,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "cost": 0.0132,
+      "result_count": 1,
+      "path": [
+        "v3",
+        "dataforseo_labs",
+        "google",
+        "ranked_keywords",
+        "live"
+      ],
+      "data": {
+        "api": "dataforseo_labs",
+        "function": "ranked_keywords",
+        "se_type": "google",
+        "target": "wikipedia.org",
+        "location_code": 2840,
+        "language_code": "en",
+        "limit": 10
+      },
+      "result": [
+        {
+          "se_type": "google",
+          "target": "wikipedia.org",
+          "location_code": 2840,
+          "language_code": "en",
+          "total_count": 46131657,
+          "items_count": 10,
+          "metrics": {
+            "organic": {
+              "pos_1": 9595083,
+              "pos_2_3": 9551377,
+              "pos_4_10": 11934914,
+              "pos_11_20": 7211783,
+              "pos_21_30": 3598204,
+              "pos_31_40": 1962960,
+              "pos_41_50": 1096014,
+              "pos_51_60": 582489,
+              "pos_61_70": 301361,
+              "pos_71_80": 158470,
+              "pos_81_90": 91413,
+              "pos_91_100": 47589,
+              "etv": 1473832738.1130304,
+              "count": 46131657,
+              "estimated_paid_traffic_cost": 2041487415.2934558,
+              "is_new": 12750261,
+              "is_up": 11685378,
+              "is_down": 11804679,
+              "is_lost": 0,
+              "clickstream_etv": null,
+              "clickstream_gender_distribution": null,
+              "clickstream_age_distribution": null
+            },
+            "paid": {
+              "pos_1": 0,
+              "pos_2_3": 0,
+              "pos_4_10": 0,
+              "pos_11_20": 0,
+              "pos_21_30": 0,
+              "pos_31_40": 0,
+              "pos_41_50": 0,
+              "pos_51_60": 0,
+              "pos_61_70": 0,
+              "pos_71_80": 0,
+              "pos_81_90": 0,
+              "pos_91_100": 0,
+              "etv": 0,
+              "count": 0,
+              "estimated_paid_traffic_cost": 0,
+              "is_new": 0,
+              "is_up": 0,
+              "is_down": 0,
+              "is_lost": 0,
+              "clickstream_etv": null,
+              "clickstream_gender_distribution": null,
+              "clickstream_age_distribution": null
+            },
+            "featured_snippet": null,
+            "local_pack": null,
+            "ai_overview_reference": null
+          },
+          "metrics_absolute": null,
+          "items": [
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "0 0 0 chess",
+                "location_code": 2840,
+                "language_code": "en",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0,
+                  "competition_level": "LOW",
+                  "cpc": null,
+                  "search_volume": 210,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10015,
+                    10125,
+                    10672,
+                    11946
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 10,
+                      "search_volume": 480
+                    },
+                    {
+                      "year": 2026,
+                      "month": 9,
+                      "search_volume": 320
+                    },
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 260
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 260
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 210
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 210
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 260
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 170
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": 50,
+                    "quarterly": 243,
+                    "yearly": 182
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": "0-0 chess",
+                  "synonym_clustering_algorithm": "text_processing",
+                  "keyword_difficulty": 11,
+                  "detected_language": "en",
+                  "is_another_language": false
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=0%200%200%20chess&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                  "serp_item_types": [
+                    "ai_overview",
+                    "organic",
+                    "people_also_ask",
+                    "video",
+                    "short_videos",
+                    "related_searches",
+                    "images"
+                  ],
+                  "se_results_count": 190,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": "<redacted-timestamp>"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 90.5999984741211,
+                  "dofollow": 71.5,
+                  "referring_pages": 84.4000015258789,
+                  "referring_domains": 28,
+                  "referring_main_domains": 25.200000762939453,
+                  "rank": 97.19999694824219,
+                  "main_domain_rank": 593.0999755859375,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 2,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]",
+                  "domain": "en.wikipedia.org",
+                  "title": "Castling",
+                  "url": "https://en.wikipedia.org/wiki/Castling",
+                  "breadcrumb": "https://en.wikipedia.org › wiki › Castling",
+                  "website_name": "Wikipedia",
+                  "is_image": false,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": null,
+                  "description": "castling kingside is written as 0-0 and castling queenside as 0-0-0. The 0-0-0 notation for queenside castling was introduced in 1837 by Aaron Alexandre.",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "castling kingside is written as 0-0"
+                  ],
+                  "links": null,
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/Castling",
+                  "etv": 0.13944296538829803,
+                  "estimated_paid_traffic_cost": null,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": 4,
+                    "is_new": false,
+                    "is_up": true,
+                    "is_down": false
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 222,
+                    "referring_main_domains": 197,
+                    "referring_pages": 507,
+                    "dofollow": 405,
+                    "backlinks": 613,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 286,
+                    "main_domain_rank": 813
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=0%200%200%20chess&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                "serp_item_types": [
+                  "ai_overview",
+                  "organic",
+                  "people_also_ask",
+                  "video",
+                  "short_videos",
+                  "related_searches",
+                  "images"
+                ],
+                "se_results_count": 190,
+                "keyword_difficulty": 11,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "0 0 0 coordinates",
+                "location_code": 2840,
+                "language_code": "en",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0,
+                  "competition_level": "LOW",
+                  "cpc": null,
+                  "search_volume": 50,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10108,
+                    10756,
+                    13600,
+                    13601
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 9,
+                      "search_volume": 50
+                    },
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 50
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 40
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 40
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 50
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 40
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 50
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 50
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 30
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 40
+                    },
+                    {
+                      "year": 2025,
+                      "month": 10,
+                      "search_volume": 70
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": 0,
+                    "quarterly": 25,
+                    "yearly": 0
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": "0 0 coordinates",
+                  "synonym_clustering_algorithm": "text_processing",
+                  "keyword_difficulty": 13,
+                  "detected_language": "fa",
+                  "is_another_language": true
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=0%200%200%20coordinates&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                  "serp_item_types": [
+                    "ai_overview",
+                    "organic",
+                    "people_also_ask",
+                    "images",
+                    "related_searches"
+                  ],
+                  "se_results_count": 89,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": "<redacted-timestamp>"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 174,
+                  "dofollow": 116.19999694824219,
+                  "referring_pages": 133.8000030517578,
+                  "referring_domains": 46,
+                  "referring_main_domains": 43.599998474121094,
+                  "rank": 97.5999984741211,
+                  "main_domain_rank": 639.2999877929688,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 2,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]",
+                  "domain": "en.wikipedia.org",
+                  "title": "Null Island",
+                  "url": "https://en.wikipedia.org/wiki/Null_Island",
+                  "breadcrumb": "https://en.wikipedia.org › wiki › Null_Island",
+                  "website_name": "Wikipedia",
+                  "is_image": true,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": [
+                    "is_image"
+                  ],
+                  "description": "Null Island is the location at zero degrees latitude and zero degrees longitude (. WikiMiniAtlas. 0°N 0°E﻿ / ﻿0°N 0°E﻿ / 0; 0 ), where the prime meridian ... Read more",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "zero degrees latitude and zero degrees longitude"
+                  ],
+                  "links": [
+                    {
+                      "type": "link_element",
+                      "title": "Location",
+                      "description": null,
+                      "url": "https://en.wikipedia.org/wiki/Null_Island#Location"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "In software",
+                      "description": null,
+                      "url": "https://en.wikipedia.org/wiki/Null_Island#In_software"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "Soul buoy",
+                      "description": null,
+                      "url": "https://en.wikipedia.org/wiki/Null_Island#Soul_buoy"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "In culture",
+                      "description": null,
+                      "url": "https://en.wikipedia.org/wiki/Null_Island#In_culture"
+                    }
+                  ],
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/Null_Island",
+                  "etv": 3.486074209213257,
+                  "estimated_paid_traffic_cost": null,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": 2,
+                    "is_new": false,
+                    "is_up": false,
+                    "is_down": false
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 355,
+                    "referring_main_domains": 335,
+                    "referring_pages": 867,
+                    "dofollow": 719,
+                    "backlinks": 1062,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 365,
+                    "main_domain_rank": 813
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=0%200%200%20coordinates&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                "serp_item_types": [
+                  "ai_overview",
+                  "organic",
+                  "people_also_ask",
+                  "images",
+                  "related_searches"
+                ],
+                "se_results_count": 89,
+                "keyword_difficulty": 13,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "0 0 chess",
+                "location_code": 2840,
+                "language_code": "en",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0,
+                  "competition_level": "LOW",
+                  "cpc": null,
+                  "search_volume": 210,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10015,
+                    10125,
+                    10672,
+                    11946
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 9,
+                      "search_volume": 320
+                    },
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 260
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 260
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 210
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 210
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 260
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2025,
+                      "month": 10,
+                      "search_volume": 170
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": 129,
+                    "quarterly": 191,
+                    "yearly": -33
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": "0-0 chess",
+                  "synonym_clustering_algorithm": "text_processing",
+                  "keyword_difficulty": 9,
+                  "detected_language": "en",
+                  "is_another_language": false
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=0%200%20chess&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                  "serp_item_types": [
+                    "ai_overview",
+                    "organic",
+                    "people_also_ask",
+                    "video",
+                    "short_videos",
+                    "product_considerations",
+                    "related_searches",
+                    "images"
+                  ],
+                  "se_results_count": 124,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": "<redacted-timestamp>"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 85.80000305175781,
+                  "dofollow": 67.19999694824219,
+                  "referring_pages": 79.5999984741211,
+                  "referring_domains": 26.600000381469727,
+                  "referring_main_domains": 24,
+                  "rank": 82.0999984741211,
+                  "main_domain_rank": 648,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 2,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]",
+                  "domain": "en.wikipedia.org",
+                  "title": "Castling",
+                  "url": "https://en.wikipedia.org/wiki/Castling",
+                  "breadcrumb": "https://en.wikipedia.org › wiki › Castling",
+                  "website_name": "Wikipedia",
+                  "is_image": false,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": null,
+                  "description": "castling kingside is written as 0-0 and castling queenside as 0-0-0. The 0-0-0 notation for queenside castling was introduced in 1837 by Aaron Alexandre.",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "castling kingside is written as 0-0"
+                  ],
+                  "links": null,
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/Castling",
+                  "etv": 0.04517313838005066,
+                  "estimated_paid_traffic_cost": null,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": 3,
+                    "is_new": false,
+                    "is_up": true,
+                    "is_down": false
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 222,
+                    "referring_main_domains": 197,
+                    "referring_pages": 507,
+                    "dofollow": 405,
+                    "backlinks": 613,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 286,
+                    "main_domain_rank": 813
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=0%200%20chess&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                "serp_item_types": [
+                  "ai_overview",
+                  "organic",
+                  "people_also_ask",
+                  "video",
+                  "short_videos",
+                  "product_considerations",
+                  "related_searches",
+                  "images"
+                ],
+                "se_results_count": 124,
+                "keyword_difficulty": 9,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "0 0 coordinates earth",
+                "location_code": 2840,
+                "language_code": "en",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0,
+                  "competition_level": "LOW",
+                  "cpc": null,
+                  "search_volume": 140,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10108,
+                    10756,
+                    13600
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 10,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2026,
+                      "month": 9,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 110
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": -35,
+                    "quarterly": -21,
+                    "yearly": -21
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": "0 0 coordinates on earth",
+                  "synonym_clustering_algorithm": "text_processing",
+                  "keyword_difficulty": 20,
+                  "detected_language": "fa",
+                  "is_another_language": true
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=0%200%20coordinates%20earth&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                  "serp_item_types": [
+                    "organic",
+                    "people_also_ask",
+                    "images",
+                    "video",
+                    "related_searches"
+                  ],
+                  "se_results_count": 112,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": "<redacted-timestamp>"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 542.4000244140625,
+                  "dofollow": 296.79998779296875,
+                  "referring_pages": 508.70001220703125,
+                  "referring_domains": 54.79999923706055,
+                  "referring_main_domains": 52.599998474121094,
+                  "rank": 119.30000305175781,
+                  "main_domain_rank": 737.2999877929688,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 1,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]",
+                  "domain": "en.wikipedia.org",
+                  "title": "Null Island",
+                  "url": "https://en.wikipedia.org/wiki/Null_Island",
+                  "breadcrumb": "https://en.wikipedia.org › wiki › Null_Island",
+                  "website_name": "Wikipedia",
+                  "is_image": true,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": [
+                    "is_image"
+                  ],
+                  "description": "Null Island is the location at zero degrees latitude and zero degrees longitude (. WikiMiniAtlas. 0°N 0°E﻿ / ﻿0°N 0°E﻿ / 0; 0 ), where the prime meridian ... Read more",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "zero degrees latitude and zero degrees longitude"
+                  ],
+                  "links": [
+                    {
+                      "type": "link_element",
+                      "title": "Location",
+                      "description": null,
+                      "url": "https://en.wikipedia.org/wiki/Null_Island#Location"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "In software",
+                      "description": null,
+                      "url": "https://en.wikipedia.org/wiki/Null_Island#In_software"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "Soul buoy",
+                      "description": null,
+                      "url": "https://en.wikipedia.org/wiki/Null_Island#Soul_buoy"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "In culture",
+                      "description": null,
+                      "url": "https://en.wikipedia.org/wiki/Null_Island#In_culture"
+                    }
+                  ],
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/Null_Island",
+                  "etv": 0.23361819982528687,
+                  "estimated_paid_traffic_cost": null,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": 2,
+                    "is_new": false,
+                    "is_up": true,
+                    "is_down": false
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 355,
+                    "referring_main_domains": 335,
+                    "referring_pages": 867,
+                    "dofollow": 719,
+                    "backlinks": 1062,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 365,
+                    "main_domain_rank": 813
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=0%200%20coordinates%20earth&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                "serp_item_types": [
+                  "organic",
+                  "people_also_ask",
+                  "images",
+                  "video",
+                  "related_searches"
+                ],
+                "se_results_count": 112,
+                "keyword_difficulty": 20,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "0 0 coordinates on earth",
+                "location_code": 2840,
+                "language_code": "en",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0,
+                  "competition_level": "LOW",
+                  "cpc": null,
+                  "search_volume": 140,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10108,
+                    10756,
+                    13600,
+                    13601
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 9,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2025,
+                      "month": 10,
+                      "search_volume": 140
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": 21,
+                    "quarterly": 89,
+                    "yearly": 21
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": null,
+                  "synonym_clustering_algorithm": "text_processing",
+                  "keyword_difficulty": 13,
+                  "detected_language": "en",
+                  "is_another_language": false
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=0%200%20coordinates%20on%20earth&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                  "serp_item_types": [
+                    "ai_overview",
+                    "organic",
+                    "images",
+                    "people_also_ask",
+                    "questions_and_answers",
+                    "video",
+                    "related_searches"
+                  ],
+                  "se_results_count": 107,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": "<redacted-timestamp>"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 164.89999389648438,
+                  "dofollow": 113.5,
+                  "referring_pages": 132.60000610351562,
+                  "referring_domains": 45.29999923706055,
+                  "referring_main_domains": 43,
+                  "rank": 97.4000015258789,
+                  "main_domain_rank": 603.7999877929688,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 2,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]",
+                  "domain": "en.wikipedia.org",
+                  "title": "Null Island",
+                  "url": "https://en.wikipedia.org/wiki/Null_Island",
+                  "breadcrumb": "https://en.wikipedia.org › wiki › Null_Island",
+                  "website_name": "Wikipedia",
+                  "is_image": true,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": [
+                    "is_image"
+                  ],
+                  "description": "Null Island is the location at zero degrees latitude and zero degrees longitude (. WikiMiniAtlas. 0°N 0°E﻿ / ﻿0°N 0°E﻿ / 0; 0 ), where the prime meridian ... Read more",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "zero degrees latitude and zero degrees longitude"
+                  ],
+                  "links": [
+                    {
+                      "type": "link_element",
+                      "title": "Read more",
+                      "description": null,
+                      "url": "https://en.wikipedia.org/wiki/Null_Island#:~:text=Null%20Island%20is%20the%20location,near%20the%20Gulf%20of%20Guinea."
+                    }
+                  ],
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/Null_Island",
+                  "etv": 1.8995189666748047,
+                  "estimated_paid_traffic_cost": null,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": 3,
+                    "is_new": false,
+                    "is_up": true,
+                    "is_down": false
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 355,
+                    "referring_main_domains": 335,
+                    "referring_pages": 867,
+                    "dofollow": 719,
+                    "backlinks": 1062,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 365,
+                    "main_domain_rank": 813
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=0%200%20coordinates%20on%20earth&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                "serp_item_types": [
+                  "ai_overview",
+                  "organic",
+                  "images",
+                  "people_also_ask",
+                  "questions_and_answers",
+                  "video",
+                  "related_searches"
+                ],
+                "se_results_count": 107,
+                "keyword_difficulty": 13,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "0 0 emoticon",
+                "location_code": 2840,
+                "language_code": "en",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0,
+                  "competition_level": "LOW",
+                  "cpc": null,
+                  "search_volume": 140,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10019,
+                    10168,
+                    10885,
+                    12204,
+                    13597
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2025,
+                      "month": 10,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2025,
+                      "month": 9,
+                      "search_volume": 110
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": 29,
+                    "quarterly": 29,
+                    "yearly": 0
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": "0 emoticons",
+                  "synonym_clustering_algorithm": "text_processing",
+                  "keyword_difficulty": 0,
+                  "detected_language": "en",
+                  "is_another_language": false
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=0%200%20emoticon&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                  "serp_item_types": [
+                    "ai_overview",
+                    "organic",
+                    "images",
+                    "people_also_ask",
+                    "related_searches"
+                  ],
+                  "se_results_count": 107,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": "<redacted-timestamp>"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 182.89999389648438,
+                  "dofollow": 134.39999389648438,
+                  "referring_pages": 159.39999389648438,
+                  "referring_domains": 39.099998474121094,
+                  "referring_main_domains": 36.20000076293945,
+                  "rank": 33,
+                  "main_domain_rank": 696.5,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 2,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]",
+                  "domain": "en.wikipedia.org",
+                  "title": "List of emoticons",
+                  "url": "https://en.wikipedia.org/wiki/List_of_emoticons",
+                  "breadcrumb": "https://en.wikipedia.org › wiki › List_of_emoticons",
+                  "website_name": "Wikipedia",
+                  "is_image": false,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": null,
+                  "description": ":0, 8‑0, >:O, =O =o, =0, 😮😯😲, Surprise, shock. :-3 :3, =3, x3. X3, 😺😸🐱, Cat ... 2channel emoticons. Main article: Emoticon § 2channel style. A number of ... Read more",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "0",
+                    "emoticons",
+                    "Emoticon"
+                  ],
+                  "links": [
+                    {
+                      "type": "link_element",
+                      "title": "Read more",
+                      "description": null,
+                      "url": "https://en.wikipedia.org/wiki/List_of_emoticons#:~:text=%3A0,Cat&text=2channel%20emoticons,the%20Japanese%20discussion%20site%202channel."
+                    }
+                  ],
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/List_of_emoticons",
+                  "etv": 9.761007308959961,
+                  "estimated_paid_traffic_cost": null,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": 2,
+                    "is_new": false,
+                    "is_up": false,
+                    "is_down": false
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 372,
+                    "referring_main_domains": 346,
+                    "referring_pages": 1342,
+                    "dofollow": 1123,
+                    "backlinks": 1461,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 330,
+                    "main_domain_rank": 813
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=0%200%20emoticon&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                "serp_item_types": [
+                  "ai_overview",
+                  "organic",
+                  "images",
+                  "people_also_ask",
+                  "related_searches"
+                ],
+                "se_results_count": 107,
+                "keyword_difficulty": 0,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "0 0 face",
+                "location_code": 2840,
+                "language_code": "en",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0,
+                  "competition_level": "LOW",
+                  "cpc": null,
+                  "search_volume": 110,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10019,
+                    10168,
+                    10885,
+                    12204,
+                    13597
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 10,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2026,
+                      "month": 9,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 50
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 50
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 50
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 140
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": 0,
+                    "quarterly": 120,
+                    "yearly": -21
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": "0 face",
+                  "synonym_clustering_algorithm": "text_processing",
+                  "keyword_difficulty": 17,
+                  "detected_language": "en",
+                  "is_another_language": false
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=0%200%20face&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                  "serp_item_types": [
+                    "ai_overview",
+                    "organic",
+                    "people_also_ask",
+                    "images",
+                    "related_searches"
+                  ],
+                  "se_results_count": 104,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": "<redacted-timestamp>"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 2571.60009765625,
+                  "dofollow": 1429.300048828125,
+                  "referring_pages": 1748.800048828125,
+                  "referring_domains": 241.60000610351562,
+                  "referring_main_domains": 225.5,
+                  "rank": 107.69999694824219,
+                  "main_domain_rank": 719.2999877929688,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 2,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]",
+                  "domain": "en.wikipedia.org",
+                  "title": "List of emoticons",
+                  "url": "https://en.wikipedia.org/wiki/List_of_emoticons",
+                  "breadcrumb": "https://en.wikipedia.org › wiki › List_of_emoticons",
+                  "website_name": "Wikipedia",
+                  "is_image": false,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": null,
+                  "description": "This is a list of emoticons or textual portrayals of a writer's moods or facial expressions in the form of icons. Cat face, curled mouth, cutesy,",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "face"
+                  ],
+                  "links": [
+                    {
+                      "type": "link_element",
+                      "title": "Western",
+                      "description": null,
+                      "url": "https://en.wikipedia.org/wiki/List_of_emoticons#Western"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "Eastern",
+                      "description": null,
+                      "url": "https://en.wikipedia.org/wiki/List_of_emoticons#Eastern"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "2channel emoticons",
+                      "description": null,
+                      "url": "https://en.wikipedia.org/wiki/List_of_emoticons#2channel_emoticons"
+                    }
+                  ],
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/List_of_emoticons",
+                  "etv": 7.669363021850586,
+                  "estimated_paid_traffic_cost": null,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": 1,
+                    "is_new": false,
+                    "is_up": false,
+                    "is_down": true
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 372,
+                    "referring_main_domains": 346,
+                    "referring_pages": 1342,
+                    "dofollow": 1123,
+                    "backlinks": 1461,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 330,
+                    "main_domain_rank": 813
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=0%200%20face&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                "serp_item_types": [
+                  "ai_overview",
+                  "organic",
+                  "people_also_ask",
+                  "images",
+                  "related_searches"
+                ],
+                "se_results_count": 104,
+                "keyword_difficulty": 17,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "0 0 lat long",
+                "location_code": 2840,
+                "language_code": "en",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0,
+                  "competition_level": "LOW",
+                  "cpc": null,
+                  "search_volume": 320,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10004,
+                    10300,
+                    11328
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 10,
+                      "search_volume": 320
+                    },
+                    {
+                      "year": 2026,
+                      "month": 9,
+                      "search_volume": 390
+                    },
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 390
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 390
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 260
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 320
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 390
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 390
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 320
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 320
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 260
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 320
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": -18,
+                    "quarterly": -18,
+                    "yearly": 0
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": "lat 0 long 0",
+                  "synonym_clustering_algorithm": "text_processing",
+                  "keyword_difficulty": 13,
+                  "detected_language": "en",
+                  "is_another_language": false
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=0%200%20lat%20long&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                  "serp_item_types": [
+                    "ai_overview",
+                    "organic",
+                    "images",
+                    "people_also_ask",
+                    "video",
+                    "related_searches"
+                  ],
+                  "se_results_count": 106,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": "<redacted-timestamp>"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 207.3000030517578,
+                  "dofollow": 139.89999389648438,
+                  "referring_pages": 161.3000030517578,
+                  "referring_domains": 47.099998474121094,
+                  "referring_main_domains": 44.70000076293945,
+                  "rank": 97.30000305175781,
+                  "main_domain_rank": 616.0999755859375,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 2,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]",
+                  "domain": "en.wikipedia.org",
+                  "title": "Null Island",
+                  "url": "https://en.wikipedia.org/wiki/Null_Island",
+                  "breadcrumb": "https://en.wikipedia.org › wiki › Null_Island",
+                  "website_name": "Wikipedia",
+                  "is_image": true,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": [
+                    "is_image"
+                  ],
+                  "description": "Null Island is the location at zero degrees latitude. Latitude Zero, a 1969 movie about a fictional utopia that is placed at coordinates (0, 0) on the bottom ...",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "Null Island is the location at zero degrees latitude"
+                  ],
+                  "links": null,
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/Null_Island",
+                  "etv": 21.05588722229004,
+                  "estimated_paid_traffic_cost": null,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": 2,
+                    "is_new": false,
+                    "is_up": false,
+                    "is_down": false
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 355,
+                    "referring_main_domains": 335,
+                    "referring_pages": 867,
+                    "dofollow": 719,
+                    "backlinks": 1062,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 364,
+                    "main_domain_rank": 813
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=0%200%20lat%20long&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                "serp_item_types": [
+                  "ai_overview",
+                  "organic",
+                  "images",
+                  "people_also_ask",
+                  "video",
+                  "related_searches"
+                ],
+                "se_results_count": 106,
+                "keyword_difficulty": 13,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "0 0 latitude and longitude",
+                "location_code": 2840,
+                "language_code": "en",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0,
+                  "competition_level": "LOW",
+                  "cpc": null,
+                  "search_volume": 10,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10108,
+                    10756,
+                    13600,
+                    13601
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 10,
+                      "search_volume": 10
+                    },
+                    {
+                      "year": 2026,
+                      "month": 9,
+                      "search_volume": 10
+                    },
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 10
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 10
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 10
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 10
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 10
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 30
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 10
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 10
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 30
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 10
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": 0,
+                    "quarterly": 0,
+                    "yearly": 0
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": "latitude and longitude 0 0",
+                  "synonym_clustering_algorithm": "text_processing",
+                  "keyword_difficulty": 13,
+                  "detected_language": "fr",
+                  "is_another_language": true
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=0%200%20latitude%20and%20longitude&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                  "serp_item_types": [
+                    "ai_overview",
+                    "organic",
+                    "people_also_ask",
+                    "images",
+                    "video",
+                    "related_searches"
+                  ],
+                  "se_results_count": 103,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": null
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 207.3000030517578,
+                  "dofollow": 139.89999389648438,
+                  "referring_pages": 161.3000030517578,
+                  "referring_domains": 47.099998474121094,
+                  "referring_main_domains": 44.70000076293945,
+                  "rank": 101,
+                  "main_domain_rank": 606.2000122070312,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 2,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]",
+                  "domain": "en.wikipedia.org",
+                  "title": "Null Island",
+                  "url": "https://en.wikipedia.org/wiki/Null_Island",
+                  "breadcrumb": "https://en.wikipedia.org › wiki › Null_Island",
+                  "website_name": "Wikipedia",
+                  "is_image": true,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": [
+                    "is_image"
+                  ],
+                  "description": "Null Island is the location at zero degrees latitude and zero degrees longitude. Latitude Zero, a 1969 movie about a fictional utopia that is placed at ...",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "zero degrees latitude and zero degrees longitude"
+                  ],
+                  "links": null,
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/Null_Island",
+                  "etv": 0.6972148418426514,
+                  "estimated_paid_traffic_cost": null,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": null,
+                    "is_new": true,
+                    "is_up": false,
+                    "is_down": false
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 355,
+                    "referring_main_domains": 335,
+                    "referring_pages": 867,
+                    "dofollow": 719,
+                    "backlinks": 1062,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 373,
+                    "main_domain_rank": 816
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=0%200%20latitude%20and%20longitude&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                "serp_item_types": [
+                  "ai_overview",
+                  "organic",
+                  "people_also_ask",
+                  "images",
+                  "video",
+                  "related_searches"
+                ],
+                "se_results_count": 103,
+                "keyword_difficulty": 13,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": null
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "0 0 latitude longitude",
+                "location_code": 2840,
+                "language_code": "en",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0,
+                  "competition_level": "LOW",
+                  "cpc": null,
+                  "search_volume": 320,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10108,
+                    10756,
+                    13600,
+                    13601
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 9,
+                      "search_volume": 390
+                    },
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 390
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 390
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 260
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 320
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 390
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 390
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 320
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 320
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 260
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 320
+                    },
+                    {
+                      "year": 2025,
+                      "month": 10,
+                      "search_volume": 320
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": 0,
+                    "quarterly": 0,
+                    "yearly": 0
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": "0 0 longitude latitude",
+                  "synonym_clustering_algorithm": "text_processing",
+                  "keyword_difficulty": 13,
+                  "detected_language": "fr",
+                  "is_another_language": true
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=0%200%20latitude%20longitude&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                  "serp_item_types": [
+                    "ai_overview",
+                    "organic",
+                    "people_also_ask",
+                    "images",
+                    "video",
+                    "related_searches"
+                  ],
+                  "se_results_count": 107,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": "<redacted-timestamp>"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 207.3000030517578,
+                  "dofollow": 139.89999389648438,
+                  "referring_pages": 161.3000030517578,
+                  "referring_domains": 47.099998474121094,
+                  "referring_main_domains": 44.70000076293945,
+                  "rank": 97.30000305175781,
+                  "main_domain_rank": 603.7999877929688,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 2,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]",
+                  "domain": "en.wikipedia.org",
+                  "title": "Null Island",
+                  "url": "https://en.wikipedia.org/wiki/Null_Island",
+                  "breadcrumb": "https://en.wikipedia.org › wiki › Null_Island",
+                  "website_name": "Wikipedia",
+                  "is_image": true,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": [
+                    "is_image"
+                  ],
+                  "description": "Null Island is the location at zero degrees latitude and zero degrees longitude … in the Atlantic Ocean near the Gulf of Guinea. Latitude Zero, a 1969 movie ...",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "zero degrees latitude and zero degrees longitude"
+                  ],
+                  "links": [
+                    {
+                      "type": "link_element",
+                      "title": "Location",
+                      "description": null,
+                      "url": "https://en.wikipedia.org/wiki/Null_Island#Location"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "In software",
+                      "description": null,
+                      "url": "https://en.wikipedia.org/wiki/Null_Island#In_software"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "Soul buoy",
+                      "description": null,
+                      "url": "https://en.wikipedia.org/wiki/Null_Island#Soul_buoy"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "In culture",
+                      "description": null,
+                      "url": "https://en.wikipedia.org/wiki/Null_Island#In_culture"
+                    }
+                  ],
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/Null_Island",
+                  "etv": 7.460198879241943,
+                  "estimated_paid_traffic_cost": null,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": 2,
+                    "is_new": false,
+                    "is_up": false,
+                    "is_down": false
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 355,
+                    "referring_main_domains": 335,
+                    "referring_pages": 867,
+                    "dofollow": 719,
+                    "backlinks": 1062,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 364,
+                    "main_domain_rank": 813
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=0%200%20latitude%20longitude&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+                "serp_item_types": [
+                  "ai_overview",
+                  "organic",
+                  "people_also_ask",
+                  "images",
+                  "video",
+                  "related_searches"
+                ],
+                "se_results_count": 107,
+                "keyword_difficulty": 13,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": "<redacted-timestamp>"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

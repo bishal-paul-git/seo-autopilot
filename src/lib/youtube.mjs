@@ -2,10 +2,8 @@
 // Free daily quota of 10,000 units: a search costs 100 and a statistics lookup 1, so the keywords job caps itself at 5
 // searches a run. `fetch` is injectable; the key goes in the query string (Google's documented way) and never into errors.
 // Request shapes follow Google's reference; not yet run against the live API.
-import { market } from "./research-sources.mjs";
+import { requireMarket } from "./market.mjs";
 import { decode } from "./open-data.mjs";
-
-const LANG = { DE: "de", AT: "de", FR: "fr", ES: "es", IT: "it", NL: "nl" };
 
 async function call(f, path, params, env) {
   let r;
@@ -24,7 +22,8 @@ export const youtube = {
   enabled: (env) => Boolean(env.YOUTUBE_API_KEY),
   /** Top video results for a query in the market, with view counts: [{ title, url, channel, published, views }]. */
   async videos(query, m, { fetch: f = fetch, env = process.env, limit = 10 } = {}) {
-    const s = await call(f, "search", { part: "snippet", type: "video", q: query, maxResults: String(limit), regionCode: market(m), relevanceLanguage: LANG[market(m)] || "en" }, env);
+    const mk = requireMarket(m, "youtube");
+    const s = await call(f, "search", { part: "snippet", type: "video", q: query, maxResults: String(limit), regionCode: mk.country, relevanceLanguage: mk.languageCode }, env);
     const items = (s.items || []).filter((i) => i.id?.videoId);
     if (!items.length) return [];
     const st = await call(f, "videos", { part: "statistics", id: items.map((i) => i.id.videoId).join(",") }, env);

@@ -207,12 +207,25 @@
               }
             }
           },
+          "market": {
+            "type": "object",
+            "description": "Where and in which language the site is researched. Used by every job that calls a search or keyword provider. Without it the old United Kingdom / English behaviour applies, with a warning. See docs/configuration.md#market.",
+            "properties": {
+              "location_code": { "type": "integer", "minimum": 1, "description": "DataForSEO location code (also the Google Ads geo target id), for example 2682 for Saudi Arabia." },
+              "location": { "type": "string", "description": "Instead of location_code: a country name from the supported list or its two-letter code, for example \"Saudi Arabia\" or \"SA\"." },
+              "country": { "type": "string", "pattern": "^[A-Za-z]{2}$", "description": "Two-letter country code; needed only when location_code is not in the built-in table." },
+              "language_code": { "type": "string", "pattern": "^[A-Za-z]{2}$", "description": "Primary language, ISO 639-1, for example \"ar\"." },
+              "languages": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[A-Za-z]{2}$" }, "description": "Languages the site publishes in; the first is the primary one." }
+            },
+            "additionalProperties": false
+          },
           "citations": {
             "type": "object",
             "properties": {
               "market": {
                 "type": "string",
-                "description": "Default country for questions (default GB)."
+                "deprecated": true,
+                "description": "Country for questions. Only read when the site has no market; use the site's market."
               }
             }
           },
@@ -304,7 +317,7 @@
             "type": "object",
             "description": "Research suite: keyword explorer, rank tracker, gap, optimiser, AI visibility and authority. All optional.",
             "properties": {
-              "market": { "type": "string", "pattern": "^[A-Za-z]{2}$", "description": "Country for live results and provider data (default: citations.market, else GB)." },
+              "market": { "type": "string", "pattern": "^[A-Za-z]{2}$", "deprecated": true, "description": "Country for live results. Only read when the site has no market; use the site's market (location and language)." },
               "competitors": { "type": "array", "items": { "type": "string" }, "description": "Competitor domains, for example [\"rival.com\"]. Otherwise found from share of voice." },
               "competitorNames": { "type": "array", "items": { "type": "string" }, "description": "Competitor names to look for in AI answers." },
               "aliases": { "type": "array", "items": { "type": "string" }, "description": "Other names of the business to detect in AI answers (short forms, misspellings)." },

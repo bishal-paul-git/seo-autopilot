@@ -2,12 +2,13 @@
 // aiSources:[{domain,url}], features:[{type,domains}], raw:false }. Feature types: featured-snippet, people-also-ask, local-pack,
 // video, images, top-stories, shopping, ai-overview, knowledge-panel, discussions.
 // Chosen by environment variable: BRAVE_API_KEY, SERPAPI_KEY, or DATAFORSEO_LOGIN + DATAFORSEO_PASSWORD (first one found wins).
+// Every search takes its location and language from the market passed in (see market.mjs); there is no default country or language.
 // `fetchFn` is injectable so tests never touch the network. Keys go in headers or the request only and are never logged or put in errors.
 // Request formats follow each provider's public documentation; they have not been exercised against the live services.
 
+import { requireMarket, googleGl } from "./market.mjs";
+
 export const domainOf = (u) => { try { return new URL(u).hostname.replace(/^www\./, "").toLowerCase(); } catch { return String(u || "").replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0].toLowerCase(); } };
-const country = (m) => String(m || "GB").toUpperCase().replace(/^UK$/, "GB");
-const LOCATIONS = { GB: "United Kingdom", US: "United States", CA: "Canada", AU: "Australia", IE: "Ireland", DE: "Germany", FR: "France", ES: "Spain", IT: "Italy", NL: "Netherlands", IN: "India" };
 const norm = (url, title, position) => ({ url, domain: domainOf(url), title: title || "", position });
 const dedupe = (a) => { const seen = new Set(); return a.filter((x) => x.url && !seen.has(x.url) && seen.add(x.url)); };
 
@@ -18,12 +19,13 @@ async function getJson(fetchFn, name, url, init) {
   return r.json();
 }
 
-// Brave Search API: GET /res/v1/web/search?q&country&count, key in X-Subscription-Token. No AI answer sources in this endpoint.
+// Brave Search API: GET /res/v1/web/search?q&country&search_lang&count, key in X-Subscription-Token. No AI answer sources in this endpoint.
 export const brave = {
   name: "brave",
   enabled: (env) => Boolean(env.BRAVE_API_KEY),
   async search(q, market, { fetch: f = fetch, env = process.env } = {}) {
-    const url = `https://api.search.brave.com/res/v1/web/search?${new URLSearchParams({ q, country: country(market), count: "20" })}`;
+    const m = requireMarket(market, "brave");
+    const url = `https://api.search.brave.com/res/v1/web/search?${new URLSearchParams({ q, country: m.country, search_lang: m.languageCode, count: "20" })}`;
     const j = await getJson(f, "brave", url, { headers: { Accept: "application/json", "X-Subscription-Token": env.BRAVE_API_KEY } });
     const results = (j.web?.results || []).map((r, i) => norm(r.url, r.title, i + 1));
     const features = [["faq", "people-also-ask"], ["videos", "video"], ["news", "top-stories"], ["locations", "local-pack"], ["discussions", "discussions"]]
@@ -38,8 +40,8 @@ export const serpapi = {
   name: "serpapi",
   enabled: (env) => Boolean(env.SERPAPI_KEY),
   async search(q, market, { fetch: f = fetch, env = process.env } = {}) {
-    const c = country(market);
-    const url = `https://serpapi.com/search.json?${new URLSearchParams({ engine: "google", q, gl: c === "GB" ? "uk" : c.toLowerCase(), hl: "en", api_key: env.SERPAPI_KEY })}`;
+    const m = requireMarket(market, "serpapi");
+    const url = `https://serpapi.com/search.json?${new URLSearchParams({ engine: "google", q, gl: googleGl(m), hl: m.languageCode, api_key: env.SERPAPI_KEY })}`;
     const j = await getJson(f, "serpapi", url, {});
     const results = (j.organic_results || []).map((r, i) => norm(r.link, r.title, r.position ?? i + 1));
     let refs = j.ai_overview?.references;
@@ -72,8 +74,9 @@ export const dataforseo = {
   name: "dataforseo",
   enabled: (env) => Boolean(env.DATAFORSEO_LOGIN && env.DATAFORSEO_PASSWORD),
   async search(q, market, { fetch: f = fetch, env = process.env } = {}) {
+    const m = requireMarket(market, "dataforseo");
     const auth = Buffer.from(`${env.DATAFORSEO_LOGIN}:${env.DATAFORSEO_PASSWORD}`).toString("base64");
-    const body = [{ keyword: q, location_name: LOCATIONS[country(market)] || "United Kingdom", language_code: "en", depth: 20 }];
+    const body = [{ keyword: q, location_code: m.locationCode, language_code: m.languageCode, depth: 20 }];
     const j = await getJson(f, "dataforseo", "https://api.dataforseo.com/v3/serp/google/organic/live/advanced", { method: "POST", headers: { Authorization: `Basic ${auth}`, "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const task = j.tasks?.[0];
     if (task && task.status_code && task.status_code !== 20000) throw new Error(`dataforseo: task status ${task.status_code}`);

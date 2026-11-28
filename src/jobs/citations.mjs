@@ -3,6 +3,7 @@
 // Writes <state>/<site>/citations.json (with run history) and citations.md.   npx seo-autopilot run citations [--json]
 import { readJson, writeJson, writeText, today, sleep } from "../core/util.mjs";
 import { pickProvider, SETUP_HELP } from "../lib/serp.mjs";
+import { siteMarket, withLocation, languageFor, marketLabel } from "../lib/market.mjs";
 import { normaliseQuestions, analyseCitations, appendHistory, citationsMarkdown } from "../analysis/citations.mjs";
 
 export const description = "Track whether the site is cited in search results and AI answers for your key questions (needs a SERP provider key)";
@@ -15,14 +16,23 @@ export async function run({ site, flags = {} }, deps = {}) {
   const file = `${site.paths.data}/questions.json`;
   const raw = readJson(file, []);
   if (raw.some((x) => /^replace these/i.test(String(x?.q ?? x)))) { console.log(`citations: ${file} still has the "REPLACE THESE" example list. Put your real questions there first so no search credits are spent on examples.`); return; }
-  const questions = normaliseQuestions(raw, site.citations?.market || "GB");
-  if (!questions.length) { console.log(`citations: no questions to check. Add your real customer questions to ${file} (strings or {"q": "...", "market": "GB"}).`); return; }
+  const questions = normaliseQuestions(raw);
+  if (!questions.length) { console.log(`citations: no questions to check. Add your real customer questions to ${file} (strings or {"q": "...", "language": "ar"}).`); return; }
+  // Resolve every question's market now, before the first request: a missing or unknown market or language stops the job here.
+  const base = siteMarket(site, flags.language);
+  const planned = questions.map(({ q, market: loc, language }) => {
+    const where = (k) => `${file}: question ${JSON.stringify(q)}: ${k}`;
+    let m = base;
+    try { if (loc != null) m = withLocation(base, loc, "market"); m = languageFor(m, q, language ?? flags.language); } catch (e) { throw new Error(where(e.message)); }
+    return { q, m };
+  });
   const delay = deps.delayMs ?? 1200;
   const domain = new URL(site.url).hostname;
   const answers = [];
-  for (const [i, { q, market }] of questions.entries()) {
+  for (const [i, { q, m }] of planned.entries()) {
+    const market = marketLabel(m);
     if (i) await sleep(delay);
-    try { answers.push({ q, market, ...(await provider.search(q, market, { fetch: deps.fetch || globalThis.fetch, env })) }); }
+    try { answers.push({ q, market, ...(await provider.search(q, m, { fetch: deps.fetch || globalThis.fetch, env })) }); }
     catch (e) { answers.push({ q, market, error: e.message }); console.log(`citations: "${q}" failed: ${e.message}`); }
   }
   const r = analyseCitations({ domain, answers });

@@ -1,0 +1,1231 @@
+{
+  "version": "0.1.20261117",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "cost": 0.0132,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "cost": 0.0132,
+      "result_count": 1,
+      "path": [
+        "v3",
+        "dataforseo_labs",
+        "google",
+        "keyword_ideas",
+        "live"
+      ],
+      "data": {
+        "api": "dataforseo_labs",
+        "function": "keyword_ideas",
+        "se_type": "google",
+        "keywords": [
+          "أحذية رياضية"
+        ],
+        "location_code": 2682,
+        "language_code": "ar",
+        "limit": 10
+      },
+      "result": [
+        {
+          "se_type": "google",
+          "seed_keywords": [
+            "أحذية رياضية"
+          ],
+          "location_code": 2682,
+          "language_code": "ar",
+          "total_count": 7163,
+          "items_count": 10,
+          "offset": 0,
+          "items": [
+            {
+              "se_type": "google",
+              "keyword": "أحذية ركني",
+              "location_code": 2682,
+              "language_code": "ar",
+              "keyword_info": {
+                "se_type": "google",
+                "last_updated_time": "<redacted-timestamp>",
+                "competition": 0.2,
+                "competition_level": "LOW",
+                "cpc": 0.47,
+                "search_volume": 8100,
+                "low_top_of_page_bid": 0.14,
+                "high_top_of_page_bid": 0.49,
+                "categories": [
+                  10014,
+                  10021,
+                  10115,
+                  10177,
+                  10619
+                ],
+                "monthly_searches": [
+                  {
+                    "year": 2026,
+                    "month": 10,
+                    "search_volume": 6600
+                  },
+                  {
+                    "year": 2026,
+                    "month": 9,
+                    "search_volume": 9900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 8,
+                    "search_volume": 8100
+                  },
+                  {
+                    "year": 2026,
+                    "month": 7,
+                    "search_volume": 2900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 6,
+                    "search_volume": 6600
+                  },
+                  {
+                    "year": 2026,
+                    "month": 5,
+                    "search_volume": 4400
+                  },
+                  {
+                    "year": 2026,
+                    "month": 4,
+                    "search_volume": 2400
+                  },
+                  {
+                    "year": 2026,
+                    "month": 3,
+                    "search_volume": 18100
+                  },
+                  {
+                    "year": 2026,
+                    "month": 2,
+                    "search_volume": 12100
+                  },
+                  {
+                    "year": 2026,
+                    "month": 1,
+                    "search_volume": 9900
+                  },
+                  {
+                    "year": 2025,
+                    "month": 12,
+                    "search_volume": 12100
+                  },
+                  {
+                    "year": 2025,
+                    "month": 11,
+                    "search_volume": 9900
+                  }
+                ],
+                "search_volume_trend": {
+                  "monthly": -33,
+                  "quarterly": -19,
+                  "yearly": 83
+                }
+              },
+              "keyword_info_normalized_with_bing": null,
+              "keyword_info_normalized_with_clickstream": null,
+              "clickstream_keyword_info": null,
+              "keyword_properties": {
+                "se_type": "google",
+                "core_keyword": null,
+                "synonym_clustering_algorithm": "keyword_metrics",
+                "keyword_difficulty": 0,
+                "detected_language": "ar",
+                "is_another_language": false,
+                "words_count": 2
+              },
+              "serp_info": null,
+              "avg_backlinks_info": null,
+              "search_intent_info": {
+                "se_type": "google",
+                "main_intent": "informational",
+                "foreign_intent": [
+                  "transactional"
+                ],
+                "last_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword": "احذية سكيتشرز",
+              "location_code": 2682,
+              "language_code": "ar",
+              "keyword_info": {
+                "se_type": "google",
+                "last_updated_time": "<redacted-timestamp>",
+                "competition": 1,
+                "competition_level": "HIGH",
+                "cpc": 0.32,
+                "search_volume": 2400,
+                "low_top_of_page_bid": 0.08,
+                "high_top_of_page_bid": 0.36,
+                "categories": [
+                  10014,
+                  10021,
+                  10115,
+                  10177,
+                  10619,
+                  10931
+                ],
+                "monthly_searches": [
+                  {
+                    "year": 2026,
+                    "month": 10,
+                    "search_volume": 1900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 9,
+                    "search_volume": 2900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 8,
+                    "search_volume": 3600
+                  },
+                  {
+                    "year": 2026,
+                    "month": 7,
+                    "search_volume": 2900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 6,
+                    "search_volume": 1600
+                  },
+                  {
+                    "year": 2026,
+                    "month": 5,
+                    "search_volume": 2400
+                  },
+                  {
+                    "year": 2026,
+                    "month": 4,
+                    "search_volume": 1900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 3,
+                    "search_volume": 2400
+                  },
+                  {
+                    "year": 2026,
+                    "month": 2,
+                    "search_volume": 1900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 1,
+                    "search_volume": 1900
+                  },
+                  {
+                    "year": 2025,
+                    "month": 12,
+                    "search_volume": 2400
+                  },
+                  {
+                    "year": 2025,
+                    "month": 11,
+                    "search_volume": 2400
+                  }
+                ],
+                "search_volume_trend": {
+                  "monthly": -34,
+                  "quarterly": -47,
+                  "yearly": 0
+                }
+              },
+              "keyword_info_normalized_with_bing": null,
+              "keyword_info_normalized_with_clickstream": null,
+              "clickstream_keyword_info": null,
+              "keyword_properties": {
+                "se_type": "google",
+                "core_keyword": null,
+                "synonym_clustering_algorithm": "keyword_metrics",
+                "keyword_difficulty": 7,
+                "detected_language": "ar",
+                "is_another_language": false,
+                "words_count": 2
+              },
+              "serp_info": null,
+              "avg_backlinks_info": {
+                "se_type": "google",
+                "backlinks": 38075.6,
+                "dofollow": 34649.4,
+                "referring_pages": 35518.6,
+                "referring_domains": 267.4,
+                "referring_main_domains": 248.3,
+                "rank": 93.4,
+                "main_domain_rank": 416.3,
+                "last_updated_time": "<redacted-timestamp>"
+              },
+              "search_intent_info": {
+                "se_type": "google",
+                "main_intent": "informational",
+                "foreign_intent": null,
+                "last_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword": "احذية رياضية",
+              "location_code": 2682,
+              "language_code": "ar",
+              "keyword_info": {
+                "se_type": "google",
+                "last_updated_time": "<redacted-timestamp>",
+                "competition": 1,
+                "competition_level": "HIGH",
+                "cpc": 0.46,
+                "search_volume": 2400,
+                "low_top_of_page_bid": 0.19,
+                "high_top_of_page_bid": 0.7,
+                "categories": [
+                  10014,
+                  10021,
+                  10115,
+                  10177,
+                  10619
+                ],
+                "monthly_searches": [
+                  {
+                    "year": 2026,
+                    "month": 10,
+                    "search_volume": 2400
+                  },
+                  {
+                    "year": 2026,
+                    "month": 9,
+                    "search_volume": 2900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 8,
+                    "search_volume": 3600
+                  },
+                  {
+                    "year": 2026,
+                    "month": 7,
+                    "search_volume": 2900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 6,
+                    "search_volume": 1900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 5,
+                    "search_volume": 2400
+                  },
+                  {
+                    "year": 2026,
+                    "month": 4,
+                    "search_volume": 2400
+                  },
+                  {
+                    "year": 2026,
+                    "month": 3,
+                    "search_volume": 1900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 2,
+                    "search_volume": 1900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 1,
+                    "search_volume": 2400
+                  },
+                  {
+                    "year": 2025,
+                    "month": 12,
+                    "search_volume": 2400
+                  },
+                  {
+                    "year": 2025,
+                    "month": 11,
+                    "search_volume": 2400
+                  }
+                ],
+                "search_volume_trend": {
+                  "monthly": -17,
+                  "quarterly": -33,
+                  "yearly": -17
+                }
+              },
+              "keyword_info_normalized_with_bing": null,
+              "keyword_info_normalized_with_clickstream": null,
+              "clickstream_keyword_info": null,
+              "keyword_properties": {
+                "se_type": "google",
+                "core_keyword": null,
+                "synonym_clustering_algorithm": "keyword_metrics",
+                "keyword_difficulty": 0,
+                "detected_language": "ar",
+                "is_another_language": false,
+                "words_count": 2
+              },
+              "serp_info": null,
+              "avg_backlinks_info": {
+                "se_type": "google",
+                "backlinks": 7,
+                "dofollow": 5.3,
+                "referring_pages": 5.8,
+                "referring_domains": 4.1,
+                "referring_main_domains": 3.5,
+                "rank": 40.7,
+                "main_domain_rank": 319.8,
+                "last_updated_time": "<redacted-timestamp>"
+              },
+              "search_intent_info": {
+                "se_type": "google",
+                "main_intent": "commercial",
+                "foreign_intent": [
+                  "informational"
+                ],
+                "last_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword": "أحذية نسائيه",
+              "location_code": 2682,
+              "language_code": "ar",
+              "keyword_info": {
+                "se_type": "google",
+                "last_updated_time": "<redacted-timestamp>",
+                "competition": 1,
+                "competition_level": "HIGH",
+                "cpc": 0.44,
+                "search_volume": 2900,
+                "low_top_of_page_bid": 0.24,
+                "high_top_of_page_bid": 0.94,
+                "categories": [
+                  10014,
+                  10021,
+                  10115,
+                  10177,
+                  10931
+                ],
+                "monthly_searches": [
+                  {
+                    "year": 2026,
+                    "month": 10,
+                    "search_volume": 1900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 9,
+                    "search_volume": 1900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 8,
+                    "search_volume": 2900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 7,
+                    "search_volume": 2900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 6,
+                    "search_volume": 1900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 5,
+                    "search_volume": 2900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 4,
+                    "search_volume": 2400
+                  },
+                  {
+                    "year": 2026,
+                    "month": 3,
+                    "search_volume": 5400
+                  },
+                  {
+                    "year": 2026,
+                    "month": 2,
+                    "search_volume": 1900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 1,
+                    "search_volume": 2400
+                  },
+                  {
+                    "year": 2025,
+                    "month": 12,
+                    "search_volume": 2400
+                  },
+                  {
+                    "year": 2025,
+                    "month": 11,
+                    "search_volume": 2400
+                  }
+                ],
+                "search_volume_trend": {
+                  "monthly": 0,
+                  "quarterly": -34,
+                  "yearly": 0
+                }
+              },
+              "keyword_info_normalized_with_bing": null,
+              "keyword_info_normalized_with_clickstream": null,
+              "clickstream_keyword_info": null,
+              "keyword_properties": {
+                "se_type": "google",
+                "core_keyword": null,
+                "synonym_clustering_algorithm": null,
+                "keyword_difficulty": null,
+                "detected_language": "ar",
+                "is_another_language": false,
+                "words_count": 2
+              },
+              "serp_info": null,
+              "avg_backlinks_info": null,
+              "search_intent_info": {
+                "se_type": "google",
+                "main_intent": "informational",
+                "foreign_intent": null,
+                "last_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword": "أحذية فلورينا",
+              "location_code": 2682,
+              "language_code": "ar",
+              "keyword_info": {
+                "se_type": "google",
+                "last_updated_time": "<redacted-timestamp>",
+                "competition": 1,
+                "competition_level": "HIGH",
+                "cpc": 0.36,
+                "search_volume": 1900,
+                "low_top_of_page_bid": 0.2,
+                "high_top_of_page_bid": 0.76,
+                "categories": [
+                  10014,
+                  10021,
+                  10115,
+                  10177
+                ],
+                "monthly_searches": [
+                  {
+                    "year": 2026,
+                    "month": 10,
+                    "search_volume": 1000
+                  },
+                  {
+                    "year": 2026,
+                    "month": 9,
+                    "search_volume": 3600
+                  },
+                  {
+                    "year": 2026,
+                    "month": 8,
+                    "search_volume": 2900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 7,
+                    "search_volume": 1300
+                  },
+                  {
+                    "year": 2026,
+                    "month": 6,
+                    "search_volume": 1000
+                  },
+                  {
+                    "year": 2026,
+                    "month": 5,
+                    "search_volume": 1300
+                  },
+                  {
+                    "year": 2026,
+                    "month": 4,
+                    "search_volume": 1000
+                  },
+                  {
+                    "year": 2026,
+                    "month": 3,
+                    "search_volume": 2900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 2,
+                    "search_volume": 1900
+                  },
+                  {
+                    "year": 2026,
+                    "month": 1,
+                    "search_volume": 1300
+                  },
+                  {
+                    "year": 2025,
+                    "month": 12,
+                    "search_volume": 1600
+                  },
+                  {
+                    "year": 2025,
+                    "month": 11,
+                    "search_volume": 1600
+                  }
+                ],
+                "search_volume_trend": {
+                  "monthly": -72,
+                  "quarterly": -66,
+                  "yearly": -38
+                }
+              },
+              "keyword_info_normalized_with_bing": null,
+              "keyword_info_normalized_with_clickstream": null,
+              "clickstream_keyword_info": null,
+              "keyword_properties": {
+                "se_type": "google",
+                "core_keyword": null,
+                "synonym_clustering_algorithm": "keyword_metrics",
+                "keyword_difficulty": 0,
+                "detected_language": "ar",
+                "is_another_language": false,
+                "words_count": 2
+              },
+              "serp_info": null,
+              "avg_backlinks_info": {
+                "se_type": "google",
+                "backlinks": 25.5,
+                "dofollow": 11,
+                "referring_pages": 22.1,
+                "referring_domains": 10.4,
+                "referring_main_domains": 9.7,
+                "rank": 30.3,
+                "main_domain_rank": 617.8,
+                "last_updated_time": "<redacted-timestamp>"
+              },
+              "search_intent_info": {
+                "se_type": "google",
+                "main_intent": "informational",
+                "foreign_intent": null,
+                "last_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword": "أحذية هوكا",
+              "location_code": 2682,
+              "language_code": "ar",
+              "keyword_info": {
+                "se_type": "google",
+                "last_updated_time": "<redacted-timestamp>",
+                "competition": 1,
+                "competition_level": "HIGH",
+                "cpc": 0.49,
+                "search_volume": 1300,
+                "low_top_of_page_bid": 0.1,
+                "high_top_of_page_bid": 0.44,
+                "categories": [
+                  10014,
+                  10021,
+                  10115,
+                  10177,
+                  10619
+                ],
+                "monthly_searches": [
+                  {
+                    "year": 2026,
+                    "month": 10,
+                    "search_volume": 1600
+                  },
+                  {
+                    "year": 2026,
+                    "month": 9,
+                    "search_volume": 1600
+                  },
+                  {
+                    "year": 2026,
+                    "month": 8,
+                    "search_volume": 2400
+                  },
+                  {
+                    "year": 2026,
+                    "month": 7,
+                    "search_volume": 1600
+                  },
+                  {
+                    "year": 2026,
+                    "month": 6,
+                    "search_volume": 1300
+                  },
+                  {
+                    "year": 2026,
+                    "month": 5,
+                    "search_volume": 1300
+                  },
+                  {
+                    "year": 2026,
+                    "month": 4,
+                    "search_volume": 1000
+                  },
+                  {
+                    "year": 2026,
+                    "month": 3,
+                    "search_volume": 880
+                  },
+                  {
+                    "year": 2026,
+                    "month": 2,
+                    "search_volume": 880
+                  },
+                  {
+                    "year": 2026,
+                    "month": 1,
+                    "search_volume": 880
+                  },
+                  {
+                    "year": 2025,
+                    "month": 12,
+                    "search_volume": 720
+                  },
+                  {
+                    "year": 2025,
+                    "month": 11,
+                    "search_volume": 720
+                  }
+                ],
+                "search_volume_trend": {
+                  "monthly": 0,
+                  "quarterly": -33,
+                  "yearly": 233
+                }
+              },
+              "keyword_info_normalized_with_bing": null,
+              "keyword_info_normalized_with_clickstream": null,
+              "clickstream_keyword_info": null,
+              "keyword_properties": {
+                "se_type": "google",
+                "core_keyword": null,
+                "synonym_clustering_algorithm": "keyword_metrics",
+                "keyword_difficulty": 8,
+                "detected_language": "ar",
+                "is_another_language": false,
+                "words_count": 2
+              },
+              "serp_info": null,
+              "avg_backlinks_info": {
+                "se_type": "google",
+                "backlinks": 4240.5,
+                "dofollow": 1483.2,
+                "referring_pages": 3354.1,
+                "referring_domains": 286.3,
+                "referring_main_domains": 260.4,
+                "rank": 106.9,
+                "main_domain_rank": 333.4,
+                "last_updated_time": "<redacted-timestamp>"
+              },
+              "search_intent_info": {
+                "se_type": "google",
+                "main_intent": "informational",
+                "foreign_intent": null,
+                "last_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword": "حذاء رياضي رجالي",
+              "location_code": 2682,
+              "language_code": "ar",
+              "keyword_info": {
+                "se_type": "google",
+                "last_updated_time": "<redacted-timestamp>",
+                "competition": 1,
+                "competition_level": "HIGH",
+                "cpc": 0.96,
+                "search_volume": 590,
+                "low_top_of_page_bid": 0.26,
+                "high_top_of_page_bid": 1.86,
+                "categories": [
+                  10014,
+                  10021,
+                  10021,
+                  10115,
+                  10177,
+                  10177,
+                  10619
+                ],
+                "monthly_searches": [
+                  {
+                    "year": 2026,
+                    "month": 10,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2026,
+                    "month": 9,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2026,
+                    "month": 8,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2026,
+                    "month": 7,
+                    "search_volume": 720
+                  },
+                  {
+                    "year": 2026,
+                    "month": 6,
+                    "search_volume": 480
+                  },
+                  {
+                    "year": 2026,
+                    "month": 5,
+                    "search_volume": 480
+                  },
+                  {
+                    "year": 2026,
+                    "month": 4,
+                    "search_volume": 480
+                  },
+                  {
+                    "year": 2026,
+                    "month": 3,
+                    "search_volume": 480
+                  },
+                  {
+                    "year": 2026,
+                    "month": 2,
+                    "search_volume": 480
+                  },
+                  {
+                    "year": 2026,
+                    "month": 1,
+                    "search_volume": 480
+                  },
+                  {
+                    "year": 2025,
+                    "month": 12,
+                    "search_volume": 480
+                  },
+                  {
+                    "year": 2025,
+                    "month": 11,
+                    "search_volume": 480
+                  }
+                ],
+                "search_volume_trend": {
+                  "monthly": 0,
+                  "quarterly": 0,
+                  "yearly": 0
+                }
+              },
+              "keyword_info_normalized_with_bing": null,
+              "keyword_info_normalized_with_clickstream": null,
+              "clickstream_keyword_info": null,
+              "keyword_properties": {
+                "se_type": "google",
+                "core_keyword": null,
+                "synonym_clustering_algorithm": "text_processing",
+                "keyword_difficulty": 0,
+                "detected_language": "ar",
+                "is_another_language": false,
+                "words_count": 3
+              },
+              "serp_info": null,
+              "avg_backlinks_info": {
+                "se_type": "google",
+                "backlinks": 5,
+                "dofollow": 4.3,
+                "referring_pages": 4.8,
+                "referring_domains": 3.1,
+                "referring_main_domains": 3.1,
+                "rank": 34.4,
+                "main_domain_rank": 336.6,
+                "last_updated_time": "<redacted-timestamp>"
+              },
+              "search_intent_info": {
+                "se_type": "google",
+                "main_intent": "informational",
+                "foreign_intent": null,
+                "last_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword": "احذية نايك",
+              "location_code": 2682,
+              "language_code": "ar",
+              "keyword_info": {
+                "se_type": "google",
+                "last_updated_time": "<redacted-timestamp>",
+                "competition": 1,
+                "competition_level": "HIGH",
+                "cpc": 0.82,
+                "search_volume": 590,
+                "low_top_of_page_bid": 0.22,
+                "high_top_of_page_bid": 2.66,
+                "categories": [
+                  10014,
+                  10115
+                ],
+                "monthly_searches": [
+                  {
+                    "year": 2026,
+                    "month": 10,
+                    "search_volume": 480
+                  },
+                  {
+                    "year": 2026,
+                    "month": 9,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2026,
+                    "month": 8,
+                    "search_volume": 880
+                  },
+                  {
+                    "year": 2026,
+                    "month": 7,
+                    "search_volume": 720
+                  },
+                  {
+                    "year": 2026,
+                    "month": 6,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2026,
+                    "month": 5,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2026,
+                    "month": 4,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2026,
+                    "month": 3,
+                    "search_volume": 720
+                  },
+                  {
+                    "year": 2026,
+                    "month": 2,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2026,
+                    "month": 1,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2025,
+                    "month": 12,
+                    "search_volume": 720
+                  },
+                  {
+                    "year": 2025,
+                    "month": 11,
+                    "search_volume": 720
+                  }
+                ],
+                "search_volume_trend": {
+                  "monthly": -19,
+                  "quarterly": -45,
+                  "yearly": -33
+                }
+              },
+              "keyword_info_normalized_with_bing": null,
+              "keyword_info_normalized_with_clickstream": null,
+              "clickstream_keyword_info": null,
+              "keyword_properties": {
+                "se_type": "google",
+                "core_keyword": "نايك احذية",
+                "synonym_clustering_algorithm": "text_processing",
+                "keyword_difficulty": 14,
+                "detected_language": "ar",
+                "is_another_language": false,
+                "words_count": 2
+              },
+              "serp_info": null,
+              "avg_backlinks_info": {
+                "se_type": "google",
+                "backlinks": 6.4,
+                "dofollow": 5.8,
+                "referring_pages": 6.4,
+                "referring_domains": 3.3,
+                "referring_main_domains": 2.3,
+                "rank": 121.8,
+                "main_domain_rank": 442.9,
+                "last_updated_time": "<redacted-timestamp>"
+              },
+              "search_intent_info": {
+                "se_type": "google",
+                "main_intent": "informational",
+                "foreign_intent": null,
+                "last_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword": "حذاء اديداس رجالي",
+              "location_code": 2682,
+              "language_code": "ar",
+              "keyword_info": {
+                "se_type": "google",
+                "last_updated_time": "<redacted-timestamp>",
+                "competition": 1,
+                "competition_level": "HIGH",
+                "cpc": 0.46,
+                "search_volume": 590,
+                "low_top_of_page_bid": 0.14,
+                "high_top_of_page_bid": 0.54,
+                "categories": [
+                  10014,
+                  10021,
+                  10115,
+                  10177,
+                  10619
+                ],
+                "monthly_searches": [
+                  {
+                    "year": 2026,
+                    "month": 10,
+                    "search_volume": 480
+                  },
+                  {
+                    "year": 2026,
+                    "month": 9,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2026,
+                    "month": 8,
+                    "search_volume": 720
+                  },
+                  {
+                    "year": 2026,
+                    "month": 7,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2026,
+                    "month": 6,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2026,
+                    "month": 5,
+                    "search_volume": 480
+                  },
+                  {
+                    "year": 2026,
+                    "month": 4,
+                    "search_volume": 480
+                  },
+                  {
+                    "year": 2026,
+                    "month": 3,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2026,
+                    "month": 2,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2026,
+                    "month": 1,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2025,
+                    "month": 12,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2025,
+                    "month": 11,
+                    "search_volume": 720
+                  }
+                ],
+                "search_volume_trend": {
+                  "monthly": -19,
+                  "quarterly": -33,
+                  "yearly": -19
+                }
+              },
+              "keyword_info_normalized_with_bing": null,
+              "keyword_info_normalized_with_clickstream": null,
+              "clickstream_keyword_info": null,
+              "keyword_properties": {
+                "se_type": "google",
+                "core_keyword": null,
+                "synonym_clustering_algorithm": "text_processing",
+                "keyword_difficulty": 0,
+                "detected_language": "ar",
+                "is_another_language": false,
+                "words_count": 3
+              },
+              "serp_info": null,
+              "avg_backlinks_info": {
+                "se_type": "google",
+                "backlinks": 71.5,
+                "dofollow": 32.1,
+                "referring_pages": 50.9,
+                "referring_domains": 11.4,
+                "referring_main_domains": 5.3,
+                "rank": 39.7,
+                "main_domain_rank": 325.1,
+                "last_updated_time": "<redacted-timestamp>"
+              },
+              "search_intent_info": {
+                "se_type": "google",
+                "main_intent": "informational",
+                "foreign_intent": null,
+                "last_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword": "احذية رياضية رجالية",
+              "location_code": 2682,
+              "language_code": "ar",
+              "keyword_info": {
+                "se_type": "google",
+                "last_updated_time": "<redacted-timestamp>",
+                "competition": 1,
+                "competition_level": "HIGH",
+                "cpc": 0.8,
+                "search_volume": 590,
+                "low_top_of_page_bid": 0.21,
+                "high_top_of_page_bid": 0.86,
+                "categories": [
+                  10014,
+                  10115
+                ],
+                "monthly_searches": [
+                  {
+                    "year": 2026,
+                    "month": 10,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2026,
+                    "month": 9,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2026,
+                    "month": 8,
+                    "search_volume": 720
+                  },
+                  {
+                    "year": 2026,
+                    "month": 7,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2026,
+                    "month": 6,
+                    "search_volume": 480
+                  },
+                  {
+                    "year": 2026,
+                    "month": 5,
+                    "search_volume": 480
+                  },
+                  {
+                    "year": 2026,
+                    "month": 4,
+                    "search_volume": 590
+                  },
+                  {
+                    "year": 2026,
+                    "month": 3,
+                    "search_volume": 480
+                  },
+                  {
+                    "year": 2026,
+                    "month": 2,
+                    "search_volume": 480
+                  },
+                  {
+                    "year": 2026,
+                    "month": 1,
+                    "search_volume": 720
+                  },
+                  {
+                    "year": 2025,
+                    "month": 12,
+                    "search_volume": 720
+                  },
+                  {
+                    "year": 2025,
+                    "month": 11,
+                    "search_volume": 720
+                  }
+                ],
+                "search_volume_trend": {
+                  "monthly": 0,
+                  "quarterly": -18,
+                  "yearly": -18
+                }
+              },
+              "keyword_info_normalized_with_bing": null,
+              "keyword_info_normalized_with_clickstream": null,
+              "clickstream_keyword_info": null,
+              "keyword_properties": {
+                "se_type": "google",
+                "core_keyword": null,
+                "synonym_clustering_algorithm": "text_processing",
+                "keyword_difficulty": 0,
+                "detected_language": "ar",
+                "is_another_language": false,
+                "words_count": 3
+              },
+              "serp_info": null,
+              "avg_backlinks_info": {
+                "se_type": "google",
+                "backlinks": 6.5,
+                "dofollow": 5.1,
+                "referring_pages": 5.7,
+                "referring_domains": 3.9,
+                "referring_main_domains": 3.2,
+                "rank": 42.6,
+                "main_domain_rank": 300.9,
+                "last_updated_time": "<redacted-timestamp>"
+              },
+              "search_intent_info": {
+                "se_type": "google",
+                "main_intent": "commercial",
+                "foreign_intent": [
+                  "informational"
+                ],
+                "last_updated_time": "<redacted-timestamp>"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

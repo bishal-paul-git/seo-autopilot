@@ -17,7 +17,7 @@ async function help() {
   console.log(`seo-autopilot ${pkg.version}
 
 Usage
-  seo-autopilot init --url https://example.com/    scaffold config, data files and GitHub workflows
+  seo-autopilot init --url https://example.com/ [--market 2682:ar,en]   scaffold config (market = location:language), data files and workflows
   seo-autopilot doctor                              check the setup and say what to fix
   seo-autopilot upgrade [--apply] [--diff] [--force]  bring workflows, playbooks and agents up to date (reports only without flags)
   seo-autopilot run <job> [--site id] [--dry]       run one job

@@ -13,6 +13,7 @@ import { brave, serpapi, dataforseo, pickProvider, domainOf } from "../src/lib/s
 import { routeAgents } from "../src/analysis/agent-router.mjs";
 import { validate, DEFAULTS } from "../src/core/config.mjs";
 import { JOBS } from "../src/jobs/index.mjs";
+import { UK, SA_AR, SA_EN, CONFIG } from "./market-fixtures.mjs";
 
 const GA = `<script async src="https://www.googletagmanager.com/gtag/js?id=G-ABC123"></script><script>gtag('config','G-ABC123')</script>`;
 
@@ -149,9 +150,9 @@ test("serp: provider selection follows the environment", () => {
 test("serp: brave sends the documented request and normalises results", async () => {
   let seen;
   const fetch = async (url, init) => { seen = { url: new URL(url), init }; return jsonRes({ web: { results: [{ title: "T1", url: "https://www.a.com/x" }, { title: "T2", url: "https://b.com/y" }] } }); };
-  const r = await brave.search("best widgets", "UK", { fetch, env: { BRAVE_API_KEY: "secret" } });
+  const r = await brave.search("best widgets", UK, { fetch, env: { BRAVE_API_KEY: "secret" } });
   assert.equal(seen.url.origin + seen.url.pathname, "https://api.search.brave.com/res/v1/web/search");
-  assert.equal(seen.url.searchParams.get("country"), "GB");
+  assert.equal(seen.url.searchParams.get("country"), "GB"); assert.equal(seen.url.searchParams.get("search_lang"), "en");
   assert.equal(seen.url.searchParams.get("q"), "best widgets");
   assert.equal(seen.init.headers["X-Subscription-Token"], "secret");
   assert.deepEqual(r.results[0], { url: "https://www.a.com/x", domain: "a.com", title: "T1", position: 1 });
@@ -166,12 +167,12 @@ test("serp: serpapi reads organic results and AI Overview references, and follow
     if (u.searchParams.get("engine") === "google_ai_overview") return jsonRes({ ai_overview: { references: [{ title: "S", link: "https://src.org/p", source: "Src" }] } });
     return jsonRes({ organic_results: [{ position: 1, title: "A", link: "https://a.com/1" }, { position: 2, title: "B", link: "https://me.com/2" }], ai_overview: { page_token: "tok" } });
   };
-  const r = await serpapi.search("q", "GB", { fetch, env: { SERPAPI_KEY: "k" } });
-  assert.equal(calls[0].searchParams.get("gl"), "uk");
+  const r = await serpapi.search("q", UK, { fetch, env: { SERPAPI_KEY: "k" } });
+  assert.equal(calls[0].searchParams.get("gl"), "uk"); assert.equal(calls[0].searchParams.get("hl"), "en");
   assert.equal(calls[1].searchParams.get("page_token"), "tok");
   assert.equal(r.results[1].position, 2);
   assert.deepEqual(r.aiSources, [{ url: "https://src.org/p", domain: "src.org" }]);
-  const direct = await serpapi.search("q", "GB", { fetch: async () => jsonRes({ organic_results: [], ai_overview: { references: [{ link: "https://d.com/z" }] } }), env: { SERPAPI_KEY: "k" } });
+  const direct = await serpapi.search("q", UK, { fetch: async () => jsonRes({ organic_results: [], ai_overview: { references: [{ link: "https://d.com/z" }] } }), env: { SERPAPI_KEY: "k" } });
   assert.equal(direct.aiSources[0].domain, "d.com");
 });
 
@@ -185,22 +186,44 @@ test("serp: dataforseo posts one task with Basic auth and reads organic and ai_o
       { type: "people_also_ask" },
     ] }] }] });
   };
-  const r = await dataforseo.search("q", "GB", { fetch, env: { DATAFORSEO_LOGIN: "l", DATAFORSEO_PASSWORD: "p" } });
+  const r = await dataforseo.search("q", UK, { fetch, env: { DATAFORSEO_LOGIN: "l", DATAFORSEO_PASSWORD: "p" } });
   assert.equal(seen.url, "https://api.dataforseo.com/v3/serp/google/organic/live/advanced");
   assert.equal(seen.init.headers.Authorization, "Basic " + Buffer.from("l:p").toString("base64"));
   const body = JSON.parse(seen.init.body);
   assert.equal(body.length, 1);
-  assert.equal(body[0].location_name, "United Kingdom");
+  assert.equal(body[0].location_code, 2826); assert.equal(body[0].language_code, "en"); assert.equal(body[0].location_name, undefined, "the numeric code is sent, never a name looked up from a default");
   assert.deepEqual(r.results, [{ url: "https://me.com/p", domain: "me.com", title: "Me", position: 3 }]);
   assert.deepEqual(r.aiSources, [{ url: "https://www.cited.com/a", domain: "cited.com" }]);
+});
+
+test("serp: a Saudi site sends 2682 and Arabic for its Arabic pages and 2682 and English for its English pages, on every provider", async () => {
+  const sent = [];
+  const fetch = async (url, init) => { sent.push({ url: new URL(url), body: init?.body ? JSON.parse(init.body)[0] : null }); return jsonRes({ tasks: [{ status_code: 20000, result: [{ items: [] }] }], web: { results: [] }, organic_results: [] }); };
+  await dataforseo.search("q", SA_AR, { fetch, env: { DATAFORSEO_LOGIN: "l", DATAFORSEO_PASSWORD: "p" } });
+  await dataforseo.search("q", SA_EN, { fetch, env: { DATAFORSEO_LOGIN: "l", DATAFORSEO_PASSWORD: "p" } });
+  assert.deepEqual(sent.map((s) => [s.body.location_code, s.body.language_code]), [[2682, "ar"], [2682, "en"]]);
+  sent.length = 0;
+  await brave.search("q", SA_AR, { fetch, env: { BRAVE_API_KEY: "k" } });
+  await serpapi.search("q", SA_EN, { fetch, env: { SERPAPI_KEY: "k" } });
+  assert.deepEqual([sent[0].url.searchParams.get("country"), sent[0].url.searchParams.get("search_lang")], ["SA", "ar"]);
+  assert.deepEqual([sent[1].url.searchParams.get("gl"), sent[1].url.searchParams.get("hl")], ["sa", "en"]);
+});
+
+test("serp: a call without a resolved market throws before any request (no UK default, no bare country code)", async () => {
+  let calls = 0;
+  const fetch = async () => { calls++; return jsonRes({}); };
+  for (const [p, env] of [[brave, { BRAVE_API_KEY: "k" }], [serpapi, { SERPAPI_KEY: "k" }], [dataforseo, { DATAFORSEO_LOGIN: "l", DATAFORSEO_PASSWORD: "p" }]]) {
+    for (const bad of [undefined, null, "GB", "UK", { country: "GB" }]) await assert.rejects(() => p.search("q", bad, { fetch, env }), /no market given/, `${p.name} with ${JSON.stringify(bad)}`);
+  }
+  assert.equal(calls, 0);
 });
 
 test("serp: errors never contain the key", async () => {
   const fetch = async () => jsonRes({}, 401);
   for (const [p, env] of [[brave, { BRAVE_API_KEY: "TOPSECRET" }], [serpapi, { SERPAPI_KEY: "TOPSECRET" }], [dataforseo, { DATAFORSEO_LOGIN: "TOPSECRET", DATAFORSEO_PASSWORD: "TOPSECRET" }]]) {
-    await assert.rejects(() => p.search("q", "GB", { fetch, env }), (e) => /401/.test(e.message) && !/TOPSECRET/.test(e.message));
+    await assert.rejects(() => p.search("q", UK, { fetch, env }), (e) => /401/.test(e.message) && !/TOPSECRET/.test(e.message));
   }
-  await assert.rejects(() => serpapi.search("q", "GB", { fetch: async () => { throw new Error("https://serpapi.com/?api_key=TOPSECRET"); }, env: { SERPAPI_KEY: "TOPSECRET" } }), (e) => !/TOPSECRET/.test(e.message));
+  await assert.rejects(() => serpapi.search("q", UK, { fetch: async () => { throw new Error("https://serpapi.com/?api_key=TOPSECRET"); }, env: { SERPAPI_KEY: "TOPSECRET" } }), (e) => !/TOPSECRET/.test(e.message));
 });
 
 // ---------- citations analysis ----------
@@ -238,8 +261,8 @@ test("citations: history keeps the last 26 runs, one per day, and the trend grou
 });
 
 test("citations: questions accept strings and objects, skip the placeholder note, cap at 40", () => {
-  const q = normaliseQuestions(["REPLACE THESE: x", "a?", { q: "b?", market: "US" }, "", { nope: 1 }]);
-  assert.deepEqual(q, [{ q: "a?", market: "GB" }, { q: "b?", market: "US" }]);
+  const q = normaliseQuestions(["REPLACE THESE: x", "a?", { q: "b?", market: "US", language: "en" }, "", { nope: 1 }]);
+  assert.deepEqual(q, [{ q: "a?" }, { q: "b?", market: "US", language: "en" }], "no market or language is filled in for a question that does not state one");
   assert.equal(normaliseQuestions(Array.from({ length: 100 }, (_, i) => `q${i}`)).length, MAX_QUESTIONS);
 });
 
@@ -257,7 +280,7 @@ test("the four jobs are registered and describe themselves", async () => {
 });
 
 test("citations job: no key prints how to enable one and exits cleanly; with a mocked provider it writes history and the report", async () => {
-  const { site, state, data } = tmpSite();
+  const { site, state, data } = tmpSite({ market: CONFIG.UK });
   const { run } = await JOBS.citations();
   const out = await withLog(() => run({ site, flags: {} }, { env: {} }));
   for (const w of ["BRAVE_API_KEY", "SERPAPI_KEY", "DATAFORSEO_LOGIN", "DATAFORSEO_PASSWORD", "repository secret"]) assert.ok(out.includes(w), w);
@@ -277,6 +300,36 @@ test("citations job: no key prints how to enable one and exits cleanly; with a m
   assert.match(readFileSync(join(state, "citations.md"), "utf8"), /Most cited domains/);
   await withLog(() => run({ site, flags: {} }, { env: { BRAVE_API_KEY: "k" }, fetch: async () => jsonRes({}, 429), delayMs: 0 }));
   assert.equal(JSON.parse(readFileSync(join(state, "citations.json"), "utf8")).errors, 3, "provider failures are recorded, not thrown");
+});
+
+test("citations job: a Saudi site researches Arabic questions in 2682/ar and English ones in 2682/en; an explicit language wins", async () => {
+  const { site, data } = tmpSite({ market: CONFIG.SA });
+  const { run } = await JOBS.citations();
+  writeFileSync(join(data, "questions.json"), JSON.stringify(["كيف أختار مزود خدمة", "how to choose a supplier for the shop", { q: "كيف أختار مزود خدمة", language: "en" }]));
+  const sent = [];
+  const fetch = async (url, init) => { sent.push(JSON.parse(init.body)[0]); return jsonRes({ tasks: [{ status_code: 20000, result: [{ items: [] }] }] }); };
+  const env = { DATAFORSEO_LOGIN: "l", DATAFORSEO_PASSWORD: "p" };
+  await withLog(() => run({ site, flags: {} }, { env, fetch, delayMs: 0 }));
+  assert.deepEqual(sent.map((b) => [b.location_code, b.language_code]), [[2682, "ar"], [2682, "en"], [2682, "en"]]);
+  sent.length = 0;
+  await withLog(() => run({ site, flags: { language: "ar" } }, { env, fetch, delayMs: 0 }));
+  assert.deepEqual(sent.map((b) => b.language_code), ["ar", "ar", "en"], "--language sets the default; a question's own language still wins");
+});
+
+test("citations job: an unknown market, or a language the site does not have, throws before any request", async () => {
+  const { site, data } = tmpSite();
+  const { run } = await JOBS.citations();
+  writeFileSync(join(data, "questions.json"), JSON.stringify(["q1?", "q2?"]));
+  let calls = 0;
+  const fetch = async () => { calls++; return jsonRes({}); };
+  const env = { BRAVE_API_KEY: "k" };
+  site.market = { location: "Atlantis", language_code: "en" };
+  await assert.rejects(() => run({ site, flags: {} }, { env, fetch, delayMs: 0 }), /market\.location: unknown location "Atlantis"/);
+  site.market = CONFIG.UK;
+  await assert.rejects(() => run({ site, flags: { language: "ar" } }, { env, fetch, delayMs: 0 }), /language: "ar" is not one of this site's languages \["en"\]/);
+  writeFileSync(join(data, "questions.json"), JSON.stringify(["q1?", { q: "q2?", language: "fr" }]));
+  await assert.rejects(() => run({ site, flags: {} }, { env, fetch, delayMs: 0 }), /question "q2\?".*"fr" is not one of/);
+  assert.equal(calls, 0, "nothing was requested, so nothing was paid for");
 });
 
 test("consent job fetches the home page and a privacy page and writes consent.json/md", async () => {

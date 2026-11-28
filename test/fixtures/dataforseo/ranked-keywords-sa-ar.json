@@ -1,0 +1,2125 @@
+{
+  "version": "0.1.20261117",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "cost": 0.0132,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "cost": 0.0132,
+      "result_count": 1,
+      "path": [
+        "v3",
+        "dataforseo_labs",
+        "google",
+        "ranked_keywords",
+        "live"
+      ],
+      "data": {
+        "api": "dataforseo_labs",
+        "function": "ranked_keywords",
+        "se_type": "google",
+        "target": "wikipedia.org",
+        "location_code": 2682,
+        "language_code": "ar",
+        "limit": 10
+      },
+      "result": [
+        {
+          "se_type": "google",
+          "target": "wikipedia.org",
+          "location_code": 2682,
+          "language_code": "ar",
+          "total_count": 877659,
+          "items_count": 10,
+          "metrics": {
+            "organic": {
+              "pos_1": 246331,
+              "pos_2_3": 177703,
+              "pos_4_10": 229744,
+              "pos_11_20": 112978,
+              "pos_21_30": 53695,
+              "pos_31_40": 27956,
+              "pos_41_50": 14584,
+              "pos_51_60": 7119,
+              "pos_61_70": 3748,
+              "pos_71_80": 2010,
+              "pos_81_90": 1189,
+              "pos_91_100": 602,
+              "etv": 53483341.700759016,
+              "count": 877659,
+              "estimated_paid_traffic_cost": 18769155.55904085,
+              "is_new": 279046,
+              "is_up": 189893,
+              "is_down": 243309,
+              "is_lost": 0,
+              "clickstream_etv": null,
+              "clickstream_gender_distribution": null,
+              "clickstream_age_distribution": null
+            },
+            "paid": {
+              "pos_1": 0,
+              "pos_2_3": 0,
+              "pos_4_10": 0,
+              "pos_11_20": 0,
+              "pos_21_30": 0,
+              "pos_31_40": 0,
+              "pos_41_50": 0,
+              "pos_51_60": 0,
+              "pos_61_70": 0,
+              "pos_71_80": 0,
+              "pos_81_90": 0,
+              "pos_91_100": 0,
+              "etv": 0,
+              "count": 0,
+              "estimated_paid_traffic_cost": 0,
+              "is_new": 0,
+              "is_up": 0,
+              "is_down": 0,
+              "is_lost": 0,
+              "clickstream_etv": null,
+              "clickstream_gender_distribution": null,
+              "clickstream_age_distribution": null
+            },
+            "featured_snippet": null,
+            "local_pack": null,
+            "ai_overview_reference": null
+          },
+          "metrics_absolute": null,
+          "items": [
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "0 degrees fahrenheit to celsius",
+                "location_code": 2682,
+                "language_code": "ar",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0.009999999776482582,
+                  "competition_level": "LOW",
+                  "cpc": null,
+                  "search_volume": 170,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10019,
+                    10108,
+                    10168,
+                    10883,
+                    12192,
+                    13426
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 10,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2026,
+                      "month": 9,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 320
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 320
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 170
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": -21,
+                    "quarterly": -21,
+                    "yearly": -35
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": "0 degrees celsius to fahrenheit",
+                  "synonym_clustering_algorithm": "text_processing",
+                  "keyword_difficulty": 12,
+                  "detected_language": "de",
+                  "is_another_language": true
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=0%20degrees%20fahrenheit%20to%20celsius&hl=ar&gl=SA&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ",
+                  "serp_item_types": [
+                    "ai_overview",
+                    "organic",
+                    "people_also_ask",
+                    "video",
+                    "related_searches"
+                  ],
+                  "se_results_count": 129,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": "<redacted-timestamp>"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 1125.0999755859375,
+                  "dofollow": 996.2000122070312,
+                  "referring_pages": 1047.199951171875,
+                  "referring_domains": 129.89999389648438,
+                  "referring_main_domains": 120.30000305175781,
+                  "rank": 92.9000015258789,
+                  "main_domain_rank": 629,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 2,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]",
+                  "domain": "en.wikipedia.org",
+                  "title": "Fahrenheit",
+                  "url": "https://en.wikipedia.org/wiki/Fahrenheit",
+                  "breadcrumb": "https://en.wikipedia.org › wiki › Fa...",
+                  "website_name": "Wikipedia",
+                  "is_image": false,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": null,
+                  "description": "Absolute zero is 0 K, −273.15 °C, or −459.67 °F. For an exact conversion between degrees value in degrees Celsius, °C: c = ⁠f − 32/1.8⁠ ・ f = c × 1.8 + 32 f ...",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "°C"
+                  ],
+                  "links": null,
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/Fahrenheit",
+                  "etv": 5.926326274871826,
+                  "estimated_paid_traffic_cost": null,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": 5,
+                    "is_new": false,
+                    "is_up": true,
+                    "is_down": false
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 1114,
+                    "referring_main_domains": 1031,
+                    "referring_pages": 5123,
+                    "dofollow": 4715,
+                    "backlinks": 5757,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 459,
+                    "main_domain_rank": 816
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=0%20degrees%20fahrenheit%20to%20celsius&hl=ar&gl=SA&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ",
+                "serp_item_types": [
+                  "ai_overview",
+                  "organic",
+                  "people_also_ask",
+                  "video",
+                  "related_searches"
+                ],
+                "se_results_count": 129,
+                "keyword_difficulty": 12,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "0 divided by",
+                "location_code": 2682,
+                "language_code": "ar",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0,
+                  "competition_level": "LOW",
+                  "cpc": null,
+                  "search_volume": 70,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10016,
+                    10141,
+                    10767
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 30
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 30
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 50
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 30
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 40
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2025,
+                      "month": 10,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2025,
+                      "month": 9,
+                      "search_volume": 90
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": 0,
+                    "quarterly": -40,
+                    "yearly": -79
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": null,
+                  "synonym_clustering_algorithm": "text_processing",
+                  "keyword_difficulty": 15,
+                  "detected_language": "en",
+                  "is_another_language": true
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=0%20divided%20by&hl=ar&gl=SA&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ",
+                  "serp_item_types": [
+                    "ai_overview",
+                    "organic",
+                    "people_also_ask",
+                    "video",
+                    "related_searches",
+                    "images"
+                  ],
+                  "se_results_count": 117,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": "<redacted-timestamp>"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 225,
+                  "dofollow": 155.6999969482422,
+                  "referring_pages": 177.5,
+                  "referring_domains": 38.099998474121094,
+                  "referring_main_domains": 33.900001525878906,
+                  "rank": 104.69999694824219,
+                  "main_domain_rank": 643.7999877929688,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 2,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]",
+                  "domain": "en.wikipedia.org",
+                  "title": "Division by zero",
+                  "url": "https://en.wikipedia.org/wiki/Division_by_zero",
+                  "breadcrumb": "https://en.wikipedia.org › wiki › Di...",
+                  "website_name": "Wikipedia",
+                  "is_image": false,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": null,
+                  "description": "Depending on the context and the type of number involved, dividing by zero may evaluate to positive or negative infinity, return a special not-a-number value, ...",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "dividing by"
+                  ],
+                  "links": null,
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/Division_by_zero",
+                  "etv": 4.8805036544799805,
+                  "estimated_paid_traffic_cost": null,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": 4,
+                    "is_new": false,
+                    "is_up": true,
+                    "is_down": false
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 306,
+                    "referring_main_domains": 269,
+                    "referring_pages": 915,
+                    "dofollow": 730,
+                    "backlinks": 1016,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 329,
+                    "main_domain_rank": 813
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=0%20divided%20by&hl=ar&gl=SA&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ",
+                "serp_item_types": [
+                  "ai_overview",
+                  "organic",
+                  "people_also_ask",
+                  "video",
+                  "related_searches",
+                  "images"
+                ],
+                "se_results_count": 117,
+                "keyword_difficulty": 15,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "0 l",
+                "location_code": 2682,
+                "language_code": "ar",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0,
+                  "competition_level": "LOW",
+                  "cpc": 0.7799999713897705,
+                  "search_volume": 480,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10004,
+                    10300,
+                    11328
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 9,
+                      "search_volume": 880
+                    },
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 880
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 720
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 720
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 720
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 590
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 390
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 260
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 210
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 210
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 210
+                    },
+                    {
+                      "year": 2025,
+                      "month": 10,
+                      "search_volume": 170
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": 0,
+                    "quarterly": 22,
+                    "yearly": 418
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": null,
+                  "synonym_clustering_algorithm": null,
+                  "keyword_difficulty": 0,
+                  "detected_language": "en",
+                  "is_another_language": true
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=0%20l&hl=ar&gl=SA&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ",
+                  "serp_item_types": [
+                    "images",
+                    "ai_overview",
+                    "organic",
+                    "related_searches"
+                  ],
+                  "se_results_count": 90,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": "<redacted-timestamp>"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 7.199999809265137,
+                  "dofollow": 5.300000190734863,
+                  "referring_pages": 5.5,
+                  "referring_domains": 2.4000000953674316,
+                  "referring_main_domains": 2.299999952316284,
+                  "rank": 36.20000076293945,
+                  "main_domain_rank": 634.5999755859375,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 3,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[2]/div[1]/div[1]/div[5]/div[1]/div[1]",
+                  "domain": "en.wikipedia.org",
+                  "title": "0L",
+                  "url": "https://en.wikipedia.org/wiki/0L",
+                  "breadcrumb": "https://en.wikipedia.org › wiki › 0L",
+                  "website_name": "Wikipedia",
+                  "is_image": false,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": null,
+                  "description": "0L (zero L) or 0-L may refer to: 0 longitude, or the prime meridian; The zeroth law of thermodynamics · Zero-length launch, in rocketry ...",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "0 longitude",
+                    "or the prime meridian"
+                  ],
+                  "links": null,
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/0L",
+                  "etv": 151.22889709472656,
+                  "estimated_paid_traffic_cost": 117.95853424072266,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": 4,
+                    "is_new": false,
+                    "is_up": true,
+                    "is_down": false
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 8,
+                    "referring_main_domains": 7,
+                    "referring_pages": 15,
+                    "dofollow": 15,
+                    "backlinks": 20,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 180,
+                    "main_domain_rank": 816
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=0%20l&hl=ar&gl=SA&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ",
+                "serp_item_types": [
+                  "images",
+                  "ai_overview",
+                  "organic",
+                  "related_searches"
+                ],
+                "se_results_count": 90,
+                "keyword_difficulty": 0,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "0 law of thermodynamics",
+                "location_code": 2682,
+                "language_code": "ar",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0,
+                  "competition_level": "LOW",
+                  "cpc": null,
+                  "search_volume": 90,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10004,
+                    10295,
+                    11175
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 10,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2026,
+                      "month": 9,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 50
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 40
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 90
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": 29,
+                    "quarterly": 29,
+                    "yearly": -18
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": null,
+                  "synonym_clustering_algorithm": null,
+                  "keyword_difficulty": 1,
+                  "detected_language": "en",
+                  "is_another_language": true
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=0%20law%20of%20thermodynamics&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ&hl=ar&gl=SA",
+                  "serp_item_types": [
+                    "ai_overview",
+                    "organic",
+                    "people_also_ask",
+                    "video",
+                    "related_searches",
+                    "knowledge_graph",
+                    "images"
+                  ],
+                  "se_results_count": 104,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": "<redacted-timestamp>"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 31.799999237060547,
+                  "dofollow": 22.799999237060547,
+                  "referring_pages": 27.700000762939453,
+                  "referring_domains": 14.699999809265137,
+                  "referring_main_domains": 13.199999809265137,
+                  "rank": 50.70000076293945,
+                  "main_domain_rank": 602.0999755859375,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 2,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[3]/div[1]",
+                  "domain": "en.wikipedia.org",
+                  "title": "Zeroth law of thermodynamics",
+                  "url": "https://en.wikipedia.org/wiki/Zeroth_law_of_thermodynamics",
+                  "breadcrumb": "https://en.wikipedia.org › wiki › Zer...",
+                  "website_name": "Wikipedia",
+                  "is_image": false,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": null,
+                  "description": "The zeroth law states that if two thermodynamic systems are both in thermal equilibrium with a third system, then the two systems are in thermal equilibrium ...",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "if two thermodynamic systems are both in thermal equilibrium with a third system"
+                  ],
+                  "links": null,
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/Zeroth_law_of_thermodynamics",
+                  "etv": 5.706699848175049,
+                  "estimated_paid_traffic_cost": null,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": null,
+                    "is_new": true,
+                    "is_up": false,
+                    "is_down": false
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 117,
+                    "referring_main_domains": 104,
+                    "referring_pages": 191,
+                    "dofollow": 142,
+                    "backlinks": 223,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 239,
+                    "main_domain_rank": 813
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=0%20law%20of%20thermodynamics&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ&hl=ar&gl=SA",
+                "serp_item_types": [
+                  "ai_overview",
+                  "organic",
+                  "people_also_ask",
+                  "video",
+                  "related_searches",
+                  "knowledge_graph",
+                  "images"
+                ],
+                "se_results_count": 104,
+                "keyword_difficulty": 1,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "0/4",
+                "location_code": 2682,
+                "language_code": "ar",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0,
+                  "competition_level": "LOW",
+                  "cpc": null,
+                  "search_volume": 210,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10002,
+                    10028,
+                    10222
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 140
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 210
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 260
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 210
+                    },
+                    {
+                      "year": 2025,
+                      "month": 10,
+                      "search_volume": 260
+                    },
+                    {
+                      "year": 2025,
+                      "month": 9,
+                      "search_volume": 320
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": 0,
+                    "quarterly": -18,
+                    "yearly": 27
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": "04",
+                  "synonym_clustering_algorithm": "text_processing",
+                  "keyword_difficulty": 7,
+                  "detected_language": "tt",
+                  "is_another_language": true
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=0%2F4&hl=ar&gl=SA&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ",
+                  "serp_item_types": [
+                    "organic",
+                    "people_also_ask",
+                    "related_searches"
+                  ],
+                  "se_results_count": 358000000,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": "<redacted-timestamp>"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 64.5999984741211,
+                  "dofollow": 54.20000076293945,
+                  "referring_pages": 58,
+                  "referring_domains": 14.899999618530273,
+                  "referring_main_domains": 13.5,
+                  "rank": 82.5,
+                  "main_domain_rank": 533.5,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 1,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[2]/div[1]/div[1]/div[3]/div[1]/div[1]",
+                  "domain": "en.wikipedia.org",
+                  "title": "0-4-4T - ويكيبيديا",
+                  "url": "https://en.wikipedia.org/wiki/0-4-4T",
+                  "breadcrumb": "https://en.wikipedia.org › wiki › 0-4-4T",
+                  "website_name": "Wikipedia",
+                  "is_image": false,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": null,
+                  "description": "وفقًا لتصنيف وايت لقاطرات البخار ، يُمثل الترتيب 0-4 -4 ترتيب العجلات الذي لا يتضمن عجلات أمامية ، وأربع عجلات قيادة متصلة ومُحركة على محورين، وأربع عجلات خلفية ...",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "0-4"
+                  ],
+                  "links": null,
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/0-4-4T",
+                  "etv": 108.27689361572266,
+                  "estimated_paid_traffic_cost": null,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": null,
+                    "is_new": true,
+                    "is_up": false,
+                    "is_down": false
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 18,
+                    "referring_main_domains": 16,
+                    "referring_pages": 64,
+                    "dofollow": 61,
+                    "backlinks": 74,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 260,
+                    "main_domain_rank": 816
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=0%2F4&hl=ar&gl=SA&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ",
+                "serp_item_types": [
+                  "organic",
+                  "people_also_ask",
+                  "related_searches"
+                ],
+                "se_results_count": 358000000,
+                "keyword_difficulty": 7,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "00 32 country code",
+                "location_code": 2682,
+                "language_code": "ar",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0,
+                  "competition_level": "LOW",
+                  "cpc": null,
+                  "search_volume": 90,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10007,
+                    10007,
+                    10108,
+                    10756,
+                    11495,
+                    11495,
+                    13418,
+                    13418,
+                    13449,
+                    13600
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2025,
+                      "month": 10,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2025,
+                      "month": 9,
+                      "search_volume": 140
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": 0,
+                    "quarterly": 0,
+                    "yearly": -85
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": "0032 country code",
+                  "synonym_clustering_algorithm": "text_processing",
+                  "keyword_difficulty": 0,
+                  "detected_language": "en",
+                  "is_another_language": true
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=00%2032%20country%20code&hl=ar&gl=SA&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ",
+                  "serp_item_types": [
+                    "ai_overview",
+                    "organic",
+                    "people_also_ask",
+                    "related_searches"
+                  ],
+                  "se_results_count": 92,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": "<redacted-timestamp>"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 29.600000381469727,
+                  "dofollow": 22.5,
+                  "referring_pages": 23.200000762939453,
+                  "referring_domains": 7.599999904632568,
+                  "referring_main_domains": 6.599999904632568,
+                  "rank": 37.099998474121094,
+                  "main_domain_rank": 497.3999938964844,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 2,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]",
+                  "domain": "en.wikipedia.org",
+                  "title": "Telephone numbers in Belgium",
+                  "url": "https://en.wikipedia.org/wiki/Telephone_numbers_in_Belgium",
+                  "breadcrumb": "https://en.wikipedia.org › wiki › Tel...",
+                  "website_name": "Wikipedia",
+                  "is_image": false,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": null,
+                  "description": "From outside Belgium, a caller dials their international call prefix (typically 00 in Europe and 011 in North America), followed by 32 (the country code for ...",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "prefix",
+                    "00",
+                    "32",
+                    "country code"
+                  ],
+                  "links": null,
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/Telephone_numbers_in_Belgium",
+                  "etv": 15.412757873535156,
+                  "estimated_paid_traffic_cost": null,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": 4,
+                    "is_new": false,
+                    "is_up": true,
+                    "is_down": false
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 42,
+                    "referring_main_domains": 37,
+                    "referring_pages": 163,
+                    "dofollow": 149,
+                    "backlinks": 202,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 226,
+                    "main_domain_rank": 816
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=00%2032%20country%20code&hl=ar&gl=SA&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ",
+                "serp_item_types": [
+                  "ai_overview",
+                  "organic",
+                  "people_also_ask",
+                  "related_searches"
+                ],
+                "se_results_count": 92,
+                "keyword_difficulty": 0,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "0034 مفتاح اي دولة",
+                "location_code": 2682,
+                "language_code": "ar",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0,
+                  "competition_level": "LOW",
+                  "cpc": null,
+                  "search_volume": 70,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10108,
+                    10756,
+                    13600,
+                    13601
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 9,
+                      "search_volume": 20
+                    },
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 10
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 10
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 30
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 50
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 40
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 170
+                    },
+                    {
+                      "year": 2025,
+                      "month": 10,
+                      "search_volume": 90
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": 100,
+                    "quarterly": 100,
+                    "yearly": -82
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": null,
+                  "synonym_clustering_algorithm": null,
+                  "keyword_difficulty": 0,
+                  "detected_language": "ar",
+                  "is_another_language": false
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=0034%20%D9%85%D9%81%D8%AA%D8%A7%D8%AD%20%D8%A7%D9%8A%20%D8%AF%D9%88%D9%84%D8%A9&hl=ar&gl=SA&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ",
+                  "serp_item_types": [
+                    "ai_overview",
+                    "organic",
+                    "people_also_ask",
+                    "related_searches",
+                    "images"
+                  ],
+                  "se_results_count": 83,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": "<redacted-timestamp>"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 283.29998779296875,
+                  "dofollow": 144.1999969482422,
+                  "referring_pages": 145.39999389648438,
+                  "referring_domains": 3.5999999046325684,
+                  "referring_main_domains": 2.299999952316284,
+                  "rank": 29.100000381469727,
+                  "main_domain_rank": 420.3999938964844,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 2,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]",
+                  "domain": "ar.wikipedia.org",
+                  "title": "قائمة مفاتيح الاتصال الدولية",
+                  "url": "https://ar.wikipedia.org/wiki/%D9%82%D8%A7%D8%A6%D9%85%D8%A9_%D9%85%D9%81%D8%A7%D8%AA%D9%8A%D8%AD_%D8%A7%D9%84%D8%A7%D8%AA%D8%B5%D8%A7%D9%84_%D8%A7%D9%84%D8%AF%D9%88%D9%84%D9%8A%D8%A9",
+                  "breadcrumb": "https://ar.wikipedia.org › wiki › قائمة_مفاتيح_الاتصال...",
+                  "website_name": "ويكيبيديا",
+                  "is_image": false,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": null,
+                  "description": "... أي دولة. وهو تسلسل يتكون من رقم واحد أو اثنين أو ثلاثة أرقام من الأرقام ... 34+ – إسبانيا; 350+ – جبل طارق; 351+ – البرتغال; 352+ – لوكسمبورغ; 353+ ...",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "إسبانيا"
+                  ],
+                  "links": null,
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/%D9%82%D8%A7%D8%A6%D9%85%D8%A9_%D9%85%D9%81%D8%A7%D8%AA%D9%8A%D8%AD_%D8%A7%D9%84%D8%A7%D8%AA%D8%B5%D8%A7%D9%84_%D8%A7%D9%84%D8%AF%D9%88%D9%84%D9%8A%D8%A9",
+                  "etv": 4.8805036544799805,
+                  "estimated_paid_traffic_cost": null,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": 7,
+                    "is_new": false,
+                    "is_up": true,
+                    "is_down": false
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 90,
+                    "referring_main_domains": 77,
+                    "referring_pages": 1501,
+                    "dofollow": 1497,
+                    "backlinks": 2936,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 165,
+                    "main_domain_rank": 813
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=0034%20%D9%85%D9%81%D8%AA%D8%A7%D8%AD%20%D8%A7%D9%8A%20%D8%AF%D9%88%D9%84%D8%A9&hl=ar&gl=SA&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ",
+                "serp_item_types": [
+                  "ai_overview",
+                  "organic",
+                  "people_also_ask",
+                  "related_searches",
+                  "images"
+                ],
+                "se_results_count": 83,
+                "keyword_difficulty": 0,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "007 die another day",
+                "location_code": 2682,
+                "language_code": "ar",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0,
+                  "competition_level": "LOW",
+                  "cpc": null,
+                  "search_volume": 590,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10013,
+                    13417,
+                    13515
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 390
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 590
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 1000
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 590
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 390
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 390
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 390
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 590
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 880
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 590
+                    },
+                    {
+                      "year": 2025,
+                      "month": 10,
+                      "search_volume": 480
+                    },
+                    {
+                      "year": 2025,
+                      "month": 9,
+                      "search_volume": 390
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": -34,
+                    "quarterly": -61,
+                    "yearly": -46
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": null,
+                  "synonym_clustering_algorithm": null,
+                  "keyword_difficulty": 31,
+                  "detected_language": "de",
+                  "is_another_language": true
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=007%20die%20another%20day&hl=ar&gl=SA&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ",
+                  "serp_item_types": [
+                    "knowledge_graph",
+                    "carousel",
+                    "organic",
+                    "video",
+                    "people_also_ask",
+                    "images"
+                  ],
+                  "se_results_count": 179,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": "<redacted-timestamp>"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 422.1000061035156,
+                  "dofollow": 297.79998779296875,
+                  "referring_pages": 374,
+                  "referring_domains": 132.10000610351562,
+                  "referring_main_domains": 119,
+                  "rank": 143,
+                  "main_domain_rank": 731.7999877929688,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 3,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[4]/div[1]/div[2]/div[1]/div[1]/div[4]/div[3]/div[1]",
+                  "domain": "en.wikipedia.org",
+                  "title": "Die Another Day",
+                  "url": "https://en.wikipedia.org/wiki/Die_Another_Day",
+                  "breadcrumb": "https://en.wikipedia.org › wiki › Die...",
+                  "website_name": "Wikipedia",
+                  "is_image": true,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": [
+                    "is_image"
+                  ],
+                  "description": "Die Another Day is a 2002 spy film and the twentieth film in the James Bond series produced by Eon Productions. It was directed by Lee Tamahori, ...",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "Die Another Day"
+                  ],
+                  "links": null,
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/Die_Another_Day",
+                  "etv": 47.078399658203125,
+                  "estimated_paid_traffic_cost": null,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": 3,
+                    "is_new": false,
+                    "is_up": false,
+                    "is_down": false
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 368,
+                    "referring_main_domains": 345,
+                    "referring_pages": 1205,
+                    "dofollow": 1116,
+                    "backlinks": 1358,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 296,
+                    "main_domain_rank": 816
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=007%20die%20another%20day&hl=ar&gl=SA&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ",
+                "serp_item_types": [
+                  "knowledge_graph",
+                  "carousel",
+                  "organic",
+                  "video",
+                  "people_also_ask",
+                  "images"
+                ],
+                "se_results_count": 179,
+                "keyword_difficulty": 31,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "007 die another day cast",
+                "location_code": 2682,
+                "language_code": "ar",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0,
+                  "competition_level": "LOW",
+                  "cpc": null,
+                  "search_volume": 70,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10013,
+                    13417,
+                    13515
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 20
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 50
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 50
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 50
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 50
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2025,
+                      "month": 10,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2025,
+                      "month": 9,
+                      "search_volume": 70
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": -60,
+                    "quarterly": -82,
+                    "yearly": -82
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": null,
+                  "synonym_clustering_algorithm": null,
+                  "keyword_difficulty": 24,
+                  "detected_language": "de",
+                  "is_another_language": true
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=007%20die%20another%20day%20cast&hl=ar&gl=SA&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ",
+                  "serp_item_types": [
+                    "knowledge_graph",
+                    "people_also_ask",
+                    "organic",
+                    "images",
+                    "related_searches"
+                  ],
+                  "se_results_count": 119,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": "<redacted-timestamp>"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 411,
+                  "dofollow": 297.29998779296875,
+                  "referring_pages": 368.3999938964844,
+                  "referring_domains": 129.60000610351562,
+                  "referring_main_domains": 117.9000015258789,
+                  "rank": 135.6999969482422,
+                  "main_domain_rank": 686.9000244140625,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 3,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[4]/div[1]/div[2]/div[1]/div[1]/div[4]/div[1]/div[1]",
+                  "domain": "en.wikipedia.org",
+                  "title": "Die Another Day",
+                  "url": "https://en.wikipedia.org/wiki/Die_Another_Day",
+                  "breadcrumb": "https://en.wikipedia.org › wiki › Die...",
+                  "website_name": "Wikipedia",
+                  "is_image": true,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": [
+                    "is_image"
+                  ],
+                  "description": "Cast · Pierce Brosnan as James Bond, MI6 agent 007. · Halle Berry as Giacinta \"Jinx\" Johnson, an NSA agent Before Berry's casting Salma Hayek, Saffron Burrows and ...",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "Cast",
+                    "James Bond",
+                    "007"
+                  ],
+                  "links": null,
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/Die_Another_Day",
+                  "etv": 5.585573196411133,
+                  "estimated_paid_traffic_cost": null,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": 5,
+                    "is_new": false,
+                    "is_up": true,
+                    "is_down": false
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 368,
+                    "referring_main_domains": 345,
+                    "referring_pages": 1205,
+                    "dofollow": 1116,
+                    "backlinks": 1358,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 295,
+                    "main_domain_rank": 813
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=007%20die%20another%20day%20cast&hl=ar&gl=SA&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ",
+                "serp_item_types": [
+                  "knowledge_graph",
+                  "people_also_ask",
+                  "organic",
+                  "images",
+                  "related_searches"
+                ],
+                "se_results_count": 119,
+                "keyword_difficulty": 24,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": "<redacted-timestamp>"
+              }
+            },
+            {
+              "se_type": "google",
+              "keyword_data": {
+                "se_type": "google",
+                "keyword": "007 from russia with love",
+                "location_code": 2682,
+                "language_code": "ar",
+                "keyword_info": {
+                  "se_type": "google",
+                  "last_updated_time": "<redacted-timestamp>",
+                  "competition": 0,
+                  "competition_level": "LOW",
+                  "cpc": null,
+                  "search_volume": 70,
+                  "low_top_of_page_bid": null,
+                  "high_top_of_page_bid": null,
+                  "categories": [
+                    10013,
+                    13417,
+                    13515
+                  ],
+                  "monthly_searches": [
+                    {
+                      "year": 2026,
+                      "month": 10,
+                      "search_volume": 40
+                    },
+                    {
+                      "year": 2026,
+                      "month": 9,
+                      "search_volume": 50
+                    },
+                    {
+                      "year": 2026,
+                      "month": 8,
+                      "search_volume": 110
+                    },
+                    {
+                      "year": 2026,
+                      "month": 7,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2026,
+                      "month": 6,
+                      "search_volume": 90
+                    },
+                    {
+                      "year": 2026,
+                      "month": 5,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2026,
+                      "month": 4,
+                      "search_volume": 50
+                    },
+                    {
+                      "year": 2026,
+                      "month": 3,
+                      "search_volume": 50
+                    },
+                    {
+                      "year": 2026,
+                      "month": 2,
+                      "search_volume": 50
+                    },
+                    {
+                      "year": 2026,
+                      "month": 1,
+                      "search_volume": 70
+                    },
+                    {
+                      "year": 2025,
+                      "month": 12,
+                      "search_volume": 30
+                    },
+                    {
+                      "year": 2025,
+                      "month": 11,
+                      "search_volume": 70
+                    }
+                  ],
+                  "search_volume_trend": {
+                    "monthly": -20,
+                    "quarterly": -64,
+                    "yearly": -20
+                  }
+                },
+                "keyword_info_normalized_with_bing": null,
+                "keyword_info_normalized_with_clickstream": null,
+                "clickstream_keyword_info": null,
+                "keyword_properties": {
+                  "se_type": "google",
+                  "core_keyword": "007: from russia with love",
+                  "synonym_clustering_algorithm": "text_processing",
+                  "keyword_difficulty": 37,
+                  "detected_language": "en",
+                  "is_another_language": true
+                },
+                "serp_info": {
+                  "se_type": "google",
+                  "check_url": "https://www.google.com/search?q=007%20from%20russia%20with%20love&hl=ar&gl=SA&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ",
+                  "serp_item_types": [
+                    "organic",
+                    "video",
+                    "ai_overview",
+                    "people_also_ask",
+                    "related_searches",
+                    "knowledge_graph",
+                    "images"
+                  ],
+                  "se_results_count": 110,
+                  "last_updated_time": "<redacted-timestamp>",
+                  "previous_updated_time": "<redacted-timestamp>"
+                },
+                "avg_backlinks_info": {
+                  "se_type": "google",
+                  "backlinks": 396,
+                  "dofollow": 266.3999938964844,
+                  "referring_pages": 350.1000061035156,
+                  "referring_domains": 142.5,
+                  "referring_main_domains": 122.5,
+                  "rank": 164.1999969482422,
+                  "main_domain_rank": 715.2000122070312,
+                  "last_updated_time": "<redacted-timestamp>"
+                },
+                "search_intent_info": {
+                  "se_type": "google",
+                  "main_intent": "informational",
+                  "foreign_intent": null,
+                  "last_updated_time": "<redacted-timestamp>"
+                }
+              },
+              "ranked_serp_element": {
+                "se_type": "google",
+                "serp_item": {
+                  "se_type": "google",
+                  "type": "organic",
+                  "rank_group": 1,
+                  "rank_absolute": 1,
+                  "position": "left",
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[13]/div[1]/div[2]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]",
+                  "domain": "en.wikipedia.org",
+                  "title": "From Russia with Love (video game)",
+                  "url": "https://en.wikipedia.org/wiki/From_Russia_with_Love_(video_game)",
+                  "breadcrumb": "https://en.wikipedia.org › wiki › Fro...",
+                  "website_name": "Wikipedia",
+                  "is_image": true,
+                  "is_video": false,
+                  "is_featured_snippet": false,
+                  "is_malicious": false,
+                  "checks": [
+                    "is_image"
+                  ],
+                  "description": "From Russia with Love is notable in that it is the only video game to use Sean Connery's younger likeness as James Bond and the first to include all new voice ...",
+                  "pre_snippet": null,
+                  "extended_snippet": null,
+                  "amp_version": false,
+                  "rating": null,
+                  "highlighted": [
+                    "From Russia with Love"
+                  ],
+                  "links": null,
+                  "about_this_result": null,
+                  "main_domain": "wikipedia.org",
+                  "relative_url": "/wiki/From_Russia_with_Love_(video_game)",
+                  "etv": 2.2192721366882324,
+                  "estimated_paid_traffic_cost": null,
+                  "clickstream_etv": null,
+                  "rank_changes": {
+                    "previous_rank_absolute": null,
+                    "is_new": true,
+                    "is_up": false,
+                    "is_down": false
+                  },
+                  "backlinks_info": {
+                    "referring_domains": 60,
+                    "referring_main_domains": 58,
+                    "referring_pages": 93,
+                    "dofollow": 82,
+                    "backlinks": 107,
+                    "time_update": "<redacted-timestamp>"
+                  },
+                  "rank_info": {
+                    "page_rank": 215,
+                    "main_domain_rank": 813
+                  }
+                },
+                "check_url": "https://www.google.com/search?q=007%20from%20russia%20with%20love&hl=ar&gl=SA&ie=UTF-8&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ",
+                "serp_item_types": [
+                  "organic",
+                  "video",
+                  "ai_overview",
+                  "people_also_ask",
+                  "related_searches",
+                  "knowledge_graph",
+                  "images"
+                ],
+                "se_results_count": 110,
+                "keyword_difficulty": 37,
+                "is_lost": false,
+                "last_updated_time": "<redacted-timestamp>",
+                "previous_updated_time": "<redacted-timestamp>"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

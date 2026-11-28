@@ -9,6 +9,7 @@ import { getToken, SCOPES, searchAnalytics } from "../lib/google-auth.mjs";
 import { pickProvider } from "../lib/serp.mjs";
 import { trackedSet, mergeSeries, trackQueries, summarise, liveCheck, rankMarkdown } from "../analysis/rank.mjs";
 import { marketOf } from "./keywords.mjs";
+import { languageFor, marketLabel } from "../lib/market.mjs";
 
 export const description = "Rank tracker: tracked query positions over time from Search Console, movers and visibility; --serp adds live features and share of voice";
 
@@ -29,6 +30,8 @@ async function fetchRows(query, from, to) {
 export async function run({ site, flags = {} }, deps = {}) {
   const env = deps.env || process.env, s = site.paths.state, day = deps.today || todayFn();
   const seriesFile = `${s}/query-daily.json`;
+  // The live check spends SERP credits in the site's market: resolve it first, so a missing or wrong market stops the job before any request.
+  const serpMarket = flags.serp && pickProvider(env) ? marketOf(site, flags.language) : null;
   let series = readJson(seriesFile, {});
   const gscRows = readJson(`${s}/gsc-rows.json`, { rows: [] }).rows || [];
   const tracked = trackedSet(readJson(`${site.paths.data}/tracked-queries.json`, []), gscRows, { brandTerms: site.brandTerms || [] });
@@ -54,12 +57,12 @@ export async function run({ site, flags = {} }, deps = {}) {
     const provider = pickProvider(env);
     if (!provider) console.log("rank: --serp needs a SERP provider key (BRAVE_API_KEY, SERPAPI_KEY or DataForSEO). Positions above are from Search Console only.");
     else {
-      const m = marketOf(site), serps = {}, limit = site.research?.serpLimit || 50;
+      const m = serpMarket, serps = {}, limit = site.research?.serpLimit || 50;
       for (const [i, q] of tracked.queries.slice(0, limit).entries()) {
         if (i) await sleep(deps.delayMs ?? 1200);
-        try { serps[q] = await provider.search(q, m, { fetch: deps.fetch || globalThis.fetch, env }); } catch (e) { serps[q] = { error: e.message }; }
+        try { serps[q] = await provider.search(q, languageFor(m, q, flags.language), { fetch: deps.fetch || globalThis.fetch, env }); } catch (e) { serps[q] = { error: e.message }; }
       }
-      live = { provider: provider.name, market: m, date: day, ...liveCheck(serps, new URL(site.url).hostname) };
+      live = { provider: provider.name, market: marketLabel(m), date: day, ...liveCheck(serps, new URL(site.url).hostname) };
     }
   }
   const histFile = `${s}/rank-history.json`;

@@ -4,12 +4,14 @@
 export const MAX_QUESTIONS = 40;
 export const KEEP_RUNS = 26;
 
-export function normaliseQuestions(list, defaultMarket = "GB") {
+/** Questions as { q, market?, language? }. `market` (a location) and `language` are optional per-question overrides; no default is filled in here. */
+export function normaliseQuestions(list) {
   const out = [];
   for (const x of Array.isArray(list) ? list : []) {
     const q = typeof x === "string" ? x : x?.q;
     if (!q || !String(q).trim() || /^replace/i.test(String(q))) continue;
-    out.push({ q: String(q).trim(), market: (typeof x === "object" && x.market) || defaultMarket });
+    const o = typeof x === "object" ? x : {};
+    out.push({ q: String(q).trim(), ...(o.market != null ? { market: o.market } : {}), ...(o.language != null ? { language: o.language } : {}) });
   }
   return out.slice(0, MAX_QUESTIONS);
 }

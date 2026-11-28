@@ -8,11 +8,13 @@ import { readJson, writeJson, writeText } from "../core/util.mjs";
 import { dataforseo } from "../lib/research-sources.mjs";
 import { competitors, keywordGap, strengths, winningPages, gapTopics, gapMarkdown } from "../analysis/gap.mjs";
 import { marketOf } from "./keywords.mjs";
+import { marketLabel } from "../lib/market.mjs";
 
 export const description = "Competitor and keyword gap: queries competitors win that you do not, by topic, with their winning pages (full gap needs DataForSEO)";
 
 export async function run({ site, flags = {} }, deps = {}) {
-  const env = deps.env || process.env, f = deps.fetch || globalThis.fetch, s = site.paths.state, m = marketOf(site);
+  const env = deps.env || process.env, f = deps.fetch || globalThis.fetch, s = site.paths.state;
+  const m = dataforseo.enabled(env) ? marketOf(site, flags.language) : null; // only DataForSEO needs a location; resolved first so a missing market stops the job before any request
   const own = new URL(site.url).hostname.replace(/^www\./, "");
   const rank = readJson(`${s}/rank.json`, {});
   const configured = flags.competitors ? String(flags.competitors).split(",") : site.research?.competitors || [];
@@ -52,7 +54,7 @@ export async function run({ site, flags = {} }, deps = {}) {
   const topics = gapTopics([...gap.missing, ...gap.weak]);
   const pages = winningPages([...gap.missing, ...gap.weak]);
   const strong = strengths(ownPos, theirs);
-  writeJson(`${s}/gap.json`, { generatedAt: new Date().toISOString(), market: m, competitors: comp, method, gap, topics, pages: pages.slice(0, 50), strengths: strong.slice(0, 100), notes });
+  writeJson(`${s}/gap.json`, { generatedAt: new Date().toISOString(), market: m ? marketLabel(m) : null, competitors: comp, method, gap, topics, pages: pages.slice(0, 50), strengths: strong.slice(0, 100), notes });
   const md = gapMarkdown({ siteName: site.name, comp, gap, topics, pages, strong, method, notes });
   writeText(`${s}/gap.md`, md);
   console.log(md);
