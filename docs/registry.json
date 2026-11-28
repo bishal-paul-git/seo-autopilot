@@ -1,7 +1,7 @@
 {
  "generatedFrom": "code (scripts/build-registry.mjs)",
  "counts": {
-  "jobs": 58,
+  "jobs": 59,
   "agents": 38,
   "skills": 7,
   "mcpTools": 6,
@@ -968,13 +968,18 @@
     "BRAVE_API_KEY",
     "DATAFORSEO_LOGIN",
     "DATAFORSEO_PASSWORD",
-    "SERPAPI_KEY"
+    "SERPAPI_KEY",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_CHAT_ID",
+    "TELEGRAM_THREAD_ID"
    ],
    "hosts": [
     "api.dataforseo.com",
     "api.search.brave.com",
+    "api.telegram.org",
     "brave.com",
     "dataforseo.com",
+    "docs.dataforseo.com",
     "serpapi.com"
    ],
    "writes": [
@@ -984,7 +989,7 @@
    "permissions": "read-only",
    "usesLLM": false,
    "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
-   "verification": "untested (no test names the job; its analysis module may be tested)"
+   "verification": "unit/fixture tests only (external calls mocked)"
   },
   {
    "name": "quality",
@@ -1393,14 +1398,19 @@
     "OPENPAGERANK_API_KEY",
     "SERPAPI_KEY",
     "STACKEXCHANGE_KEY",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_CHAT_ID",
+    "TELEGRAM_THREAD_ID",
     "YOUTUBE_API_KEY"
    ],
    "hosts": [
     "api.dataforseo.com",
     "api.search.brave.com",
     "api.stackexchange.com",
+    "api.telegram.org",
     "brave.com",
     "dataforseo.com",
+    "docs.dataforseo.com",
     "github.com",
     "googleads.googleapis.com",
     "meta.wikimedia.org",
@@ -1470,14 +1480,19 @@
     "OPENPAGERANK_API_KEY",
     "SERPAPI_KEY",
     "STACKEXCHANGE_KEY",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_CHAT_ID",
+    "TELEGRAM_THREAD_ID",
     "YOUTUBE_API_KEY"
    ],
    "hosts": [
     "api.dataforseo.com",
     "api.search.brave.com",
     "api.stackexchange.com",
+    "api.telegram.org",
     "brave.com",
     "dataforseo.com",
+    "docs.dataforseo.com",
     "github.com",
     "googleads.googleapis.com",
     "meta.wikimedia.org",
@@ -1534,14 +1549,19 @@
     "OPENPAGERANK_API_KEY",
     "SERPAPI_KEY",
     "STACKEXCHANGE_KEY",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_CHAT_ID",
+    "TELEGRAM_THREAD_ID",
     "YOUTUBE_API_KEY"
    ],
    "hosts": [
     "api.dataforseo.com",
     "api.search.brave.com",
     "api.stackexchange.com",
+    "api.telegram.org",
     "brave.com",
     "dataforseo.com",
+    "docs.dataforseo.com",
     "github.com",
     "googleads.googleapis.com",
     "meta.wikimedia.org",
@@ -1586,6 +1606,9 @@
     "OPENPAGERANK_API_KEY",
     "SERPAPI_KEY",
     "STACKEXCHANGE_KEY",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_CHAT_ID",
+    "TELEGRAM_THREAD_ID",
     "YOUTUBE_API_KEY"
    ],
    "hosts": [
@@ -1593,9 +1616,11 @@
     "api.dataforseo.com",
     "api.search.brave.com",
     "api.stackexchange.com",
+    "api.telegram.org",
     "b.com",
     "brave.com",
     "dataforseo.com",
+    "docs.dataforseo.com",
     "github.com",
     "googleads.googleapis.com",
     "meta.wikimedia.org",
@@ -1646,7 +1671,10 @@
     "GEMINI_API_KEY",
     "OPENAI_API_KEY",
     "PERPLEXITY_API_KEY",
-    "SERPAPI_KEY"
+    "SERPAPI_KEY",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_CHAT_ID",
+    "TELEGRAM_THREAD_ID"
    ],
    "hosts": [
     "api.anthropic.com",
@@ -1654,8 +1682,10 @@
     "api.openai.com",
     "api.perplexity.ai",
     "api.search.brave.com",
+    "api.telegram.org",
     "brave.com",
     "dataforseo.com",
+    "docs.dataforseo.com",
     "generativelanguage.googleapis.com",
     "serpapi.com"
    ],
@@ -1666,6 +1696,47 @@
    "permissions": "read-only",
    "usesLLM": true,
    "onError": "the workflow step logs the error; most steps use continue-on-error so one failing job does not stop the run; no automatic retry",
+   "verification": "unit/fixture tests only (external calls mocked)"
+  },
+  {
+   "name": "aeo",
+   "purpose": "AI answers: do Google's AI Overview / AI Mode or ChatGPT answers to your buyer questions mention or cite you (DataForSEO, capped per run, Arabic supported)",
+   "source": "src/jobs/aeo.mjs",
+   "owner": "maintainers (product core)",
+   "mode": "manual (CLI, MCP or workflow_dispatch)",
+   "triggers": [],
+   "credentials": [
+    "ANTHROPIC_API_KEY",
+    "BRAVE_API_KEY",
+    "DATAFORSEO_LOGIN",
+    "DATAFORSEO_PASSWORD",
+    "GEMINI_API_KEY",
+    "OPENAI_API_KEY",
+    "PERPLEXITY_API_KEY",
+    "SERPAPI_KEY",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_CHAT_ID",
+    "TELEGRAM_THREAD_ID"
+   ],
+   "hosts": [
+    "api.anthropic.com",
+    "api.dataforseo.com",
+    "api.openai.com",
+    "api.perplexity.ai",
+    "api.search.brave.com",
+    "api.telegram.org",
+    "brave.com",
+    "dataforseo.com",
+    "docs.dataforseo.com",
+    "generativelanguage.googleapis.com",
+    "serpapi.com"
+   ],
+   "writes": [
+    "aeo.md"
+   ],
+   "permissions": "read-only",
+   "usesLLM": true,
+   "onError": "exits non-zero; no automatic retry",
    "verification": "unit/fixture tests only (external calls mocked)"
   },
   {
@@ -1693,13 +1764,18 @@
     "DATAFORSEO_LOGIN",
     "DATAFORSEO_PASSWORD",
     "OPENPAGERANK_API_KEY",
-    "SERPAPI_KEY"
+    "SERPAPI_KEY",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_CHAT_ID",
+    "TELEGRAM_THREAD_ID"
    ],
    "hosts": [
     "api.dataforseo.com",
     "api.search.brave.com",
+    "api.telegram.org",
     "brave.com",
     "dataforseo.com",
+    "docs.dataforseo.com",
     "openpagerank.com",
     "serpapi.com",
     "ssl.bing.com",
@@ -1842,6 +1918,9 @@
     "OPENPAGERANK_API_KEY",
     "SERPAPI_KEY",
     "STACKEXCHANGE_KEY",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_CHAT_ID",
+    "TELEGRAM_THREAD_ID",
     "YOUTUBE_API_KEY"
    ],
    "hosts": [
@@ -1849,9 +1928,11 @@
     "api.dataforseo.com",
     "api.search.brave.com",
     "api.stackexchange.com",
+    "api.telegram.org",
     "b.com",
     "brave.com",
     "dataforseo.com",
+    "docs.dataforseo.com",
     "github.com",
     "googleads.googleapis.com",
     "meta.wikimedia.org",
@@ -1909,6 +1990,9 @@
     "OPENPAGERANK_API_KEY",
     "SERPAPI_KEY",
     "STACKEXCHANGE_KEY",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_CHAT_ID",
+    "TELEGRAM_THREAD_ID",
     "YOUTUBE_API_KEY"
    ],
    "hosts": [
@@ -1916,9 +2000,11 @@
     "api.dataforseo.com",
     "api.search.brave.com",
     "api.stackexchange.com",
+    "api.telegram.org",
     "b.com",
     "brave.com",
     "dataforseo.com",
+    "docs.dataforseo.com",
     "github.com",
     "googleads.googleapis.com",
     "meta.wikimedia.org",
@@ -1975,6 +2061,9 @@
     "OPENPAGERANK_API_KEY",
     "SERPAPI_KEY",
     "STACKEXCHANGE_KEY",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_CHAT_ID",
+    "TELEGRAM_THREAD_ID",
     "YOUTUBE_API_KEY"
    ],
    "hosts": [
@@ -1982,9 +2071,11 @@
     "api.dataforseo.com",
     "api.search.brave.com",
     "api.stackexchange.com",
+    "api.telegram.org",
     "b.com",
     "brave.com",
     "dataforseo.com",
+    "docs.dataforseo.com",
     "github.com",
     "googleads.googleapis.com",
     "meta.wikimedia.org",
@@ -2041,6 +2132,9 @@
     "OPENPAGERANK_API_KEY",
     "SERPAPI_KEY",
     "STACKEXCHANGE_KEY",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_CHAT_ID",
+    "TELEGRAM_THREAD_ID",
     "YOUTUBE_API_KEY"
    ],
    "hosts": [
@@ -2048,9 +2142,11 @@
     "api.dataforseo.com",
     "api.search.brave.com",
     "api.stackexchange.com",
+    "api.telegram.org",
     "b.com",
     "brave.com",
     "dataforseo.com",
+    "docs.dataforseo.com",
     "github.com",
     "googleads.googleapis.com",
     "meta.wikimedia.org",
@@ -2187,6 +2283,9 @@
     "OPENPAGERANK_API_KEY",
     "SERPAPI_KEY",
     "STACKEXCHANGE_KEY",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_CHAT_ID",
+    "TELEGRAM_THREAD_ID",
     "YOUTUBE_API_KEY"
    ],
    "hosts": [
@@ -2194,9 +2293,11 @@
     "api.dataforseo.com",
     "api.search.brave.com",
     "api.stackexchange.com",
+    "api.telegram.org",
     "b.com",
     "brave.com",
     "dataforseo.com",
+    "docs.dataforseo.com",
     "en.wikipedia.org",
     "github.com",
     "googleads.googleapis.com",

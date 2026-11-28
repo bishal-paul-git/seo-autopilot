@@ -18,7 +18,11 @@ export function restore({ cwd = process.cwd() } = {}) {
   const branch = cfg.stateBranch || "seo-data";
   const rel = relative(cfg.root, cfg.stateDir).split("\\").join("/");
   const remote = git(["ls-remote", "--exit-code", "origin", branch], { cwd: cfg.root, allowFail: true });
-  if (remote.status !== 0) { console.log(`state: no "${branch}" branch yet. Starting fresh.`); return; }
+  // Exit 2 is git's "no matching ref": the branch really does not exist yet. Anything else (no network, no access, no origin) is
+  // a failure: starting fresh then would forget saved state such as this month's DataForSEO spend, and the next save would
+  // force-push that empty state over the good one.
+  if (remote.status === 2) { console.log(`state: no "${branch}" branch yet. Starting fresh.`); return; }
+  if (remote.status !== 0) throw new Error(`state: could not reach origin to read the "${branch}" branch (git ls-remote exit ${remote.status}: ${String(remote.stderr || remote.error?.message || "").trim().slice(0, 300)}). Nothing was restored; not starting fresh.`);
   git(["fetch", "origin", branch], { cwd: cfg.root });
   const r = git(["checkout", `origin/${branch}`, "--", rel], { cwd: cfg.root, allowFail: true });
   // "git checkout <branch> -- path" also stages the files. Unstage them so a later "git add -A && git commit" can never

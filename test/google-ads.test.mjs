@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { planner, parseIdea, monthly, adsError } from "../src/lib/google-ads.mjs";
 import { mergeCandidates, demand } from "../src/analysis/keywords.mjs";
+import { UK, US, SA_AR, CONFIG } from "./market-fixtures.mjs";
 
 const res = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 const ENV = { GOOGLE_ADS_DEVELOPER_TOKEN: "dev-secret", GOOGLE_ADS_CUSTOMER_ID: "123-456-7890", GOOGLE_ADS_CLIENT_ID: "cid", GOOGLE_ADS_CLIENT_SECRET: "csecret", GOOGLE_ADS_REFRESH_TOKEN: "rtok" };
@@ -36,7 +37,7 @@ test("parse: volume, competition, bids in currency units, months oldest first; u
 test("request: refresh-token sign-in, then generateKeywordIdeas on the customer with headers, geo and language", async () => {
   const calls = [];
   const f = async (u, init) => { calls.push({ u: String(u), init }); return String(u).includes("oauth2") ? res({ access_token: "at-1" }) : res({ results: [IDEA] }); };
-  const out = await planner.ideas(["web hosting"], "UK", { fetch: f, env: { ...ENV, GOOGLE_ADS_LOGIN_CUSTOMER_ID: "999-000-1111" } });
+  const out = await planner.ideas(["web hosting"], UK, { fetch: f, env: { ...ENV, GOOGLE_ADS_LOGIN_CUSTOMER_ID: "999-000-1111" } });
   assert.equal(out[0].volume, 2400);
   assert.equal(calls[0].init.body.get("grant_type"), "refresh_token");
   assert.equal(calls[1].u, "https://googleads.googleapis.com/v24/customers/1234567890:generateKeywordIdeas");
@@ -44,16 +45,18 @@ test("request: refresh-token sign-in, then generateKeywordIdeas on the customer 
   assert.equal(h.Authorization, "Bearer at-1"); assert.equal(h["developer-token"], "dev-secret"); assert.equal(h["login-customer-id"], "9990001111");
   assert.deepEqual(b.keywordSeed, { keywords: ["web hosting"] });
   assert.deepEqual(b.geoTargetConstants, ["geoTargetConstants/2826"]); assert.equal(b.language, "languageConstants/1000"); assert.equal(b.keywordPlanNetwork, "GOOGLE_SEARCH");
-  await planner.ideas(["x"], "US", { fetch: async (u) => { calls.push({ u: String(u) }); return res({ results: [] }); }, env: { ...ENV, GOOGLE_ADS_API_VERSION: "v23" }, token: "t" });
+  await planner.ideas(["x"], US, { fetch: async (u) => { calls.push({ u: String(u) }); return res({ results: [] }); }, env: { ...ENV, GOOGLE_ADS_API_VERSION: "v23" }, token: "t" });
   assert.match(calls.at(-1).u, /\/v23\/customers\//, "version override; an injected token skips sign-in");
 });
 
 test("errors: the Google Ads message with a hint, never a token or secret", async () => {
   const notApproved = { error: { code: 403, message: "The caller does not have permission", details: [{ errors: [{ errorCode: { authorizationError: "DEVELOPER_TOKEN_NOT_APPROVED" }, message: "The developer token is only approved for use with test accounts." }] }] } };
-  await assert.rejects(planner.ideas(["x"], "GB", { fetch: async () => res(notApproved, 403), env: ENV, token: "at-secret" }),
+  await assert.rejects(planner.ideas(["x"], UK, { fetch: async () => res(notApproved, 403), env: ENV, token: "at-secret" }),
     (e) => /only approved for use with test accounts/.test(e.message) && /higher access level/.test(e.message) && !/dev-secret|at-secret|rtok|csecret/.test(e.message));
-  await assert.rejects(planner.ideas(["x"], "GB", { fetch: async () => res({ error: "invalid_grant" }, 400), env: ENV }), (e) => /sign-in failed \(invalid_grant\)/.test(e.message) && !/rtok/.test(e.message));
-  await assert.rejects(planner.ideas(["x"], "BR", { fetch: async () => res({}), env: ENV, token: "t" }), /no geo target/);
+  await assert.rejects(planner.ideas(["x"], UK, { fetch: async () => res({ error: "invalid_grant" }, 400), env: ENV }), (e) => /sign-in failed \(invalid_grant\)/.test(e.message) && !/rtok/.test(e.message));
+  await assert.rejects(planner.ideas(["x"], "BR", { fetch: async () => res({}), env: ENV, token: "t" }), /no market given/, "a bare country code is refused");
+  const ar = []; await planner.ideas(["x"], SA_AR, { fetch: async (u, init) => { ar.push(JSON.parse(init.body)); return res({ results: [] }); }, env: ENV, token: "t" });
+  assert.deepEqual([ar[0].geoTargetConstants, ar[0].language], [["geoTargetConstants/2682"], "languageConstants/1019"], "location and Arabic language constant from the market");
   assert.match(adsError(403, { error: { details: [{ errors: [{ errorCode: { authorizationError: "USER_PERMISSION_DENIED" }, message: "denied" }] }] } }).message, /GOOGLE_ADS_LOGIN_CUSTOMER_ID/);
 });
 
@@ -67,7 +70,7 @@ test("demand: Keyword Planner volume ranks above a third-party estimate, Bing an
 
 test("keywords job: planner ideas join the report; a failing planner is a note, not a stop", async () => {
   const root = mkdtempSync(join(tmpdir(), "seo-ads-")), state = join(root, "state"); mkdirSync(state);
-  const site = { id: "s", name: "S", url: "https://s.test/", sitemap: "https://s.test/none.xml", paths: { state, root, data: root } };
+  const site = { id: "s", name: "S", url: "https://s.test/", market: CONFIG.UK, sitemap: "https://s.test/none.xml", paths: { state, root, data: root } };
   const { run } = await import("../src/jobs/keywords.mjs");
   const log = console.log; console.log = () => {};
   try {

@@ -1,5 +1,5 @@
 // Small dependency-free helpers shared by every job.
-import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync, statSync, renameSync, rmSync } from "node:fs";
 import { dirname, join, relative, sep } from "node:path";
 
 export const today = () => new Date().toISOString().slice(0, 10);
@@ -10,9 +10,17 @@ export const readJson = (file, fallback) => {
   if (!existsSync(file)) return fallback;
   return JSON.parse(readFileSync(file, "utf8"));
 };
+// Written to a temp file next to the target, then renamed over it: a reader (or a run killed mid-write) never sees half a file.
 export const writeJson = (file, data) => {
   mkdirSync(dirname(file), { recursive: true });
-  writeFileSync(file, JSON.stringify(data, null, 2) + "\n");
+  const text = JSON.stringify(data, null, 2) + "\n";
+  const tmp = `${file}.${process.pid}.${Math.random().toString(36).slice(2, 10)}.tmp`;
+  try { writeFileSync(tmp, text); renameSync(tmp, file); } catch (e) {
+    rmSync(tmp, { force: true });
+    // Windows refuses to rename over a file another process has open; fall back to writing in place there.
+    if (process.platform === "win32" && (e.code === "EPERM" || e.code === "EACCES")) { writeFileSync(file, text); return; }
+    throw e;
+  }
 };
 export const writeText = (file, text) => {
   mkdirSync(dirname(file), { recursive: true });

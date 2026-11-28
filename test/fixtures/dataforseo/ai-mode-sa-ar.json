@@ -1,0 +1,219 @@
+{
+  "version": "0.1.20261117",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "cost": 0.004,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "cost": 0.004,
+      "result_count": 1,
+      "path": [
+        "v3",
+        "serp",
+        "google",
+        "ai_mode",
+        "live",
+        "advanced"
+      ],
+      "data": {
+        "api": "serp",
+        "function": "live",
+        "se": "google",
+        "se_type": "ai_mode",
+        "keyword": "أفضل أحذية رياضية للجري",
+        "location_code": 2682,
+        "language_code": "ar",
+        "device": "desktop",
+        "os": "windows"
+      },
+      "result": [
+        {
+          "keyword": "أفضل أحذية رياضية للجري",
+          "type": "ai_mode",
+          "se_domain": "google.com",
+          "location_code": 2682,
+          "language_code": "ar",
+          "check_url": "https://www.google.com/search?q=%D8%A3%D9%81%D8%B6%D9%84%20%D8%A3%D8%AD%D8%B0%D9%8A%D8%A9%20%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A9%20%D9%84%D9%84%D8%AC%D8%B1%D9%8A&hl=ar&gl=SA&udm=50&uule=w+CAIQIFISCUEqlec_s-cVEZu2GsJLUGBZ",
+          "spell": null,
+          "refinement_chips": null,
+          "item_types": [
+            "ai_overview"
+          ],
+          "se_results_count": 0,
+          "items_count": 1,
+          "items": [
+            {
+              "type": "ai_overview",
+              "rank_group": 1,
+              "rank_absolute": 1,
+              "page": 1,
+              "position": "left",
+              "xpath": "/html[1]/body[1]/div[2]/div[1]/div[9]/div[1]/section[1]/div[1]/div[1]/div[4]/div[3]/div[1]/div[2]/div[1]/div[3]",
+              "markdown": "تعتبر  [بداية النص المميَّز] **أحذية الجري** المخصصة ذات التوسيد العالي والدعم المناسب [نهاية النص المميّز] هي الخيار الأفضل لحماية المفاصل وتحسين الأداء، وتأتي في مقدمتها خيارات بارزة متوفرة في السوق السعودي:\n\n\n\n---\n\n[![نايكي فوميرو 18 حذاء الجري على الطرق للرجال](https://api.dataforseo.com/cdn/i/<redacted-id>:12)\nنايكي فوميرو 18 حذاء الجري على الطرق للرجال | Nike.saوالمزيد | 4.7(٣٫٧ آلاف)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462510575467798,imageDocid:3216704333467647645,gpcid:11099759111364707336,headlineOfferDocid:6236239393286176603,catalogid:5841064319313574510,productDocid:15096648663257170427,rds:PC_11099759111364707336%7CPROD_PC_11099759111364707336&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQgLcPeggIAggBCBMQAQ) \n\nيجمع بين فوم ZoomX الخفيف وتوسيد ReactX سريع الاستجابة، مما يجعله مثالياً للماراثادات والجري اليومي الطويل بسعر حوالي 729 ريال سعودي.[[1]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:15096648663257170427,catalogid:5841064319313574510,gpcid:11099759111364707336,mid:576462510575467798&ibp=oshop)\n\n---\n\n[![adidas حذاء الجري أديزيرو EVO SL للرجال](https://api.dataforseo.com/cdn/i/<redacted-id>:13)\nadidas حذاء الجري أديزيرو EVO SL للرجال | Sun &amp; Sand Sports KSAوالمزيد | 4.7(٣٢٫٧ ألف)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462915606187204,imageDocid:17823333264464285129,gpcid:8805222204851159542,headlineOfferDocid:6947013973177642921,catalogid:2468181861592526777,productDocid:9463615601903709901,rds:PC_8805222204851159542%7CPROD_PC_8805222204851159542&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQgLcPeggIAggBCBMQDQ) \n\nيتميز بتقنية LIGHTSTRIKE PRO لإنتاج انطلاقة ديناميكية وخفيفة الوزن على الطرق الممهدة، متوفر بسعر حوالي 599.25 ريال سعودي.[[1]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:9463615601903709901,catalogid:2468181861592526777,gpcid:8805222204851159542,mid:576462915606187204&ibp=oshop)\n\n---\n\n[![ASICS Gel-Nimbus 27)](https://api.dataforseo.com/cdn/i/<redacted-id>:14)\nASICS Gel-Nimbus 27) | lumierstore.comوالمزيد | 4.7(٥٫٩ آلاف)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462800845631055,imageDocid:15383187667376102066,gpcid:8856295525377145009,headlineOfferDocid:3443174770129102820,catalogid:7481617461760967288,productDocid:11339634598348128873,rds:PC_8856295525377145009%7CPROD_PC_8856295525377145009&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQgLcPeggIAggBCBMQGQ) \n\n**اسيكس جل-نيمبوس 27 ([ASICS Gel-Nimbus 27)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462800845631055,imageDocid:15383187667376102066,gpcid:8856295525377145009,headlineOfferDocid:3443174770129102820,catalogid:7481617461760967288,productDocid:11339634598348128873,rds:PC_8856295525377145009%7CPROD_PC_8856295525377145009&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQxa4PeggIAggBCBMQIw)** : يُعد من الخيارات العالمية المفضلة للجري اليومي بفضل تقنية الجل المتقدمة التي توفر أقصى درجات امتصاص الصدمات والراحة الفائقة للمسافات الطويلة.[[1]](https://travostore.com/blog/%D8%A7%D9%81%D8%B6%D9%84-%D8%AD%D8%B0%D8%A7%D8%A1-%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A-%D9%84%D9%84%D9%85%D8%B4%D9%8A-%D9%88%D8%A7%D9%84%D8%AC%D8%B1%D9%8A/a-1259027137?srsltid=AY6E962OgA8Uq_c73Hedi5MipjT1RcLh_JZyC_PEyDpcqR8z-XSMNOGq)\n\n---\n\n[![ASICS Novablast 5)](https://api.dataforseo.com/cdn/i/<redacted-id>:15)\nASICS Novablast 5) | ASICSوالمزيد | 4.8(١١٫٤ ألف)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462803464945279,imageDocid:3570607286841190888,gpcid:1340101364570861215,headlineOfferDocid:18136649859083274783,catalogid:8784927757132692217,productDocid:7674085975104439976,rds:PC_1340101364570861215%7CPROD_PC_1340101364570861215&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQgLcPeggIAggBCBMQKA) \n\n**اسيكس نوفابلاست 5 ([ASICS Novablast 5)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462803464945279,imageDocid:3570607286841190888,gpcid:1340101364570861215,headlineOfferDocid:18136649859083274783,catalogid:8784927757132692217,productDocid:7674085975104439976,rds:PC_1340101364570861215%7CPROD_PC_1340101364570861215&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQxa4PeggIAggBCBMQMg)** : يمنح العدّائين شعوراً بالمرونة والارتداد العالي بفضل تصميمه النطّاقي المميز للنعل الأوسط، وهو ممتاز للسرعات والتدريبات النشطة.\n\nهل تبحث عن حذاء لمسافات طويلة (ماراتون)، أم للجري السريع، أو لجلسات المشي اليومي؟ أخبرني بطبيعة استخدامك وسأقترح عليك الخيار الأنسب.",
+              "items": [
+                {
+                  "type": "ai_overview_element",
+                  "position": "left",
+                  "title": null,
+                  "text": "تعتبر  [بداية النص المميَّز] أحذية الجري المخصصة ذات التوسيد العالي والدعم المناسب [نهاية النص المميّز]  هي الخيار الأفضل لحماية المفاصل وتحسين الأداء، وتأتي في مقدمتها خيارات بارزة متوفرة في السوق السعودي:",
+                  "markdown": "تعتبر  [بداية النص المميَّز] **أحذية الجري** المخصصة ذات التوسيد العالي والدعم المناسب [نهاية النص المميّز] هي الخيار الأفضل لحماية المفاصل وتحسين الأداء، وتأتي في مقدمتها خيارات بارزة متوفرة في السوق السعودي:",
+                  "links": null,
+                  "images": null,
+                  "references": null
+                },
+                {
+                  "type": "ai_overview_shopping",
+                  "position": "left",
+                  "title": null,
+                  "markdown": "---\n\n[![نايكي فوميرو 18 حذاء الجري على الطرق للرجال](https://api.dataforseo.com/cdn/i/<redacted-id>:8)\nنايكي فوميرو 18 حذاء الجري على الطرق للرجال | Nike.saوالمزيد | 4.7(٣٫٧ آلاف)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462510575467798,imageDocid:3216704333467647645,gpcid:11099759111364707336,headlineOfferDocid:6236239393286176603,catalogid:5841064319313574510,productDocid:15096648663257170427,rds:PC_11099759111364707336%7CPROD_PC_11099759111364707336&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQgLcPeggIAggBCBMQAQ) \n\nيجمع بين فوم ZoomX الخفيف وتوسيد ReactX سريع الاستجابة، مما يجعله مثالياً للماراثادات والجري اليومي الطويل بسعر حوالي 729 ريال سعودي.[[1]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:15096648663257170427,catalogid:5841064319313574510,gpcid:11099759111364707336,mid:576462510575467798&ibp=oshop)\n\n---\n\n[![adidas حذاء الجري أديزيرو EVO SL للرجال](https://api.dataforseo.com/cdn/i/<redacted-id>:9)\nadidas حذاء الجري أديزيرو EVO SL للرجال | Sun &amp; Sand Sports KSAوالمزيد | 4.7(٣٢٫٧ ألف)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462915606187204,imageDocid:17823333264464285129,gpcid:8805222204851159542,headlineOfferDocid:6947013973177642921,catalogid:2468181861592526777,productDocid:9463615601903709901,rds:PC_8805222204851159542%7CPROD_PC_8805222204851159542&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQgLcPeggIAggBCBMQDQ) \n\nيتميز بتقنية LIGHTSTRIKE PRO لإنتاج انطلاقة ديناميكية وخفيفة الوزن على الطرق الممهدة، متوفر بسعر حوالي 599.25 ريال سعودي.[[1]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:9463615601903709901,catalogid:2468181861592526777,gpcid:8805222204851159542,mid:576462915606187204&ibp=oshop)\n\n---\n\n[![ASICS Gel-Nimbus 27)](https://api.dataforseo.com/cdn/i/<redacted-id>:10)\nASICS Gel-Nimbus 27) | lumierstore.comوالمزيد | 4.7(٥٫٩ آلاف)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462800845631055,imageDocid:15383187667376102066,gpcid:8856295525377145009,headlineOfferDocid:3443174770129102820,catalogid:7481617461760967288,productDocid:11339634598348128873,rds:PC_8856295525377145009%7CPROD_PC_8856295525377145009&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQgLcPeggIAggBCBMQGQ) \n\n**اسيكس جل-نيمبوس 27 ([ASICS Gel-Nimbus 27)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462800845631055,imageDocid:15383187667376102066,gpcid:8856295525377145009,headlineOfferDocid:3443174770129102820,catalogid:7481617461760967288,productDocid:11339634598348128873,rds:PC_8856295525377145009%7CPROD_PC_8856295525377145009&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQxa4PeggIAggBCBMQIw)** : يُعد من الخيارات العالمية المفضلة للجري اليومي بفضل تقنية الجل المتقدمة التي توفر أقصى درجات امتصاص الصدمات والراحة الفائقة للمسافات الطويلة.[[1]](https://travostore.com/blog/%D8%A7%D9%81%D8%B6%D9%84-%D8%AD%D8%B0%D8%A7%D8%A1-%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A-%D9%84%D9%84%D9%85%D8%B4%D9%8A-%D9%88%D8%A7%D9%84%D8%AC%D8%B1%D9%8A/a-1259027137?srsltid=AY6E962OgA8Uq_c73Hedi5MipjT1RcLh_JZyC_PEyDpcqR8z-XSMNOGq)\n\n---\n\n[![ASICS Novablast 5)](https://api.dataforseo.com/cdn/i/<redacted-id>:11)\nASICS Novablast 5) | ASICSوالمزيد | 4.8(١١٫٤ ألف)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462803464945279,imageDocid:3570607286841190888,gpcid:1340101364570861215,headlineOfferDocid:18136649859083274783,catalogid:8784927757132692217,productDocid:7674085975104439976,rds:PC_1340101364570861215%7CPROD_PC_1340101364570861215&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQgLcPeggIAggBCBMQKA) \n\n**اسيكس نوفابلاست 5 ([ASICS Novablast 5)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462803464945279,imageDocid:3570607286841190888,gpcid:1340101364570861215,headlineOfferDocid:18136649859083274783,catalogid:8784927757132692217,productDocid:7674085975104439976,rds:PC_1340101364570861215%7CPROD_PC_1340101364570861215&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQxa4PeggIAggBCBMQMg)** : يمنح العدّائين شعوراً بالمرونة والارتداد العالي بفضل تصميمه النطّاقي المميز للنعل الأوسط، وهو ممتاز للسرعات والتدريبات النشطة.",
+                  "items": [
+                    {
+                      "type": "ai_overview_shopping_element",
+                      "product_id": "5841064319313574510",
+                      "data_docid": "15096648663257170427",
+                      "gid": "11099759111364707336",
+                      "title": "نايكي فوميرو 18 حذاء الجري على الطرق للرجال",
+                      "url": "https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462510575467798,imageDocid:3216704333467647645,gpcid:11099759111364707336,headlineOfferDocid:6236239393286176603,catalogid:5841064319313574510,productDocid:15096648663257170427,rds:PC_11099759111364707336%7CPROD_PC_11099759111364707336&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQgLcPeggIAggBCBMQAQ&hl=ar&gl=SA",
+                      "domain": "www.google.com",
+                      "rating": null,
+                      "price": null,
+                      "seller": "Nike.sa",
+                      "snippet": "Nike.sa والمزيد",
+                      "marketplace": null,
+                      "marketplace_url": null,
+                      "image_url": "https://api.dataforseo.com/cdn/i/<redacted-id>:1",
+                      "text": "يجمع بين فوم ZoomX الخفيف وتوسيد ReactX سريع الاستجابة، مما يجعله مثالياً للماراثادات والجري اليومي الطويل بسعر حوالي 729 ريال سعودي.",
+                      "markdown": "---\n\n[![نايكي فوميرو 18 حذاء الجري على الطرق للرجال](https://api.dataforseo.com/cdn/i/<redacted-id>:0)\nنايكي فوميرو 18 حذاء الجري على الطرق للرجال | Nike.saوالمزيد | 4.7(٣٫٧ آلاف)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462510575467798,imageDocid:3216704333467647645,gpcid:11099759111364707336,headlineOfferDocid:6236239393286176603,catalogid:5841064319313574510,productDocid:15096648663257170427,rds:PC_11099759111364707336%7CPROD_PC_11099759111364707336&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQgLcPeggIAggBCBMQAQ) \n\nيجمع بين فوم ZoomX الخفيف وتوسيد ReactX سريع الاستجابة، مما يجعله مثالياً للماراثادات والجري اليومي الطويل بسعر حوالي 729 ريال سعودي.[[1]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:15096648663257170427,catalogid:5841064319313574510,gpcid:11099759111364707336,mid:576462510575467798&ibp=oshop)"
+                    },
+                    {
+                      "type": "ai_overview_shopping_element",
+                      "product_id": "2468181861592526777",
+                      "data_docid": "9463615601903709901",
+                      "gid": "8805222204851159542",
+                      "title": "adidas حذاء الجري أديزيرو EVO SL للرجال",
+                      "url": "https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462915606187204,imageDocid:17823333264464285129,gpcid:8805222204851159542,headlineOfferDocid:6947013973177642921,catalogid:2468181861592526777,productDocid:9463615601903709901,rds:PC_8805222204851159542%7CPROD_PC_8805222204851159542&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQgLcPeggIAggBCBMQDQ&hl=ar&gl=SA",
+                      "domain": "www.google.com",
+                      "rating": {
+                        "rating_type": "Max5",
+                        "value": 4.7,
+                        "votes_count": 32700,
+                        "rating_max": 5
+                      },
+                      "price": null,
+                      "seller": "Sun & Sand Sports KSA",
+                      "snippet": "Sun & Sand Sports KSA والمزيد",
+                      "marketplace": null,
+                      "marketplace_url": null,
+                      "image_url": "https://api.dataforseo.com/cdn/i/<redacted-id>:3",
+                      "text": "يتميز بتقنية LIGHTSTRIKE PRO لإنتاج انطلاقة ديناميكية وخفيفة الوزن على الطرق الممهدة، متوفر بسعر حوالي 599.25 ريال سعودي.",
+                      "markdown": "---\n\n[![adidas حذاء الجري أديزيرو EVO SL للرجال](https://api.dataforseo.com/cdn/i/<redacted-id>:2)\nadidas حذاء الجري أديزيرو EVO SL للرجال | Sun &amp; Sand Sports KSAوالمزيد | 4.7(٣٢٫٧ ألف)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462915606187204,imageDocid:17823333264464285129,gpcid:8805222204851159542,headlineOfferDocid:6947013973177642921,catalogid:2468181861592526777,productDocid:9463615601903709901,rds:PC_8805222204851159542%7CPROD_PC_8805222204851159542&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQgLcPeggIAggBCBMQDQ) \n\nيتميز بتقنية LIGHTSTRIKE PRO لإنتاج انطلاقة ديناميكية وخفيفة الوزن على الطرق الممهدة، متوفر بسعر حوالي 599.25 ريال سعودي.[[1]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:9463615601903709901,catalogid:2468181861592526777,gpcid:8805222204851159542,mid:576462915606187204&ibp=oshop)"
+                    },
+                    {
+                      "type": "ai_overview_shopping_element",
+                      "product_id": "7481617461760967288",
+                      "data_docid": "11339634598348128873",
+                      "gid": "8856295525377145009",
+                      "title": "ASICS Gel-Nimbus 27)",
+                      "url": "https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462800845631055,imageDocid:15383187667376102066,gpcid:8856295525377145009,headlineOfferDocid:3443174770129102820,catalogid:7481617461760967288,productDocid:11339634598348128873,rds:PC_8856295525377145009%7CPROD_PC_8856295525377145009&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQgLcPeggIAggBCBMQGQ&hl=ar&gl=SA",
+                      "domain": "www.google.com",
+                      "rating": null,
+                      "price": {
+                        "current": null,
+                        "regular": null,
+                        "max_value": null,
+                        "currency": null,
+                        "is_price_range": false,
+                        "displayed_price": "‏٢٩٦٫٠٠ ر.س.‏"
+                      },
+                      "seller": "lumierstore.com",
+                      "snippet": "lumierstore.com والمزيد",
+                      "marketplace": null,
+                      "marketplace_url": null,
+                      "image_url": "https://api.dataforseo.com/cdn/i/<redacted-id>:5",
+                      "text": "اسيكس جل-نيمبوس 27 ( ASICS Gel-Nimbus 27) : يُعد من الخيارات العالمية المفضلة للجري اليومي بفضل تقنية الجل المتقدمة التي توفر أقصى درجات امتصاص الصدمات والراحة الفائقة للمسافات الطويلة.",
+                      "markdown": "---\n\n[![ASICS Gel-Nimbus 27)](https://api.dataforseo.com/cdn/i/<redacted-id>:4)\nASICS Gel-Nimbus 27) | lumierstore.comوالمزيد | 4.7(٥٫٩ آلاف)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462800845631055,imageDocid:15383187667376102066,gpcid:8856295525377145009,headlineOfferDocid:3443174770129102820,catalogid:7481617461760967288,productDocid:11339634598348128873,rds:PC_8856295525377145009%7CPROD_PC_8856295525377145009&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQgLcPeggIAggBCBMQGQ) \n\n**اسيكس جل-نيمبوس 27 ([ASICS Gel-Nimbus 27)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462800845631055,imageDocid:15383187667376102066,gpcid:8856295525377145009,headlineOfferDocid:3443174770129102820,catalogid:7481617461760967288,productDocid:11339634598348128873,rds:PC_8856295525377145009%7CPROD_PC_8856295525377145009&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQxa4PeggIAggBCBMQIw)** : يُعد من الخيارات العالمية المفضلة للجري اليومي بفضل تقنية الجل المتقدمة التي توفر أقصى درجات امتصاص الصدمات والراحة الفائقة للمسافات الطويلة.[[1]](https://travostore.com/blog/%D8%A7%D9%81%D8%B6%D9%84-%D8%AD%D8%B0%D8%A7%D8%A1-%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A-%D9%84%D9%84%D9%85%D8%B4%D9%8A-%D9%88%D8%A7%D9%84%D8%AC%D8%B1%D9%8A/a-1259027137?srsltid=AY6E962OgA8Uq_c73Hedi5MipjT1RcLh_JZyC_PEyDpcqR8z-XSMNOGq)"
+                    },
+                    {
+                      "type": "ai_overview_shopping_element",
+                      "product_id": "8784927757132692217",
+                      "data_docid": "7674085975104439976",
+                      "gid": "1340101364570861215",
+                      "title": "ASICS Novablast 5)",
+                      "url": "https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462803464945279,imageDocid:3570607286841190888,gpcid:1340101364570861215,headlineOfferDocid:18136649859083274783,catalogid:8784927757132692217,productDocid:7674085975104439976,rds:PC_1340101364570861215%7CPROD_PC_1340101364570861215&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQgLcPeggIAggBCBMQKA&hl=ar&gl=SA",
+                      "domain": "www.google.com",
+                      "rating": {
+                        "rating_type": "Max5",
+                        "value": 4.8,
+                        "votes_count": 11400,
+                        "rating_max": 5
+                      },
+                      "price": {
+                        "current": null,
+                        "regular": null,
+                        "max_value": null,
+                        "currency": null,
+                        "is_price_range": false,
+                        "displayed_price": "‏٦٨٥٫٠٠ ر.س.‏"
+                      },
+                      "seller": "ASICS",
+                      "snippet": "ASICS والمزيد",
+                      "marketplace": null,
+                      "marketplace_url": null,
+                      "image_url": "https://api.dataforseo.com/cdn/i/<redacted-id>:7",
+                      "text": "اسيكس نوفابلاست 5 ( ASICS Novablast 5) : يمنح العدّائين شعوراً بالمرونة والارتداد العالي بفضل تصميمه النطّاقي المميز للنعل الأوسط، وهو ممتاز للسرعات والتدريبات النشطة.",
+                      "markdown": "---\n\n[![ASICS Novablast 5)](https://api.dataforseo.com/cdn/i/<redacted-id>:6)\nASICS Novablast 5) | ASICSوالمزيد | 4.8(١١٫٤ ألف)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462803464945279,imageDocid:3570607286841190888,gpcid:1340101364570861215,headlineOfferDocid:18136649859083274783,catalogid:8784927757132692217,productDocid:7674085975104439976,rds:PC_1340101364570861215%7CPROD_PC_1340101364570861215&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQgLcPeggIAggBCBMQKA) \n\n**اسيكس نوفابلاست 5 ([ASICS Novablast 5)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462803464945279,imageDocid:3570607286841190888,gpcid:1340101364570861215,headlineOfferDocid:18136649859083274783,catalogid:8784927757132692217,productDocid:7674085975104439976,rds:PC_1340101364570861215%7CPROD_PC_1340101364570861215&q=product&sa=X&ved=2ahUKEwjVyaLJtamYAxUxa2wGHRY-KrcQxa4PeggIAggBCBMQMg)** : يمنح العدّائين شعوراً بالمرونة والارتداد العالي بفضل تصميمه النطّاقي المميز للنعل الأوسط، وهو ممتاز للسرعات والتدريبات النشطة."
+                    }
+                  ]
+                },
+                {
+                  "type": "ai_overview_element",
+                  "position": "left",
+                  "title": null,
+                  "text": "هل تبحث عن حذاء لمسافات طويلة (ماراتون)، أم للجري السريع، أو لجلسات المشي اليومي؟ أخبرني بطبيعة استخدامك وسأقترح عليك الخيار الأنسب.",
+                  "markdown": "هل تبحث عن حذاء لمسافات طويلة (ماراتون)، أم للجري السريع، أو لجلسات المشي اليومي؟ أخبرني بطبيعة استخدامك وسأقترح عليك الخيار الأنسب.",
+                  "links": null,
+                  "images": null,
+                  "references": null
+                }
+              ],
+              "references": [
+                {
+                  "type": "ai_overview_reference",
+                  "position": "right",
+                  "source": "متجر ترافو",
+                  "domain": "travostore.com",
+                  "url": "https://travostore.com/blog/%D8%A7%D9%81%D8%B6%D9%84-%D8%AD%D8%B0%D8%A7%D8%A1-%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A-%D9%84%D9%84%D9%85%D8%B4%D9%8A-%D9%88%D8%A7%D9%84%D8%AC%D8%B1%D9%8A/a-1259027137",
+                  "title": "الأحذية الرياضية الأكثر مبيعاً في السعودية | أفضل حذاء رياضي ...",
+                  "text": "حذاء اسيكس جل- نيمبوس 27 – الأفضل للجري. وهو من الخيارات المفضلة لدى …"
+                },
+                {
+                  "type": "ai_overview_reference",
+                  "position": "right",
+                  "source": "Google",
+                  "domain": "www.google.com",
+                  "url": "https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:15096648663257170427,catalogid:5841064319313574510,gpcid:11099759111364707336,mid:576462510575467798&ibp=oshop",
+                  "title": "Nike حذاء رياضي فوميرو 18 من نايك",
+                  "text": "حذاء الجري فوميرو 18 رود للرجال من نايكي يتميز بفوم ZoomX الخفيف فوق توسيد ReactX سريع الاستجابة مع نمط تماسك معاد تصميمه لخطوات سلسة وثابتة في كل جولة. المميزات مثالي لتمارين الماراثون أو الجري اليومي الخفيف على حد سواء. سطح خارجي شبكي يضمن التهوية والراحة الاستثنائية لارتداء طوال اليوم. يوفر فوم ZoomX الخفيف وسريع الاستجابة في النعل الأوسط مرونة عند الانطلاق وانسيابية عند التحرك للأمام وتوسيدا مريحا أثناء الهبوط. فوم ReactX في الكعب ومقدمة القدم يعزز استعادة الطاقة للعدائين. أجزاء حول النعل السفلي تساعد على زيادة المرونة وسلاسة الحركة من الكعب إلى الأصابع. تفاصيل إضافية توسيد في محيط الكاحل واللسان لتعزيز الراحة. حلقة سحب على الكعب لسهولة الارتداء والخلع. إغلاق بالأربطة يوفر ثباتا محكما. شعار سووش يمنح مظهرا مميزا."
+                },
+                {
+                  "type": "ai_overview_reference",
+                  "position": "right",
+                  "source": "Google",
+                  "domain": "www.google.com",
+                  "url": "https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:9463615601903709901,catalogid:2468181861592526777,gpcid:8805222204851159542,mid:576462915606187204&ibp=oshop",
+                  "title": "adidas حذاء Adizero EVO SL Men",
+                  "text": "انطلق نحو أفضل أرقامك مع حذاء الجري أديزيرو EVO SL للرجال من اديداس الذي يجمع بين سطح خارجي خفيف الوزن وتقنية LIGHTSTRIKE PRO سريعة الاستجابة ونعل سفلي مطاطي يمنحك ثباتا موثوقا. المميزات مثالي للجري على الطرق الممهدة. سطح خارجي نسيجي خفيف الوزن يوفر المتانة. تقنية LIGHTSTRIKE PRO توفر توسيدا سريع الاستجابة وانطلاقة ديناميكية. بطانة داخلية نسيجية لمزيد من الراحة. نعل سفلي مطاطي يوفر احتكاكا موثوقا. التفاصيل الإضافية ياقة كاحل مبطنة لمزيد من الراحة. إغلاق بأربطة لملاءمة محكمة. شعار اديداس يمنح مظهرا مميزا. قصة عادية."
+                }
+              ],
+              "rectangle": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

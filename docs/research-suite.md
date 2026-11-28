@@ -47,10 +47,11 @@ Use any of this from Claude or another AI assistant with the [MCP server](mcp.md
   - `ai-visibility` runs only when `SEO_AI_VISIBILITY` is `true`. It makes questions × engines × runs paid API calls, capped at 40 questions.
 - **On request:** `optimize` and `keywords "<seed>"`.
 
-## Configuration (all optional)
+## Configuration
+Set the site's `market` (location and language; [configuration.md#market](configuration.md#market)) before using any live provider. Without it the old United Kingdom / English behaviour applies, with a warning. The `research` block below is optional.
 ```json
+"market": { "location_code": 2826, "language_code": "en" },
 "research": {
-  "market": "GB",
   "competitors": ["rival.com", "other.co.uk"],
   "competitorNames": ["Rival Ltd"],
   "aliases": ["Acme", "Acme Plumbing Ltd"],
@@ -80,7 +81,7 @@ Set each key as a repository secret, or in your shell when running locally. Neve
 Check each provider's current prices before switching a scheduled step on. The defaults keep paid steps off.
 
 ### Google Keyword Planner
-`keywords "<seed>"` asks Keyword Planner for ideas, average monthly searches, competition and top-of-page bid ranges in your `research.market`. Its volume ranks above every other demand source in the report.
+`keywords "<seed>"` asks Keyword Planner for ideas, average monthly searches, competition and top-of-page bid ranges in your site's `market` (its location and language). Its volume ranks above every other demand source in the report.
 1. In a Google Ads **manager** account, open Tools > API Center and request a developer token. A new token works only with test accounts; apply for Basic access for real data. Approval is Google's decision.
 2. Sign-in: create an OAuth client (Google Cloud console) and a refresh token with the `https://www.googleapis.com/auth/adwords` scope, or add your service account's email as a user of the Ads account and reuse `GOOGLE_KEY_JSON`.
 3. Add the secrets in the table above. `GOOGLE_ADS_CUSTOMER_ID` is the Ads account to plan in; set `GOOGLE_ADS_LOGIN_CUSTOMER_ID` to the manager account when access goes through it.

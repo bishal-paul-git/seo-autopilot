@@ -10,14 +10,12 @@
 //     GOOGLE_ADS_CLIENT_ID + GOOGLE_ADS_CLIENT_SECRET + GOOGLE_ADS_REFRESH_TOKEN   OAuth with the adwords scope (Google's default)
 //     GOOGLE_KEY_JSON / GOOGLE_KEY_FILE   the service account, once its email is added as a user of the Ads account
 //   GOOGLE_ADS_API_VERSION        optional, default v24 (Google retires each version about a year after release)
-//   GOOGLE_ADS_LANGUAGE           optional language constant id, default 1000 (English)
+//   GOOGLE_ADS_LANGUAGE           optional language constant id; overrides the language of the site's market (default: the market's language)
 // Tokens go in headers only and are never logged or put in errors.
 import { getToken } from "./google-auth.mjs";
-import { market } from "./research-sources.mjs";
+import { requireMarket, adsLanguageId } from "./market.mjs";
 
 export const ADWORDS_SCOPE = "https://www.googleapis.com/auth/adwords";
-// Geo target constant ids (Google Ads geotargets list) for the markets the research suite knows.
-const GEO = { GB: 2826, US: 2840, CA: 2124, AU: 2036, IE: 2372, DE: 2276, FR: 2250, ES: 2724, IT: 2380, NL: 2528, IN: 2356, NZ: 2554, ZA: 2710 };
 const MONTHS = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
 
 const oauthSet = (env) => Boolean(env.GOOGLE_ADS_CLIENT_ID && env.GOOGLE_ADS_CLIENT_SECRET && env.GOOGLE_ADS_REFRESH_TOKEN);
@@ -75,14 +73,13 @@ export const planner = {
   enabled: (env) => Boolean(env.GOOGLE_ADS_DEVELOPER_TOKEN && customer(env.GOOGLE_ADS_CUSTOMER_ID) && (oauthSet(env) || env.GOOGLE_KEY_JSON || env.GOOGLE_KEY_FILE)),
   /** Keyword ideas for up to 20 seeds in the market: [{ query, volume, competition, competitionIndex, bidLow, bidHigh, trend, months }]. */
   async ideas(seeds, m, { fetch: f = fetch, env = process.env, limit = 300, token = null } = {}) {
-    const geo = GEO[market(m)];
-    if (!geo) throw new Error(`google-ads: no geo target for market ${market(m)}`);
+    const mk = requireMarket(m, "google-ads"); // the market's location_code is the Google Ads geo target id
     const id = customer(env.GOOGLE_ADS_CUSTOMER_ID), v = env.GOOGLE_ADS_API_VERSION || "v24";
     const headers = { Authorization: `Bearer ${token || (await accessToken(env, f))}`, "developer-token": env.GOOGLE_ADS_DEVELOPER_TOKEN, "Content-Type": "application/json" };
     if (env.GOOGLE_ADS_LOGIN_CUSTOMER_ID) headers["login-customer-id"] = customer(env.GOOGLE_ADS_LOGIN_CUSTOMER_ID);
     const body = {
-      keywordSeed: { keywords: seeds.slice(0, 20) }, language: `languageConstants/${env.GOOGLE_ADS_LANGUAGE || 1000}`,
-      geoTargetConstants: [`geoTargetConstants/${geo}`], keywordPlanNetwork: "GOOGLE_SEARCH", includeAdultKeywords: false, pageSize: limit,
+      keywordSeed: { keywords: seeds.slice(0, 20) }, language: `languageConstants/${env.GOOGLE_ADS_LANGUAGE || adsLanguageId(mk)}`,
+      geoTargetConstants: [`geoTargetConstants/${mk.locationCode}`], keywordPlanNetwork: "GOOGLE_SEARCH", includeAdultKeywords: false, pageSize: limit,
     };
     let r;
     try { r = await f(`https://googleads.googleapis.com/${v}/customers/${id}:generateKeywordIdeas`, { method: "POST", headers, body: JSON.stringify(body), signal: AbortSignal.timeout(30000) }); }

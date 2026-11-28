@@ -12,43 +12,55 @@
 import { readJson, writeJson, writeText, sleep } from "../core/util.mjs";
 import { loadPages } from "../adapters/index.mjs";
 import { pickProvider } from "../lib/serp.mjs";
+import { costGuardFor } from "../lib/dataforseo.mjs";
 import { bing, dataforseo, openpagerank, suggest } from "../lib/research-sources.mjs";
 import { planner } from "../lib/google-ads.mjs";
 import { wikipedia, stackexchange } from "../lib/open-data.mjs";
 import { youtube } from "../lib/youtube.mjs";
+import { siteMarket, languageFor, marketLabel } from "../lib/market.mjs";
 import { explore, keywordsMarkdown, demand, mergeCandidates, interest, communityQuestions, openDataMarkdown, videoCandidates, videoSummary, videoMarkdown } from "../analysis/keywords.mjs";
 
 export const description = "Keyword explorer: topics, intent, demand, difficulty, gaps and questions from Search Console plus any keys you add";
 
-export const marketOf = (site) => site.research?.market || site.citations?.market || "GB";
+/** The site's market (config `market`), optionally for one of its languages. Throws before any request when it is wrong; with none, the old UK / English behaviour (warned about). */
+export const marketOf = (site, language) => siteMarket(site, language);
 
 /** `deps` lets tests inject fetch, env and a zero delay. */
 export async function run({ site, flags = {}, positional = [] }, deps = {}) {
   const env = deps.env || process.env, f = deps.fetch || globalThis.fetch, delay = deps.delayMs ?? 1000;
-  const s = site.paths.state, m = marketOf(site);
+  const s = site.paths.state;
+  const guard = costGuardFor(site, "keywords", { env, fetch: f, guard: deps.guard, now: deps.now });
   const seeds = positional.map((x) => String(x).toLowerCase().trim()).filter(Boolean);
   const notes = [];
+  // The market is needed only when something below will make a request. Resolved here, outside tryIt, so a missing or unknown
+  // market stops the job with a clear error instead of becoming a note.
+  const provider = pickProvider(env), want = Number(flags.serp || 0);
+  const callsOut = seeds.length ? (bing.enabled(env) || planner.enabled(env) || dataforseo.enabled(env) || flags.suggest || !flags["no-open-data"]) : false;
+  const m = callsOut || (want > 0 && provider) || (youtube.enabled(env) && !flags["no-video"]) ? marketOf(site, flags.language) : null;
   const sources = { gsc: readJson(`${s}/gsc-rows.json`, { rows: [] }).rows || [], bing: [], ideas: [], planner: [], suggest: [] };
   if (!sources.gsc.length) notes.push("No Search Console rows saved yet (run the daily job): own demand and positions are missing.");
   const tryIt = async (name, fn, fallback = []) => { try { return await fn(); } catch (e) { notes.push(`${name}: ${e.message}`); return fallback; } };
-  for (const seed of seeds.slice(0, 10)) {
-    if (bing.enabled(env)) sources.bing.push(...(await tryIt("bing", () => bing.related(seed, m, { fetch: f, env }))));
-    if (flags.suggest) sources.suggest.push(...(await tryIt("suggest", () => suggest.expand(seed, m, { fetch: f, delayMs: delay, sleep }))));
+  // Each seed is researched in its own language when the site has several (the explicit --language wins); one request per language.
+  const seedMarkets = new Map();
+  if (m) for (const seed of seeds) { const mk = languageFor(m, seed, flags.language); (seedMarkets.get(mk.languageCode) || seedMarkets.set(mk.languageCode, { mk, seeds: [] }).get(mk.languageCode)).seeds.push(seed); }
+  if (m) for (const seed of seeds.slice(0, 10)) {
+    const mk = languageFor(m, seed, flags.language);
+    if (bing.enabled(env)) sources.bing.push(...(await tryIt("bing", () => bing.related(seed, mk, { fetch: f, env }))));
+    if (flags.suggest) sources.suggest.push(...(await tryIt("suggest", () => suggest.expand(seed, mk, { fetch: f, delayMs: delay, sleep }))));
   }
-  if (seeds.length && planner.enabled(env)) sources.planner = await tryIt("google-ads", () => planner.ideas(seeds, m, { fetch: f, env, token: deps.adsToken }));
-  if (seeds.length && dataforseo.enabled(env)) sources.ideas = await tryIt("dataforseo", () => dataforseo.ideas(seeds, m, { fetch: f, env }));
+  if (seeds.length && planner.enabled(env)) for (const g of seedMarkets.values()) sources.planner.push(...(await tryIt("google-ads", () => planner.ideas(g.seeds, g.mk, { fetch: f, env, token: deps.adsToken }))));
+  if (seeds.length && dataforseo.enabled(env)) for (const g of seedMarkets.values()) sources.ideas.push(...(await tryIt("dataforseo", () => dataforseo.ideas(g.seeds, g.mk, { guard }))));
   if (!seeds.length && !sources.gsc.length) { console.log("keywords: give seed terms (run keywords \"your topic\") or run the daily job first."); return; }
 
   // Live results for the top candidates: the true test of which queries are one topic, and the input to difficulty.
   const serps = {}, serpResults = {};
-  const provider = pickProvider(env), want = Number(flags.serp || 0);
   if (want > 0 && !provider) notes.push("--serp needs a SERP provider key (BRAVE_API_KEY, SERPAPI_KEY or DataForSEO); grouped by words instead.");
   if (want > 0 && provider) {
     const brandTerms = site.brandTerms || [];
     const top = mergeCandidates(sources, { seeds, brandTerms, ignore: site.ignoreQueries || [] }).sort((a, b) => demand(b).value - demand(a).value).slice(0, Math.min(want, 100));
     for (const [i, k] of top.entries()) {
       if (i) await sleep(delay);
-      try { const r = await provider.search(k.query, m, { fetch: f, env }); serpResults[k.query] = r.results; serps[k.query] = r.results.slice(0, 10).map((x) => x.url); }
+      try { const r = await provider.search(k.query, languageFor(m, k.query, flags.language), { fetch: f, env, guard }); serpResults[k.query] = r.results; serps[k.query] = r.results.slice(0, 10).map((x) => x.url); }
       catch (e) { notes.push(`${provider.name} "${k.query}": ${e.message}`); }
     }
   }
@@ -64,7 +76,7 @@ export async function run({ site, flags = {}, positional = [] }, deps = {}) {
   const open = { topics: [], community: [] };
   if (seeds.length && !flags["no-open-data"]) {
     for (const seed of seeds.slice(0, 5)) {
-      const article = await tryIt("wikipedia", () => wikipedia.article(seed, m, { fetch: f }), null);
+      const article = await tryIt("wikipedia", () => wikipedia.article(seed, languageFor(m, seed, flags.language), { fetch: f }), null);
       if (article) open.topics.push({ seed, article, interest: interest(await tryIt("wikipedia", () => wikipedia.pageviews(article.title, article.lang, { fetch: f, today: deps.today }))) });
     }
     const seSites = (typeof flags.stackexchange === "string" ? flags.stackexchange.split(",") : site.research?.stackExchangeSites || []).map((x) => x.trim()).filter(Boolean).slice(0, 5);
@@ -75,9 +87,9 @@ export async function run({ site, flags = {}, positional = [] }, deps = {}) {
   // Video results for how-to, review and comparison topics (YOUTUBE_API_KEY; 5 searches = 500 of the 10,000 free daily units).
   const video = [], channel = site.research?.youtubeChannel || "";
   if (youtube.enabled(env) && !flags["no-video"]) {
-    for (const q of videoCandidates(r.groups, 5)) { const v = await tryIt("youtube", () => youtube.videos(q, m, { fetch: f, env }), null); if (v) video.push(videoSummary(q, v, channel)); }
+    for (const q of videoCandidates(r.groups, 5)) { const v = await tryIt("youtube", () => youtube.videos(q, languageFor(m, q, flags.language), { fetch: f, env }), null); if (v) video.push(videoSummary(q, v, channel)); }
   }
-  writeJson(`${s}/keywords.json`, { generatedAt: new Date().toISOString(), market: m, provider: provider && want ? provider.name : null, notes, ...r, ...open, video });
+  writeJson(`${s}/keywords.json`, { generatedAt: new Date().toISOString(), market: m ? marketLabel(m) : null, provider: provider && want ? provider.name : null, notes, ...r, ...open, video });
   const md = keywordsMarkdown(r, site.name) + openDataMarkdown(open) + videoMarkdown(video, channel) + (notes.length ? `\n## Notes\n${notes.map((x) => `- ${x}`).join("\n")}\n` : "");
   writeText(`${s}/keywords.md`, md);
   console.log(md);

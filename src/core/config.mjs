@@ -3,6 +3,9 @@
 import { existsSync } from "node:fs";
 import { dirname, join, resolve, isAbsolute } from "node:path";
 import { readJson, writeJson } from "./util.mjs";
+import { resolveMarket, MarketError } from "../lib/market.mjs";
+import { validateAeo } from "../lib/aeo-config.mjs";
+import { DEFAULT_CAP_USD, DEFAULT_MIN_BALANCE_USD } from "../lib/budget-defaults.mjs";
 
 export const CONFIG_NAME = "seo-autopilot.config.json";
 
@@ -21,6 +24,7 @@ export const DEFAULTS = {
     review: { requireFields: ["author", "reviewedBy"] },
     indexNow: { keyEnv: "INDEXNOW_KEY" },
     ingest: null,
+    dataforseo: { monthlyCapUsd: DEFAULT_CAP_USD, minBalanceUsd: DEFAULT_MIN_BALANCE_USD },
   },
 };
 
@@ -70,6 +74,19 @@ export function validate(raw) {
       if (s[k] != null && (!Array.isArray(s[k]) || s[k].some((v) => typeof v !== "string"))) errors.push(`${w}.${k} must be a list of URL path patterns, for example ["/contact", "/blog/*"]`);
     }
     if (s.language != null && (typeof s.language !== "string" || !/^[a-z]{2}(-[A-Za-z]{2,4})?$/.test(s.language))) errors.push(`${w}.language must be a language code such as "en" or "en-GB"`);
+    // The market (location + language) is checked here when present. A missing one is allowed: provider calls then keep the old
+    // United Kingdom / English behaviour with a warning, and `doctor` reports it (see src/lib/market.mjs).
+    if (s.market != null) { try { resolveMarket(s.market, w); } catch (e) { if (!(e instanceof MarketError)) throw e; errors.push(e.message); } }
+    if (s.dataforseo != null) {
+      const d = s.dataforseo;
+      if (typeof d !== "object" || Array.isArray(d)) errors.push(`${w}.dataforseo must be an object, for example {"monthlyCapUsd": 8, "minBalanceUsd": 10}`);
+      else {
+        const extra = Object.keys(d).filter((k) => !["monthlyCapUsd", "minBalanceUsd"].includes(k));
+        if (extra.length) errors.push(`${w}.dataforseo: unknown key ${extra.map((k) => `"${k}"`).join(", ")}. Allowed: monthlyCapUsd, minBalanceUsd`);
+        for (const k of ["monthlyCapUsd", "minBalanceUsd"]) if (d[k] != null && (typeof d[k] !== "number" || !Number.isFinite(d[k]) || d[k] < 0)) errors.push(`${w}.dataforseo.${k} must be a number of US dollars, 0 or more`);
+      }
+    }
+    if (s.aeo != null) errors.push(...validateAeo(s.aeo, `${w}.aeo`, s.market));
     if (s.business != null && (typeof s.business !== "object" || Array.isArray(s.business) || Object.keys(s.business).some((k) => !["name", "phone", "address"].includes(k)))) errors.push(`${w}.business may only have name, phone and address (the details you confirm are correct)`);
     if (s.verticals != null && (!Array.isArray(s.verticals) || s.verticals.some((v) => !["local", "ecommerce"].includes(v)))) errors.push(`${w}.verticals must be a list of packs: "local", "ecommerce" ([] turns packs off)`);
     if (s.conversions != null && (typeof s.conversions !== "object" || (s.conversions.events != null && (!Array.isArray(s.conversions.events) || s.conversions.events.some((e) => typeof e !== "string"))))) errors.push(`${w}.conversions.events must be a list of GA4 event names`);
@@ -91,9 +108,9 @@ export function validate(raw) {
       else {
         if (r.logo != null && (typeof r.logo !== "string" || !/^https:\/\//.test(r.logo))) errors.push(`${w}.research.logo must be a full https URL of your logo image`);
         for (const k of ["competitors", "competitorNames", "aliases", "engines", "sameAs", "stackExchangeSites"]) if (r[k] != null && (!Array.isArray(r[k]) || r[k].some((x) => typeof x !== "string"))) errors.push(`${w}.research.${k} must be a list of strings`);
-        if (Array.isArray(r.engines) && r.engines.some((e) => !["perplexity", "openai", "anthropic", "gemini"].includes(e))) errors.push(`${w}.research.engines may list perplexity, openai, anthropic and gemini`);
+        if (Array.isArray(r.engines) && r.engines.some((e) => !["perplexity", "openai", "anthropic", "gemini", "dataforseo"].includes(e))) errors.push(`${w}.research.engines may list perplexity, openai, anthropic, gemini and dataforseo`);
         if (r.youtubeChannel != null && typeof r.youtubeChannel !== "string") errors.push(`${w}.research.youtubeChannel must be your YouTube channel name as text`);
-        if (r.market != null && (typeof r.market !== "string" || !/^[A-Za-z]{2}$/.test(r.market))) errors.push(`${w}.research.market must be a two-letter country code, for example "GB" or "US"`);
+        if (r.market != null && (typeof r.market !== "string" || !/^[A-Za-z]{2}$/.test(r.market))) errors.push(`${w}.research.market must be a two-letter country code, for example "GB" or "US". It is only used when the site has no "market"; prefer setting "market" (location and language)`);
         if (r.aiRuns != null && (!Number.isInteger(r.aiRuns) || r.aiRuns < 1 || r.aiRuns > 5)) errors.push(`${w}.research.aiRuns must be a whole number from 1 to 5`);
         if (r.serpLimit != null && (!Number.isInteger(r.serpLimit) || r.serpLimit < 1 || r.serpLimit > 200)) errors.push(`${w}.research.serpLimit must be a whole number from 1 to 200`);
       }

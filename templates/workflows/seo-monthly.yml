@@ -24,6 +24,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - name: Restore state
+        id: restore
         run: npx --yes "$SEO" state restore
       - name: Full site audit
         continue-on-error: true
@@ -62,4 +63,7 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: npx --yes "$SEO" run monthly --prs "$RUNNER_TEMP/prs.json"
       - name: Save state
+        # Also after a failed or cancelled step (the DataForSEO spend of this run must be kept), but never when the restore
+        # failed: saving then would force-push empty state over the good one.
+        if: always() && steps.restore.outcome == 'success'
         run: npx --yes "$SEO" state save

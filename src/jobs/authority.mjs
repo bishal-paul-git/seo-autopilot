@@ -6,6 +6,7 @@
 // Writes authority.json, authority.md and authority-snapshot.json in the state folder. Never contacts anyone.
 import { readJson, writeJson, writeText, today } from "../core/util.mjs";
 import { dataforseo, openpagerank } from "../lib/research-sources.mjs";
+import { costGuardFor } from "../lib/dataforseo.mjs";
 import { competitors as pickCompetitors } from "../analysis/gap.mjs";
 import { mergeDomains, profile, intersect, compare, authorityMarkdown } from "../analysis/authority.mjs";
 
@@ -13,6 +14,7 @@ export const description = "Backlink and authority profile: referring domains wi
 
 export async function run({ site, flags = {} }, deps = {}) {
   const env = deps.env || process.env, f = deps.fetch || globalThis.fetch, s = site.paths.state;
+  const guard = costGuardFor(site, "authority", { env, fetch: f, guard: deps.guard, now: deps.now });
   const own = new URL(site.url).hostname.replace(/^www\./, "");
   const notes = [], sources = {};
   const inbound = readJson(`${s}/inbound.json`, null);
@@ -22,8 +24,8 @@ export async function run({ site, flags = {} }, deps = {}) {
   const comp = pickCompetitors({ configured, shareOfVoice: readJson(`${s}/rank.json`, {}).live?.shareOfVoice || [], own });
   const theirs = {};
   if (dataforseo.enabled(env)) {
-    try { sources.dataforseo = await dataforseo.referringDomains(own, { fetch: f, env }); } catch (e) { notes.push(`dataforseo ${own}: ${e.message}`); }
-    for (const d of comp.domains) { try { theirs[d] = await dataforseo.referringDomains(d, { fetch: f, env }); } catch (e) { notes.push(`dataforseo ${d}: ${e.message}`); } }
+    try { sources.dataforseo = await dataforseo.referringDomains(own, { guard }); } catch (e) { notes.push(`dataforseo ${own}: ${e.message}`); }
+    for (const d of comp.domains) { try { theirs[d] = await dataforseo.referringDomains(d, { guard }); } catch (e) { notes.push(`dataforseo ${d}: ${e.message}`); } }
   } else notes.push("Competitor links and the link intersect need DataForSEO (DATAFORSEO_LOGIN + DATAFORSEO_PASSWORD).");
   const domains = mergeDomains(sources);
   if (!domains.length && !Object.keys(theirs).length) { console.log(`authority: no link data yet.\n${notes.map((n) => `- ${n}`).join("\n")}`); return; }

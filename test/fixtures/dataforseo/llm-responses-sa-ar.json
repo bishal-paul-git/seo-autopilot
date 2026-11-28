@@ -1,0 +1,226 @@
+{
+  "version": "0.1.20261117",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "cost": 0.030578,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "cost": 0.030578,
+      "result_count": 1,
+      "path": [
+        "v3",
+        "ai_optimization",
+        "chat_gpt",
+        "llm_responses",
+        "live"
+      ],
+      "data": {
+        "api": "ai_optimization",
+        "function": "llm_responses",
+        "se": "chat_gpt",
+        "user_prompt": "ما هي أفضل أحذية الجري؟",
+        "model_name": "gpt-4.1-mini",
+        "web_search": true,
+        "web_search_country_iso_code": "SA",
+        "max_output_tokens": 1024
+      },
+      "result": [
+        {
+          "model_name": "gpt-4.1-mini-2025-04-14",
+          "input_tokens": 8174,
+          "output_tokens": 1068,
+          "reasoning_tokens": 0,
+          "web_search": true,
+          "money_spent": 0.0299784,
+          "items": [
+            {
+              "type": "message",
+              "sections": [
+                {
+                  "type": "text",
+                  "text": "اختيار الحذاء المناسب للجري يعتمد على عدة عوامل، منها نوع الجري (على الطرق المعبدة أو التضاريس الوعرة)، مستوى الدعم المطلوب، واحتياجات القدم الفردية. فيما يلي قائمة ببعض أفضل أحذية الجري لعام 2024، مع توصيات لكل نوع من الجري:\n\n\n[Nike Pegasus 42 Men's Shoes White/Black/Photon Dust | Running Warehouse](https://www.runningwarehouse.com/Nike_Pegasus_42/descpage-NAP42M7.html?utm_source=openai)\n**نايكي إير زوم بيغاسوس 42**  \nحذاء خفيف الوزن ومريح، مناسب للجري على الطرق المعبدة. يوفر دعمًا ممتازًا وراحة للقدم. ([nike.sa](https://www.nike.sa/ar/sports/running/shoes?utm_source=openai))\n\n\n\n[ASICS（アシックス） スニーカー GEL-KAYANO 29 ゲル カヤノ 1011B440 BLACK シューズ GelKayano ゲルカヤノ ブラック ランニングシューズ ンズ レディース : セレクトショップ a-clo - 通販 - Yahoo!ショッピング](https://store.shopping.yahoo.co.jp/snkrs-aclo/as-1011b440.html?utm_source=openai)\n**أسيكس جيل كايانو 29**  \nمصمم للعدائين الذين يحتاجون إلى دعم إضافي وثبات. يحتوي على نظام جل من أسيكس لامتصاص الصدمات وتوفير دعم للقدم.\n\n\n\n[Shopee Thailand | ซื้อขายผ่านมือถือ หรือออนไลน์](https://shopee.co.th/HOKA-SPEEDGOAT-5-WIDE%28%E0%B8%AB%E0%B8%99%E0%B9%89%E0%B8%B2%E0%B8%81%E0%B8%A7%E0%B9%89%E0%B8%B2%E0%B8%87%29-Women-HARBOR-MIST-SPRUCE-1123160-HMSP-i.25429265.44158973529?utm_source=openai)\n**هوكا سبيدغوت 5**  \nحذاء مميز للجري على التضاريس الوعرة، يوفر ثباتًا وراحة على المسارات الجبلية. ([citymagazine.si](https://citymagazine.si/ar/%D8%A3%D9%81%D8%B6%D9%84-%D8%A3%D8%AD%D8%B0%D9%8A%D8%A9-%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A9-%D9%84%D9%84%D8%B1%D8%AC%D8%A7%D9%84-2024-%D9%84%D8%AD%D8%B8%D8%A7%D8%AA-%D9%84%D8%A7-%D8%AA%D9%86%D8%B3/?utm_source=openai))\n\n\n\n[Nike Air Zoom Alphafly Next% 3 Women’s Size 7 Sail Crimson Tint (FD8315-103) | eBay](https://www.ebay.com/itm/326385708051?utm_source=openai)\n**نايكي ألفا فلاي 3**  \nحذاء سباق متقدم، مناسب للعدائين الذين يسعون لتحقيق أفضل أداء في السباقات. ([nike.sa](https://www.nike.sa/ar/sports/running/shoes?utm_source=openai))\n\n\n\n[ASICS METASPEED SKY Paris uk6, Men's Fashion, Activewear on Carousell](https://www.carousell.com.my/p/asics-metaspeed-sky-paris-uk6-1400680395/?utm_source=openai)\n**أسيكس ميتاسبيد سكاي باريس**  \nحذاء سباق متقدم، مناسب للعدائين الذين يسعون لتحقيق أفضل أداء في السباقات. ([itg-ar.com](https://www.itg-ar.com/%D8%AA%D9%82%D9%86%D9%8A%D8%A9/%D8%A3%D9%81%D8%B6%D9%84-%D8%A3%D8%AD%D8%B0%D9%8A%D8%A9-%D8%A7%D9%84%D8%AC%D8%B1%D9%8A%D8%8C-%D8%A7%D9%84%D8%AA%D9%8A-%D8%AA%D9%85-%D8%A7%D8%AE%D8%AA%D8%A8%D8%A7%D8%B1%D9%87%D8%A7-%D9%88%D9%85%D8%B1/4089/?utm_source=openai))\n\n\nعند اختيار الحذاء المناسب، يُنصح بتجربته شخصيًا للتأكد من ملاءمته لقدمك واحتياجاتك الخاصة. ",
+                  "annotations": [
+                    {
+                      "title": "Nike Pegasus 42 Men's Shoes White/Black/Photon Dust | Running Warehouse",
+                      "url": "https://www.runningwarehouse.com/Nike_Pegasus_42/descpage-NAP42M7.html?utm_source=openai",
+                      "start_index": 228,
+                      "end_index": 391,
+                      "text": "[Nike Pegasus 42 Men's Shoes White/Black/Photon Dust | Running Warehouse](https://www.runningwarehouse.com/Nike_Pegasus_42/descpage-NAP42M7.html?utm_source=openai)"
+                    },
+                    {
+                      "title": "‏حذاء جري نايكي | تسوق جزمة جري للرجال والنساء في السعودية",
+                      "url": "https://www.nike.sa/ar/sports/running/shoes?utm_source=openai",
+                      "start_index": 509,
+                      "end_index": 583,
+                      "text": "([nike.sa](https://www.nike.sa/ar/sports/running/shoes?utm_source=openai))"
+                    },
+                    {
+                      "title": "ASICS（アシックス） スニーカー GEL-KAYANO 29 ゲル カヤノ 1011B440 BLACK シューズ GelKayano ゲルカヤノ ブラック ランニングシューズ ンズ レディース : セレクトショップ a-clo - 通販 - Yahoo!ショッピング",
+                      "url": "https://store.shopping.yahoo.co.jp/snkrs-aclo/as-1011b440.html?utm_source=openai",
+                      "start_index": 587,
+                      "end_index": 807,
+                      "text": "[ASICS（アシックス） スニーカー GEL-KAYANO 29 ゲル カヤノ 1011B440 BLACK シューズ GelKayano ゲルカヤノ ブラック ランニングシューズ ンズ レディース : セレクトショップ a-clo - 通販 - Yahoo!ショッピング](https://store.shopping.yahoo.co.jp/snkrs-aclo/as-1011b440.html?utm_source=openai)"
+                    },
+                    {
+                      "title": "Shopee Thailand | ซื้อขายผ่านมือถือ หรือออนไลน์",
+                      "url": "https://shopee.co.th/HOKA-SPEEDGOAT-5-WIDE%28%E0%B8%AB%E0%B8%99%E0%B9%89%E0%B8%B2%E0%B8%81%E0%B8%A7%E0%B9%89%E0%B8%B2%E0%B8%87%29-Women-HARBOR-MIST-SPRUCE-1123160-HMSP-i.25429265.44158973529?utm_source=openai",
+                      "start_index": 947,
+                      "end_index": 1206,
+                      "text": "[Shopee Thailand | ซื้อขายผ่านมือถือ หรือออนไลน์](https://shopee.co.th/HOKA-SPEEDGOAT-5-WIDE%28%E0%B8%AB%E0%B8%99%E0%B9%89%E0%B8%B2%E0%B8%81%E0%B8%A7%E0%B9%89%E0%B8%B2%E0%B8%87%29-Women-HARBOR-MIST-SPRUCE-1123160-HMSP-i.25429265.44158973529?utm_source=openai)"
+                    },
+                    {
+                      "title": "أفضل أحذية الجري للرجال 2024: للحظات لا تُنسى في الطبيعة | مجلة المدينة",
+                      "url": "https://citymagazine.si/ar/%D8%A3%D9%81%D8%B6%D9%84-%D8%A3%D8%AD%D8%B0%D9%8A%D8%A9-%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A9-%D9%84%D9%84%D8%B1%D8%AC%D8%A7%D9%84-2024-%D9%84%D8%AD%D8%B8%D8%A7%D8%AA-%D9%84%D8%A7-%D8%AA%D9%86%D8%B3/?utm_source=openai",
+                      "start_index": 1305,
+                      "end_index": 1569,
+                      "text": "([citymagazine.si](https://citymagazine.si/ar/%D8%A3%D9%81%D8%B6%D9%84-%D8%A3%D8%AD%D8%B0%D9%8A%D8%A9-%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A9-%D9%84%D9%84%D8%B1%D8%AC%D8%A7%D9%84-2024-%D9%84%D8%AD%D8%B8%D8%A7%D8%AA-%D9%84%D8%A7-%D8%AA%D9%86%D8%B3/?utm_source=openai))"
+                    },
+                    {
+                      "title": "Nike Air Zoom Alphafly Next% 3 Women’s Size 7 Sail Crimson Tint (FD8315-103) | eBay",
+                      "url": "https://www.ebay.com/itm/326385708051?utm_source=openai",
+                      "start_index": 1573,
+                      "end_index": 1715,
+                      "text": "[Nike Air Zoom Alphafly Next% 3 Women’s Size 7 Sail Crimson Tint (FD8315-103) | eBay](https://www.ebay.com/itm/326385708051?utm_source=openai)"
+                    },
+                    {
+                      "title": "‏حذاء جري نايكي | تسوق جزمة جري للرجال والنساء في السعودية",
+                      "url": "https://www.nike.sa/ar/sports/running/shoes?utm_source=openai",
+                      "start_index": 1814,
+                      "end_index": 1888,
+                      "text": "([nike.sa](https://www.nike.sa/ar/sports/running/shoes?utm_source=openai))"
+                    },
+                    {
+                      "title": "ASICS METASPEED SKY Paris uk6, Men's Fashion, Activewear on Carousell",
+                      "url": "https://www.carousell.com.my/p/asics-metaspeed-sky-paris-uk6-1400680395/?utm_source=openai",
+                      "start_index": 1892,
+                      "end_index": 2055,
+                      "text": "[ASICS METASPEED SKY Paris uk6, Men's Fashion, Activewear on Carousell](https://www.carousell.com.my/p/asics-metaspeed-sky-paris-uk6-1400680395/?utm_source=openai)"
+                    },
+                    {
+                      "title": "أفضل أحذية الجري، التي تم اختبارها ومراجعتها (2026): Saucony، Adidas، Hoka | itg-ar.com | بوابة الأخبار التقنية",
+                      "url": "https://www.itg-ar.com/%D8%AA%D9%82%D9%86%D9%8A%D8%A9/%D8%A3%D9%81%D8%B6%D9%84-%D8%A3%D8%AD%D8%B0%D9%8A%D8%A9-%D8%A7%D9%84%D8%AC%D8%B1%D9%8A%D8%8C-%D8%A7%D9%84%D8%AA%D9%8A-%D8%AA%D9%85-%D8%A7%D8%AE%D8%AA%D8%A8%D8%A7%D8%B1%D9%87%D8%A7-%D9%88%D9%85%D8%B1/4089/?utm_source=openai",
+                      "start_index": 2162,
+                      "end_index": 2454,
+                      "text": "([itg-ar.com](https://www.itg-ar.com/%D8%AA%D9%82%D9%86%D9%8A%D8%A9/%D8%A3%D9%81%D8%B6%D9%84-%D8%A3%D8%AD%D8%B0%D9%8A%D8%A9-%D8%A7%D9%84%D8%AC%D8%B1%D9%8A%D8%8C-%D8%A7%D9%84%D8%AA%D9%8A-%D8%AA%D9%85-%D8%A7%D8%AE%D8%AA%D8%A8%D8%A7%D8%B1%D9%87%D8%A7-%D9%88%D9%85%D8%B1/4089/?utm_source=openai))"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "fan_out_queries": [
+            "أفضل أحذية الجري 2024"
+          ],
+          "search_results": [
+            {
+              "title": null,
+              "url": "https://yallarun.org/ar/%D8%A3%D8%AD%D8%B0%D9%8A%D8%A9-%D8%AA%D8%B1%D9%8A%D9%84-%D8%A7%D9%84%D8%AC%D8%B1%D9%8A/?utm_source=openai",
+              "date": null,
+              "snippet": null
+            },
+            {
+              "title": null,
+              "url": "https://yallarun.org/ar/%D8%A3%D8%AD%D8%B0%D9%8A%D8%A9-%D8%A7%D9%84%D8%AC%D8%B1%D9%8A-%D9%84%D9%85%D8%B3%D8%A7%D9%81%D8%A7%D8%AA-%D9%82%D8%B5%D9%8A%D8%B1%D8%A9/?utm_source=openai",
+              "date": null,
+              "snippet": null
+            },
+            {
+              "title": null,
+              "url": "https://www.mawjatnews.com/2024/12/%20top-10-running-shoes-how-to-choose-the-perfect-pair.html?utm_source=openai",
+              "date": null,
+              "snippet": null
+            },
+            {
+              "title": null,
+              "url": "https://me.asics.com/ar-ae/asics-advice/different-types-of-running-shoes?utm_source=openai",
+              "date": null,
+              "snippet": null
+            },
+            {
+              "title": null,
+              "url": "https://citymagazine.si/ar/%D8%A3%D9%81%D8%B6%D9%84-%D8%A3%D8%AD%D8%B0%D9%8A%D8%A9-%D8%B1%D9%8A%D8%A7%D8%B6%D9%8A%D8%A9-%D9%84%D9%84%D8%B1%D8%AC%D8%A7%D9%84-2024-%D9%84%D8%AD%D8%B8%D8%A7%D8%AA-%D9%84%D8%A7-%D8%AA%D9%86%D8%B3/?utm_source=openai",
+              "date": null,
+              "snippet": null
+            },
+            {
+              "title": null,
+              "url": "https://citymagazine.si/ar/%D8%A3%D9%81%D8%B6%D9%84-%D8%A3%D8%AD%D8%B0%D9%8A%D8%A9-%D8%A7%D9%84%D8%AC%D8%B1%D9%8A-%D9%84%D9%84%D9%86%D8%B3%D8%A7%D8%A1-%D9%84%D8%B9%D8%A7%D9%85-2024/?utm_source=openai",
+              "date": null,
+              "snippet": null
+            },
+            {
+              "title": null,
+              "url": "https://www.nike.sa/ar/sports/running/shoes?utm_source=openai",
+              "date": null,
+              "snippet": null
+            },
+            {
+              "title": null,
+              "url": "https://www.nike.sa/ar/shoes/running?utm_source=openai",
+              "date": null,
+              "snippet": null
+            },
+            {
+              "title": null,
+              "url": "https://online.pw3dk.com/2024/07/walking-shoes-2025-2026-2027.html?utm_source=openai",
+              "date": null,
+              "snippet": null
+            },
+            {
+              "title": null,
+              "url": "https://reads.alibaba.com/ar/the-running-shoe-revolution-2024s-hottest-trends-and-innovations/?utm_source=openai",
+              "date": null,
+              "snippet": null
+            },
+            {
+              "title": null,
+              "url": "https://www.itg-ar.com/%D8%AA%D9%82%D9%86%D9%8A%D8%A9/%D8%A3%D9%81%D8%B6%D9%84-%D8%A3%D8%AD%D8%B0%D9%8A%D8%A9-%D8%A7%D9%84%D8%AC%D8%B1%D9%8A%D8%8C-%D8%A7%D9%84%D8%AA%D9%8A-%D8%AA%D9%85-%D8%A7%D8%AE%D8%AA%D8%A8%D8%A7%D8%B1%D9%87%D8%A7-%D9%88%D9%85%D8%B1/4089/?utm_source=openai",
+              "date": null,
+              "snippet": null
+            },
+            {
+              "title": null,
+              "url": "https://www.mstaml.com/en/ae/post/united-arab-emirates/clothing-fashion/%D8%A3%D9%81%D8%B6%D9%84-%D8%AD%D8%B0%D8%A7%D8%A1-%D9%84%D9%84%D8%AC%D8%B1%D9%8A-2024-%D8%AA%D8%B9%D8%B1%D9%81-%D8%B9%D9%84%D9%89-%D8%A7%D9%84%D9%85%D9%88%D8%A7%D8%B5%D9%81%D8%A7%D8%AA-%D9%88%D8%A7%D9%84%D8%A3%D8%B3%D8%B9%D8%A7%D8%B1?id=265071&location=24&type=83&utm_source=openai",
+              "date": null,
+              "snippet": null
+            },
+            {
+              "title": null,
+              "url": "https://www.runningwarehouse.com/Nike_Pegasus_42/descpage-NAP42M7.html?utm_source=openai",
+              "date": null,
+              "snippet": null
+            },
+            {
+              "title": null,
+              "url": "https://store.shopping.yahoo.co.jp/snkrs-aclo/as-1011b440.html?utm_source=openai",
+              "date": null,
+              "snippet": null
+            },
+            {
+              "title": null,
+              "url": "https://shopee.co.th/HOKA-SPEEDGOAT-5-WIDE%28%E0%B8%AB%E0%B8%99%E0%B9%89%E0%B8%B2%E0%B8%81%E0%B8%A7%E0%B9%89%E0%B8%B2%E0%B8%87%29-Women-HARBOR-MIST-SPRUCE-1123160-HMSP-i.25429265.44158973529?utm_source=openai",
+              "date": null,
+              "snippet": null
+            },
+            {
+              "title": null,
+              "url": "https://www.ebay.com/itm/326385708051?utm_source=openai",
+              "date": null,
+              "snippet": null
+            },
+            {
+              "title": null,
+              "url": "https://www.carousell.com.my/p/asics-metaspeed-sky-paris-uk6-1400680395/?utm_source=openai",
+              "date": null,
+              "snippet": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

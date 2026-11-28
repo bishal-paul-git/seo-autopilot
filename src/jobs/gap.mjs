@@ -6,13 +6,17 @@
 // rank tracker's tracked queries only. Writes gap.json and gap.md in the state folder.
 import { readJson, writeJson, writeText } from "../core/util.mjs";
 import { dataforseo } from "../lib/research-sources.mjs";
+import { costGuardFor } from "../lib/dataforseo.mjs";
 import { competitors, keywordGap, strengths, winningPages, gapTopics, gapMarkdown } from "../analysis/gap.mjs";
 import { marketOf } from "./keywords.mjs";
+import { marketLabel } from "../lib/market.mjs";
 
 export const description = "Competitor and keyword gap: queries competitors win that you do not, by topic, with their winning pages (full gap needs DataForSEO)";
 
 export async function run({ site, flags = {} }, deps = {}) {
-  const env = deps.env || process.env, f = deps.fetch || globalThis.fetch, s = site.paths.state, m = marketOf(site);
+  const env = deps.env || process.env, f = deps.fetch || globalThis.fetch, s = site.paths.state;
+  const guard = costGuardFor(site, "gap", { env, fetch: f, guard: deps.guard, now: deps.now });
+  const m = dataforseo.enabled(env) ? marketOf(site, flags.language) : null; // only DataForSEO needs a location; resolved first so a missing market stops the job before any request
   const own = new URL(site.url).hostname.replace(/^www\./, "");
   const rank = readJson(`${s}/rank.json`, {});
   const configured = flags.competitors ? String(flags.competitors).split(",") : site.research?.competitors || [];
@@ -33,11 +37,11 @@ export async function run({ site, flags = {} }, deps = {}) {
   if (dataforseo.enabled(env)) {
     method = "each competitor's ranked keywords from DataForSEO, against your Search Console positions";
     for (const d of comp.domains) {
-      try { theirs[d] = await dataforseo.ranked(d, m, { fetch: f, env, limit: Number(flags.limit || 500) }); }
+      try { theirs[d] = await dataforseo.ranked(d, m, { guard, limit: Number(flags.limit || 500) }); }
       catch (e) { notes.push(`dataforseo ${d}: ${e.message}`); }
     }
     // Queries you rank for but Search Console does not report (anonymised or below its row limit): ask for your own domain too.
-    try { for (const k of await dataforseo.ranked(own, m, { fetch: f, env, limit: Number(flags.limit || 500) })) if (!ownPos.has(k.query) && k.position != null) ownPos.set(k.query, k.position); }
+    try { for (const k of await dataforseo.ranked(own, m, { guard, limit: Number(flags.limit || 500) })) if (!ownPos.has(k.query) && k.position != null) ownPos.set(k.query, k.position); }
     catch (e) { notes.push(`dataforseo ${own}: ${e.message}`); }
   } else {
     method = "the live results of your tracked queries only (`rank --serp`); add DataForSEO for every query your competitors rank for";
@@ -52,7 +56,7 @@ export async function run({ site, flags = {} }, deps = {}) {
   const topics = gapTopics([...gap.missing, ...gap.weak]);
   const pages = winningPages([...gap.missing, ...gap.weak]);
   const strong = strengths(ownPos, theirs);
-  writeJson(`${s}/gap.json`, { generatedAt: new Date().toISOString(), market: m, competitors: comp, method, gap, topics, pages: pages.slice(0, 50), strengths: strong.slice(0, 100), notes });
+  writeJson(`${s}/gap.json`, { generatedAt: new Date().toISOString(), market: m ? marketLabel(m) : null, competitors: comp, method, gap, topics, pages: pages.slice(0, 50), strengths: strong.slice(0, 100), notes });
   const md = gapMarkdown({ siteName: site.name, comp, gap, topics, pages, strong, method, notes });
   writeText(`${s}/gap.md`, md);
   console.log(md);

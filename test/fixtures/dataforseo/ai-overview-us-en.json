@@ -1,0 +1,1166 @@
+{
+  "version": "0.1.20261117",
+  "status_code": 20000,
+  "status_message": "Ok.",
+  "cost": 0.002,
+  "tasks_count": 1,
+  "tasks_error": 0,
+  "tasks": [
+    {
+      "status_code": 20000,
+      "status_message": "Ok.",
+      "cost": 0.002,
+      "result_count": 1,
+      "path": [
+        "v3",
+        "serp",
+        "google",
+        "organic",
+        "live",
+        "advanced"
+      ],
+      "data": {
+        "api": "serp",
+        "function": "live",
+        "se": "google",
+        "se_type": "organic",
+        "keyword": "best running shoes",
+        "location_code": 2840,
+        "language_code": "en",
+        "depth": 10,
+        "load_async_ai_overview": true,
+        "device": "desktop",
+        "os": "windows"
+      },
+      "result": [
+        {
+          "keyword": "best running shoes",
+          "type": "organic",
+          "se_domain": "google.com",
+          "location_code": 2840,
+          "language_code": "en",
+          "check_url": "https://www.google.com/search?q=best%20running%20shoes&hl=en&gl=US&ie=UTF-8&uule=w+CAIQIFISCQs2MuSEtepUEUK33kOSuTsc",
+          "spell": null,
+          "refinement_chips": null,
+          "item_types": [
+            "ai_overview",
+            "organic",
+            "popular_products",
+            "people_also_ask",
+            "images",
+            "related_searches"
+          ],
+          "se_results_count": 62,
+          "pages_count": 1,
+          "items_count": 13,
+          "items": [
+            {
+              "type": "ai_overview",
+              "rank_group": 1,
+              "rank_absolute": 1,
+              "page": 1,
+              "position": "left",
+              "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[1]",
+              "asynchronous_ai_overview": false,
+              "markdown": "The best running shoes depend on your stride, distance, and terrain, with top picks across categories including the  [Highlight start] **[adidas Adizero EVO SL](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462915606187204,imageDocid:8270447671530460351,gpcid:8805222204851159542,headlineOfferDocid:17574548652122341393,catalogid:14116132496669916448,productDocid:354019283109719508,rds:PC_8805222204851159542%7CPROD_PC_8805222204851159542&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90Qxa4PegYIAggDEAQ)**, **[Brooks Ghost 18](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462549196774912,imageDocid:12523223167532616509,gpcid:7326703641027475137,headlineOfferDocid:488956084006689363,catalogid:177588785310760266,productDocid:4662138553275979042,rds:PC_7326703641027475137%7CPROD_PC_7326703641027475137&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90Qxa4PegYIAggDEAU)**, **[Nike Vomero Plus](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462864034435929,imageDocid:1217776880243052519,gpcid:16205108421803581788,headlineOfferDocid:13957529988581649936,catalogid:6713670119301134452,productDocid:10940256558579167791,rds:PC_16205108421803581788%7CPROD_PC_16205108421803581788&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90Qxa4PegYIAggDEAY)**, **[ASICS Novablast 6](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462896392334029,imageDocid:4391663250651490383,gpcid:5626042281368975415,headlineOfferDocid:17819972495654338228,catalogid:9730234228052921324,productDocid:9560732066958364763,rds:PC_5626042281368975415%7CPROD_PC_5626042281368975415&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90Qxa4PegYIAggDEAc)**, **[Nike Zoom Fly 6](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462576003993551,imageDocid:15807466714316540031,gpcid:471773172067651162,headlineOfferDocid:6874153095394408388,catalogid:9512698683933773482,productDocid:1552720872044426737,rds:PC_471773172067651162%7CPROD_PC_471773172067651162&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90Qxa4PegYIAggDEAg)** , and **[Saucony Peregrine 16](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462914772907793,imageDocid:16783268319792510056,gpcid:8303742672316220167,headlineOfferDocid:10971117445876753142,catalogid:13813904176710046495,productDocid:15238147752737044821,rds:PC_8303742672316220167%7CPROD_PC_8303742672316220167&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90Qxa4PegYIAggDEAk)** [Highlight end].[[1]](https://google.com/goto?url=REDACTED)[[2]](https://google.com/goto?url=REDACTED)[[3]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:4662138553275979042,catalogid:177588785310760266,gpcid:7326703641027475137,mid:576462549196774912&ibp=oshop)[[4]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:9116900639882461368,catalogid:12612048093444247059,gpcid:16205108421803581788,mid:576462864034435929&ibp=oshop)[[5]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:15238147752737044821,catalogid:13813904176710046495,gpcid:8303742672316220167,mid:576462914772907793&ibp=oshop)[[6]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:1552720872044426737,catalogid:9512698683933773482,gpcid:471773172067651162,mid:576462576003993551&ibp=oshop)\n\n### Best Daily Trainers & Cushioned Road Shoes\n\n\n\n---\n\n[![Brooks Ghost 18](https://api.dataforseo.com/cdn/i/<redacted-id>:4)\nBrooks Ghost 18 | Brooks Running&amp; more | 4.6(1K)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462549196774912,imageDocid:12523223167532616509,gpcid:7326703641027475137,headlineOfferDocid:488956084006689363,catalogid:177588785310760266,productDocid:4662138553275979042,rds:PC_7326703641027475137%7CPROD_PC_7326703641027475137&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAggDEBE) \n\nBuilt as an everyday road all-rounder with nitrogen-infused DNA LOFT v3 cushioning, a Triple Jacquard Air Mesh upper, and a RoadTack rubber outsole . Users praise its comfort, support, and lightweight feel for daily miles and all-day wear (4.6/5 average rating; around $150 at [Brooks Running](https://google.com/goto?url=REDACTED)).[[1]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:4662138553275979042,catalogid:177588785310760266,gpcid:7326703641027475137,mid:576462549196774912&ibp=oshop)\n\n---\n\n[![Nike Vomero Plus](https://api.dataforseo.com/cdn/i/<redacted-id>:5)\nNike Vomero Plus | Nike&amp; more | 4.7(3.6K)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462864034435929,imageDocid:1217776880243052519,gpcid:16205108421803581788,headlineOfferDocid:13957529988581649936,catalogid:6713670119301134452,productDocid:10940256558579167791,rds:PC_16205108421803581788%7CPROD_PC_16205108421803581788&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAggDEB4) \n\nNamed a top max-cushioned running shoe by iRunFar, it pairs lightweight ZoomX foam over responsive ReactX foam for a soft, bouncy ride. Reviewers highlight its plush cushioning, stability, and energetic forefoot feel (4.7/5 average rating; around $177–$180, with Nike.com listing it at $180 with free delivery).[[1]](https://google.com/goto?url=REDACTED)[[2]](https://google.com/goto?url=REDACTED)[[3]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:9116900639882461368,catalogid:12612048093444247059,gpcid:16205108421803581788,mid:576462864034435929&ibp=oshop)\n\n---\n\n[![ASICS Novablast 6](https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcSmigEz6NCbqOf46b6rOGwzFMspfdqw-fscDcm30TIBBNxGKWnmB10eSEll5g&amp;usqp=CAE)\nASICS Novablast 6 | Al&#39;s Sporting Goods&amp; more | 4.7(2K)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462896392334029,imageDocid:4391663250651490383,gpcid:5626042281368975415,headlineOfferDocid:17819972495654338228,catalogid:9730234228052921324,productDocid:9560732066958364763,rds:PC_5626042281368975415%7CPROD_PC_5626042281368975415&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAgglEAA) \n\nHighlighted by iRunFar as a top overall cushioned shoe and noted in 2026 testing for its trampoline pod and mixed FF Turbo Squared and FF Blast Max cushioning. It suits lightweight daily training, especially for midfoot and forefoot strikers.[[1]](https://google.com/goto?url=REDACTED)[[2]](https://google.com/goto?url=REDACTED)\n\n---\n\n[![Nike Pegasus 42](https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcSkrQwW9DZJs67LrHAgDWe5TsfKMbh24oK9zCIaWNc6kjmo5Wv6cssHkf-ODw&amp;usqp=CAE)\nNike Pegasus 42 | Zappos.com&amp; more | 4.8(894)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462881233777118,imageDocid:3506428210777685033,gpcid:9072831014733564315,headlineOfferDocid:14710172699915166212,catalogid:393394567760082213,productDocid:7195826218847817569,rds:PC_9072831014733564315%7CPROD_PC_9072831014733564315&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAgglEA4) \n\nA versatile road trainer combining a full-length Air Zoom unit and ReactX foam midsole with a wider toe box and breathable mesh upper. Reviewers rate it 4.8/5 for comfort, support, and a lightweight feel, with offers starting around $86.97–$145 (currently $108.97 with free delivery on Nike.com).[[1]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:7195826218847817569,catalogid:393394567760082213,gpcid:9072831014733564315,mid:576462881233777118&ibp=oshop)\n\n### Best for Tempo & Speed Workouts\n\n\n---\n\n[![adidas Adizero EVO SL](https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcQbZSLtE4Cho_pubjS8kV3TJ04lkitbJQoZ-kixXMaG7ot9cSLVQEY9PQNg4ua9HPz0vYUbJMXo&amp;usqp=CAE)\nadidas Adizero EVO SL | adidas&amp; more | 4.7(32.7K)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462915606187204,imageDocid:8270447671530460351,gpcid:8805222204851159542,headlineOfferDocid:17574548652122341393,catalogid:14116132496669916448,productDocid:354019283109719508,rds:PC_8805222204851159542%7CPROD_PC_8805222204851159542&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAggmEAQ) \n\nRanked as the best overall running shoe by RunRepeat and best lightweight cushioned shoe by iRunFar, it uses Lightstrike Pro foam for strong energy return and shock absorption alongside a flexible, breathable build.[[1]](https://google.com/goto?url=REDACTED)[[2]](https://google.com/goto?url=REDACTED)\n\n---\n\n[![Nike Zoom Fly 6](https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcTzXgvjRABOapofCRxyailwPP0rloLJzOog-H9XiwWUCqzek-dyAnUZKBFapXmk4Dv2cjzCTwI&amp;usqp=CAE)\nNike Zoom Fly 6 | Nike&amp; more | 4.6(1.9K)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462576003993551,imageDocid:15807466714316540031,gpcid:471773172067651162,headlineOfferDocid:6874153095394408388,catalogid:9512698683933773482,productDocid:1552720872044426737,rds:PC_471773172067651162%7CPROD_PC_471773172067651162&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAggmEBI) \n\nCombines a full-length carbon plate inside soft, responsive ZoomX foam with a two-part mesh upper for speed and stability . Priced typically around $179.95–$180 ($180 with free delivery on [Nike.com](https://google.com/goto?url=REDACTED)).[[1]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:1552720872044426737,catalogid:9512698683933773482,gpcid:471773172067651162,mid:576462576003993551&ibp=oshop)\n\n### Best for Trail Running\n\n\n---\n\n[![Saucony Peregrine 16](https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcSqcz-9t3E11NhCPrfDHTtbCB_M0CYd_8jBz5M1cqZKA2BdxLvzEXZwIfPcKYfHUbTruDmZB59E&amp;usqp=CAE)\nSaucony Peregrine 16 | Saucony&amp; more | 4.5(276)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462914772907793,imageDocid:16783268319792510056,gpcid:8303742672316220167,headlineOfferDocid:10971117445876753142,catalogid:13813904176710046495,productDocid:15238147752737044821,rds:PC_8303742672316220167%7CPROD_PC_8303742672316220167&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAggmECM) \n\nDesigned for technical mountain terrain with PWRRUN cushioning, a rock protection plate, forefoot rubber wrap, and 4 mm Vibram Megagrip lugs. Typically $149.95–$150 (listed at $112.50 with code CHEER on Saucony.com).[[1]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:15238147752737044821,catalogid:13813904176710046495,gpcid:8303742672316220167,mid:576462914772907793&ibp=oshop)\n\n---\n\n[![Salomon Speedcross 6](https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQ4WfaT_4Le-MPtTGJrz-lgud_4rbIpq5MYof5P1xNV1TjLSfumBI4WhZSBAeo&amp;usqp=CAE)\nSalomon Speedcross 6 | Salomon.com&amp; more | 4.6(3K)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462575785430501,imageDocid:14262047019578356594,gpcid:15566446623960197492,headlineOfferDocid:2894721248585283585,catalogid:14944326020776205798,productDocid:7827903718782564420,rds:PC_15566446623960197492%7CPROD_PC_15566446623960197492&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAggmEC8) \n\nBuilt for loose, soft, and muddy trails using a Mud Contagrip outsole with 5 mm lugs, an EnergyCell+ midsole, a 10 mm drop, and a quickLACE system . Typically around $149.95–$150 ($150 on [Salomon.com](https://google.com/goto?url=REDACTED)).[[1]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:7827903718782564420,catalogid:14944326020776205798,gpcid:15566446623960197492,mid:576462575785430501&ibp=oshop)For lab testing metrics and category breakdowns, see [RunRepeat](https://google.com/goto?url=REDACTED), [iRunFar](https://google.com/goto?url=REDACTED) , and [Fleet Feet](https://google.com/goto?url=REDACTED).[[1]](https://google.com/goto?url=REDACTED)[[2]](https://google.com/goto?url=REDACTED)[[3]](https://google.com/goto?url=REDACTED)To help narrow this down, tell me about:\n\n- **How you plan to use them** (daily easy runs, speed workouts, marathon training, or trails)\n- **Your fit and support preferences** (neutral vs. stability, wide or narrow feet)\n- **Your target budget**",
+              "items": [
+                {
+                  "type": "ai_overview_element",
+                  "position": "left",
+                  "title": null,
+                  "text": "The best running shoes depend on your stride, distance, and terrain, with top picks across categories including the  [Highlight start] adidas Adizero EVO SL, Brooks Ghost 18, Nike Vomero Plus, ASICS Novablast 6, Nike Zoom Fly 6, and Saucony Peregrine 16 [Highlight end] .",
+                  "markdown": "The best running shoes depend on your stride, distance, and terrain, with top picks across categories including the  [Highlight start] **[adidas Adizero EVO SL](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462915606187204,imageDocid:8270447671530460351,gpcid:8805222204851159542,headlineOfferDocid:17574548652122341393,catalogid:14116132496669916448,productDocid:354019283109719508,rds:PC_8805222204851159542%7CPROD_PC_8805222204851159542&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90Qxa4PegYIAggDEAQ)**, **[Brooks Ghost 18](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462549196774912,imageDocid:12523223167532616509,gpcid:7326703641027475137,headlineOfferDocid:488956084006689363,catalogid:177588785310760266,productDocid:4662138553275979042,rds:PC_7326703641027475137%7CPROD_PC_7326703641027475137&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90Qxa4PegYIAggDEAU)**, **[Nike Vomero Plus](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462864034435929,imageDocid:1217776880243052519,gpcid:16205108421803581788,headlineOfferDocid:13957529988581649936,catalogid:6713670119301134452,productDocid:10940256558579167791,rds:PC_16205108421803581788%7CPROD_PC_16205108421803581788&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90Qxa4PegYIAggDEAY)**, **[ASICS Novablast 6](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462896392334029,imageDocid:4391663250651490383,gpcid:5626042281368975415,headlineOfferDocid:17819972495654338228,catalogid:9730234228052921324,productDocid:9560732066958364763,rds:PC_5626042281368975415%7CPROD_PC_5626042281368975415&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90Qxa4PegYIAggDEAc)**, **[Nike Zoom Fly 6](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462576003993551,imageDocid:15807466714316540031,gpcid:471773172067651162,headlineOfferDocid:6874153095394408388,catalogid:9512698683933773482,productDocid:1552720872044426737,rds:PC_471773172067651162%7CPROD_PC_471773172067651162&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90Qxa4PegYIAggDEAg)** , and **[Saucony Peregrine 16](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462914772907793,imageDocid:16783268319792510056,gpcid:8303742672316220167,headlineOfferDocid:10971117445876753142,catalogid:13813904176710046495,productDocid:15238147752737044821,rds:PC_8303742672316220167%7CPROD_PC_8303742672316220167&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90Qxa4PegYIAggDEAk)** [Highlight end].[[1]](https://google.com/goto?url=REDACTED)[[2]](https://google.com/goto?url=REDACTED)[[3]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:4662138553275979042,catalogid:177588785310760266,gpcid:7326703641027475137,mid:576462549196774912&ibp=oshop)[[4]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:9116900639882461368,catalogid:12612048093444247059,gpcid:16205108421803581788,mid:576462864034435929&ibp=oshop)[[5]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:15238147752737044821,catalogid:13813904176710046495,gpcid:8303742672316220167,mid:576462914772907793&ibp=oshop)[[6]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:1552720872044426737,catalogid:9512698683933773482,gpcid:471773172067651162,mid:576462576003993551&ibp=oshop)",
+                  "links": [
+                    {
+                      "type": "link_element",
+                      "title": "adidas Adizero EVO SLGo to product viewer dialog for this item.",
+                      "description": null,
+                      "url": "https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462915606187204,imageDocid:8270447671530460351,gpcid:8805222204851159542,headlineOfferDocid:17574548652122341393,catalogid:14116132496669916448,productDocid:354019283109719508,rds:PC_8805222204851159542%7CPROD_PC_8805222204851159542&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90Qxa4PegYIAggDEAQ",
+                      "domain": "www.google.com"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "Brooks Ghost 18Go to product viewer dialog for this item.",
+                      "description": null,
+                      "url": "https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462549196774912,imageDocid:12523223167532616509,gpcid:7326703641027475137,headlineOfferDocid:488956084006689363,catalogid:177588785310760266,productDocid:4662138553275979042,rds:PC_7326703641027475137%7CPROD_PC_7326703641027475137&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90Qxa4PegYIAggDEAU",
+                      "domain": "www.google.com"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "Nike Vomero PlusGo to product viewer dialog for this item.",
+                      "description": null,
+                      "url": "https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462864034435929,imageDocid:1217776880243052519,gpcid:16205108421803581788,headlineOfferDocid:13957529988581649936,catalogid:6713670119301134452,productDocid:10940256558579167791,rds:PC_16205108421803581788%7CPROD_PC_16205108421803581788&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90Qxa4PegYIAggDEAY",
+                      "domain": "www.google.com"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "ASICS Novablast 6Go to product viewer dialog for this item.",
+                      "description": null,
+                      "url": "https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462896392334029,imageDocid:4391663250651490383,gpcid:5626042281368975415,headlineOfferDocid:17819972495654338228,catalogid:9730234228052921324,productDocid:9560732066958364763,rds:PC_5626042281368975415%7CPROD_PC_5626042281368975415&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90Qxa4PegYIAggDEAc",
+                      "domain": "www.google.com"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "Nike Zoom Fly 6Go to product viewer dialog for this item.",
+                      "description": null,
+                      "url": "https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462576003993551,imageDocid:15807466714316540031,gpcid:471773172067651162,headlineOfferDocid:6874153095394408388,catalogid:9512698683933773482,productDocid:1552720872044426737,rds:PC_471773172067651162%7CPROD_PC_471773172067651162&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90Qxa4PegYIAggDEAg",
+                      "domain": "www.google.com"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "Saucony Peregrine 16Go to product viewer dialog for this item.",
+                      "description": null,
+                      "url": "https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462914772907793,imageDocid:16783268319792510056,gpcid:8303742672316220167,headlineOfferDocid:10971117445876753142,catalogid:13813904176710046495,productDocid:15238147752737044821,rds:PC_8303742672316220167%7CPROD_PC_8303742672316220167&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90Qxa4PegYIAggDEAk",
+                      "domain": "www.google.com"
+                    }
+                  ],
+                  "images": null,
+                  "references": [
+                    {
+                      "type": "ai_overview_reference",
+                      "position": "left",
+                      "source": "RunRepeat",
+                      "domain": "runrepeat.com",
+                      "url": "https://runrepeat.com/guides/best-running-shoes",
+                      "title": "7 Best Running Shoes in 2026 | RunRepeat",
+                      "text": "# 7 Best Running Shoes in 2026 * How we test running shoes * Best running shoes * Best overall * Best daily trainer * Best for tem..."
+                    },
+                    {
+                      "type": "ai_overview_reference",
+                      "position": "left",
+                      "source": "iRunFar",
+                      "domain": "www.irunfar.com",
+                      "url": "https://www.irunfar.com/best-cushioned-running-shoes",
+                      "title": "Best Cushioned Running Shoes of 2026 - iRunFar",
+                      "text": "Best Overall Cushioned Running Shoe: Asics Novablast 6 Best Max-Cushioned Running Shoe: Nike Vomero Plus Best Lightweight Cushione..."
+                    },
+                    {
+                      "type": "ai_overview_reference",
+                      "position": "left",
+                      "source": "Google",
+                      "domain": "www.google.com",
+                      "url": "https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:4662138553275979042,catalogid:177588785310760266,gpcid:7326703641027475137,mid:576462549196774912&ibp=oshop",
+                      "title": "Brooks Men's Ghost 18",
+                      "text": "The Ghost 18 is an all-rounder designed by Brooks for your daily run. With the Ghost 18, you have a perfect blend of comfort, supp..."
+                    },
+                    {
+                      "type": "ai_overview_reference",
+                      "position": "left",
+                      "source": "Google",
+                      "domain": "www.google.com",
+                      "url": "https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:9116900639882461368,catalogid:12612048093444247059,gpcid:16205108421803581788,mid:576462864034435929&ibp=oshop",
+                      "title": "Nike Men's Vomero Plus",
+                      "text": "Enjoy a super smooth, cushioned ride with the Nike Vomero 18—perfect for everyday runs. Featuring the softest combo yet, the midso..."
+                    },
+                    {
+                      "type": "ai_overview_reference",
+                      "position": "left",
+                      "source": "Google",
+                      "domain": "www.google.com",
+                      "url": "https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:15238147752737044821,catalogid:13813904176710046495,gpcid:8303742672316220167,mid:576462914772907793&ibp=oshop",
+                      "title": "Men's Saucony Peregrine 16",
+                      "text": "Technical Features The Saucony Peregrine 16 becomes a versatile and robust ally for those facing demanding mountain terrains. Its ..."
+                    },
+                    {
+                      "type": "ai_overview_reference",
+                      "position": "left",
+                      "source": "Google",
+                      "domain": "www.google.com",
+                      "url": "https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:1552720872044426737,catalogid:9512698683933773482,gpcid:471773172067651162,mid:576462576003993551&ibp=oshop",
+                      "title": "Nike Men's Zoom Fly 6",
+                      "text": "The Zoom Fly Series from American Nike has Always Sought to be a Balanced Combination of speed and Stability. Zoom Fly 6 is no Exc..."
+                    }
+                  ]
+                },
+                {
+                  "type": "ai_overview_element",
+                  "position": "left",
+                  "title": "Best Daily Trainers & Cushioned Road Shoes",
+                  "text": "Brooks Ghost 18 $150.00 Brooks Running & more 4.6 (1K) Built as an everyday road all-rounder with nitrogen-infused DNA LOFT v3 cushioning, a Triple Jacquard Air Mesh upper, and a RoadTack rubber outsole. Users praise its comfort, support, and lightweight feel for daily miles and all-day wear (4.6/5 average rating; around $150 at Brooks Running ). Nike Vomero Plus $135.00 $180 Nike & more 4.7 (3.6K) Named a top max-cushioned running shoe by iRunFar, it pairs lightweight ZoomX foam over responsive ReactX foam for a soft, bouncy ride. Reviewers highlight its plush cushioning, stability, and energetic forefoot feel (4.7/5 average rating; around $177–$180, with Nike.com listing it at $180 with free delivery). ASICS Novablast 6 $124.00 $155 Al's Sporting Goods & more 4.7 (2K) Highlighted by iRunFar as a top overall cushioned shoe and noted in 2026 testing for its trampoline pod and mixed FF Turbo Squared and FF Blast Max cushioning. It suits lightweight daily training, especially for midfoot and forefoot strikers. Nike Pegasus 42 $108.74 $145 Zappos.com & more 4.8 (894) A versatile road trainer combining a full-length Air Zoom unit and ReactX foam midsole with a wider toe box and breathable mesh upper. Reviewers rate it 4.8/5 for comfort, support, and a lightweight feel, with offers starting around $86.97–$145 (currently $108.97 with free delivery on Nike.com).",
+                  "markdown": "---\n\n[![Brooks Ghost 18](https://api.dataforseo.com/cdn/i/<redacted-id>:2)\nBrooks Ghost 18 | Brooks Running&amp; more | 4.6(1K)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462549196774912,imageDocid:12523223167532616509,gpcid:7326703641027475137,headlineOfferDocid:488956084006689363,catalogid:177588785310760266,productDocid:4662138553275979042,rds:PC_7326703641027475137%7CPROD_PC_7326703641027475137&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAggDEBE) \n\nBuilt as an everyday road all-rounder with nitrogen-infused DNA LOFT v3 cushioning, a Triple Jacquard Air Mesh upper, and a RoadTack rubber outsole . Users praise its comfort, support, and lightweight feel for daily miles and all-day wear (4.6/5 average rating; around $150 at [Brooks Running](https://google.com/goto?url=REDACTED)).[[1]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:4662138553275979042,catalogid:177588785310760266,gpcid:7326703641027475137,mid:576462549196774912&ibp=oshop)\n\n---\n\n[![Nike Vomero Plus](https://api.dataforseo.com/cdn/i/<redacted-id>:3)\nNike Vomero Plus | Nike&amp; more | 4.7(3.6K)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462864034435929,imageDocid:1217776880243052519,gpcid:16205108421803581788,headlineOfferDocid:13957529988581649936,catalogid:6713670119301134452,productDocid:10940256558579167791,rds:PC_16205108421803581788%7CPROD_PC_16205108421803581788&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAggDEB4) \n\nNamed a top max-cushioned running shoe by iRunFar, it pairs lightweight ZoomX foam over responsive ReactX foam for a soft, bouncy ride. Reviewers highlight its plush cushioning, stability, and energetic forefoot feel (4.7/5 average rating; around $177–$180, with Nike.com listing it at $180 with free delivery).[[1]](https://google.com/goto?url=REDACTED)[[2]](https://google.com/goto?url=REDACTED)[[3]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:9116900639882461368,catalogid:12612048093444247059,gpcid:16205108421803581788,mid:576462864034435929&ibp=oshop)\n\n---\n\n[![ASICS Novablast 6](https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcSmigEz6NCbqOf46b6rOGwzFMspfdqw-fscDcm30TIBBNxGKWnmB10eSEll5g&amp;usqp=CAE)\nASICS Novablast 6 | Al&#39;s Sporting Goods&amp; more | 4.7(2K)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462896392334029,imageDocid:4391663250651490383,gpcid:5626042281368975415,headlineOfferDocid:17819972495654338228,catalogid:9730234228052921324,productDocid:9560732066958364763,rds:PC_5626042281368975415%7CPROD_PC_5626042281368975415&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAgglEAA) \n\nHighlighted by iRunFar as a top overall cushioned shoe and noted in 2026 testing for its trampoline pod and mixed FF Turbo Squared and FF Blast Max cushioning. It suits lightweight daily training, especially for midfoot and forefoot strikers.[[1]](https://google.com/goto?url=REDACTED)[[2]](https://google.com/goto?url=REDACTED)\n\n---\n\n[![Nike Pegasus 42](https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcSkrQwW9DZJs67LrHAgDWe5TsfKMbh24oK9zCIaWNc6kjmo5Wv6cssHkf-ODw&amp;usqp=CAE)\nNike Pegasus 42 | Zappos.com&amp; more | 4.8(894)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462881233777118,imageDocid:3506428210777685033,gpcid:9072831014733564315,headlineOfferDocid:14710172699915166212,catalogid:393394567760082213,productDocid:7195826218847817569,rds:PC_9072831014733564315%7CPROD_PC_9072831014733564315&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAgglEA4) \n\nA versatile road trainer combining a full-length Air Zoom unit and ReactX foam midsole with a wider toe box and breathable mesh upper. Reviewers rate it 4.8/5 for comfort, support, and a lightweight feel, with offers starting around $86.97–$145 (currently $108.97 with free delivery on Nike.com).[[1]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:7195826218847817569,catalogid:393394567760082213,gpcid:9072831014733564315,mid:576462881233777118&ibp=oshop)",
+                  "links": [
+                    {
+                      "type": "link_element",
+                      "title": "Brooks Ghost 18$150.00Brooks Running& more4.6(1K)Go to product viewer dialog for this item.",
+                      "description": null,
+                      "url": "https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462549196774912,imageDocid:12523223167532616509,gpcid:7326703641027475137,headlineOfferDocid:488956084006689363,catalogid:177588785310760266,productDocid:4662138553275979042,rds:PC_7326703641027475137%7CPROD_PC_7326703641027475137&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAggDEBE",
+                      "domain": "www.google.com"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "Brooks Running",
+                      "description": null,
+                      "url": "https://google.com/goto?url=REDACTED",
+                      "domain": "google.com"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "Nike Vomero Plus$135.00$180Nike& more4.7(3.6K)Go to product viewer dialog for this item.",
+                      "description": null,
+                      "url": "https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462864034435929,imageDocid:1217776880243052519,gpcid:16205108421803581788,headlineOfferDocid:13957529988581649936,catalogid:6713670119301134452,productDocid:10940256558579167791,rds:PC_16205108421803581788%7CPROD_PC_16205108421803581788&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAggDEB4",
+                      "domain": "www.google.com"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "ASICS Novablast 6$124.00$155Al's Sporting Goods& more4.7(2K)Go to product viewer dialog for this item.",
+                      "description": null,
+                      "url": "https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462896392334029,imageDocid:4391663250651490383,gpcid:5626042281368975415,headlineOfferDocid:17819972495654338228,catalogid:9730234228052921324,productDocid:9560732066958364763,rds:PC_5626042281368975415%7CPROD_PC_5626042281368975415&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAgglEAA",
+                      "domain": "www.google.com"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "Nike Pegasus 42$108.74$145Zappos.com& more4.8(894)Go to product viewer dialog for this item.",
+                      "description": null,
+                      "url": "https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462881233777118,imageDocid:3506428210777685033,gpcid:9072831014733564315,headlineOfferDocid:14710172699915166212,catalogid:393394567760082213,productDocid:7195826218847817569,rds:PC_9072831014733564315%7CPROD_PC_9072831014733564315&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAgglEA4",
+                      "domain": "www.google.com"
+                    }
+                  ],
+                  "images": null,
+                  "references": [
+                    {
+                      "type": "ai_overview_reference",
+                      "position": "left",
+                      "source": "Google",
+                      "domain": "www.google.com",
+                      "url": "https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:4662138553275979042,catalogid:177588785310760266,gpcid:7326703641027475137,mid:576462549196774912&ibp=oshop",
+                      "title": "Brooks Men's Ghost 18",
+                      "text": "The Ghost 18 is an all-rounder designed by Brooks for your daily run. With the Ghost 18, you have a perfect blend of comfort, supp..."
+                    },
+                    {
+                      "type": "ai_overview_reference",
+                      "position": "left",
+                      "source": "YouTube",
+                      "domain": "www.youtube.com",
+                      "url": "https://www.youtube.com/watch?v=BeFrLVkROlg",
+                      "title": "I Tested 71 Running Shoes in 2026 – These Are My Top 10!",
+                      "text": "The Mount. Co. is advertised as a super trainer but functions best as a daily shoe, offering a bouncy, energetic, and springy mids..."
+                    },
+                    {
+                      "type": "ai_overview_reference",
+                      "position": "left",
+                      "source": "iRunFar",
+                      "domain": "www.irunfar.com",
+                      "url": "https://www.irunfar.com/best-cushioned-running-shoes",
+                      "title": "Best Cushioned Running Shoes of 2026 - iRunFar",
+                      "text": "Best Overall Cushioned Running Shoe: Asics Novablast 6 Best Max-Cushioned Running Shoe: Nike Vomero Plus Best Lightweight Cushione..."
+                    },
+                    {
+                      "type": "ai_overview_reference",
+                      "position": "left",
+                      "source": "Google",
+                      "domain": "www.google.com",
+                      "url": "https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:9116900639882461368,catalogid:12612048093444247059,gpcid:16205108421803581788,mid:576462864034435929&ibp=oshop",
+                      "title": "Nike Men's Vomero Plus",
+                      "text": "Enjoy a super smooth, cushioned ride with the Nike Vomero 18—perfect for everyday runs. Featuring the softest combo yet, the midso..."
+                    },
+                    {
+                      "type": "ai_overview_reference",
+                      "position": "left",
+                      "source": "Google",
+                      "domain": "www.google.com",
+                      "url": "https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:7195826218847817569,catalogid:393394567760082213,gpcid:9072831014733564315,mid:576462881233777118&ibp=oshop",
+                      "title": "Nike Men's Pegasus 42",
+                      "text": "The Nike Pegasus 42 continues the legacy of delivering a responsive and comfortable ride for runners of all levels. This latest it..."
+                    }
+                  ]
+                },
+                {
+                  "type": "ai_overview_element",
+                  "position": "left",
+                  "title": "Best for Tempo & Speed Workouts",
+                  "text": "adidas Adizero EVO SL $105.00 $150 adidas & more 4.7 (32.7K) Ranked as the best overall running shoe by RunRepeat and best lightweight cushioned shoe by iRunFar, it uses Lightstrike Pro foam for strong energy return and shock absorption alongside a flexible, breathable build. Nike Zoom Fly 6 $180.00 Nike & more 4.6 (1.9K) Combines a full-length carbon plate inside soft, responsive ZoomX foam with a two-part mesh upper for speed and stability. Priced typically around $179.95–$180 ($180 with free delivery on Nike.com ).",
+                  "markdown": "---\n\n[![adidas Adizero EVO SL](https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcQbZSLtE4Cho_pubjS8kV3TJ04lkitbJQoZ-kixXMaG7ot9cSLVQEY9PQNg4ua9HPz0vYUbJMXo&amp;usqp=CAE)\nadidas Adizero EVO SL | adidas&amp; more | 4.7(32.7K)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462915606187204,imageDocid:8270447671530460351,gpcid:8805222204851159542,headlineOfferDocid:17574548652122341393,catalogid:14116132496669916448,productDocid:354019283109719508,rds:PC_8805222204851159542%7CPROD_PC_8805222204851159542&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAggmEAQ) \n\nRanked as the best overall running shoe by RunRepeat and best lightweight cushioned shoe by iRunFar, it uses Lightstrike Pro foam for strong energy return and shock absorption alongside a flexible, breathable build.[[1]](https://google.com/goto?url=REDACTED)[[2]](https://google.com/goto?url=REDACTED)\n\n---\n\n[![Nike Zoom Fly 6](https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcTzXgvjRABOapofCRxyailwPP0rloLJzOog-H9XiwWUCqzek-dyAnUZKBFapXmk4Dv2cjzCTwI&amp;usqp=CAE)\nNike Zoom Fly 6 | Nike&amp; more | 4.6(1.9K)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462576003993551,imageDocid:15807466714316540031,gpcid:471773172067651162,headlineOfferDocid:6874153095394408388,catalogid:9512698683933773482,productDocid:1552720872044426737,rds:PC_471773172067651162%7CPROD_PC_471773172067651162&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAggmEBI) \n\nCombines a full-length carbon plate inside soft, responsive ZoomX foam with a two-part mesh upper for speed and stability . Priced typically around $179.95–$180 ($180 with free delivery on [Nike.com](https://google.com/goto?url=REDACTED)).[[1]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:1552720872044426737,catalogid:9512698683933773482,gpcid:471773172067651162,mid:576462576003993551&ibp=oshop)",
+                  "links": [
+                    {
+                      "type": "link_element",
+                      "title": "adidas Adizero EVO SL$105.00$150adidas& more4.7(32.7K)Go to product viewer dialog for this item.",
+                      "description": null,
+                      "url": "https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462915606187204,imageDocid:8270447671530460351,gpcid:8805222204851159542,headlineOfferDocid:17574548652122341393,catalogid:14116132496669916448,productDocid:354019283109719508,rds:PC_8805222204851159542%7CPROD_PC_8805222204851159542&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAggmEAQ",
+                      "domain": "www.google.com"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "Nike Zoom Fly 6$180.00Nike& more4.6(1.9K)Go to product viewer dialog for this item.",
+                      "description": null,
+                      "url": "https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462576003993551,imageDocid:15807466714316540031,gpcid:471773172067651162,headlineOfferDocid:6874153095394408388,catalogid:9512698683933773482,productDocid:1552720872044426737,rds:PC_471773172067651162%7CPROD_PC_471773172067651162&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAggmEBI",
+                      "domain": "www.google.com"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "Nike.com",
+                      "description": null,
+                      "url": "https://google.com/goto?url=REDACTED",
+                      "domain": "google.com"
+                    }
+                  ],
+                  "images": null,
+                  "references": [
+                    {
+                      "type": "ai_overview_reference",
+                      "position": "left",
+                      "source": "RunRepeat",
+                      "domain": "runrepeat.com",
+                      "url": "https://runrepeat.com/guides/best-running-shoes",
+                      "title": "7 Best Running Shoes in 2026 | RunRepeat",
+                      "text": "# 7 Best Running Shoes in 2026 * How we test running shoes * Best running shoes * Best overall * Best daily trainer * Best for tempo * Best for race * Best shock a..."
+                    },
+                    {
+                      "type": "ai_overview_reference",
+                      "position": "left",
+                      "source": "iRunFar",
+                      "domain": "www.irunfar.com",
+                      "url": "https://www.irunfar.com/best-cushioned-running-shoes",
+                      "title": "Best Cushioned Running Shoes of 2026 - iRunFar",
+                      "text": "Best Overall Cushioned Running Shoe: Asics Novablast 6 Best Max-Cushioned Running Shoe: Nike Vomero Plus Best Lightweight Cushione..."
+                    },
+                    {
+                      "type": "ai_overview_reference",
+                      "position": "left",
+                      "source": "Google",
+                      "domain": "www.google.com",
+                      "url": "https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:1552720872044426737,catalogid:9512698683933773482,gpcid:471773172067651162,mid:576462576003993551&ibp=oshop",
+                      "title": "Nike Men's Zoom Fly 6",
+                      "text": "The Zoom Fly Series from American Nike has Always Sought to be a Balanced Combination of speed and Stability. Zoom Fly 6 is no Exc..."
+                    }
+                  ]
+                },
+                {
+                  "type": "ai_overview_element",
+                  "position": "left",
+                  "title": "Best for Trail Running",
+                  "text": "Saucony Peregrine 16 $112.50 $150 Saucony & more 4.5 (276) Designed for technical mountain terrain with PWRRUN cushioning, a rock protection plate, forefoot rubber wrap, and 4 mm Vibram Megagrip lugs. Typically $149.95–$150 (listed at $112.50 with code CHEER on Saucony.com). Salomon Speedcross 6 $150.00 Salomon.com & more 4.6 (3K) Built for loose, soft, and muddy trails using a Mud Contagrip outsole with 5 mm lugs, an EnergyCell+ midsole, a 10 mm drop, and a quickLACE system. Typically around $149.95–$150 ($150 on Salomon.com ).",
+                  "markdown": "---\n\n[![Saucony Peregrine 16](https://encrypted-tbn0.gstatic.com/shopping?q=tbn:ANd9GcSqcz-9t3E11NhCPrfDHTtbCB_M0CYd_8jBz5M1cqZKA2BdxLvzEXZwIfPcKYfHUbTruDmZB59E&amp;usqp=CAE)\nSaucony Peregrine 16 | Saucony&amp; more | 4.5(276)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462914772907793,imageDocid:16783268319792510056,gpcid:8303742672316220167,headlineOfferDocid:10971117445876753142,catalogid:13813904176710046495,productDocid:15238147752737044821,rds:PC_8303742672316220167%7CPROD_PC_8303742672316220167&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAggmECM) \n\nDesigned for technical mountain terrain with PWRRUN cushioning, a rock protection plate, forefoot rubber wrap, and 4 mm Vibram Megagrip lugs. Typically $149.95–$150 (listed at $112.50 with code CHEER on Saucony.com).[[1]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:15238147752737044821,catalogid:13813904176710046495,gpcid:8303742672316220167,mid:576462914772907793&ibp=oshop)\n\n---\n\n[![Salomon Speedcross 6](https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQ4WfaT_4Le-MPtTGJrz-lgud_4rbIpq5MYof5P1xNV1TjLSfumBI4WhZSBAeo&amp;usqp=CAE)\nSalomon Speedcross 6 | Salomon.com&amp; more | 4.6(3K)](https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462575785430501,imageDocid:14262047019578356594,gpcid:15566446623960197492,headlineOfferDocid:2894721248585283585,catalogid:14944326020776205798,productDocid:7827903718782564420,rds:PC_15566446623960197492%7CPROD_PC_15566446623960197492&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAggmEC8) \n\nBuilt for loose, soft, and muddy trails using a Mud Contagrip outsole with 5 mm lugs, an EnergyCell+ midsole, a 10 mm drop, and a quickLACE system . Typically around $149.95–$150 ($150 on [Salomon.com](https://google.com/goto?url=REDACTED)).[[1]](https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:7827903718782564420,catalogid:14944326020776205798,gpcid:15566446623960197492,mid:576462575785430501&ibp=oshop)",
+                  "links": [
+                    {
+                      "type": "link_element",
+                      "title": "Saucony Peregrine 16$112.50$150Saucony& more4.5(276)Go to product viewer dialog for this item.",
+                      "description": null,
+                      "url": "https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462914772907793,imageDocid:16783268319792510056,gpcid:8303742672316220167,headlineOfferDocid:10971117445876753142,catalogid:13813904176710046495,productDocid:15238147752737044821,rds:PC_8303742672316220167%7CPROD_PC_8303742672316220167&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAggmECM",
+                      "domain": "www.google.com"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "Salomon Speedcross 6$150.00Salomon.com& more4.6(3K)Go to product viewer dialog for this item.",
+                      "description": null,
+                      "url": "https://www.google.com/search?ibp=oshop&prds=pvt:a,pvo:29,mid:576462575785430501,imageDocid:14262047019578356594,gpcid:15566446623960197492,headlineOfferDocid:2894721248585283585,catalogid:14944326020776205798,productDocid:7827903718782564420,rds:PC_15566446623960197492%7CPROD_PC_15566446623960197492&q=product&sa=X&ved=2ahUKEwjOloDItamYAxXTh_0HHVY9F90QgLcPegYIAggmEC8",
+                      "domain": "www.google.com"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "Salomon.com",
+                      "description": null,
+                      "url": "https://google.com/goto?url=REDACTED",
+                      "domain": "google.com"
+                    }
+                  ],
+                  "images": null,
+                  "references": [
+                    {
+                      "type": "ai_overview_reference",
+                      "position": "left",
+                      "source": "Google",
+                      "domain": "www.google.com",
+                      "url": "https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:15238147752737044821,catalogid:13813904176710046495,gpcid:8303742672316220167,mid:576462914772907793&ibp=oshop",
+                      "title": "Men's Saucony Peregrine 16",
+                      "text": "Technical Features The Saucony Peregrine 16 becomes a versatile and robust ally for those facing demanding mountain terrains. Its ..."
+                    },
+                    {
+                      "type": "ai_overview_reference",
+                      "position": "left",
+                      "source": "Google",
+                      "domain": "www.google.com",
+                      "url": "https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:7827903718782564420,catalogid:14944326020776205798,gpcid:15566446623960197492,mid:576462575785430501&ibp=oshop",
+                      "title": "Salomon Men's Speedcross 6",
+                      "text": "Salomon Speedcross 6 are trail running shoes designed for muddy terrain, lighter than previous versions and developed to provide m..."
+                    }
+                  ]
+                },
+                {
+                  "type": "ai_overview_element",
+                  "position": "left",
+                  "title": null,
+                  "text": "For lab testing metrics and category breakdowns, see RunRepeat, iRunFar, and Fleet Feet.",
+                  "markdown": "For lab testing metrics and category breakdowns, see [RunRepeat](https://google.com/goto?url=REDACTED), [iRunFar](https://google.com/goto?url=REDACTED) , and [Fleet Feet](https://google.com/goto?url=REDACTED).[[1]](https://google.com/goto?url=REDACTED)[[2]](https://google.com/goto?url=REDACTED)[[3]](https://google.com/goto?url=REDACTED)",
+                  "links": [
+                    {
+                      "type": "link_element",
+                      "title": "RunRepeat",
+                      "description": null,
+                      "url": "https://google.com/goto?url=REDACTED",
+                      "domain": "google.com"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "iRunFar",
+                      "description": null,
+                      "url": "https://google.com/goto?url=REDACTED",
+                      "domain": "google.com"
+                    },
+                    {
+                      "type": "link_element",
+                      "title": "Fleet Feet",
+                      "description": null,
+                      "url": "https://google.com/goto?url=REDACTED",
+                      "domain": "google.com"
+                    }
+                  ],
+                  "images": null,
+                  "references": [
+                    {
+                      "type": "ai_overview_reference",
+                      "position": "left",
+                      "source": "RunRepeat",
+                      "domain": "runrepeat.com",
+                      "url": "https://runrepeat.com/guides/best-running-shoes",
+                      "title": "7 Best Running Shoes in 2026 | RunRepeat",
+                      "text": "# 7 Best Running Shoes in 2026 * How we test running shoes * Best running shoes * Best overall * Best daily trainer * Best for tempo * Best for race * Best shock a..."
+                    },
+                    {
+                      "type": "ai_overview_reference",
+                      "position": "left",
+                      "source": "iRunFar",
+                      "domain": "www.irunfar.com",
+                      "url": "https://www.irunfar.com/best-cushioned-running-shoes",
+                      "title": "Best Cushioned Running Shoes of 2026 - iRunFar",
+                      "text": "Best Overall Cushioned Running Shoe: Asics Novablast 6 Best Max-Cushioned Running Shoe: Nike Vomero Plus Best Lightweight Cushione..."
+                    },
+                    {
+                      "type": "ai_overview_reference",
+                      "position": "left",
+                      "source": "Fleet Feet",
+                      "domain": "google.com",
+                      "url": "https://google.com/goto?url=REDACTED",
+                      "title": "The 10 Best Women's Running Shoes 2026 | Fleet Feet",
+                      "text": "# Best Running Shoes for Women 2026 Updated on September 9, 2026 Our experts compiled and reviewed the best women's running shoes ..."
+                    }
+                  ]
+                },
+                {
+                  "type": "ai_overview_element",
+                  "position": "left",
+                  "title": null,
+                  "text": "To help narrow this down, tell me about:How you plan to use them (daily easy runs, speed workouts, marathon training, or trails)\nYour fit and support preferences (neutral vs. stability, wide or narrow feet)\nYour target budget",
+                  "markdown": "To help narrow this down, tell me about:\n\n- **How you plan to use them** (daily easy runs, speed workouts, marathon training, or trails)\n- **Your fit and support preferences** (neutral vs. stability, wide or narrow feet)\n- **Your target budget**",
+                  "links": null,
+                  "images": null,
+                  "references": null
+                }
+              ],
+              "references": [
+                {
+                  "type": "ai_overview_reference",
+                  "position": "right",
+                  "source": "RunRepeat",
+                  "domain": "runrepeat.com",
+                  "url": "https://runrepeat.com/guides/best-running-shoes",
+                  "title": "7 Best Running Shoes in 2026 | RunRepeat",
+                  "text": "# 7 Best Running Shoes in 2026 * How we test running shoes * Best running shoes * Best overall * Best daily trainer * Best for tempo * Best for race * Best shock a..."
+                },
+                {
+                  "type": "ai_overview_reference",
+                  "position": "right",
+                  "source": "YouTube",
+                  "domain": "www.youtube.com",
+                  "url": "https://www.youtube.com/watch?v=BeFrLVkROlg",
+                  "title": "I Tested 71 Running Shoes in 2026 – These Are My Top 10!",
+                  "text": "The Mount. Co. is advertised as a super trainer but functions best as a daily shoe, offering a bouncy, energetic, and springy midsole with a two-tier lacing system"
+                },
+                {
+                  "type": "ai_overview_reference",
+                  "position": "right",
+                  "source": "Fleet Feet",
+                  "domain": "google.com",
+                  "url": "https://google.com/goto?url=REDACTED",
+                  "title": "The 10 Best Women's Running Shoes 2026 | Fleet Feet",
+                  "text": "# Best Running Shoes for Women 2026 Updated on September 9, 2026 Our experts compiled and reviewed the best women's running shoes of 2026 so you can find the right..."
+                },
+                {
+                  "type": "ai_overview_reference",
+                  "position": "right",
+                  "source": "iRunFar",
+                  "domain": "www.irunfar.com",
+                  "url": "https://www.irunfar.com/best-cushioned-running-shoes",
+                  "title": "Best Cushioned Running Shoes of 2026 - iRunFar",
+                  "text": "Best Overall Cushioned Running Shoe: Asics Novablast 6 Best Max-Cushioned Running Shoe: Nike Vomero Plus Best Lightweight Cushione..."
+                },
+                {
+                  "type": "ai_overview_reference",
+                  "position": "right",
+                  "source": "Google",
+                  "domain": "www.google.com",
+                  "url": "https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:4662138553275979042,catalogid:177588785310760266,gpcid:7326703641027475137,mid:576462549196774912&ibp=oshop",
+                  "title": "Brooks Men's Ghost 18",
+                  "text": "The Ghost 18 is an all-rounder designed by Brooks for your daily run. With the Ghost 18, you have a perfect blend of comfort, supp..."
+                },
+                {
+                  "type": "ai_overview_reference",
+                  "position": "right",
+                  "source": "Google",
+                  "domain": "www.google.com",
+                  "url": "https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:9116900639882461368,catalogid:12612048093444247059,gpcid:16205108421803581788,mid:576462864034435929&ibp=oshop",
+                  "title": "Nike Men's Vomero Plus",
+                  "text": "Enjoy a super smooth, cushioned ride with the Nike Vomero 18—perfect for everyday runs. Featuring the softest combo yet, the midso..."
+                },
+                {
+                  "type": "ai_overview_reference",
+                  "position": "right",
+                  "source": "Google",
+                  "domain": "www.google.com",
+                  "url": "https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:15238147752737044821,catalogid:13813904176710046495,gpcid:8303742672316220167,mid:576462914772907793&ibp=oshop",
+                  "title": "Men's Saucony Peregrine 16",
+                  "text": "Technical Features The Saucony Peregrine 16 becomes a versatile and robust ally for those facing demanding mountain terrains. Its ..."
+                },
+                {
+                  "type": "ai_overview_reference",
+                  "position": "right",
+                  "source": "Google",
+                  "domain": "www.google.com",
+                  "url": "https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:1552720872044426737,catalogid:9512698683933773482,gpcid:471773172067651162,mid:576462576003993551&ibp=oshop",
+                  "title": "Nike Men's Zoom Fly 6",
+                  "text": "The Zoom Fly Series from American Nike has Always Sought to be a Balanced Combination of speed and Stability. Zoom Fly 6 is no Exc..."
+                },
+                {
+                  "type": "ai_overview_reference",
+                  "position": "right",
+                  "source": "Google",
+                  "domain": "www.google.com",
+                  "url": "https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:7195826218847817569,catalogid:393394567760082213,gpcid:9072831014733564315,mid:576462881233777118&ibp=oshop",
+                  "title": "Nike Men's Pegasus 42",
+                  "text": "The Nike Pegasus 42 continues the legacy of delivering a responsive and comfortable ride for runners of all levels. This latest it..."
+                },
+                {
+                  "type": "ai_overview_reference",
+                  "position": "right",
+                  "source": "Google",
+                  "domain": "www.google.com",
+                  "url": "https://www.google.com/search?q=product&prds=pvt:hg,pvo:29,productid:7827903718782564420,catalogid:14944326020776205798,gpcid:15566446623960197492,mid:576462575785430501&ibp=oshop",
+                  "title": "Salomon Men's Speedcross 6",
+                  "text": "Salomon Speedcross 6 are trail running shoes designed for muddy terrain, lighter than previous versions and developed to provide m..."
+                }
+              ],
+              "rectangle": null
+            },
+            {
+              "type": "organic",
+              "rank_group": 1,
+              "rank_absolute": 2,
+              "page": 1,
+              "position": "left",
+              "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[2]/div[1]/div[1]",
+              "domain": "google.com",
+              "title": "Men's Running Shoes | Sign in for Free Shipping",
+              "url": "https://google.com/goto?url=REDACTED&gsessionid=2zaBd2LVBpljyEcYwp63C1CDSkk94ppSQINXpkY4RXb_HJeTEVrAXA",
+              "cache_url": null,
+              "related_search_url": null,
+              "breadcrumb": "https://www.famousfootwear.com › browse › shoes › mens",
+              "website_name": "Famous Footwear",
+              "is_image": false,
+              "is_video": false,
+              "is_featured_snippet": false,
+              "is_malicious": false,
+              "is_web_story": false,
+              "checks": null,
+              "description": "Shop Men's Running Shoes at Famous Footwear. Explore our best running shoes for men from top brands like Nike, adidas, Brooks & more.",
+              "pre_snippet": null,
+              "extended_snippet": null,
+              "images": null,
+              "amp_version": false,
+              "rating": null,
+              "price": null,
+              "highlighted": [
+                "best running shoes for men from top brands"
+              ],
+              "links": null,
+              "faq": null,
+              "extended_people_also_search": null,
+              "about_this_result": null,
+              "related_result": null,
+              "rectangle": null
+            },
+            {
+              "type": "organic",
+              "rank_group": 2,
+              "rank_absolute": 3,
+              "page": 1,
+              "position": "left",
+              "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[3]/div[1]/div[1]/div[1]",
+              "domain": "google.com",
+              "title": "The Best and Worst Road Running Shoes of This Year",
+              "url": "https://google.com/goto?url=REDACTED&gsessionid=2zaBd2LVBpljyEcYwp63C1CDSkk94ppSQINXpkY4RXb_HJeTEVrAXA",
+              "cache_url": null,
+              "related_search_url": null,
+              "breadcrumb": "245.6K+ views  ·  2 years ago",
+              "website_name": "YouTube · RunIQ",
+              "is_image": false,
+              "is_video": true,
+              "is_featured_snippet": false,
+              "is_malicious": false,
+              "is_web_story": false,
+              "checks": [
+                "is_video"
+              ],
+              "description": null,
+              "pre_snippet": null,
+              "extended_snippet": null,
+              "images": null,
+              "amp_version": false,
+              "rating": null,
+              "price": null,
+              "highlighted": null,
+              "links": null,
+              "faq": null,
+              "extended_people_also_search": null,
+              "about_this_result": null,
+              "related_result": null,
+              "rectangle": null
+            },
+            {
+              "type": "organic",
+              "rank_group": 3,
+              "rank_absolute": 4,
+              "page": 1,
+              "position": "left",
+              "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[5]/div[1]/div[1]",
+              "domain": "google.com",
+              "title": "In your opinion what is the best running shoes?",
+              "url": "https://google.com/goto?url=REDACTED&gsessionid=2zaBd2LVBpljyEcYwp63C1CDSkk94ppSQINXpkY4RXb_HJeTEVrAXA",
+              "cache_url": null,
+              "related_search_url": null,
+              "breadcrumb": "https://www.letsrun.com › forum › flat_read",
+              "website_name": "LetsRun.com",
+              "is_image": false,
+              "is_video": false,
+              "is_featured_snippet": false,
+              "is_malicious": false,
+              "is_web_story": false,
+              "checks": null,
+              "description": "Nov 8, 2017 — In my post, I review shoes like the Nike Pegasus 37 and Nike Structure 22, The Asics GT 2000 8, The ASICS Gel Nimbus, The Brooks Glycerin 18, ... Read more",
+              "pre_snippet": "11/08/2017 <redacted-ip>",
+              "extended_snippet": null,
+              "images": null,
+              "amp_version": false,
+              "rating": null,
+              "price": null,
+              "highlighted": [
+                "Nike Pegasus 37"
+              ],
+              "links": [
+                {
+                  "type": "link_element",
+                  "title": "Read more",
+                  "description": null,
+                  "url": "https://google.com/goto?url=REDACTED&gsessionid=2zaBd2LVBpljyEcYwp63C1CDSkk94ppSQINXpkY4RXb_HJeTEVrAXA",
+                  "domain": "google.com"
+                }
+              ],
+              "faq": null,
+              "extended_people_also_search": null,
+              "about_this_result": null,
+              "related_result": null,
+              "rectangle": null
+            },
+            {
+              "type": "popular_products",
+              "rank_group": 1,
+              "rank_absolute": 5,
+              "page": 1,
+              "position": "left",
+              "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[7]/div[1]",
+              "title": "More products",
+              "items": [
+                {
+                  "type": "popular_products_element",
+                  "title": "Men's Nike Alphafly 3",
+                  "url": "https://www.google.com/search?ibp=oshop&q=best+running+shoes&prds=gpcid:254466170480770713,rds:PC_254466170480770713%7CPROD_PC_254466170480770713,headlineOfferDocid:14384393113551296886,catalogid:6254705117491823767,pvo:3,pvt:hg&hl=en&gl=US",
+                  "domain": "www.google.com",
+                  "description": "DICK'S Sporting Goods",
+                  "more_sellers": false,
+                  "seller": "DICK'S Sporting Goods",
+                  "group_title": null,
+                  "group_source": null,
+                  "image_url": "https://api.dataforseo.com/cdn/i/<redacted-id>:6",
+                  "price": {
+                    "current": 304.99,
+                    "regular": null,
+                    "max_value": null,
+                    "currency": "USD",
+                    "is_price_range": false,
+                    "displayed_price": "$304.99"
+                  },
+                  "rating": {
+                    "rating_type": "Max5",
+                    "value": 4.4,
+                    "votes_count": 1100,
+                    "rating_max": 5
+                  },
+                  "product_identifiers": {
+                    "product_id": "6254705117491823767",
+                    "data_docid": "2621473953049311684",
+                    "gid": "254466170480770713"
+                  }
+                },
+                {
+                  "type": "popular_products_element",
+                  "title": "Nike Men's Zoom Fly 6",
+                  "url": "https://www.google.com/search?ibp=oshop&q=best+running+shoes&prds=gpcid:471773172067651162,rds:PC_471773172067651162%7CPROD_PC_471773172067651162,headlineOfferDocid:4876994923142971194,catalogid:9512698683933773482,pvo:3,pvt:hg&hl=en&gl=US",
+                  "domain": "www.google.com",
+                  "description": "nike.com & more\nFree delivery",
+                  "more_sellers": true,
+                  "seller": "nike.com",
+                  "group_title": null,
+                  "group_source": null,
+                  "image_url": "https://api.dataforseo.com/cdn/i/<redacted-id>:7",
+                  "price": {
+                    "current": 180,
+                    "regular": null,
+                    "max_value": null,
+                    "currency": "USD",
+                    "is_price_range": false,
+                    "displayed_price": "$180.00"
+                  },
+                  "rating": {
+                    "rating_type": "Max5",
+                    "value": 4.6,
+                    "votes_count": 1900,
+                    "rating_max": 5
+                  },
+                  "product_identifiers": {
+                    "product_id": "9512698683933773482",
+                    "data_docid": "1552720872044426737",
+                    "gid": "471773172067651162"
+                  }
+                },
+                {
+                  "type": "popular_products_element",
+                  "title": "New Balance Men's SuperComp Rebel",
+                  "url": "https://www.google.com/search?ibp=oshop&q=best+running+shoes&prds=gpcid:1326299460399171637,rds:PC_1326299460399171637%7CPROD_PC_1326299460399171637,headlineOfferDocid:2249121031523925518,catalogid:9817683332866899342,pvo:3,pvt:hg&hl=en&gl=US",
+                  "domain": "www.google.com",
+                  "description": "New Balance & more",
+                  "more_sellers": true,
+                  "seller": "New Balance",
+                  "group_title": null,
+                  "group_source": null,
+                  "image_url": "https://api.dataforseo.com/cdn/i/<redacted-id>:8",
+                  "price": {
+                    "current": 199.99,
+                    "regular": null,
+                    "max_value": null,
+                    "currency": "USD",
+                    "is_price_range": false,
+                    "displayed_price": "$199.99"
+                  },
+                  "rating": {
+                    "rating_type": "Max5",
+                    "value": 4.6,
+                    "votes_count": 392,
+                    "rating_max": 5
+                  },
+                  "product_identifiers": {
+                    "product_id": "9817683332866899342",
+                    "data_docid": "10005592462491842037",
+                    "gid": "1326299460399171637"
+                  }
+                },
+                {
+                  "type": "popular_products_element",
+                  "title": "Saucony Men's Endorphin Azura",
+                  "url": "https://www.google.com/search?ibp=oshop&q=best+running+shoes&prds=gpcid:7161500693746870898,rds:PC_7161500693746870898%7CPROD_PC_7161500693746870898,headlineOfferDocid:4743386314322768164,catalogid:18342721198479115324,pvo:3,pvt:hg&hl=en&gl=US",
+                  "domain": "www.google.com",
+                  "description": "Saucony\nFree delivery",
+                  "more_sellers": false,
+                  "seller": "Saucony",
+                  "group_title": null,
+                  "group_source": null,
+                  "image_url": "https://api.dataforseo.com/cdn/i/<redacted-id>:9",
+                  "price": {
+                    "current": 150,
+                    "regular": null,
+                    "max_value": null,
+                    "currency": "USD",
+                    "is_price_range": false,
+                    "displayed_price": "$150.00"
+                  },
+                  "rating": {
+                    "rating_type": "Max5",
+                    "value": 4.6,
+                    "votes_count": 647,
+                    "rating_max": 5
+                  },
+                  "product_identifiers": {
+                    "product_id": "18342721198479115324",
+                    "data_docid": "12937224709839296932",
+                    "gid": "7161500693746870898"
+                  }
+                },
+                {
+                  "type": "popular_products_element",
+                  "title": "ASICS Men's Novablast 6",
+                  "url": "https://www.google.com/search?ibp=oshop&q=best+running+shoes&prds=gpcid:5626042281368975415,rds:PC_5626042281368975415%7CPROD_PC_5626042281368975415,headlineOfferDocid:403488393366370293,catalogid:17902793457158870501,pvo:3,pvt:hg&hl=en&gl=US",
+                  "domain": "www.google.com",
+                  "description": "ASICS & more",
+                  "more_sellers": true,
+                  "seller": "ASICS",
+                  "group_title": null,
+                  "group_source": null,
+                  "image_url": "https://api.dataforseo.com/cdn/i/<redacted-id>:10",
+                  "price": {
+                    "current": 155,
+                    "regular": null,
+                    "max_value": null,
+                    "currency": "USD",
+                    "is_price_range": false,
+                    "displayed_price": "$155.00"
+                  },
+                  "rating": {
+                    "rating_type": "Max5",
+                    "value": 4.7,
+                    "votes_count": 2000,
+                    "rating_max": 5
+                  },
+                  "product_identifiers": {
+                    "product_id": "17902793457158870501",
+                    "data_docid": "1911595738158110378",
+                    "gid": "5626042281368975415"
+                  }
+                },
+                {
+                  "type": "popular_products_element",
+                  "title": "HOKA Men's Clifton 9 Running Shoes - Sherbet",
+                  "url": "https://www.google.com/search?ibp=oshop&q=best+running+shoes&prds=headlineOfferDocid:2971329918874202471,pvo:3,pvt:hg&hl=en&gl=US",
+                  "domain": "www.google.com",
+                  "description": "walkglen\nFree delivery",
+                  "more_sellers": false,
+                  "seller": "walkglen",
+                  "group_title": null,
+                  "group_source": null,
+                  "image_url": "https://api.dataforseo.com/cdn/i/<redacted-id>:11",
+                  "price": {
+                    "current": 36.25,
+                    "regular": 145,
+                    "max_value": null,
+                    "currency": "USD",
+                    "is_price_range": false,
+                    "displayed_price": "$36.25 $145"
+                  },
+                  "rating": null,
+                  "product_identifiers": {
+                    "product_id": null,
+                    "data_docid": "2971329918874202471",
+                    "gid": null
+                  }
+                },
+                {
+                  "type": "popular_products_element",
+                  "title": "New Balance Men's FuelCell Rebel v5",
+                  "url": "https://www.google.com/search?ibp=oshop&q=best+running+shoes&prds=gpcid:17357756568213350582,rds:PC_17357756568213350582%7CPROD_PC_17357756568213350582,headlineOfferDocid:10333846999321769855,catalogid:1209145408917364933,pvo:3,pvt:hg&hl=en&gl=US",
+                  "domain": "www.google.com",
+                  "description": "New Balance & more",
+                  "more_sellers": true,
+                  "seller": "New Balance",
+                  "group_title": null,
+                  "group_source": null,
+                  "image_url": "https://api.dataforseo.com/cdn/i/<redacted-id>:12",
+                  "price": {
+                    "current": 110.19,
+                    "regular": 145,
+                    "max_value": null,
+                    "currency": "USD",
+                    "is_price_range": false,
+                    "displayed_price": "$110.19 $145"
+                  },
+                  "rating": {
+                    "rating_type": "Max5",
+                    "value": 4.7,
+                    "votes_count": 216,
+                    "rating_max": 5
+                  },
+                  "product_identifiers": {
+                    "product_id": "1209145408917364933",
+                    "data_docid": "5389799154950373896",
+                    "gid": "17357756568213350582"
+                  }
+                },
+                {
+                  "type": "popular_products_element",
+                  "title": "Nike Men's Alphafly Next% 4",
+                  "url": "https://www.google.com/search?ibp=oshop&q=best+running+shoes&prds=gpcid:6859072522015774088,rds:PC_6859072522015774088%7CPROD_PC_6859072522015774088,headlineOfferDocid:14468025866455183968,catalogid:9348214828715982046,pvo:3,pvt:hg&hl=en&gl=US",
+                  "domain": "www.google.com",
+                  "description": "Running Warehouse US\nFree delivery by Thu",
+                  "more_sellers": false,
+                  "seller": "Running Warehouse US",
+                  "group_title": null,
+                  "group_source": null,
+                  "image_url": "https://api.dataforseo.com/cdn/i/<redacted-id>:13",
+                  "price": {
+                    "current": 279.95,
+                    "regular": null,
+                    "max_value": null,
+                    "currency": "USD",
+                    "is_price_range": false,
+                    "displayed_price": "$279.95"
+                  },
+                  "rating": {
+                    "rating_type": "Max5",
+                    "value": 5,
+                    "votes_count": 11,
+                    "rating_max": 5
+                  },
+                  "product_identifiers": {
+                    "product_id": "9348214828715982046",
+                    "data_docid": "15664431072012067620",
+                    "gid": "6859072522015774088"
+                  }
+                }
+              ],
+              "rectangle": null
+            },
+            {
+              "type": "organic",
+              "rank_group": 4,
+              "rank_absolute": 6,
+              "page": 1,
+              "position": "left",
+              "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[9]/div[1]/div[1]",
+              "domain": "google.com",
+              "title": "Best running shoes: Experts weigh in on what to look for",
+              "url": "https://google.com/goto?url=REDACTED&gsessionid=2zaBd2LVBpljyEcYwp63C1CDSkk94ppSQINXpkY4RXb_HJeTEVrAXA",
+              "cache_url": null,
+              "related_search_url": null,
+              "breadcrumb": "https://abcnews.com › Shop › story",
+              "website_name": "ABC News - Breaking News, Latest News and Videos",
+              "is_image": true,
+              "is_video": false,
+              "is_featured_snippet": false,
+              "is_malicious": false,
+              "is_web_story": false,
+              "checks": [
+                "is_image"
+              ],
+              "description": "Jan 16, 2025 — Asics Novablast 4 offers energized cushioning to add comfortable bounce in stride and a mesh tongue to fit the foot. The Novablast 4 also boasts ... Read more",
+              "pre_snippet": "01/16/2025 <redacted-ip>",
+              "extended_snippet": null,
+              "images": [
+                {
+                  "type": "images_element",
+                  "alt": "best running shoes from abcnews.com",
+                  "url": "https://google.com/goto?url=REDACTED&gsessionid=2zaBd2LVBpljyEcYwp63C1CDSkk94ppSQINXpkY4RXb_HJeTEVrAXA",
+                  "image_url": "https://api.dataforseo.com/cdn/i/<redacted-id>:14"
+                }
+              ],
+              "amp_version": false,
+              "rating": null,
+              "price": null,
+              "highlighted": [
+                "Asics Novablast 4"
+              ],
+              "links": [
+                {
+                  "type": "link_element",
+                  "title": "Read more",
+                  "description": null,
+                  "url": "https://google.com/goto?url=REDACTED&gsessionid=2zaBd2LVBpljyEcYwp63C1CDSkk94ppSQINXpkY4RXb_HJeTEVrAXA",
+                  "domain": "google.com"
+                }
+              ],
+              "faq": null,
+              "extended_people_also_search": null,
+              "about_this_result": null,
+              "related_result": null,
+              "rectangle": null
+            },
+            {
+              "type": "organic",
+              "rank_group": 5,
+              "rank_absolute": 7,
+              "page": 1,
+              "position": "left",
+              "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[10]/div[1]/div[1]/div[1]",
+              "domain": "google.com",
+              "title": "My TOP Running Shoe from EVERY Brand (Ranked 2025)",
+              "url": "https://google.com/goto?url=REDACTED&gsessionid=2zaBd2LVBpljyEcYwp63C1CDSkk94ppSQINXpkY4RXb_HJeTEVrAXA",
+              "cache_url": null,
+              "related_search_url": null,
+              "breadcrumb": "17.5K+ views  ·  1 year ago",
+              "website_name": "YouTube · FORDY RUNS",
+              "is_image": false,
+              "is_video": true,
+              "is_featured_snippet": false,
+              "is_malicious": false,
+              "is_web_story": false,
+              "checks": [
+                "is_video"
+              ],
+              "description": null,
+              "pre_snippet": null,
+              "extended_snippet": null,
+              "images": null,
+              "amp_version": false,
+              "rating": null,
+              "price": null,
+              "highlighted": null,
+              "links": null,
+              "faq": null,
+              "extended_people_also_search": null,
+              "about_this_result": null,
+              "related_result": null,
+              "rectangle": null
+            },
+            {
+              "type": "people_also_ask",
+              "rank_group": 1,
+              "rank_absolute": 8,
+              "page": 1,
+              "position": "left",
+              "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[12]/div[1]/div[1]/div[1]",
+              "items": [
+                {
+                  "type": "people_also_ask_element",
+                  "title": "What is the world's best running shoe?",
+                  "seed_question": null,
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[12]/div[1]/div[1]/div[1]/div[1]/div[2]/div[1]",
+                  "expanded_element": [
+                    {
+                      "type": "people_also_ask_ai_overview_expanded_element",
+                      "items": null,
+                      "references": null,
+                      "asynchronous_ai_overview": true
+                    }
+                  ]
+                },
+                {
+                  "type": "people_also_ask_element",
+                  "title": "Is HOKA or Asics better?",
+                  "seed_question": null,
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[12]/div[1]/div[1]/div[1]/div[1]/div[2]/div[2]",
+                  "expanded_element": [
+                    {
+                      "type": "people_also_ask_ai_overview_expanded_element",
+                      "items": null,
+                      "references": null,
+                      "asynchronous_ai_overview": true
+                    }
+                  ]
+                },
+                {
+                  "type": "people_also_ask_element",
+                  "title": "Is Asics Novablast good?",
+                  "seed_question": null,
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[12]/div[1]/div[1]/div[1]/div[1]/div[2]/div[3]",
+                  "expanded_element": [
+                    {
+                      "type": "people_also_ask_ai_overview_expanded_element",
+                      "items": null,
+                      "references": null,
+                      "asynchronous_ai_overview": true
+                    }
+                  ]
+                },
+                {
+                  "type": "people_also_ask_element",
+                  "title": "What shoes do billionaires wear?",
+                  "seed_question": null,
+                  "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[12]/div[1]/div[1]/div[1]/div[1]/div[2]/div[4]",
+                  "expanded_element": [
+                    {
+                      "type": "people_also_ask_ai_overview_expanded_element",
+                      "items": null,
+                      "references": null,
+                      "asynchronous_ai_overview": true
+                    }
+                  ]
+                }
+              ],
+              "rectangle": null
+            },
+            {
+              "type": "images",
+              "rank_group": 1,
+              "rank_absolute": 9,
+              "page": 1,
+              "position": "left",
+              "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[14]/div[1]",
+              "title": "Images",
+              "url": null,
+              "items": [
+                {
+                  "type": "images_element",
+                  "alt": "The 10 Best Running Shoes of 2025 | Supwell",
+                  "url": "https://www.supwell.com/supbeat/the-10-best-running-shoes-of-2025",
+                  "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQH239DAcUa7jEX3gAj4IuDckjuYNXFfgASL6bOwkUIQOOMMvzgvDZ_b-0&s"
+                },
+                {
+                  "type": "images_element",
+                  "alt": "7 Best Running Shoes in 2026 | RunRepeat",
+                  "url": "https://runrepeat.com/guides/best-running-shoes",
+                  "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQxHCqnx_RdKqBkRQLj8cQ7y0xivmfV7EKnvd43kIbFvk0-8Mzd6t8qE9s&s"
+                },
+                {
+                  "type": "images_element",
+                  "alt": "7 Best Running Shoes in 2026 | RunRepeat",
+                  "url": "https://runrepeat.com/guides/best-running-shoes",
+                  "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQW-c45v7DUynGaQ00cJtsLuautOZ0pcvpQF0Ds6dEblqxSkRIRxtPnfJs&s"
+                }
+              ],
+              "related_image_searches": null,
+              "rectangle": null
+            },
+            {
+              "type": "organic",
+              "rank_group": 6,
+              "rank_absolute": 10,
+              "page": 1,
+              "position": "left",
+              "xpath": "/html[1]/body[1]/div[3]/div[1]/div[14]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/div[2]/div[16]/div[1]/div[1]",
+              "domain": "google.com",
+              "title": "The Best Running Shoes Whether You're ... - Teen Vogue",
+              "url": "https://google.com/goto?url=REDACTED&gsessionid=2zaBd2LVBpljyEcYwp63C1CDSkk94ppSQINXpkY4RXb_HJeTEVrAXA",
+              "cache_url": null,
+              "related_search_url": null,
+              "breadcrumb": "https://www.teenvogue.com › gallery › best-running-shoes",
+              "website_name": "Teen Vogue",
+              "is_image": true,
+              "is_video": false,
+              "is_featured_snippet": false,
+              "is_malicious": false,
+              "is_web_story": false,
+              "checks": [
+                "is_image"
+              ],
+              "description": "Sep 20, 2018 — The Best Running Shoes Whether You're Running One Mile or 26.2 · Nike Zoom Pegasus Turbo, $180 · New Balance Fresh Foam Cruz V2 Knit, $85. Read more",
+              "pre_snippet": "09/20/2018 <redacted-ip>",
+              "extended_snippet": null,
+              "images": [
+                {
+                  "type": "images_element",
+                  "alt": "best running shoes from www.teenvogue.com",
+                  "url": "https://google.com/goto?url=REDACTED&gsessionid=2zaBd2LVBpljyEcYwp63C1CDSkk94ppSQINXpkY4RXb_HJeTEVrAXA",
+                  "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYW-DMNWAENlLONt0zMCYzqrOXV_tEo3HzshiVuVifBkA-c3-63jky&usqp=CAE&s"
+                }
+              ],
+              "amp_version": false,
+              "rating": null,
+              "price": null,
+              "highlighted": [
+                "Nike Zoom Pegasus Turbo, $180"
+              ],
+              "links": [
+                {
+                  "type": "link_element",
+                  "title": "Read more",
+                  "description": null,
+                  "url": "https://google.com/goto?url=REDACTED&gsessionid=2zaBd2LVBpljyEcYwp63C1CDSkk94ppSQINXpkY4RXb_HJeTEVrAXA",
+                  "domain": "google.com"
+                }
+              ],
+              "faq": null,
+              "extended_people_also_search": null,
+              "about_this_result": null,
+              "related_result": null,
+              "rectangle": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

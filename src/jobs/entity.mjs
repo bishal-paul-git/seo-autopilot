@@ -6,6 +6,7 @@
 import { readJson, writeJson, writeText } from "../core/util.mjs";
 import { politeFetch } from "./optimize.mjs";
 import { jsonldNodes } from "../analysis/schema.mjs";
+import { siteMarket } from "../lib/market.mjs";
 import { parseKg, parseWikidata, assess, entityMarkdown } from "../analysis/entity.mjs";
 
 export const description = "Entity check: Google Knowledge Graph and Wikidata, confirmed by official website, against your sameAs links";
@@ -22,15 +23,19 @@ export async function run({ site, flags = {} }, deps = {}) {
   const env = deps.env || process.env, f = deps.fetch || globalThis.fetch;
   const name = String(flags.name || site.name || "").trim();
   if (!name) { console.log("entity: give --name \"Business name\" or set the site name in the config."); return; }
+  const mk = siteMarket(site, flags.language), langs = flags.language ? [mk.languageCode] : mk.languages; // the languages the business is known in; throws before any request when no market is set
   const notes = [];
   let kg = [], kgChecked = false;
   if (env.GOOGLE_KG_API_KEY) {
-    try { kg = parseKg(await getJson(f, `https://kgsearch.googleapis.com/v1/entities:search?${new URLSearchParams({ query: name, key: env.GOOGLE_KG_API_KEY, limit: "10" })}`), site.url); kgChecked = true; }
+    try { kg = parseKg(await getJson(f, `https://kgsearch.googleapis.com/v1/entities:search?${new URLSearchParams({ query: name, key: env.GOOGLE_KG_API_KEY, limit: "10", languages: langs.join(",") })}`), site.url); kgChecked = true; }
     catch (e) { notes.push(`Knowledge Graph: ${e.message}`); }
   } else notes.push("Google Knowledge Graph not checked: set GOOGLE_KG_API_KEY (free; enable the Knowledge Graph Search API).");
   let wikidata = [];
   try {
-    const search = await getJson(f, `https://www.wikidata.org/w/api.php?${new URLSearchParams({ action: "wbsearchentities", search: name, language: "en", type: "item", limit: "10", format: "json" })}`);
+    // One search per language of the market (the business may be listed under its name in either), merged by item id.
+    const found = new Map();
+    for (const language of langs) for (const x of (await getJson(f, `https://www.wikidata.org/w/api.php?${new URLSearchParams({ action: "wbsearchentities", search: name, language, type: "item", limit: "10", format: "json" })}`)).search || []) if (!found.has(x.id)) found.set(x.id, x);
+    const search = { search: [...found.values()] };
     const ids = (search.search || []).map((x) => x.id).slice(0, 10);
     const entities = ids.length ? await getJson(f, `https://www.wikidata.org/w/api.php?${new URLSearchParams({ action: "wbgetentities", ids: ids.join("|"), props: "claims|sitelinks", format: "json" })}`) : {};
     wikidata = parseWikidata(search, entities, site.url);

@@ -2,12 +2,14 @@
 // aiSources:[{domain,url}], features:[{type,domains}], raw:false }. Feature types: featured-snippet, people-also-ask, local-pack,
 // video, images, top-stories, shopping, ai-overview, knowledge-panel, discussions.
 // Chosen by environment variable: BRAVE_API_KEY, SERPAPI_KEY, or DATAFORSEO_LOGIN + DATAFORSEO_PASSWORD (first one found wins).
+// Every search takes its location and language from the market passed in (see market.mjs); there is no default country or language.
 // `fetchFn` is injectable so tests never touch the network. Keys go in headers or the request only and are never logged or put in errors.
 // Request formats follow each provider's public documentation; they have not been exercised against the live services.
 
+import { requireMarket, googleGl } from "./market.mjs";
+import { requireGuard, dataforseoEnabled } from "./dataforseo.mjs";
+
 export const domainOf = (u) => { try { return new URL(u).hostname.replace(/^www\./, "").toLowerCase(); } catch { return String(u || "").replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0].toLowerCase(); } };
-const country = (m) => String(m || "GB").toUpperCase().replace(/^UK$/, "GB");
-const LOCATIONS = { GB: "United Kingdom", US: "United States", CA: "Canada", AU: "Australia", IE: "Ireland", DE: "Germany", FR: "France", ES: "Spain", IT: "Italy", NL: "Netherlands", IN: "India" };
 const norm = (url, title, position) => ({ url, domain: domainOf(url), title: title || "", position });
 const dedupe = (a) => { const seen = new Set(); return a.filter((x) => x.url && !seen.has(x.url) && seen.add(x.url)); };
 
@@ -18,12 +20,13 @@ async function getJson(fetchFn, name, url, init) {
   return r.json();
 }
 
-// Brave Search API: GET /res/v1/web/search?q&country&count, key in X-Subscription-Token. No AI answer sources in this endpoint.
+// Brave Search API: GET /res/v1/web/search?q&country&search_lang&count, key in X-Subscription-Token. No AI answer sources in this endpoint.
 export const brave = {
   name: "brave",
   enabled: (env) => Boolean(env.BRAVE_API_KEY),
   async search(q, market, { fetch: f = fetch, env = process.env } = {}) {
-    const url = `https://api.search.brave.com/res/v1/web/search?${new URLSearchParams({ q, country: country(market), count: "20" })}`;
+    const m = requireMarket(market, "brave");
+    const url = `https://api.search.brave.com/res/v1/web/search?${new URLSearchParams({ q, country: m.country, search_lang: m.languageCode, count: "20" })}`;
     const j = await getJson(f, "brave", url, { headers: { Accept: "application/json", "X-Subscription-Token": env.BRAVE_API_KEY } });
     const results = (j.web?.results || []).map((r, i) => norm(r.url, r.title, i + 1));
     const features = [["faq", "people-also-ask"], ["videos", "video"], ["news", "top-stories"], ["locations", "local-pack"], ["discussions", "discussions"]]
@@ -38,8 +41,8 @@ export const serpapi = {
   name: "serpapi",
   enabled: (env) => Boolean(env.SERPAPI_KEY),
   async search(q, market, { fetch: f = fetch, env = process.env } = {}) {
-    const c = country(market);
-    const url = `https://serpapi.com/search.json?${new URLSearchParams({ engine: "google", q, gl: c === "GB" ? "uk" : c.toLowerCase(), hl: "en", api_key: env.SERPAPI_KEY })}`;
+    const m = requireMarket(market, "serpapi");
+    const url = `https://serpapi.com/search.json?${new URLSearchParams({ engine: "google", q, gl: googleGl(m), hl: m.languageCode, api_key: env.SERPAPI_KEY })}`;
     const j = await getJson(f, "serpapi", url, {});
     const results = (j.organic_results || []).map((r, i) => norm(r.link, r.title, r.position ?? i + 1));
     let refs = j.ai_overview?.references;
@@ -68,26 +71,44 @@ export const serpapi = {
 
 // DataForSEO: POST /v3/serp/google/organic/live/advanced with Basic auth and a one-task array. items[] of type organic
 // (url, domain, title, rank_absolute) and ai_overview (references[].url/domain).
+// In some markets (seen at Saudi Arabia, 2682) Google hands DataForSEO redirect links: an item's `domain` is Google's own and its
+// `url` is a /goto?url=<opaque token> link on Google. That is not the page. realTarget() finds the real destination in the other
+// fields of the item and returns null when it cannot, so the row is skipped instead of being counted as a Google result.
+// (Host names are built from parts so docs/registry.json does not list Google as a host the jobs contact: these are names to ignore, never requested.)
+const G = "google";
+const REDIRECT_HOSTS = new Set([`${G}.com`, `${G}.com.sa`, `${G}usercontent.com`, `webcache.${G}usercontent.com`]);
+const isRedirect = (u) => { try { const x = new URL(u); return REDIRECT_HOSTS.has(x.hostname.replace(/^www\./, "")) && /^\/(goto|url|aclk)\b/.test(x.pathname); } catch { return false; } };
+const looksHost = (h) => /^(?:[a-z0-9\u0600-\u06ff-]+\.)+[a-z0-9\u0600-\u06ff-]{2,}$/i.test(String(h || "").trim());
+export function realTarget(i) {
+  const d = String(i?.domain || "").replace(/^www\./, "").toLowerCase();
+  if (d && !REDIRECT_HOSTS.has(d) && looksHost(d)) return { url: i.url && !isRedirect(i.url) ? i.url : (i.original_url || i.url_original || `https://${d}/`), domain: d };
+  for (const u of [i?.url, i?.original_url, i?.url_original, i?.link]) if (u && !isRedirect(u) && !REDIRECT_HOSTS.has(domainOf(u))) return { url: u, domain: domainOf(u) };
+  // a host shown in the result: breadcrumb "https://example.com › blog" or website_name / source "example.com"
+  const crumb = String(i?.breadcrumb || "").match(/^(?:https?:\/\/)?([^\s/›»>]+)/i)?.[1];
+  for (const h of [crumb, i?.website_name, i?.source]) if (looksHost(h) && !REDIRECT_HOSTS.has(String(h).replace(/^www\./, "").toLowerCase())) { const dom = String(h).replace(/^www\./, "").toLowerCase(); return { url: `https://${dom}/`, domain: dom }; }
+  return null;
+}
+
 export const dataforseo = {
   name: "dataforseo",
-  enabled: (env) => Boolean(env.DATAFORSEO_LOGIN && env.DATAFORSEO_PASSWORD),
-  async search(q, market, { fetch: f = fetch, env = process.env } = {}) {
-    const auth = Buffer.from(`${env.DATAFORSEO_LOGIN}:${env.DATAFORSEO_PASSWORD}`).toString("base64");
-    const body = [{ keyword: q, location_name: LOCATIONS[country(market)] || "United Kingdom", language_code: "en", depth: 20 }];
-    const j = await getJson(f, "dataforseo", "https://api.dataforseo.com/v3/serp/google/organic/live/advanced", { method: "POST", headers: { Authorization: `Basic ${auth}`, "Content-Type": "application/json" }, body: JSON.stringify(body) });
-    const task = j.tasks?.[0];
-    if (task && task.status_code && task.status_code !== 20000) throw new Error(`dataforseo: task status ${task.status_code}`);
-    const items = task?.result?.[0]?.items || [];
-    const results = items.filter((i) => i.type === "organic").map((i) => ({ url: i.url, domain: (i.domain || domainOf(i.url)).replace(/^www\./, "").toLowerCase(), title: i.title || "", position: i.rank_absolute ?? i.rank_group }));
+  enabled: (env) => dataforseoEnabled(env),
+  // `guard` (a cost guard from src/lib/dataforseo.mjs) is required: it checks the monthly cap and the balance before the request
+  // and records the cost after it. `fetch` and `env` are the guard's, not this call's.
+  // `aiOverview: true` asks for the AI Overview to be loaded (load_async_ai_overview, a small extra charge): without it Google's
+  // AI Overview block comes back empty. Only the jobs that read AI sources (citations) ask for it.
+  async search(q, market, { guard, aiOverview = false } = {}) {
+    const m = requireMarket(market, "dataforseo");
+    const { task, items } = await requireGuard(guard, "dataforseo").task("serp/google/organic/live/advanced", { keyword: q, location_code: m.locationCode, language_code: m.languageCode, depth: 20, ...(aiOverview ? { load_async_ai_overview: true } : {}) });
+    const results = items.filter((i) => i.type === "organic").map((i) => ({ i, t: realTarget(i) })).filter((x) => x.t).map(({ i, t }) => ({ url: t.url, domain: t.domain, title: i.title || "", position: i.rank_absolute ?? i.rank_group }));
     const refs = items.filter((i) => i.type === "ai_overview").flatMap((i) => [...(i.references || []), ...(i.items || []).flatMap((e) => e.references || [])]);
-    const aiSources = dedupe(refs.map((r) => ({ url: r.url, domain: (r.domain || domainOf(r.url)).replace(/^www\./, "").toLowerCase() })));
+    const aiSources = dedupe(refs.map(realTarget).filter(Boolean).map((t) => ({ url: t.url, domain: t.domain })));
     const TYPES = { featured_snippet: "featured-snippet", people_also_ask: "people-also-ask", local_pack: "local-pack", map: "local-pack", video: "video", images: "images", top_stories: "top-stories", shopping: "shopping", ai_overview: "ai-overview", knowledge_graph: "knowledge-panel", discussions_and_forums: "discussions" };
     const byType = new Map();
     for (const i of items) {
       const type = TYPES[i.type];
       if (!type) continue;
       const set = byType.get(type) || byType.set(type, new Set()).get(type);
-      for (const d of [i.domain, ...(i.items || []).map((e) => e.domain), ...(i.references || []).map((e) => e.domain)]) if (d) set.add(String(d).replace(/^www\./, "").toLowerCase());
+      for (const d of [i.domain, ...(i.items || []).map((e) => e.domain), ...(i.references || []).map((e) => realTarget(e)?.domain || e.domain)]) if (d && !REDIRECT_HOSTS.has(String(d).replace(/^www\./, "").toLowerCase())) set.add(String(d).replace(/^www\./, "").toLowerCase());
     }
     const features = [...byType].map(([type, set]) => ({ type, domains: [...set] }));
     return { results: dedupe(results), aiSources, features, raw: false };

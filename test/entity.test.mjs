@@ -38,11 +38,13 @@ test("entity job: Wikidata without a key, Knowledge Graph with one, sameAs read 
     if (url.endsWith("robots.txt")) return { ok: false, status: 404 };
     return res('<html><head><script type="application/ld+json">{"@type":"Organization","name":"Acme","sameAs":["https://en.wikipedia.org/wiki/Acme_Plumbing"]}</script></head><body>Acme</body></html>');
   };
-  const site = { id: "s", name: "Acme", url: "https://acme.test/", paths: { state, root, data: root } };
+  const site = { id: "s", name: "Acme", url: "https://acme.test/", market: { location_code: 2682, language_code: "ar", languages: ["ar", "en"] }, paths: { state, root, data: root } };
   const { run } = await import("../src/jobs/entity.mjs");
   const log = console.log; console.log = () => {};
   try { await run({ site, flags: {} }, { env: { GOOGLE_KG_API_KEY: "k" }, fetch: f }); } finally { console.log = log; }
   assert.ok(urls.some((u) => /wbgetentities.*ids=Q1%7CQ2/.test(u)));
+  assert.deepEqual(urls.filter((u) => u.includes("wbsearchentities")).map((u) => new URL(u).searchParams.get("language")), ["ar", "en"], "one Wikidata search per language of the market");
+  assert.equal(new URL(urls.find((u) => u.includes("kgsearch"))).searchParams.get("languages"), "ar,en");
   const r = JSON.parse(readFileSync(join(state, "entity.json"), "utf8"));
   assert.equal(r.wikidata.found, true); assert.deepEqual(r.sameAs, ["https://en.wikipedia.org/wiki/Acme_Plumbing"]);
   assert.ok(r.actions.some((a) => a.includes("Add https://www.wikidata.org/wiki/Q1")));

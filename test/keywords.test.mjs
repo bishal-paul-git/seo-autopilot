@@ -8,6 +8,8 @@ import { join } from "node:path";
 import { terms, readability, stem } from "../src/analysis/text.mjs";
 import { mergeCandidates, label, groupKeywords, difficulty, explore, demand } from "../src/analysis/keywords.mjs";
 import { bing, dataforseo, openpagerank, suggest } from "../src/lib/research-sources.mjs";
+import { UK, US, CONFIG } from "./market-fixtures.mjs";
+import { testGuard } from "./dfs-fixtures.mjs";
 
 test("text: light stemming merges plural and -ing forms; readability needs enough words", () => {
   assert.deepEqual(terms("Invoices invoice pricing price companies hosting hosted"), ["invoic", "invoic", "pric", "pric", "company", "host", "host"]);
@@ -76,25 +78,26 @@ test("sources: request shapes and parsing for Bing, DataForSEO, Open PageRank an
     return res({}, 404);
   };
   const env = { BING_WEBMASTER_API_KEY: "bk", DATAFORSEO_LOGIN: "l", DATAFORSEO_PASSWORD: "p", OPENPAGERANK_API_KEY: "ok" };
-  assert.deepEqual(await bing.related("web hosting", "GB", { fetch: f, env, today: new Date("2026-10-20") }), [{ query: "web hosting uk", bingImpressions: 120 }]);
+  assert.deepEqual(await bing.related("web hosting", UK, { fetch: f, env, today: new Date("2026-10-20") }), [{ query: "web hosting uk", bingImpressions: 120 }]);
   assert.match(calls[0].url, /country=gb&language=en-GB&startDate=2026-07-20&endDate=2026-10-18/);
-  const ideas = await dataforseo.ideas(["hosting"], "US", { fetch: f, env });
+  const guard = testGuard({ fetch: f, env });
+  const ideas = await dataforseo.ideas(["hosting"], US, { guard });
   assert.deepEqual(ideas[0], { query: "cheap hosting", volume: 1900, cpc: 2, competition: null, difficulty: 33, intent: "commercial", trend: [1, 2] });
-  assert.equal(JSON.parse(calls[1].init.body)[0].location_name, "United States");
+  assert.deepEqual([JSON.parse(calls[1].init.body)[0].location_code, JSON.parse(calls[1].init.body)[0].language_code], [2840, "en"]);
   assert.match(calls[1].init.headers.Authorization, /^Basic /);
-  assert.deepEqual(await dataforseo.ranked("c.test", "GB", { fetch: f, env }), [{ query: "vps hosting", position: 4, url: "https://c.test/vps", volume: 700, traffic: 55, intent: null }]);
+  assert.deepEqual(await dataforseo.ranked("c.test", UK, { guard }), [{ query: "vps hosting", position: 4, url: "https://c.test/vps", volume: 700, traffic: 55, intent: null }]);
   assert.deepEqual(await openpagerank.authority(["https://www.a.test/x", "zz.test"], { fetch: f, env }), { "a.test": 5.5 });
   assert.equal(calls[3].init.headers["API-OPR"], "ok");
-  assert.deepEqual((await suggest.expand("web hosting", "GB", { fetch: f, max: 2, delayMs: 0 })).map((x) => x.query), ["web hosting free", "web hosting uk"]);
+  assert.deepEqual((await suggest.expand("web hosting", UK, { fetch: f, max: 2, delayMs: 0 })).map((x) => x.query), ["web hosting free", "web hosting uk"]);
   const bad = async () => res({}, 401);
-  await assert.rejects(() => bing.related("x", "GB", { fetch: bad, env }), (e) => /key rejected/.test(e.message) && !e.message.includes("bk"));
+  await assert.rejects(() => bing.related("x", UK, { fetch: bad, env }), (e) => /key rejected/.test(e.message) && !e.message.includes("bk"));
 });
 
 test("keywords job: Search Console alone works; with a SERP provider and Open PageRank it groups by results and scores difficulty", async () => {
   const root = mkdtempSync(join(tmpdir(), "seo-kw-")); const state = join(root, "state"); mkdirSync(state); mkdirSync(join(root, "content"));
   writeFileSync(join(root, "content", "a.md"), "---\ntitle: Web hosting plans\nslug: hosting\n---\nText");
   writeFileSync(join(state, "gsc-rows.json"), JSON.stringify({ rows: [{ query: "web hosting", page: "https://s.test/hosting", impressions: 400, clicks: 4, position: 11 }, { query: "website hosting", page: "https://s.test/hosting", impressions: 90, clicks: 1, position: 14 }, { query: "acme", impressions: 50, position: 1 }] }));
-  const site = { id: "s", name: "S", url: "https://s.test/", brandTerms: ["acme"], content: { type: "markdown", dir: "content", urlPattern: "/{slug}" }, paths: { state, root, data: root } };
+  const site = { id: "s", name: "S", url: "https://s.test/", market: CONFIG.UK, brandTerms: ["acme"], content: { type: "markdown", dir: "content", urlPattern: "/{slug}" }, paths: { state, root, data: root } };
   const { run } = await import("../src/jobs/keywords.mjs");
   const log = console.log; console.log = () => {};
   const u = (...n) => n.map((i) => ({ url: `https://r${i}.test/p`, title: "", position: i }));

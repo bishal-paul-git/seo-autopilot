@@ -3,11 +3,11 @@
 // network. Request shapes follow each API's public documentation; not yet run live from a scheduled job.
 //   Wikimedia asks every client to send a User-Agent that names it and gives a contact: https://meta.wikimedia.org/wiki/User-Agent_policy
 //   Stack Exchange allows 300 requests a day per IP without a key; set STACKEXCHANGE_KEY (free) for 10,000.
-import { market } from "./research-sources.mjs";
+import { requireMarket } from "./market.mjs";
 
 const UA = "seo-autopilot (https://github.com/bishal-paul-git/seo-autopilot)";
-const LANG = { DE: "de", AT: "de", FR: "fr", ES: "es", IT: "it", NL: "nl" };
-export const wikiLang = (m) => LANG[market(m)] || "en";
+/** The Wikipedia edition for the market's language ("ar" gives ar.wikipedia.org). */
+export const wikiLang = (m) => requireMarket(m, "wikipedia").languageCode;
 
 async function getJson(f, name, url) {
   let r;

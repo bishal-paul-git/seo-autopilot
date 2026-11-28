@@ -8,10 +8,10 @@
 //   dataforseo       DATAFORSEO_LOGIN + DATAFORSEO_PASSWORD keyword ideas with volume, CPC, difficulty; a domain's ranked keywords (paid)
 //   openpagerank     OPENPAGERANK_API_KEY                  domain authority 0-10 from the open web graph (free key)
 //   suggest          none, opt-in with --suggest           Google autocomplete phrasings (unofficial endpoint; off by default)
+// Location and language always come from the market passed in (market.mjs); there is no default country or language.
 import { domainOf } from "./serp.mjs";
-
-const LOCATIONS = { GB: "United Kingdom", US: "United States", CA: "Canada", AU: "Australia", IE: "Ireland", DE: "Germany", FR: "France", ES: "Spain", IT: "Italy", NL: "Netherlands", IN: "India", NZ: "New Zealand", ZA: "South Africa" };
-export const market = (m) => String(m || "GB").toUpperCase().replace(/^UK$/, "GB");
+import { requireMarket, googleGl } from "./market.mjs";
+import { requireGuard, dataforseoEnabled } from "./dataforseo.mjs";
 
 async function getJson(fetchFn, name, url, init = {}) {
   let r;
@@ -20,13 +20,8 @@ async function getJson(fetchFn, name, url, init = {}) {
   return r.json();
 }
 
-const dfsAuth = (env) => `Basic ${Buffer.from(`${env.DATAFORSEO_LOGIN}:${env.DATAFORSEO_PASSWORD}`).toString("base64")}`;
-async function dfs(f, env, path, task) {
-  const j = await getJson(f, "dataforseo", `https://api.dataforseo.com/v3/${path}`, { method: "POST", headers: { Authorization: dfsAuth(env), "Content-Type": "application/json" }, body: JSON.stringify([task]) });
-  const t = j.tasks?.[0];
-  if (t && t.status_code && t.status_code !== 20000) throw new Error(`dataforseo: task status ${t.status_code}`);
-  return t?.result?.[0]?.items || [];
-}
+// Every DataForSEO call goes through the cost guard (src/lib/dataforseo.mjs): monthly cap, balance floor, ledger, alert.
+const dfs = async (guard, path, task) => (await requireGuard(guard, "dataforseo").task(path, task)).items;
 
 export const bing = {
   name: "bing",
@@ -34,8 +29,8 @@ export const bing = {
   /** Related queries and their Bing impressions over the last 90 days: [{ query, bingImpressions }]. */
   async related(seed, m, { fetch: f = fetch, env = process.env, today = new Date() } = {}) {
     const end = new Date(today.getTime() - 2 * 864e5).toISOString().slice(0, 10), start = new Date(today.getTime() - 92 * 864e5).toISOString().slice(0, 10);
-    const c = market(m).toLowerCase();
-    const url = `https://ssl.bing.com/webmaster/api.svc/json/GetRelatedKeywords?${new URLSearchParams({ apikey: env.BING_WEBMASTER_API_KEY, q: seed, country: c, language: `en-${c.toUpperCase()}`, startDate: start, endDate: end })}`;
+    const mk = requireMarket(m, "bing");
+    const url = `https://ssl.bing.com/webmaster/api.svc/json/GetRelatedKeywords?${new URLSearchParams({ apikey: env.BING_WEBMASTER_API_KEY, q: seed, country: mk.country.toLowerCase(), language: `${mk.languageCode}-${mk.country}`, startDate: start, endDate: end })}`;
     const j = await getJson(f, "bing", url);
     return (j.d || []).map((k) => ({ query: String(k.Query || "").toLowerCase(), bingImpressions: Number(k.Impressions ?? k.BroadImpressions ?? 0) })).filter((k) => k.query);
   },
@@ -43,10 +38,12 @@ export const bing = {
 
 export const dataforseo = {
   name: "dataforseo",
-  enabled: (env) => Boolean(env.DATAFORSEO_LOGIN && env.DATAFORSEO_PASSWORD),
+  enabled: (env) => dataforseoEnabled(env),
+  // Every method below takes { guard } (a cost guard); fetch and env belong to the guard.
   /** Keyword ideas for seeds: [{ query, volume, cpc, competition, difficulty, intent, trend }]. Volumes are the provider's estimates. */
-  async ideas(seeds, m, { fetch: f = fetch, env = process.env, limit = 300 } = {}) {
-    const items = await dfs(f, env, "dataforseo_labs/google/keyword_ideas/live", { keywords: seeds.slice(0, 20), location_name: LOCATIONS[market(m)] || "United Kingdom", language_code: "en", limit });
+  async ideas(seeds, m, { guard, limit = 300 } = {}) {
+    const mk = requireMarket(m, "dataforseo");
+    const items = await dfs(guard, "dataforseo_labs/google/keyword_ideas/live", { keywords: seeds.slice(0, 20), location_code: mk.locationCode, language_code: mk.languageCode, limit });
     return items.map((i) => ({
       query: String(i.keyword || "").toLowerCase(), volume: i.keyword_info?.search_volume ?? null, cpc: i.keyword_info?.cpc ?? null,
       competition: i.keyword_info?.competition ?? null, difficulty: i.keyword_properties?.keyword_difficulty ?? null, intent: i.search_intent_info?.main_intent || null,
@@ -54,16 +51,17 @@ export const dataforseo = {
     })).filter((k) => k.query);
   },
   /** Keywords a domain ranks for: [{ query, position, url, volume, traffic, intent }]. Traffic is the provider's estimate. */
-  async ranked(domain, m, { fetch: f = fetch, env = process.env, limit = 500 } = {}) {
-    const items = await dfs(f, env, "dataforseo_labs/google/ranked_keywords/live", { target: domain, location_name: LOCATIONS[market(m)] || "United Kingdom", language_code: "en", limit });
+  async ranked(domain, m, { guard, limit = 500 } = {}) {
+    const mk = requireMarket(m, "dataforseo");
+    const items = await dfs(guard, "dataforseo_labs/google/ranked_keywords/live", { target: domain, location_code: mk.locationCode, language_code: mk.languageCode, limit });
     return items.map((i) => ({
       query: String(i.keyword_data?.keyword || "").toLowerCase(), position: i.ranked_serp_element?.serp_item?.rank_group ?? null, url: i.ranked_serp_element?.serp_item?.url || "",
       volume: i.keyword_data?.keyword_info?.search_volume ?? null, traffic: i.ranked_serp_element?.serp_item?.etv ?? null, intent: i.keyword_data?.search_intent_info?.main_intent || null,
     })).filter((k) => k.query);
   },
   /** Referring domains of a target: [{ domain, backlinks, rank, firstSeen, lost }]. */
-  async referringDomains(target, { fetch: f = fetch, env = process.env, limit = 500 } = {}) {
-    const items = await dfs(f, env, "backlinks/referring_domains/live", { target, limit, order_by: ["rank,desc"] });
+  async referringDomains(target, { guard, limit = 500 } = {}) {
+    const items = await dfs(guard, "backlinks/referring_domains/live", { target, limit, order_by: ["rank,desc"] });
     return items.map((i) => ({ domain: String(i.domain || "").toLowerCase(), backlinks: i.backlinks ?? null, rank: i.rank ?? null, firstSeen: i.first_seen || null, lost: i.lost_date || null })).filter((d) => d.domain);
   },
 };
@@ -89,14 +87,14 @@ export const openpagerank = {
 export const suggest = {
   name: "suggest",
   async expand(seed, m, { fetch: f = fetch, max = 12, delayMs = 1000, sleep = (ms) => new Promise((r) => setTimeout(r, ms)) } = {}) {
-    const gl = market(m) === "GB" ? "uk" : market(m).toLowerCase();
+    const mk = requireMarket(m, "suggest"), gl = googleGl(mk);
     const prefixes = ["", ...("how what why best which can".split(" ").map((w) => `${w} `))].slice(0, max);
     const out = new Set();
     for (const [i, p] of prefixes.entries()) {
       if (i) await sleep(delayMs);
       const q = p ? `${p}${seed}` : seed;
       try {
-        const j = await getJson(f, "suggest", `https://suggestqueries.google.com/complete/search?${new URLSearchParams({ client: "firefox", hl: "en", gl, q })}`);
+        const j = await getJson(f, "suggest", `https://suggestqueries.google.com/complete/search?${new URLSearchParams({ client: "firefox", hl: mk.languageCode, gl, q })}`);
         for (const s of j?.[1] || []) out.add(String(s).toLowerCase());
       } catch { /* one failed prefix is fine; the rest still count */ }
     }

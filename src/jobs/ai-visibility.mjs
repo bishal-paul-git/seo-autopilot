@@ -9,6 +9,8 @@
 import { readJson, writeJson, writeText, today, sleep } from "../core/util.mjs";
 import { enabledEngines, ENGINES } from "../lib/ai-engines.mjs";
 import { normaliseQuestions } from "../analysis/citations.mjs";
+import { costGuardFor } from "../lib/dataforseo.mjs";
+import { siteMarket } from "../lib/market.mjs";
 import { analyse, appendHistory, setHash, visibilityMarkdown } from "../analysis/ai-visibility.mjs";
 
 export const description = "AI visibility: how often ChatGPT, Claude, Gemini and Perplexity mention and cite you on your real questions (needs at least one AI key)";
@@ -27,11 +29,13 @@ export async function run({ site, flags = {} }, deps = {}) {
   const names = [site.name, ...(site.brandTerms || []), ...(site.research?.aliases || [])].filter(Boolean);
   const competitors = [...(site.research?.competitors || []).map((d) => ({ domain: d })), ...(site.research?.competitorNames || []).map((n) => ({ name: n }))];
 
+  // Engines that spend through DataForSEO need the site's market and ONE cost guard for the whole run (opt-in: research.engines).
+  const guarded = engines.some((e) => e.needsGuard) ? { guard: costGuardFor(site, "ai-visibility", { env, fetch: f, guard: deps.guard, now: deps.now }), market: siteMarket(site) } : {};
   const answers = [];
   let i = 0;
   for (const q of questions) for (const e of engines) for (let run = 1; run <= runs; run++) {
     if (i++) await sleep(deps.delayMs ?? 1500);
-    try { answers.push({ q, run, ...(await e.ask(q, { fetch: f, env })) }); }
+    try { answers.push({ q, run, ...(await e.ask(q, { fetch: f, env, ...(e.needsGuard ? guarded : {}) })) }); }
     catch (err) { answers.push({ q, run, engine: e.name, error: err.message }); console.log(`ai-visibility: ${e.name} "${q}" failed: ${err.message}`); }
   }
   const r = analyse(answers, { domain, names, competitors });

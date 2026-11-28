@@ -20,6 +20,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - name: Restore state
+        id: restore
         run: npx --yes "$SEO" state restore
       - name: Keyword research and topic proposals
         continue-on-error: true
@@ -99,6 +100,9 @@ jobs:
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
           DATAFORSEO_LOGIN: ${{ secrets.DATAFORSEO_LOGIN }}
           DATAFORSEO_PASSWORD: ${{ secrets.DATAFORSEO_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID || secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_ID: ${{ vars.TELEGRAM_THREAD_ID || secrets.TELEGRAM_THREAD_ID }}
         run: npx --yes "$SEO" run citations
       - name: Keyword explorer from your Search Console queries (adds Keyword Planner, Bing and DataForSEO when their keys are set)
         continue-on-error: true
@@ -115,6 +119,9 @@ jobs:
           STACKEXCHANGE_KEY: ${{ secrets.STACKEXCHANGE_KEY }}
           DATAFORSEO_LOGIN: ${{ secrets.DATAFORSEO_LOGIN }}
           DATAFORSEO_PASSWORD: ${{ secrets.DATAFORSEO_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID || secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_ID: ${{ vars.TELEGRAM_THREAD_ID || secrets.TELEGRAM_THREAD_ID }}
           OPENPAGERANK_API_KEY: ${{ secrets.OPENPAGERANK_API_KEY }}
           BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
@@ -127,6 +134,9 @@ jobs:
           BING_WEBMASTER_API_KEY: ${{ secrets.BING_WEBMASTER_API_KEY }}
           DATAFORSEO_LOGIN: ${{ secrets.DATAFORSEO_LOGIN }}
           DATAFORSEO_PASSWORD: ${{ secrets.DATAFORSEO_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID || secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_ID: ${{ vars.TELEGRAM_THREAD_ID || secrets.TELEGRAM_THREAD_ID }}
           OPENPAGERANK_API_KEY: ${{ secrets.OPENPAGERANK_API_KEY }}
           BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
@@ -137,6 +147,9 @@ jobs:
           BING_WEBMASTER_API_KEY: ${{ secrets.BING_WEBMASTER_API_KEY }}
           DATAFORSEO_LOGIN: ${{ secrets.DATAFORSEO_LOGIN }}
           DATAFORSEO_PASSWORD: ${{ secrets.DATAFORSEO_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID || secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_ID: ${{ vars.TELEGRAM_THREAD_ID || secrets.TELEGRAM_THREAD_ID }}
           OPENPAGERANK_API_KEY: ${{ secrets.OPENPAGERANK_API_KEY }}
           BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
@@ -147,6 +160,9 @@ jobs:
           BING_WEBMASTER_API_KEY: ${{ secrets.BING_WEBMASTER_API_KEY }}
           DATAFORSEO_LOGIN: ${{ secrets.DATAFORSEO_LOGIN }}
           DATAFORSEO_PASSWORD: ${{ secrets.DATAFORSEO_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ vars.TELEGRAM_CHAT_ID || secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_ID: ${{ vars.TELEGRAM_THREAD_ID || secrets.TELEGRAM_THREAD_ID }}
           OPENPAGERANK_API_KEY: ${{ secrets.OPENPAGERANK_API_KEY }}
           BRAVE_API_KEY: ${{ secrets.BRAVE_API_KEY }}
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
@@ -219,4 +235,7 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: npx --yes "$SEO" run indexing-queue
       - name: Save state
+        # Also after a failed or cancelled step (the DataForSEO spend of this run must be kept), but never when the restore
+        # failed: saving then would force-push empty state over the good one.
+        if: always() && steps.restore.outcome == 'success'
         run: npx --yes "$SEO" state save

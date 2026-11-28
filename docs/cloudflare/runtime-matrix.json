@@ -1,6 +1,24 @@
 {
  "jobs": [
   {
+   "job": "aeo",
+   "path": "github-actions",
+   "where": "Node host: reads and writes the site's state files in its repository; runs in the existing GitHub Actions workflows",
+   "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
+   "needs": {
+    "node": [
+     "crypto",
+     "fs",
+     "path"
+    ],
+    "spawns": false,
+    "files": "read-write",
+    "network": false,
+    "llm": true
+   },
+   "modules": 12
+  },
+  {
    "job": "agent",
    "path": "hosted-equivalent",
    "where": "agent:<name> jobs in the Worker (src/god/agent-runner.mjs, advise only, user's own key): prompt build 0.6-1.1 ms CPU, the model call is I/O",
@@ -25,6 +43,7 @@
    "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
    "needs": {
     "node": [
+     "crypto",
      "fs",
      "path"
     ],
@@ -33,7 +52,7 @@
     "network": false,
     "llm": true
    },
-   "modules": 6
+   "modules": 11
   },
   {
    "job": "analyze",
@@ -50,7 +69,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 4
+   "modules": 5
   },
   {
    "job": "audit",
@@ -71,7 +90,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 10
+   "modules": 11
   },
   {
    "job": "authority",
@@ -80,6 +99,7 @@
    "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
    "needs": {
     "node": [
+     "crypto",
      "fs",
      "path"
     ],
@@ -88,7 +108,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 10
+   "modules": 16
   },
   {
    "job": "autopilot",
@@ -107,7 +127,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 10
+   "modules": 14
   },
   {
    "job": "backlinks-queue",
@@ -159,7 +179,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 20
+   "modules": 25
   },
   {
    "job": "citations",
@@ -168,6 +188,7 @@
    "reason": "Workers have no persistent file system (/tmp is cleared per request); porting needs its state moved to Supabase first",
    "needs": {
     "node": [
+     "crypto",
      "fs",
      "path"
     ],
@@ -176,7 +197,7 @@
     "network": false,
     "llm": false
    },
-   "modules": 4
+   "modules": 9
   },
   {
    "job": "consent",
@@ -247,7 +268,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 6
+   "modules": 7
   },
   {
    "job": "deepdive",
@@ -282,7 +303,7 @@
     "network": true,
     "llm": true
    },
-   "modules": 8
+   "modules": 9
   },
   {
    "job": "entity",
@@ -300,7 +321,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 21
+   "modules": 26
   },
   {
    "job": "experiments",
@@ -318,7 +339,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 4
+   "modules": 5
   },
   {
    "job": "facts",
@@ -335,7 +356,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 5
+   "modules": 6
   },
   {
    "job": "forecast",
@@ -370,7 +391,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 14
+   "modules": 20
   },
   {
    "job": "geo",
@@ -479,7 +500,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 12
+   "modules": 18
   },
   {
    "job": "linkgraph",
@@ -513,7 +534,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 5
+   "modules": 6
   },
   {
    "job": "listings",
@@ -549,7 +570,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 22
+   "modules": 27
   },
   {
    "job": "logs",
@@ -637,7 +658,7 @@
     "network": true,
     "llm": true
    },
-   "modules": 6
+   "modules": 7
   },
   {
    "job": "optimize",
@@ -655,7 +676,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 18
+   "modules": 23
   },
   {
    "job": "pace",
@@ -672,7 +693,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 4
+   "modules": 5
   },
   {
    "job": "portal",
@@ -705,7 +726,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 7
+   "modules": 8
   },
   {
    "job": "profile",
@@ -738,7 +759,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 4
+   "modules": 5
   },
   {
    "job": "quality",
@@ -773,7 +794,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 14
+   "modules": 20
   },
   {
    "job": "redirects",
@@ -790,7 +811,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 4
+   "modules": 5
   },
   {
    "job": "refresh",
@@ -807,7 +828,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 4
+   "modules": 5
   },
   {
    "job": "release",
@@ -824,7 +845,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 3
+   "modules": 4
   },
   {
    "job": "render",
@@ -860,7 +881,7 @@
     "network": true,
     "llm": true
    },
-   "modules": 8
+   "modules": 9
   },
   {
    "job": "schedule",
@@ -877,7 +898,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 3
+   "modules": 4
   },
   {
    "job": "schema",
@@ -895,7 +916,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 20
+   "modules": 25
   },
   {
    "job": "shop",
@@ -913,7 +934,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 22
+   "modules": 27
   },
   {
    "job": "speed",
@@ -947,7 +968,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 10
+   "modules": 11
   },
   {
    "job": "vitals",
@@ -981,7 +1002,7 @@
     "network": true,
     "llm": false
    },
-   "modules": 6
+   "modules": 7
   },
   {
    "job": "work",
@@ -1015,13 +1036,13 @@
     "network": true,
     "llm": false
    },
-   "modules": 4
+   "modules": 5
   }
  ],
  "summary": {
-  "total": 58,
+  "total": 59,
   "hostedEquivalent": 6,
-  "githubActions": 52,
+  "githubActions": 53,
   "workerCandidate": 0,
   "spawnProcesses": 6
  }

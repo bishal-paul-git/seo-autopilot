@@ -118,3 +118,29 @@ test("the request-indexing list shows the full URL to paste and never a Search C
   assert.ok(md.includes("https://search.google.com/search-console?resource_id="), "links to the property");
   assert.ok(!md.includes("search-console/inspect"), "no page deep link (it answers 404)");
 });
+
+test("aeo runs end to end through the cost guard against a stand-in DataForSEO and writes its report", async (t) => {
+  const p = await project(t);
+  const cfgFile = join(p.dir, "seo-autopilot.config.json");
+  const cfg = JSON.parse(readFileSync(cfgFile, "utf8"));
+  cfg.sites[0].market = { location_code: 2840, language_code: "en" };
+  cfg.sites[0].aeo = { prompts: [{ text: "best widget shops online", lang: "en" }], aliases: ["Shop"], mode: "ai_mode" };
+  writeFileSync(cfgFile, JSON.stringify(cfg, null, 2));
+  process.env.DATAFORSEO_LOGIN = "login"; process.env.DATAFORSEO_PASSWORD = "password";
+  const asked = [], base = globalThis.fetch;
+  globalThis.fetch = async (input, init = {}) => {
+    const url = String(input?.url || input);
+    if (!url.startsWith("https://api.dataforseo.com/")) return base(input, init);
+    const json = (o) => new Response(JSON.stringify(o), { status: 200, headers: { "content-type": "application/json" } });
+    if (url.endsWith("/appendix/user_data")) return json({ tasks: [{ status_code: 20000, result: [{ money: { balance: 100 } }] }] });
+    asked.push(url.split("/v3/")[1]);
+    const item = { type: "ai_overview", markdown: "Shop is a good choice.", references: [{ type: "ai_overview_reference", domain: "shop.test", url: "https://shop.test/guide", title: "Guide" }] };
+    return json({ status_code: 20000, cost: 0.004, tasks: [{ status_code: 20000, cost: 0.004, result: [{ items: [item] }] }] });
+  };
+  await runJob("aeo", { cwd: p.dir, flags: {} });
+  assert.deepEqual(asked, ["serp/google/ai_mode/live/advanced"]);
+  const r = JSON.parse(readFileSync(join(p.state(), "aeo.json"), "utf8"));
+  assert.equal(r.totals.asked, 1); assert.equal(r.totals.cited, 1); assert.equal(r.totals.costUsd, 0.004);
+  assert.ok(existsSync(join(p.state(), "aeo.md")));
+  assert.ok(existsSync(join(p.state(), "dataforseo-ledger.json")), "the spend is recorded in the ledger");
+});

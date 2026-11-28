@@ -28,6 +28,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - name: Restore state
+        id: restore
         run: npx --yes "$SEO" state restore
       - name: Daily report and URL inspection
         env:
@@ -95,4 +96,7 @@ jobs:
         run: |
           if [ -n "$SEO_PORTAL_TOKEN" ]; then npx --yes "$SEO" run portal --push; else npx --yes "$SEO" run portal; fi
       - name: Save state
+        # Also after a failed or cancelled step (the DataForSEO spend of this run must be kept), but never when the restore
+        # failed: saving then would force-push empty state over the good one.
+        if: always() && steps.restore.outcome == 'success'
         run: npx --yes "$SEO" state save

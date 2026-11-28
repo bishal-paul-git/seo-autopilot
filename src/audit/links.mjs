@@ -1,11 +1,12 @@
 // Internal-link opportunities: pages that talk about a topic another page owns, without linking to it.
 // "Owns" = the target page's main phrase (its H1, or its title before a separator). Pure function over crawl records.
 import { tokens } from "../adapters/index.mjs";
+import { normalizeArabic } from "../lib/text.mjs";
 import { sameWord, siteWords } from "../analysis/quality.mjs";
 
 const mainPhrase = (p) => {
   const raw = (p.h1s?.[0] || p.title || "").split(/\s[|:–—-]\s/)[0].trim();
-  return raw.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+  return normalizeArabic(raw.toLowerCase()).replace(/[^\p{L}\p{N}\p{M} ]+/gu, " ").replace(/\s+/g, " ").trim();
 };
 
 export function linkOpportunities(pages, { maxPerTarget = 3, minWords = 2, maxTotal = 40 } = {}) {
@@ -18,7 +19,7 @@ export function linkOpportunities(pages, { maxPerTarget = 3, minWords = 2, maxTo
     for (const s of html) {
       if (s === t.page || key(s.url) === key(t.page.url)) continue;
       if (s.links.some((l) => key(l.url) === key(t.page.url) || key(l.url) === key(t.page.finalUrl || t.page.url))) continue;
-      const text = s.text.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ");
+      const text = normalizeArabic(s.text.toLowerCase()).replace(/[^\p{L}\p{N}\p{M} ]+/gu, " ").replace(/\s+/g, " ");
       const at = text.indexOf(t.phrase);
       if (at >= 0) found.push({ from: s.url, anchor: t.phrase, context: s.text.slice(Math.max(0, at - 40), at + t.phrase.length + 40).replace(/\s+/g, " ") });
     }

@@ -13,6 +13,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { relative, extname } from "node:path";
 import { findFiles, addDays } from "../core/util.mjs";
+import { tokens, normalizeArabic } from "../lib/text.mjs";
 
 const first = (o, keys) => { for (const k of keys) if (o && o[k] != null && o[k] !== "") return o[k]; return undefined; };
 const TITLE_KEYS = ["h1", "title", "name", "term", "metaTitle", "headline"];
@@ -114,12 +115,12 @@ export async function loadPages(site) {
 }
 
 // "Is this topic already covered by an existing page?" Fuzzy: most meaningful words must appear in one page's text.
-const STOP = new Set(["ai", "for", "to", "the", "and", "of", "a", "in", "with", "how", "what", "is", "do", "does", "can", "vs", "best", "your", "my", "on", "an", "are", "why"]);
-export const tokens = (q) => String(q).toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 2 && !STOP.has(w));
+// Unicode-aware (Arabic normalised, light prefix handling); identical to the old ASCII tokenizer for English input. See src/lib/text.mjs.
+export { tokens };
 const stem = (w) => w.replace(/(ing|ers|er|es|s)$/, "");
 
 export function makeCovered(pages, extraTexts = []) {
-  const texts = [...pages.map((p) => p.text), ...extraTexts.map((t) => t.toLowerCase())];
+  const texts = [...pages.map((p) => normalizeArabic(p.text)), ...extraTexts.map((t) => normalizeArabic(t.toLowerCase()))];
   return (q) => {
     const t = tokens(q).map(stem);
     if (!t.length) return false;

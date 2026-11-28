@@ -54,7 +54,7 @@ The job never edits content. To apply it, change each listed page's `publishAt` 
 
 `npx seo-autopilot run citations` asks a search provider your real customer questions and records whether your domain is an organic result or a cited source in an AI answer, which other domains are cited most, and which questions you are absent from. Each run is appended to `citations.json` (last 26 kept), and `citations.md` shows this run's table, the monthly trend of the share of questions where you appear, the top cited domains and the absent questions.
 
-1. Replace the example list in `seo-autopilot/questions.json` (strings, or `{ "q": "...", "market": "GB" }`). While the "REPLACE THESE" note is present the job refuses to spend credits. At most 40 questions run per job, one at a time with a short pause. The default market is `GB`; change it with `citations.market`.
+1. Replace the example list in `seo-autopilot/questions.json` (strings, or `{ "q": "...", "language": "ar" }`; add `"market": "AE"` to research one question in another country). While the "REPLACE THESE" note is present the job refuses to spend credits. At most 40 questions run per job, one at a time with a short pause. Every question is checked in the site's `market` (location and language, see [configuration](configuration.md#market)); a site with no market keeps the old United Kingdom / English behaviour with a warning, and an unknown market stops the job before any request.
 2. Enable one provider (first found wins):
 
 | Provider | Env var and repository secret | Gives |

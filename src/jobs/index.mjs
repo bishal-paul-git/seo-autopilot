@@ -48,6 +48,7 @@ export const JOBS = {
   gap: () => import("./gap.mjs"),
   optimize: () => import("./optimize.mjs"),
   "ai-visibility": () => import("./ai-visibility.mjs"),
+  aeo: () => import("./aeo.mjs"),
   authority: () => import("./authority.mjs"),
   forecast: () => import("./forecast.mjs"),
   linkgraph: () => import("./linkgraph.mjs"),

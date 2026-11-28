@@ -1,0 +1,205 @@
+{
+  "recordedOn": "2026-11-28",
+  "fork": {
+    "ref": "118eacc6907800caf9526343ca06b5881f02bc46",
+    "note": "head of up/dataforseo-cost-guard when this was written; pinned so the guard under test cannot change under a run"
+  },
+  "runCapUsd": 0.6,
+  "monthlyCapUsd": 1,
+  "spentUsd": 0.117738,
+  "stoppedBy": null,
+  "calls": [
+    {
+      "name": "user-data",
+      "endpoint": "appendix/user_data",
+      "request": null,
+      "documentedUsd": 0,
+      "file": "user-data.json",
+      "costUsd": 0,
+      "taskStatus": 20000
+    },
+    {
+      "name": "serp-us-en-organic",
+      "endpoint": "serp/google/organic/live/advanced",
+      "request": {
+        "keyword": "running shoes",
+        "location_code": 2840,
+        "language_code": "en",
+        "depth": 10
+      },
+      "documentedUsd": 0.002,
+      "estimateUsd": 0.007,
+      "costUsd": 0.002,
+      "taskStatus": 20000,
+      "taskMessage": "Ok.",
+      "itemsReturned": 18,
+      "itemsKept": 10,
+      "file": "serp-us-en-organic.json"
+    },
+    {
+      "name": "serp-sa-ar-organic",
+      "endpoint": "serp/google/organic/live/advanced",
+      "request": {
+        "keyword": "أحذية رياضية",
+        "location_code": 2682,
+        "language_code": "ar",
+        "depth": 10
+      },
+      "documentedUsd": 0.002,
+      "estimateUsd": 0.007,
+      "costUsd": 0.002,
+      "taskStatus": 20000,
+      "taskMessage": "Ok.",
+      "itemsReturned": 12,
+      "itemsKept": 10,
+      "file": "serp-sa-ar-organic.json"
+    },
+    {
+      "name": "keyword-ideas-us-en",
+      "endpoint": "dataforseo_labs/google/keyword_ideas/live",
+      "request": {
+        "keywords": [
+          "running shoes"
+        ],
+        "location_code": 2840,
+        "language_code": "en",
+        "limit": 10
+      },
+      "documentedUsd": 0.0132,
+      "estimateUsd": 0.022,
+      "costUsd": 0.0132,
+      "taskStatus": 20000,
+      "taskMessage": "Ok.",
+      "itemsReturned": 10,
+      "itemsKept": 10,
+      "file": "keyword-ideas-us-en.json"
+    },
+    {
+      "name": "keyword-ideas-sa-ar",
+      "endpoint": "dataforseo_labs/google/keyword_ideas/live",
+      "request": {
+        "keywords": [
+          "أحذية رياضية"
+        ],
+        "location_code": 2682,
+        "language_code": "ar",
+        "limit": 10
+      },
+      "documentedUsd": 0.0132,
+      "estimateUsd": 0.022,
+      "costUsd": 0.0132,
+      "taskStatus": 20000,
+      "taskMessage": "Ok.",
+      "itemsReturned": 10,
+      "itemsKept": 10,
+      "file": "keyword-ideas-sa-ar.json"
+    },
+    {
+      "name": "ranked-keywords-us-en",
+      "endpoint": "dataforseo_labs/google/ranked_keywords/live",
+      "request": {
+        "target": "wikipedia.org",
+        "location_code": 2840,
+        "language_code": "en",
+        "limit": 10
+      },
+      "documentedUsd": 0.0132,
+      "estimateUsd": 0.022,
+      "costUsd": 0.0132,
+      "taskStatus": 20000,
+      "taskMessage": "Ok.",
+      "itemsReturned": 10,
+      "itemsKept": 10,
+      "file": "ranked-keywords-us-en.json"
+    },
+    {
+      "name": "ranked-keywords-sa-ar",
+      "endpoint": "dataforseo_labs/google/ranked_keywords/live",
+      "request": {
+        "target": "wikipedia.org",
+        "location_code": 2682,
+        "language_code": "ar",
+        "limit": 10
+      },
+      "documentedUsd": 0.0132,
+      "estimateUsd": 0.022,
+      "costUsd": 0.0132,
+      "taskStatus": 20000,
+      "taskMessage": "Ok.",
+      "itemsReturned": 10,
+      "itemsKept": 10,
+      "file": "ranked-keywords-sa-ar.json"
+    },
+    {
+      "name": "referring-domains",
+      "endpoint": "backlinks/referring_domains/live",
+      "request": {
+        "target": "wikipedia.org",
+        "limit": 10
+      },
+      "documentedUsd": 0.02436,
+      "estimateUsd": 0.031,
+      "costUsd": 0.02436,
+      "taskStatus": 20000,
+      "taskMessage": "Ok.",
+      "itemsReturned": 10,
+      "itemsKept": 10,
+      "file": "referring-domains.json"
+    },
+    {
+      "name": "ai-overview-us-en",
+      "endpoint": "serp/google/organic/live/advanced",
+      "request": {
+        "keyword": "best running shoes",
+        "location_code": 2840,
+        "language_code": "en",
+        "depth": 10,
+        "load_async_ai_overview": true
+      },
+      "documentedUsd": 0.004,
+      "estimateUsd": 0.01,
+      "costUsd": 0.002,
+      "taskStatus": 20000,
+      "taskMessage": "Ok.",
+      "itemsReturned": 13,
+      "itemsKept": 10,
+      "file": "ai-overview-us-en.json"
+    },
+    {
+      "name": "ai-mode-sa-ar",
+      "endpoint": "serp/google/ai_mode/live/advanced",
+      "request": {
+        "keyword": "أفضل أحذية رياضية للجري",
+        "location_code": 2682,
+        "language_code": "ar"
+      },
+      "documentedUsd": 0.004,
+      "estimateUsd": 0.01,
+      "costUsd": 0.004,
+      "taskStatus": 20000,
+      "taskMessage": "Ok.",
+      "itemsReturned": 1,
+      "itemsKept": 1,
+      "file": "ai-mode-sa-ar.json"
+    },
+    {
+      "name": "llm-responses-sa-ar",
+      "endpoint": "ai_optimization/chat_gpt/llm_responses/live",
+      "request": {
+        "user_prompt": "ما هي أفضل أحذية الجري؟",
+        "model_name": "gpt-4.1-mini",
+        "web_search": true,
+        "web_search_country_iso_code": "SA",
+        "max_output_tokens": 1024
+      },
+      "documentedUsd": 0.05,
+      "estimateUsd": 0.05,
+      "costUsd": 0.030578,
+      "taskStatus": 20000,
+      "taskMessage": "Ok.",
+      "itemsReturned": 1,
+      "itemsKept": 1,
+      "file": "llm-responses-sa-ar.json"
+    }
+  ]
+}

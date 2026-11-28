@@ -5,6 +5,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { mergeDomains, profile, intersect, compare, tier } from "../src/analysis/authority.mjs";
+import { testGuard } from "./dfs-fixtures.mjs";
 
 test("merge and profile: one record per domain with its sources; tiers; new and lost against the snapshot; provider-lost kept apart", () => {
   const d = mergeDomains({ "search-console export": ["www.a.test", "b.test"], dataforseo: [{ domain: "a.test", backlinks: 12, rank: 300 }, { domain: "c.test", backlinks: 1, lost: "2026-09-01" }] });
@@ -40,7 +41,7 @@ test("authority job: export plus DataForSEO plus Open PageRank; snapshot for nex
   const site = { id: "s", name: "S", url: "https://s.test/", research: { competitors: ["r1.test", "r2.test"] }, paths: { state, root, data: root } };
   const { run } = await import("../src/jobs/authority.mjs");
   const log = console.log; console.log = () => {};
-  try { await run({ site, flags: {} }, { env: { DATAFORSEO_LOGIN: "l", DATAFORSEO_PASSWORD: "p", OPENPAGERANK_API_KEY: "o" }, fetch: f }); } finally { console.log = log; }
+  try { await run({ site, flags: {} }, { env: { DATAFORSEO_LOGIN: "l", DATAFORSEO_PASSWORD: "p", OPENPAGERANK_API_KEY: "o" }, fetch: f, guard: testGuard({ fetch: f }) }); } finally { console.log = log; }
   assert.ok(urls.every((u) => /dataforseo|openpagerank/.test(u)), "only the data providers are called");
   const r = JSON.parse(readFileSync(join(state, "authority.json"), "utf8"));
   assert.equal(r.profile.referringDomains, 2); assert.deepEqual(r.intersect.map((x) => [x.domain, x.authority]), [["blog.test", 6]]);

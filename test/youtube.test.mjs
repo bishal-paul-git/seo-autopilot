@@ -8,6 +8,7 @@ import { join } from "node:path";
 import { youtube } from "../src/lib/youtube.mjs";
 import { videoCandidates, videoSummary, videoMarkdown } from "../src/analysis/keywords.mjs";
 import { validate } from "../src/core/config.mjs";
+import { UK, DE, CONFIG } from "./market-fixtures.mjs";
 
 const res = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 const SEARCH = { items: [{ id: { videoId: "a1" }, snippet: { title: "How to set up web hosting &amp; DNS", channelTitle: "Acme Hosting", publishedAt: "2025-03-01T10:00:00Z" } }, { id: { videoId: "b2" }, snippet: { title: "Web hosting tutorial", channelTitle: "Other", publishedAt: "2024-01-01T00:00:00Z" } }, { id: { kind: "youtube#channel" } }] };
@@ -16,18 +17,18 @@ const STATS = { items: [{ id: "a1", statistics: { viewCount: "12000" } }, { id: 
 test("videos: search then statistics; titles decoded; region and language from the market", async () => {
   const urls = [];
   const f = async (u) => { urls.push(String(u)); return res(String(u).includes("/search?") ? SEARCH : STATS); };
-  const v = await youtube.videos("how to set up web hosting", "DE", { fetch: f, env: { YOUTUBE_API_KEY: "yt-key" } });
+  const v = await youtube.videos("how to set up web hosting", DE, { fetch: f, env: { YOUTUBE_API_KEY: "yt-key" } });
   assert.deepEqual(v[0], { title: "How to set up web hosting & DNS", url: "https://www.youtube.com/watch?v=a1", channel: "Acme Hosting", published: "2025-03-01", views: 12000 });
   assert.equal(v.length, 2, "channel results are left out");
   assert.match(urls[0], /youtube\/v3\/search\?.*type=video.*regionCode=DE.*relevanceLanguage=de/);
   assert.match(urls[1], /youtube\/v3\/videos\?part=statistics&id=a1%2Cb2/);
-  assert.deepEqual(await youtube.videos("x", "GB", { fetch: async () => res({ items: [] }), env: { YOUTUBE_API_KEY: "k" } }), []);
+  assert.deepEqual(await youtube.videos("x", UK, { fetch: async () => res({ items: [] }), env: { YOUTUBE_API_KEY: "k" } }), []);
 });
 
 test("errors: quota and bad key are explained; the key never appears", async () => {
   const env = { YOUTUBE_API_KEY: "yt-secret" };
-  await assert.rejects(youtube.videos("x", "GB", { fetch: async () => res({ error: { message: "quota", errors: [{ reason: "quotaExceeded" }] } }, 403), env }), (e) => /daily quota used up/.test(e.message) && !e.message.includes("yt-secret"));
-  await assert.rejects(youtube.videos("x", "GB", { fetch: async () => res({ error: { message: "API key not valid", errors: [{ reason: "keyInvalid" }] } }, 400), env }), /youtube: key rejected/);
+  await assert.rejects(youtube.videos("x", UK, { fetch: async () => res({ error: { message: "quota", errors: [{ reason: "quotaExceeded" }] } }, 403), env }), (e) => /daily quota used up/.test(e.message) && !e.message.includes("yt-secret"));
+  await assert.rejects(youtube.videos("x", UK, { fetch: async () => res({ error: { message: "API key not valid", errors: [{ reason: "keyInvalid" }] } }, 400), env }), /youtube: key rejected/);
   assert.equal(youtube.enabled({}), false);
 });
 
@@ -50,7 +51,7 @@ test("config: research.youtubeChannel must be text", () => {
 test("keywords job: with a key, video topics get results; without, no call is made", async () => {
   const root = mkdtempSync(join(tmpdir(), "seo-yt-")), state = join(root, "state"); mkdirSync(state);
   writeFileSync(join(state, "gsc-rows.json"), JSON.stringify({ rows: [{ query: "how to set up web hosting", impressions: 300, clicks: 3, position: 9, page: "https://s.test/a" }] }));
-  const site = { id: "s", name: "S", url: "https://s.test/", research: { youtubeChannel: "Acme Hosting" }, paths: { state, root, data: root } };
+  const site = { id: "s", name: "S", url: "https://s.test/", market: CONFIG.UK, research: { youtubeChannel: "Acme Hosting" }, paths: { state, root, data: root } };
   const { run } = await import("../src/jobs/keywords.mjs");
   const hits = [];
   const f = async (u) => { u = String(u); hits.push(u); return u.includes("youtube/v3/search") ? res(SEARCH) : u.includes("youtube/v3/videos") ? res(STATS) : res({}, 404); };

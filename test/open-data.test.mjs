@@ -8,6 +8,7 @@ import { join } from "node:path";
 import { wikipedia, stackexchange, decode, wikiLang } from "../src/lib/open-data.mjs";
 import { interest, communityQuestions, openDataMarkdown } from "../src/analysis/keywords.mjs";
 import { validate } from "../src/core/config.mjs";
+import { UK, DE, SA_AR, CONFIG } from "./market-fixtures.mjs";
 
 const res = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 const views = (list) => list.map((v, i) => ({ month: `2026-${String(i + 1).padStart(2, "0")}`, views: v }));
@@ -15,15 +16,15 @@ const views = (list) => list.map((v, i) => ({ month: `2026-${String(i + 1).padSt
 test("wikipedia: search finds the article, pageviews cover the last 12 full months, a User-Agent is sent", async () => {
   const calls = [];
   const f = async (u, init) => { calls.push({ u: String(u), init }); return String(u).includes("w/api.php") ? res({ query: { search: [{ title: "Web hosting service" }] } }) : res({ items: [{ timestamp: "2025100100", views: 120 }, { timestamp: "2026090100", views: 90 }] }); };
-  const a = await wikipedia.article("web hosting", "DE", { fetch: f });
+  const a = await wikipedia.article("web hosting", DE, { fetch: f });
   assert.deepEqual(a, { title: "Web hosting service", lang: "de", url: "https://de.wikipedia.org/wiki/Web_hosting_service" });
   assert.match(calls[0].u, /^https:\/\/de\.wikipedia\.org\/w\/api\.php\?.*srsearch=web\+hosting/);
   assert.match(calls[0].init.headers["User-Agent"], /seo-autopilot/);
   const pv = await wikipedia.pageviews("Web hosting service", "en", { fetch: f, today: new Date("2026-10-23T00:00:00Z") });
   assert.equal(calls[1].u, "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/en.wikipedia/all-access/user/Web_hosting_service/monthly/2025100100/2026090100");
   assert.deepEqual(pv, [{ month: "2025-10", views: 120 }, { month: "2026-09", views: 90 }]);
-  assert.equal(await wikipedia.article("zzz", "GB", { fetch: async () => res({ query: { search: [] } }) }), null);
-  assert.equal(wikiLang("UK"), "en");
+  assert.equal(await wikipedia.article("zzz", UK, { fetch: async () => res({ query: { search: [] } }) }), null);
+  assert.equal(wikiLang(UK), "en"); assert.equal(wikiLang(SA_AR), "ar", "the edition follows the market language"); assert.throws(() => wikiLang("GB"), /no market given/);
 });
 
 test("stackexchange: questions with decoded titles; a key is optional; API errors are named", async () => {
@@ -60,7 +61,7 @@ test("config: research.stackExchangeSites must be a list of strings", () => {
 
 test("keywords job: topic interest and community questions join the report; --no-open-data skips both", async () => {
   const root = mkdtempSync(join(tmpdir(), "seo-open-")), state = join(root, "state"); mkdirSync(state);
-  const site = { id: "s", name: "S", url: "https://s.test/", research: { stackExchangeSites: ["webmasters"] }, paths: { state, root, data: root } };
+  const site = { id: "s", name: "S", url: "https://s.test/", market: CONFIG.UK, research: { stackExchangeSites: ["webmasters"] }, paths: { state, root, data: root } };
   const { run } = await import("../src/jobs/keywords.mjs");
   const months = Array.from({ length: 12 }, (_, i) => ({ timestamp: `2025${String(i + 1).padStart(2, "0")}0100`, views: 100 + i }));
   const hits = [];
